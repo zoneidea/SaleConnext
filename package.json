@@ -3,6 +3,7 @@
   "private": true,
   "version": "8.2.6",
   "type": "module",
+  "homepage": "/src/main.tsx",
   "scripts": {
     "dev": "vite --host",
     "build": "tsc && vite build",
