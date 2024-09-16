@@ -1,5 +1,5 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react-swc'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react-swc';
 import fs from 'fs';
 import path from 'path';
 
@@ -10,23 +10,20 @@ export default defineConfig({
     rollupOptions: {
       input: './index.html',  // ชี้ไปยังไฟล์ index.html
     },
-    outDir: 'dist',  // กำหนดโฟลเดอร์ที่ไฟล์บันเดิลจะถูกสร้าง
-    assetsDir: 'assets',
+    outDir: 'dist',  // โฟลเดอร์บันเดิล
+    assetsDir: 'assets',  // โฟลเดอร์สำหรับ asset ที่ถูกสร้างขึ้น
+    chunkSizeWarningLimit: 3000,  // หากต้องการแสดงคำเตือนเมื่อขนาด chunk เกิน 3MB
   },
   resolve: {
     alias: {
-      '@': '/src',
+      '@': path.resolve(__dirname, 'src'),  // การใช้ alias '@' เพื่อชี้ไปยังโฟลเดอร์ src
     },
   },
-  // base: "/tsr",
-  // build: {
-  //   chunkSizeWarningLimit: 3000,
-  // },
   server: {
     https: {
-      key: fs.readFileSync('./certs/localhost-key.pem'),  // เส้นทางไปยังคีย์ไฟล์
-      cert: fs.readFileSync('./certs/localhost.pem'),     // เส้นทางไปยังใบรับรอง
-    }
+      key: fs.readFileSync('./certs/localhost-key.pem'),  // ใส่คีย์สำหรับ HTTPS
+      cert: fs.readFileSync('./certs/localhost.pem'),     // ใส่ใบรับรองสำหรับ HTTPS
+    },
     // https: false
   }
-})
+});
