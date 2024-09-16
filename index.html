@@ -8,8 +8,8 @@
   <meta name="description" content="Metronic React Demo 1" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" />
   <title>SABUY CONNEXT</title>
-  <link rel="shortcut icon" href="media/logos/favicon.ico" />
-  <link rel="stylesheet" id="layout-styles-anchor" href="/splash-screen.css" />
+  <link rel="shortcut icon" href="/public/media/logos/favicon.ico" />
+  <link rel="stylesheet" id="layout-styles-anchor" href="/public/splash-screen.css" />
 </head>
 
 <body id="kt_body" class="page-loading">
@@ -34,9 +34,7 @@
 
   <!--begin::Loading markup-->
   <div id="splash-screen" class="splash-screen">
-    <img src="/media/logos/logo-sabuyconnext.svg" alt="SABUY CONNEXT TECH">
-    <!-- <img src="media/logos/keenthemes-dark.svg" class="dark-logo" alt="Keenthemes dark logo" /> -->
-    <!-- <img src="media/logos/keenthemes.svg" class="light-logo" alt="Keenthemes light logo" /> -->
+    <img src="/public/media/logos/logo-sabuyconnext.svg" alt="SABUY CONNEXT TECH">
     <div class="loader-wrapper">
       <span class="loader"></span>
       <span class="loading-text">Loading...</span>
@@ -45,6 +43,7 @@
   <!--end::Loading markup-->
 
   <div id="root-modals"></div>
+  <!-- สร้างไฟล์แล้วชี้ไปยังไฟล์ที่บันเดิลโดย Vite -->
   <script type="module" src="/src/main.tsx"></script>
 </body>
 

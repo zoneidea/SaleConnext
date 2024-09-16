@@ -74,7 +74,7 @@ const SalesCreateCust: React.FC = () => {
     const [showInstallAddress, setShowInstallAddress] = useState(false);
     const [showBillAddress, setShowBillAddress] = useState(false);
 
-    const handleCheckboxChange = (event) => {
+    const handleCheckboxChange = (event: any) => {
         const { name, checked } = event.target
         if (name === 'showInstallAddress') {
             setShowInstallAddress(checked)

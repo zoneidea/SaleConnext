@@ -3,30 +3,37 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import styled from 'styled-components';
 
-const StyledDatePicker = styled(DatePicker)`
-  font-family: 'Kanit', sans-serif;
-  padding: 10px;
-  margin-left: 10px;
-  margin-right: 10px; /* เว้นระยะห่างจากด้านขวา 10px */
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  
-  /* Full width with 10px space from right */
-  width: calc(100% - 20px); /* ลบ 20px จาก 100% (10px ด้านซ้าย + 10px ด้านขวา) */
+// สร้างคอมโพเนนต์ที่ห่อ DatePicker และใช้ styled-components
+const StyledWrapper = styled.div`
+  .custom-datepicker {
+    font-family: 'Kanit', sans-serif;
+    padding: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    width: calc(100% - 20px);
+  }
 `;
 
-export default function DatePickerValue() {
-  const [startDate, setStartDate] = useState(new Date());
+export function DatePickerValue() {
+  const [startDate, setStartDate] = useState<Date | null>(new Date());
+
+  const handleChange = (date: Date | null) => {
+    setStartDate(date);
+  };
 
   return (
-    <StyledDatePicker
-      selected={startDate}
-      onChange={(date) => setStartDate(date)}
-      dateFormat="dd/MM/yyyy"
-    />
+    <StyledWrapper>
+      <DatePicker
+        selected={startDate}
+        onChange={handleChange}
+        dateFormat="dd/MM/yyyy"
+        className="custom-datepicker"
+      />
+    </StyledWrapper>
   );
 }
-
 
 
 

@@ -3,34 +3,37 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import styled from 'styled-components';
 
-const StyledTimePicker = styled(DatePicker)`
-  font-family: 'Kanit', sans-serif;
-  padding: 10px;
-  margin-left: 10px;
-  margin-right: 10px; /* เว้นระยะห่างจากด้านขวา 10px */
-  border-radius: 4px;
-  border: 1px solid #ccc;
-
-  /* Full width with 10px space from right */
-  width: calc(100% - 20px); /* ลบ 20px จาก 100% (10px ด้านซ้าย + 10px ด้านขวา) */
+// กำหนดสไตล์สำหรับ TimePicker
+const StyledWrapper = styled.div`
+  .custom-datepicker {
+    font-family: 'Kanit', sans-serif;
+    padding: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    width: calc(100% - 20px);
+  }
 `;
 
-export default function TimePickerValue() {
-  const [selectedTime, setSelectedTime] = useState(new Date());
+export function TimePickerValue() {
+  const [selectedTime, setSelectedTime] = useState<Date | null>(new Date());
 
   return (
-    <StyledTimePicker
-      selected={selectedTime}
-      onChange={(date) => setSelectedTime(date)}
-      showTimeSelect
-      showTimeSelectOnly
-      timeIntervals={15}
-      timeCaption="Time"
-      dateFormat="h:mm aa"
-    />
+    <StyledWrapper>
+      <DatePicker
+        selected={selectedTime}
+        onChange={(date: Date | null) => setSelectedTime(date)}
+        showTimeSelect
+        showTimeSelectOnly
+        timeIntervals={15}
+        timeCaption="Time"
+        dateFormat="h:mm aa"
+        className="custom-datepicker" // ใช้ className เพื่อเพิ่มสไตล์
+      />
+    </StyledWrapper>
   );
 }
-
 
 
 // import * as React from 'react';

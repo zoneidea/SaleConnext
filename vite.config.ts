@@ -6,6 +6,12 @@ import path from 'path';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  build: {
+    rollupOptions: {
+      input: './index.html',  // ชี้ไปยังไฟล์ index.html
+    },
+    outDir: 'dist',  // กำหนดโฟลเดอร์ที่ไฟล์บันเดิลจะถูกสร้าง
+  },
   resolve: {
     alias: {
       '@': '/src',

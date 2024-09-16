@@ -8,14 +8,14 @@ const SalesPackage: React.FC = () => {
     const [showAdditionalCategory, setShowAdditionalCategory] = useState(false);
     const [showAdditionalProduct, setShowAdditionalProduct] = useState(false);
 
-    const handleCateOptionChange = (event) => {
+    const handleCateOptionChange = (event: any) => {
         const selectedValue = event.target.value;
         const isTurnOption = selectedValue === 'turn'; // เมื่อเลือก 'turn' จะเปิดฟิลด์เพิ่มเติม
         setShowAdditionalCategory(isTurnOption); // แสดงฟิลด์เพิ่มเติมสำหรับหมวดหมู่สินค้า
         setShowAdditionalProduct(false); // รีเซ็ตการแสดงฟิลด์เพิ่มเติมสำหรับสินค้า
     };
 
-    const handleProductOptionChange = (event) => {
+    const handleProductOptionChange = (event: any) => {
         const selectedValue = event.target.value;
         const isTurnOption = selectedValue === 'turn'; // เมื่อเลือก 'turn' จะเปิดฟิลด์เพิ่มเติม
         setShowAdditionalProduct(isTurnOption); // แสดงฟิลด์เพิ่มเติมสำหรับสินค้า

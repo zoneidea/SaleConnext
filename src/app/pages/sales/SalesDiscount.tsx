@@ -8,7 +8,7 @@ const SalesDiscount: React.FC = () => {
     const [showAdditionalFields, setShowAdditionalFields] = useState(false);
     const [labelText, setLabelText] = useState('ราคาสุทธิ');
 
-    const handleTurnOptionChange = (event) => {
+    const handleTurnOptionChange = (event: any) => {
         const isTurnOption = event.target.value === 'turn';
         setShowAdditionalFields(isTurnOption);
         setLabelText(isTurnOption ? 'ส่วนลด' : 'ราคาสุทธิ');

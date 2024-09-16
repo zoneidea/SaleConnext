@@ -3,8 +3,8 @@ import clsx from 'clsx'
 import { useState } from 'react'
 import { KTIcon, toAbsoluteUrl } from '../../../_metronic/helpers'
 import { Content } from '../../../_metronic/layout/components/content'
-import DatePickerValue from './components/dateTimePicker/DatePickerValue'
-import TimePickerValue from './components/dateTimePicker/TimePickerValue'
+import { DatePickerValue } from './components/dateTimePicker/DatePickerValue.js'
+import { TimePickerValue } from './components/dateTimePicker/TimePickerValue.js'
 
 const SalesAddCustInfo: React.FC = () => {
     return (
