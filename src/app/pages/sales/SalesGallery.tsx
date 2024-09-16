@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { KTIcon, toAbsoluteUrl } from '../../../_metronic/helpers'
 import { Content } from '../../../_metronic/layout/components/content'
-import DeviceSpecificGallery from './components/accessCam/DeviceSpecificGallery';
+// import DeviceSpecificGallery from './components/accessCam/DeviceSpecificGallery';
 
 
 const SalesGallery: React.FC = () => {

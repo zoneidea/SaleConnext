@@ -6,10 +6,15 @@ import path from 'path';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  // base: "/tsr",
-  build: {
-    chunkSizeWarningLimit: 3000,
+  resolve: {
+    alias: {
+      '@': '/src',
+    },
   },
+  // base: "/tsr",
+  // build: {
+  //   chunkSizeWarningLimit: 3000,
+  // },
   server: {
     https: {
       key: fs.readFileSync('./certs/localhost-key.pem'),  // เส้นทางไปยังคีย์ไฟล์
