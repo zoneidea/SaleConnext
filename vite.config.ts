@@ -11,6 +11,7 @@ export default defineConfig({
       input: './index.html',  // ชี้ไปยังไฟล์ index.html
     },
     outDir: 'dist',  // กำหนดโฟลเดอร์ที่ไฟล์บันเดิลจะถูกสร้าง
+    assetsDir: 'assets',
   },
   resolve: {
     alias: {
