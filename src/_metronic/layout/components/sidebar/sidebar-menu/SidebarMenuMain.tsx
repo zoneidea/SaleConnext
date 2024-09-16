@@ -29,7 +29,12 @@ const SidebarMenuMain = () => {
           hasBullet={true}
         />
         <SidebarMenuItem
-          to='/sale/order'
+          to='/sale/package'
+          title='เลือกแพ็คเกจ'
+          hasBullet={true}
+        />
+        <SidebarMenuItem
+          to='/sale/product'
           title='ตรวจสอบสินค้า'
           hasBullet={true}
         />

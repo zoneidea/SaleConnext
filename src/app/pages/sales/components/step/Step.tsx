@@ -10,15 +10,15 @@ const Step: React.FC = () => {
             data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
             className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
             <h1 className="page-heading d-flex text-gray-900 fw-bold fs-3 my-0 flex-column justify-content-center">
-              Step
+              ขั้นตอนการดำเนินการ
             </h1>
             <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
               <li className="breadcrumb-item text-muted">
                 <a className="text-muted text-hover-primary" href="/metronic8/react/demo1/sales/overview">
-                  Sales
+                  ระบบขาย
                 </a></li>
               <li className="breadcrumb-item"><span className="bullet bg-gray-500 w-5px h-2px"></span></li>
-              <li className="breadcrumb-item text-gray-900">Step</li>
+              <li className="breadcrumb-item text-gray-900">ขั้นตอนการดำเนินการ</li>
             </ul>
           </div>
         </div>
@@ -42,9 +42,9 @@ const Step: React.FC = () => {
                   {/* begin::Description */}
                   <div className='flex-grow-1'>
                     <div className='text-gray-800 text-hover-primary fw-bold fs-6'>
-                      Step 1
+                      ขั้นตอนที่ 1
                     </div>
-                    <span className='text-muted fw-semibold d-block'>ชื่อ step</span>
+                    <span className='text-muted fw-semibold d-block'>เลือกแพ็คเกจ</span>
                   </div>
                   {/* end::Description */}
                   {/* <span className='badge badge-light-success fs-8 fw-bold'>New</span> */}
@@ -66,9 +66,9 @@ const Step: React.FC = () => {
                   {/* begin::Description */}
                   <div className='flex-grow-1'>
                     <div className='text-gray-800 text-hover-primary fw-bold fs-6'>
-                      Step 2
+                      ขั้นตอนที่ 2
                     </div>
-                    <span className='text-muted fw-semibold d-block'>ชื่อ step</span>
+                    <span className='text-muted fw-semibold d-block'>ตรวจสอบสินค้า</span>
                   </div>
                   {/* end::Description */}
                   {/* <span className='badge badge-light-success fs-8 fw-bold'>New</span> */}
@@ -80,6 +80,12 @@ const Step: React.FC = () => {
           </div>
         </div>
         {/* End Card Body */}
+
+        <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10'>
+          <Link to='/sale/overview' className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
+            ย้อนกลับ
+          </Link>
+        </div>
 
       </Content>
     </>

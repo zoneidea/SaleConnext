@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { KTIcon, toAbsoluteUrl } from '../../../_metronic/helpers'
 import { Content } from '../../../_metronic/layout/components/content'
 
-const SalesOrder: React.FC = () => {
+const SalesProduct: React.FC = () => {
     return (
         <>
             <Content>
@@ -84,7 +84,7 @@ const SalesOrder: React.FC = () => {
                                             <a href='#' className='text-gray-800 fw-bold text-hover-primary fs-6'>
                                                 ชื่อสินค้า
                                             </a>
-                                            <span className='text-muted fw-semibold d-block pt-1'>Size: 87KB</span>
+                                            <span className='text-muted fw-semibold d-block pt-1'>เครื่องกรองน้ำ</span>
                                         </div>
                                     </div>
                                     {/* end::Title */}
@@ -96,7 +96,7 @@ const SalesOrder: React.FC = () => {
                 </div>
 
                 <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10'>
-                    <Link to='/sale/scanbarcode' className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
+                    <Link to='/sale/package' className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
                         ย้อนกลับ
                     </Link>
                     <Link to='/sale/statuscust' className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
@@ -110,4 +110,4 @@ const SalesOrder: React.FC = () => {
     )
 }
 
-export default SalesOrder
+export default SalesProduct

@@ -10,7 +10,7 @@ import { SalesWrapper } from '../pages/sales/SalesWrapper'
 
 const PrivateRoutes = () => {
   const SalesSatusCust = lazy(() => import('../pages/sales/SalesSatusCust'))
-  const SalesOrder = lazy(() => import('../pages/sales/SalesOrder'))
+  const SalesProduct = lazy(() => import('../pages/sales/SalesProduct'))
   const SalesCreateCust = lazy(() => import('../pages/sales/SalesCreateCust'))
   const SalesWaterMeas = lazy(() => import('../pages/sales/SalesWaterMeas'))
   const SalesHirePurchaseAgmt = lazy(() => import('../pages/sales/SalesHirePurchaseAgmt'))
@@ -22,6 +22,7 @@ const PrivateRoutes = () => {
   const Step = lazy(() => import('../pages/sales/components/step/Step'))
   const DeviceScanBarcode = lazy(() => import('../pages/sales/components/accessCam/DeviceScanBarcode'))
   const SalesDiscount = lazy(() => import('../pages/sales/SalesDiscount'))
+  const SalesPackage = lazy(() => import('../pages/sales/SalesPackage'))
 
   return (
     <Routes>
@@ -41,10 +42,18 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/order'
+          path='sale/package'
           element={
             <SuspensedView>
-              <SalesOrder />
+              <SalesPackage />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path='sale/product'
+          element={
+            <SuspensedView>
+              <SalesProduct />
             </SuspensedView>
           }
         />

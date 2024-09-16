@@ -9,7 +9,7 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status }) => {
   return (
     <>
       {/* begin::Item */}
-      <Link to='/sales/step'>
+      <Link to='/sale/step'>
         <div className='d-flex align-items-center bg-light-warning rounded p-5 mb-3 col-12'>
           {/* begin::Icon */}
           <span className='text-warning me-5'>
@@ -26,7 +26,7 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status }) => {
           {/* end::Title */}
           {/* begin::Lable */}
           <span className={`fw-bold py-1 ${status ? 'text-success' : 'text-danger'}`}>
-            {status ? 'complete' : 'pending'}
+            {status ? 'เสร็จสมบูรณ์' : 'กำลังดำเนินการ'}
           </span>
           {/* end::Lable */}
         </div>

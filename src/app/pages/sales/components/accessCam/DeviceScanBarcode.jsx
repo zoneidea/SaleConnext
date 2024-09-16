@@ -63,12 +63,12 @@ const DeviceScanBarcode = () => {
                 </>
             ) : (
                 <div className='fw-semibold fs-6 my-10 mx-10'>
-                    ฟีเจอร์สแกนบาร์โค้ด ไม่สามารถใช้บนอุปกรณ์ PC ได้
+                    ฟีเจอร์สแกนบาร์โค้ด ไม่สามารถใช้บนอุปกรณ์คอมพิวเตอร์ได้
                     <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10'>
                         <Link to='/sale/overview' className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
                             ย้อนกลับ
                         </Link>
-                        <Link to='/sale/order' className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
+                        <Link to='/sale/package' className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
                             ถัดไป
                         </Link>
                     </div>
