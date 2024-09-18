@@ -16,13 +16,15 @@ const PrivateRoutes = () => {
   const SalesHirePurchaseAgmt = lazy(() => import('../pages/sales/SalesHirePurchaseAgmt'))
   const SalesReceipt = lazy(() => import('../pages/sales/SalesReceipt'))
   const SalesAddCustInfo = lazy(() => import('../pages/sales/SalesAddCustInfo'))
-  const SalesPic = lazy(() => import('../pages/sales/SalesPic'))
-  const SalesGallery = lazy(() => import('../pages/sales/SalesGallery'))
-  const DeviceSpecificCamera = lazy(() => import('../pages/sales/components/accessCam/DeviceSpecificCamera'))
   const Step = lazy(() => import('../pages/sales/components/step/Step'))
-  const DeviceScanBarcode = lazy(() => import('../pages/sales/components/accessCam/DeviceScanBarcode'))
   const SalesDiscount = lazy(() => import('../pages/sales/SalesDiscount'))
   const SalesPackage = lazy(() => import('../pages/sales/SalesPackage'))
+
+  //กล้อง + รูป
+  const DeviceScanBarcode = lazy(() => import('../pages/sales/components/accessCam/DeviceScanBarcode'))
+  const SalesPhoto = lazy(() => import('../pages/sales/SalesPhoto'))
+  const DrawingMapGallery = lazy(() => import('../pages/sales/components/gallery/DrawingMapGallery'))
+  const TurnGallery = lazy(() => import('../pages/sales/components/gallery/TurnGallery'))
 
   return (
     <Routes>
@@ -98,30 +100,6 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/photo'
-          element={
-            <SuspensedView>
-              <SalesPic />
-            </SuspensedView>
-          }
-        />
-        <Route
-          path='sale/gallery'
-          element={
-            <SuspensedView>
-              <SalesGallery />
-            </SuspensedView>
-          }
-        />
-        <Route
-          path='sale/camera'
-          element={
-            <SuspensedView>
-              <DeviceSpecificCamera />
-            </SuspensedView>
-          }
-        />
-        <Route
           path='sale/step'
           element={
             <SuspensedView>
@@ -145,54 +123,30 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
-        {/* <Route
-          path='crafted/pages/profile/*'
+        <Route
+          path='sale/photo'
           element={
             <SuspensedView>
-              <ProfilePage />
+              <SalesPhoto />
             </SuspensedView>
           }
         />
         <Route
-          path='crafted/pages/wizards/*'
+          path='sale/drawing-map'
           element={
             <SuspensedView>
-              <WizardsPage />
+              <DrawingMapGallery />
             </SuspensedView>
           }
         />
         <Route
-          path='crafted/widgets/*'
+          path='sale/turn'
           element={
             <SuspensedView>
-              <WidgetsPage />
+              <TurnGallery />
             </SuspensedView>
           }
         />
-        <Route
-          path='crafted/account/*'
-          element={
-            <SuspensedView>
-              <AccountPage />
-            </SuspensedView>
-          }
-        />
-        <Route
-          path='apps/chat/*'
-          element={
-            <SuspensedView>
-              <ChatPage />
-            </SuspensedView>
-          }
-        />
-        <Route
-          path='apps/user-management/*'
-          element={
-            <SuspensedView>
-              <UsersPage />
-            </SuspensedView>
-          }
-        /> */}
         {/* Page Not Found */}
         <Route path='*' element={<Navigate to='/error/404' />} />
       </Route>

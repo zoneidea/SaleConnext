@@ -25,8 +25,8 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status }) => {
           </div>
           {/* end::Title */}
           {/* begin::Lable */}
-          <span className={`fw-bold py-1 ${status ? 'text-success' : 'text-danger'}`}>
-            {status ? 'เสร็จสมบูรณ์' : 'กำลังดำเนินการ'}
+          <span className={`fw-bold py-1 ${status === true ? 'text-success' : 'text-danger'}`}>
+            {status === true ? 'เสร็จสมบูรณ์' : 'กำลังดำเนินการ'}
           </span>
           {/* end::Lable */}
         </div>

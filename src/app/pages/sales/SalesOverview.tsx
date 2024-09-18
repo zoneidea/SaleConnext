@@ -51,7 +51,7 @@ const SalesOverview: React.FC = () => {
                     data-bs-toggle="tab"
                     href="#kt_tab_pane_2"
                   >
-                    รายการขายที่เสร็จสมบูรณ์
+                    รายการขายเสร็จสมบูรณ์
                   </a>
                 </li>
               </ul>
@@ -61,11 +61,11 @@ const SalesOverview: React.FC = () => {
                   id="kt_tab_pane_1"
                   role="tabpanel"
                 >
-                  {/* <SalesItemNumber /> */}
-                  {/* <SalesItemNumber /> */}
+                  <SalesItemNumber flase />
+                  <SalesItemNumber flase />
                 </div>
                 <div className="tab-pane fade" id="kt_tab_pane_2" role="tabpanel">
-                  {/* <SalesItemNumber /> */}
+                  <SalesItemNumber status />
                 </div>
               </div>
             </div>

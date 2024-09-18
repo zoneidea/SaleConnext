@@ -62,9 +62,11 @@ const DeviceScanBarcode = () => {
                     <p>{data}</p>
                 </>
             ) : (
-                <div className='fw-semibold fs-6 my-10 mx-10'>
-                    ฟีเจอร์สแกนบาร์โค้ด ไม่สามารถใช้บนอุปกรณ์คอมพิวเตอร์ได้
-                    <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10'>
+                <>
+                    <div className='alert alert-warning fw-semibold fs-6 my-10 mx-10'>
+                        ฟีเจอร์ถ่ายรูป ไม่สามารถใช้บนอุปกรณ์คอมพิวเตอร์ได้ โปรดใช้งานบนอุปกรณ์มือถือหรือแท็บเล็ต
+                    </div>
+                    <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10 mx-10'>
                         <Link to='/sale/overview' className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
                             ย้อนกลับ
                         </Link>
@@ -72,7 +74,7 @@ const DeviceScanBarcode = () => {
                             ถัดไป
                         </Link>
                     </div>
-                </div>
+                </>
             )}
         </div>
     );

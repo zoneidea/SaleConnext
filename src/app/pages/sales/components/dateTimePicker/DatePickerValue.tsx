@@ -12,7 +12,8 @@ const StyledWrapper = styled.div`
     margin-right: 10px;
     border-radius: 4px;
     border: 1px solid #ccc;
-    width: calc(100% - 20px);
+    width: 100%; /* ตั้งความกว้างเต็ม */
+    box-sizing: border-box; /* ทำให้ padding ไม่เกินขอบของคอมโพเนนต์ */
   }
 `;
 

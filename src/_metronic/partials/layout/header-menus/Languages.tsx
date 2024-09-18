@@ -8,32 +8,32 @@ const languages = [
   {
     lang: 'en',
     name: 'English',
-    flag: toAbsoluteUrl('media/flags/united-states.svg'),
+    // flag: toAbsoluteUrl('media/flags/united-states.svg'),
   },
   {
     lang: 'zh',
     name: 'Mandarin',
-    flag: toAbsoluteUrl('media/flags/china.svg'),
+    // flag: toAbsoluteUrl('media/flags/china.svg'),
   },
   {
     lang: 'es',
     name: 'Spanish',
-    flag: toAbsoluteUrl('media/flags/spain.svg'),
+    // flag: toAbsoluteUrl('media/flags/spain.svg'),
   },
   {
     lang: 'ja',
     name: 'Japanese',
-    flag: toAbsoluteUrl('media/flags/japan.svg'),
+    // flag: toAbsoluteUrl('media/flags/japan.svg'),
   },
   {
     lang: 'de',
     name: 'German',
-    flag: toAbsoluteUrl('media/flags/germany.svg'),
+    // flag: toAbsoluteUrl('media/flags/germany.svg'),
   },
   {
     lang: 'fr',
     name: 'French',
-    flag: toAbsoluteUrl('media/flags/france.svg'),
+    // flag: toAbsoluteUrl('media/flags/france.svg'),
   },
 ]
 
@@ -54,7 +54,7 @@ const Languages: FC = () => {
             {currentLanguage?.name}{' '}
             <img
               className='w-15px h-15px rounded-1 ms-2'
-              src={currentLanguage?.flag}
+              // src={currentLanguage?.flag}
               alt='metronic'
             />
           </span>
@@ -75,7 +75,7 @@ const Languages: FC = () => {
               className={clsx('menu-link d-flex px-5', {active: l.lang === currentLanguage?.lang})}
             >
               <span className='symbol symbol-20px me-4'>
-                <img className='rounded-1' src={l.flag} alt='metronic' />
+                {/* <img className='rounded-1' src={l.flag} alt='metronic' /> */}
               </span>
               {l.name}
             </a>
