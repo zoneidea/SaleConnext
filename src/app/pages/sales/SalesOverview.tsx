@@ -61,8 +61,8 @@ const SalesOverview: React.FC = () => {
                   id="kt_tab_pane_1"
                   role="tabpanel"
                 >
-                  <SalesItemNumber flase />
-                  <SalesItemNumber flase />
+                  <SalesItemNumber status />
+                  <SalesItemNumber status />
                 </div>
                 <div className="tab-pane fade" id="kt_tab_pane_2" role="tabpanel">
                   <SalesItemNumber status />

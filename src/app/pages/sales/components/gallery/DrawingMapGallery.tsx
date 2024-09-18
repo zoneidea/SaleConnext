@@ -6,7 +6,7 @@ import { drawingMapStore } from '../../../../modules/stores/galleryStore/drawing
 const DrawingMapGallery: React.FC = () => {
     const { images, addImage, removeImage, loadImages } = drawingMapStore(); // ดึงข้อมูลและ actions จาก zustand
     const [currentImage, setCurrentImage] = useState<string | null>(null);
-    const [cameraPermission, setCameraPermission] = useState<string | null>(null); // สำหรับเก็บสถานะการขอ camera permission
+    const [cameraPermission, setCameraPermission] = useState<PermissionState | null>(null); // สำหรับเก็บสถานะการขอ camera permission
 
     const isIOS: boolean = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isAndroid: boolean = /Android/.test(navigator.userAgent);
@@ -105,7 +105,7 @@ const DrawingMapGallery: React.FC = () => {
                     <div className='d-flex flex-column flex-md-row justify-content-between mb-10 mx-5'>
                         <button className='btn btn-success w-100 w-md-auto align-self-center'
                             style={{ padding: '10px', border: '1px solid #ccc', display: 'inline-block' }}
-                            onClick={saveImageToDevice}
+                            onClick={() => currentImage && saveImageToDevice(currentImage, 'photo')}
                         >
                             บันทึกรูปภาพลงเครื่อง
                         </button>
