@@ -3,7 +3,7 @@ import {FC, useState, useEffect, createContext, useContext, Dispatch, SetStateAc
 import {LayoutSplashScreen} from '../../../../_metronic/layout/core'
 import {AuthModel, UserModel} from './_models'
 import * as authHelper from './AuthHelpers'
-import {getUserByToken} from './_requests'
+// import {getUserByToken} from './_requests'
 import {WithChildren} from '../../../../_metronic/helpers'
 
 type AuthContextProps = {
@@ -60,12 +60,12 @@ const AuthInit: FC<WithChildren> = ({children}) => {
   useEffect(() => {
     const requestUser = async (apiToken: string) => {
       try {
-        if (!currentUser) {
-          const {data} = await getUserByToken(apiToken)
-          if (data) {
-            setCurrentUser(data)
-          }
-        }
+        // if (!currentUser) {
+        //   const {data} = await getUserByToken(apiToken)
+        //   if (data) {
+        //     setCurrentUser(data)
+        //   }
+        // }
       } catch (error) {
         console.error(error)
         if (currentUser) {
@@ -76,8 +76,8 @@ const AuthInit: FC<WithChildren> = ({children}) => {
       }
     }
 
-    if (auth && auth.api_token) {
-      requestUser(auth.api_token)
+    if (auth) {
+      // requestUser(auth.api_token)
     } else {
       logout()
       setShowSplashScreen(false)

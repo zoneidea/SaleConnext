@@ -1,6 +1,20 @@
+// export interface AuthModel {
+//   api_token: string
+//   refreshToken?: string
+// }
+
 export interface AuthModel {
-  api_token: string
-  refreshToken?: string
+  EmpId: string,
+  EmpName: string,
+  PositionName: string,
+  PositionId: string,
+  DivisionId: string,
+  DivisionName: string,
+  DepartId: string,
+  DepartName: string,
+  CompanyId: string,
+  CompanyName: string,
+  Employee_Structure?: string
 }
 
 export interface UserAddressModel {
