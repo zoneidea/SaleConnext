@@ -19,7 +19,7 @@ import {
 import { ToolbarWrapper } from '../../../_metronic/layout/components/toolbar'
 import { Content } from '../../../_metronic/layout/components/content'
 
-const DashboardPage: FC = () => (
+export const DashboardPage: FC = () => (
   <>
     <ToolbarWrapper />
     <Content>

@@ -45,3 +45,41 @@ const AppRoutes: FC = () => {
 }
 
 export {AppRoutes}
+
+
+// import { FC } from 'react';
+// import { Routes, Route, BrowserRouter, Navigate } from 'react-router-dom';
+// import { PrivateRoutes } from './PrivateRoutes';
+// import { ErrorsPage } from '../modules/errors/ErrorsPage';
+// import { Logout, AuthPage } from '../modules/auth';
+// import { App } from '../App';
+
+// const AppRoutes: FC = () => {
+//   // สมมติว่าคุณตรวจสอบ currentUser สำเร็จแล้ว
+//   const currentUser = true; // แก้ไขให้ใช้ข้อมูลจริงของผู้ใช้
+
+//   return (
+//     <BrowserRouter basename="/">
+//       <Routes>
+//         <Route element={<App />}>
+//           <Route path='error/*' element={<ErrorsPage />} />
+//           <Route path='logout' element={<Logout />} />
+//           {currentUser ? (
+//             <>
+//               <Route path='/*' element={<PrivateRoutes />} />
+//               <Route index element={<Navigate to='/dashboard' />} />
+//             </>
+//           ) : (
+//             <>
+//               <Route path='auth/*' element={<AuthPage />} />
+//               <Route path='*' element={<Navigate to='/auth' />} />
+//             </>
+//           )}
+//         </Route>
+//       </Routes>
+//     </BrowserRouter>
+//   );
+// };
+
+// export { AppRoutes };
+

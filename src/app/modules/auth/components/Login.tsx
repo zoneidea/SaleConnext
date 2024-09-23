@@ -185,198 +185,10 @@
 // }
 
 
-// import { useState } from 'react'
-// import * as Yup from 'yup'
-// import clsx from 'clsx'
-// import { Link } from 'react-router-dom'
-// import { useFormik } from 'formik'
-// import { getUserByToken, login } from '../core/_requests'
-// import { useAuth } from '../core/Auth'
-
-// const loginSchema = Yup.object().shape({
-//   email: Yup.string()
-//     .email('Wrong email format')
-//     .min(3, 'Minimum 3 symbols')
-//     .max(50, 'Maximum 50 symbols')
-//     .required('Email is required'),
-//   password: Yup.string()
-//     .min(3, 'Minimum 3 symbols')
-//     .max(50, 'Maximum 50 symbols')
-//     .required('Password is required'),
-// })
-
-// const initialValues = {
-//   email: 'admin@demo.com',
-//   password: 'demo',
-// }
-
-// export function Login() {
-//   const [loading, setLoading] = useState(false)
-//   const { saveAuth, setCurrentUser } = useAuth()
-
-//   // ฟังก์ชันรวมสำหรับการขอ permissions
-//   const requestPermissions = async () => {
-//     try {
-//       // ขอ permission กล้อง
-//       await navigator.mediaDevices.getUserMedia({ video: true })
-//       console.log('Camera access granted')
-
-//       // ขอ permission ตำแหน่ง (GPS)
-//       const locationPermission = await navigator.permissions.query({ name: 'geolocation' })
-//       if (locationPermission.state !== 'granted') {
-//         alert('โปรดอนุญาตการเข้าถึงตำแหน่ง (GPS)')
-//       }
-
-//       // ขอ permission เขียนไฟล์ (บนอุปกรณ์ที่รองรับ)
-//       const filePermission = await navigator.permissions.query({ name: 'persistent-storage' as PermissionName })
-//       if (filePermission.state !== 'granted') {
-//         alert('โปรดอนุญาตการเข้าถึงไฟล์')
-//       }
-
-//     } catch (error) {
-//       console.error('Error requesting permissions:', error)
-//       alert('อุปกรณ์ของคุณไม่รองรับการขอ permissions ทั้งหมด')
-//     }
-//   }
-
-//   const formik = useFormik({
-//     initialValues,
-//     validationSchema: loginSchema,
-//     onSubmit: async (values, { setStatus, setSubmitting }) => {
-//       setLoading(true)
-//       try {
-//         const { data: auth } = await login(values.email, values.password)
-//         saveAuth(auth)
-//         const { data: user } = await getUserByToken(auth.api_token)
-//         setCurrentUser(user)
-
-//         // เมื่อ login เสร็จ ให้เรียกขอ permission
-//         await requestPermissions();
-
-//         setLoading(false)
-//       } catch (error) {
-//         console.error(error)
-//         saveAuth(undefined)
-//         setStatus('The login details are incorrect')
-//         setSubmitting(false)
-//         setLoading(false)
-//       }
-//     },
-//   })
-
-//   return (
-//     <form
-//       className='form w-100'
-//       onSubmit={formik.handleSubmit}
-//       noValidate
-//       id='kt_login_signin_form'
-//     >
-//       <div className='text-center mb-11'>
-//         <h1 className='text-gray-900 fw-bolder mb-3'>Sign In</h1>
-//       </div>
-
-//       {formik.status ? (
-//         <div className='mb-lg-15 alert alert-danger'>
-//           <div className='alert-text font-weight-bold'>{formik.status}</div>
-//         </div>
-//       ) : (
-//         <div className='mb-10 bg-light-info p-8 rounded'>
-//           <div className='text-info'>
-//             Use account <strong>admin@demo.com</strong> and password <strong>demo</strong> to
-//             continue.
-//           </div>
-//         </div>
-//       )}
-
-//       <div className='fv-row mb-8'>
-//         <label className='form-label fs-6 fw-bolder text-gray-900'>Email</label>
-//         <input
-//           placeholder='Email'
-//           {...formik.getFieldProps('email')}
-//           className={clsx(
-//             'form-control bg-transparent',
-//             { 'is-invalid': formik.touched.email && formik.errors.email },
-//             {
-//               'is-valid': formik.touched.email && !formik.errors.email,
-//             }
-//           )}
-//           type='email'
-//           name='email'
-//           autoComplete='off'
-//         />
-//         {formik.touched.email && formik.errors.email && (
-//           <div className='fv-plugins-message-container'>
-//             <span role='alert'>{formik.errors.email}</span>
-//           </div>
-//         )}
-//       </div>
-
-//       <div className='fv-row mb-3'>
-//         <label className='form-label fw-bolder text-gray-900 fs-6 mb-0'>Password</label>
-//         <input
-//           type='password'
-//           autoComplete='off'
-//           {...formik.getFieldProps('password')}
-//           className={clsx(
-//             'form-control bg-transparent',
-//             {
-//               'is-invalid': formik.touched.password && formik.errors.password,
-//             },
-//             {
-//               'is-valid': formik.touched.password && !formik.errors.password,
-//             }
-//           )}
-//         />
-//         {formik.touched.password && formik.errors.password && (
-//           <div className='fv-plugins-message-container'>
-//             <div className='fv-help-block'>
-//               <span role='alert'>{formik.errors.password}</span>
-//             </div>
-//           </div>
-//         )}
-//       </div>
-
-//       <div className='d-flex flex-stack flex-wrap gap-3 fs-base fw-semibold mb-8'>
-//         <div />
-//         <Link to='/auth/forgot-password' className='link-primary'>
-//           Forgot Password ?
-//         </Link>
-//       </div>
-
-//       <div className='d-grid mb-10'>
-//         <button
-//           type='submit'
-//           id='kt_sign_in_submit'
-//           className='btn btn-primary'
-//           disabled={formik.isSubmitting || !formik.isValid}
-//         >
-//           {!loading && <span className='indicator-label'>Continue</span>}
-//           {loading && (
-//             <span className='indicator-progress' style={{ display: 'block' }}>
-//               Please wait...
-//               <span className='spinner-border spinner-border-sm align-middle ms-2'></span>
-//             </span>
-//           )}
-//         </button>
-//       </div>
-
-//       <div className='text-gray-500 text-center fw-semibold fs-6'>
-//         Not a Member yet?{' '}
-//         <Link to='/auth/registration' className='link-primary'>
-//           Sign up
-//         </Link>
-//       </div>
-//     </form>
-//   )
-// }
-
-
-
-
 import { useState } from 'react'
 import * as Yup from 'yup'
 import clsx from 'clsx'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom' // นำเข้า useNavigate
 import { useFormik } from 'formik'
 import { login } from '../core/_requests'
 import { useAuth } from '../core/Auth'
@@ -389,13 +201,14 @@ const loginSchema = Yup.object().shape({
 })
 
 const initialValues = {
-  username: 'username',
-  password: 'password',
+  username: '082517',
+  password: 'Aa87654321',
 }
 
 export function Login() {
+  const { saveAuth, setCurrentUser } = useAuth() // นำ setCurrentUser มาใช้
   const [loading, setLoading] = useState(false)
-  // const { saveAuth, setCurrentUser } = useAuth()
+  const navigate = useNavigate() // สร้าง navigate function สำหรับการเปลี่ยนเส้นทาง
 
   // ฟังก์ชันรวมสำหรับการขอ permissions
   const requestPermissions = async () => {
@@ -425,29 +238,39 @@ export function Login() {
   const formik = useFormik({
     initialValues,
     validationSchema: loginSchema,
-    onSubmit: async (values, { setStatus, setSubmitting }) => {
+    onSubmit: async (values, { setSubmitting }) => {
       setLoading(true)
       try {
-        const { data: auth } = await login(values.username, values.password)
-        console.log('auth', auth);
-        
-        // saveAuth(auth)
-        // const { data: user } = await getUserByToken(auth.api_token)
-        // setCurrentUser(user)
+        // เรียกฟังก์ชัน login ที่ส่งข้อมูล username และ password ไปยัง API
+        const response = await login(values.username, values.password);
+        if (response.data) {
+          // บันทึกข้อมูลการล็อกอิน
+          saveAuth(response.data); // อัปเดต auth ที่ AuthContext
 
-        // เมื่อ login เสร็จ ให้เรียกขอ permission
-        await requestPermissions();
+          // ตัวอย่าง response.data.user ที่เป็นข้อมูลผู้ใช้จาก API
+          const user = {
+            id: response.data.userId,
+            username: values.username,
+            ...response.data.userDetails // หรือข้อมูลเพิ่มเติมจาก response
+          }
 
-        setLoading(false)
+          setCurrentUser(user); // อัปเดต currentUser ที่ AuthContext
+
+          // ตั้งค่าสถานะว่า Logged in และนำทางไปยัง path /dashboard
+          setLoading(false);
+          navigate('/dashboard'); // ใช้ navigate เพื่อนำทางไปที่ /dashboard
+          
+          // เมื่อ login เสร็จ ให้เรียกขอ permission
+          await requestPermissions();
+        }
       } catch (error) {
-        console.error(error)
-        // saveAuth(undefined)
-        setStatus('The login details are incorrect')
-        setSubmitting(false)
-        setLoading(false)
+        console.error('Login failed', error);
+        setSubmitting(false);
+        setLoading(false);
+        alert('Login failed, please check your credentials'); // แจ้งเตือนหาก login ล้มเหลว
       }
     },
-  })
+  });
 
   return (
     <form
@@ -467,7 +290,7 @@ export function Login() {
       ) : (
         <div className='mb-10 bg-light-info p-8 rounded'>
           <div className='text-info'>
-            Use account <strong>admin@demo.com</strong> and password <strong>demo</strong> to
+            Use account <strong>082517</strong> and password <strong>Aa87654321</strong> to
             continue.
           </div>
         </div>
@@ -476,7 +299,7 @@ export function Login() {
       <div className='fv-row mb-8'>
         <label className='form-label fs-6 fw-bolder text-gray-900'>Username</label>
         <input
-          placeholder='username'
+          placeholder='Username'
           {...formik.getFieldProps('username')}
           className={clsx(
             'form-control bg-transparent',
@@ -521,13 +344,6 @@ export function Login() {
         )}
       </div>
 
-      <div className='d-flex flex-stack flex-wrap gap-3 fs-base fw-semibold mb-8'>
-        <div />
-        <Link to='/auth/forgot-password' className='link-primary'>
-          Forgot Password ?
-        </Link>
-      </div>
-
       <div className='d-grid mb-10'>
         <button
           type='submit'
@@ -543,13 +359,6 @@ export function Login() {
             </span>
           )}
         </button>
-      </div>
-
-      <div className='text-gray-500 text-center fw-semibold fs-6'>
-        Not a Member yet?{' '}
-        <Link to='/auth/registration' className='link-primary'>
-          Sign up
-        </Link>
       </div>
     </form>
   )
