@@ -1,21 +1,21 @@
-export interface AuthModel {
-  api_token: string
-  refreshToken?: string
-}
+// export interface AuthModel {
+//   api_token: string
+//   refreshToken?: string
+// }
 
-export interface AuthModel {
-  EmpId: string,
-  EmpName: string,
-  PositionName: string,
-  PositionId: string,
-  DivisionId: string,
-  DivisionName: string,
-  DepartId: string,
-  DepartName: string,
-  CompanyId: string,
-  CompanyName: string,
-  Employee_Structure?: string
-}
+// export interface AuthModel {
+//   EmpId: string,
+//   EmpName: string,
+//   PositionName: string,
+//   PositionId: string,
+//   DivisionId: string,
+//   DivisionName: string,
+//   DepartId: string,
+//   DepartName: string,
+//   CompanyId: string,
+//   CompanyName: string,
+//   Employee_Structure?: string[]
+// }
 
 export interface UserAddressModel {
   addressLine: string
@@ -74,7 +74,7 @@ export interface UserModel {
   timeZone?: string
   website?: 'https://keenthemes.com'
   emailSettings?: UserEmailSettingsModel
-  auth?: AuthModel
+  // auth?: AuthModel
   communication?: UserCommunicationModel
   address?: UserAddressModel
   socialNetworks?: UserSocialNetworksModel

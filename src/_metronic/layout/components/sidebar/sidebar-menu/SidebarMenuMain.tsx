@@ -78,6 +78,11 @@ const SidebarMenuMain = () => {
           title='ข้อมูลลูกค้าเพิ่มเติม'
           hasBullet={true}
         />
+        <SidebarMenuItem
+          to='/sale/productstock'
+          title='คลังสินค้า'
+          hasBullet={true}
+        />
       </SidebarMenuItemWithSub>
 
       <SidebarMenuItem to='/sale/overview' icon='handcart' title='ระบบสั่งซื้อสินค้า' fontIcon='bi-layers' />

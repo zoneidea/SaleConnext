@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { KTIcon, toAbsoluteUrl } from '../../../../../_metronic/helpers';
-import { drawingMapStore } from '../../../../modules/stores/galleryStore/drawingMapStore'; // Import store
+import { drawingMapStore } from '../../../../modules/stores/sales/galleryStore/drawingMapStore'; // Import store
 
 const DrawingMapGallery: React.FC = () => {
     const { images, addImage, removeImage, loadImages } = drawingMapStore(); // ดึงข้อมูลและ actions จาก zustand

@@ -1,12 +1,11 @@
 // import { AuthModel, UserModel } from "./_models";
-
-
+// 
 // export const GET_USER_BY_ACCESSTOKEN_URL = `${API_URL}/verify_token`;
 
 // Server should return AuthModel
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_APP_API_URL;
+const API_URL = import.meta.env.VITE_APP_API_THIENSURAT;
 export const LOGIN_URL = `${API_URL}/Login`;
 
 // ฟังก์ชัน login
@@ -15,7 +14,7 @@ export function login(username: string, password: string) {
   console.log('password', password);
 
   // สร้าง FormData
-  const formData = new FormData();
+  const formData = new FormData(); 
   formData.append('username', username);
   formData.append('password', password);
 

@@ -4,7 +4,7 @@ import { useState, ChangeEvent } from 'react'
 import { KTIcon, toAbsoluteUrl } from '../../../_metronic/helpers'
 import { Content } from '../../../_metronic/layout/components/content'
 
-import useStore from '../../modules/stores/custStore/custStore'
+import useStore from '../../modules/stores/sales/custStore/custStore'
 
 import { useForm } from "react-hook-form"
 import * as Yup from 'yup';

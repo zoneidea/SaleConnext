@@ -184,7 +184,6 @@
 //   )
 // }
 
-
 import { useState } from 'react'
 import * as Yup from 'yup'
 import clsx from 'clsx'
@@ -192,6 +191,7 @@ import { Link, useNavigate } from 'react-router-dom' // นำเข้า useNa
 import { useFormik } from 'formik'
 import { login } from '../core/_requests'
 import { useAuth } from '../core/Auth'
+import { KTIcon, toAbsoluteUrl } from '../../../../_metronic/helpers'
 
 const loginSchema = Yup.object().shape({
   username: Yup.string()
@@ -238,38 +238,37 @@ export function Login() {
   const formik = useFormik({
     initialValues,
     validationSchema: loginSchema,
-    onSubmit: async (values, { setSubmitting }) => {
-      setLoading(true)
+    onSubmit: async (values, { setSubmitting, setErrors }) => {
+      setLoading(true);
       try {
-        // เรียกฟังก์ชัน login ที่ส่งข้อมูล username และ password ไปยัง API
         const response = await login(values.username, values.password);
-        if (response.data) {
-          // บันทึกข้อมูลการล็อกอิน
-          saveAuth(response.data); // อัปเดต auth ที่ AuthContext
+        console.log(`Response Login: ${response.data.status}, ${response.data.message}`);
 
-          // ตัวอย่าง response.data.user ที่เป็นข้อมูลผู้ใช้จาก API
+        if (response.data.status === 500) {
+          setErrors({
+            username: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง.',
+            password: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง.',
+          });
+          setSubmitting(false);
+          setLoading(false);
+        } else {
+          saveAuth(response.data);
           const user = {
             id: response.data.userId,
             username: values.username,
-            ...response.data.userDetails // หรือข้อมูลเพิ่มเติมจาก response
-          }
-
-          setCurrentUser(user); // อัปเดต currentUser ที่ AuthContext
-
-          // ตั้งค่าสถานะว่า Logged in และนำทางไปยัง path /dashboard
+            ...response.data.userDetails,
+          };
+          setCurrentUser(user);
           setLoading(false);
-          navigate('/dashboard'); // ใช้ navigate เพื่อนำทางไปที่ /dashboard
-          
-          // เมื่อ login เสร็จ ให้เรียกขอ permission
+          navigate('/dashboard');
           await requestPermissions();
         }
-      } catch (error) {
-        console.error('Login failed', error);
+      } catch (error: any) {
+        console.log(`error`, error);
         setSubmitting(false);
         setLoading(false);
-        alert('Login failed, please check your credentials'); // แจ้งเตือนหาก login ล้มเหลว
       }
-    },
+    }
   });
 
   return (
@@ -280,9 +279,12 @@ export function Login() {
       id='kt_login_signin_form'
     >
       <div className='text-center mb-11'>
-        <h1 className='text-gray-900 fw-bolder mb-3'>Sign In</h1>
+        <img
+          alt='Logo'
+          src={toAbsoluteUrl('media/logos/logo-sabuyconnext.svg')}
+          className='h-50px'
+        />
       </div>
-
       {formik.status ? (
         <div className='mb-lg-15 alert alert-danger'>
           <div className='alert-text font-weight-bold'>{formik.status}</div>
@@ -290,31 +292,32 @@ export function Login() {
       ) : (
         <div className='mb-10 bg-light-info p-8 rounded'>
           <div className='text-info'>
-            Use account <strong>082517</strong> and password <strong>Aa87654321</strong> to
-            continue.
+            Use username <strong>082517</strong> and password <strong>Aa87654321</strong> to continue.
           </div>
         </div>
       )}
 
-      <div className='fv-row mb-8'>
-        <label className='form-label fs-6 fw-bolder text-gray-900'>Username</label>
+      <div className='fv-row mb-3'>
+        <label className='form-label fw-bolder text-gray-900 fs-6 mb-0'>Username</label>
         <input
-          placeholder='Username'
+          type='text'
+          autoComplete='off'
           {...formik.getFieldProps('username')}
           className={clsx(
             'form-control bg-transparent',
-            { 'is-invalid': formik.touched.username && formik.errors.username },
+            {
+              'is-invalid': formik.touched.username && formik.errors.username,
+            },
             {
               'is-valid': formik.touched.username && !formik.errors.username,
             }
           )}
-          type='text'
-          name='username'
-          autoComplete='off'
         />
         {formik.touched.username && formik.errors.username && (
           <div className='fv-plugins-message-container'>
-            <span role='alert'>{formik.errors.username}</span>
+            <div className='fv-help-block'>
+              <span role='alert'>{formik.errors.username}</span>
+            </div>
           </div>
         )}
       </div>
@@ -344,14 +347,14 @@ export function Login() {
         )}
       </div>
 
-      <div className='d-grid mb-10'>
+      <div className='d-grid my-10'>
         <button
           type='submit'
           id='kt_sign_in_submit'
           className='btn btn-primary'
           disabled={formik.isSubmitting || !formik.isValid}
         >
-          {!loading && <span className='indicator-label'>Continue</span>}
+          {!loading && <span className='indicator-label'>เข้าสู่ระบบ</span>}
           {loading && (
             <span className='indicator-progress' style={{ display: 'block' }}>
               Please wait...

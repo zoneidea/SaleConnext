@@ -2,12 +2,6 @@ import { FC } from 'react'
 import { KTIcon } from '../../../../../_metronic/helpers'
 
 type Props = {
-    // contractNumber: string
-    // company: string
-    // installationDate: string
-    // product: string
-    // model: string
-    // address: string
     icon: string
     title: string
     description: string

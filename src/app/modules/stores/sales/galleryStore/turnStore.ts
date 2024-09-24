@@ -1,4 +1,4 @@
-import create from 'zustand';
+import { create } from 'zustand';
 
 // สร้าง DrawingMap Store ที่เก็บรูปภาพแยกกัน
 interface turnStore {

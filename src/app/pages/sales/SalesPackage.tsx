@@ -1,15 +1,96 @@
 import { Link } from 'react-router-dom'
+import axios from 'axios';
 import clsx from 'clsx'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { KTIcon, toAbsoluteUrl } from '../../../_metronic/helpers'
 import { Content } from '../../../_metronic/layout/components/content'
+import { CardProduct } from './components/cards/CardProduct'
+
+import { useAuth } from '../../modules/auth/core/Auth'
+import { useCategoryStore } from '../../modules/stores/sales/productStore/productStore'
 
 const SalesPackage: React.FC = () => {
+    const { auth } = useAuth(); // ดึง auth ออกจาก useAuth()
+    const [categories, setCategories] = useState<any[]>([]); // สร้าง state สำหรับเก็บ categories
+    const [selectedCategoryId, setSelectedCategoryId] = useState<string>(''); // สร้าง state สำหรับเก็บ CATEGORIES_ID
+    console.log(`selectedCategoryId:`, selectedCategoryId);
+
+    const [product, setProduct] = useState<any[]>([]);
+
+    const {
+        EmpId, setEmpId,
+        DivisionId, setDivisionId,
+        DepartId, setDepartId,
+        DepartGroup, setDepartGroup,
+        TeamSale, setTeamSale,
+    } = useCategoryStore();
+
+    const API_URL_POST_CATEGORIES = import.meta.env.VITE_APP_API_POST_CATEGORIES;
+    const CATEGORIES_URL = `${API_URL_POST_CATEGORIES}/Categories`;
+
+    const API_URL_GET_PRODUCT = import.meta.env.VITE_APP_API_GET_PRODUCT;
+
+    //product API URL จะถูกสร้างเมื่อค่า EmpId, TeamSale, และ selectCategoryId ถูกตั้งค่า
+    // const getProductUrl = () => `${API_URL_GET_PRODUCT}/empid=${EmpId}&teamSale=${TeamSale}&categoryId=${selectedCategoryId}`;
+    const getProductUrl = () => `${API_URL_GET_PRODUCT}/empid=A62712&teamSale=C11AF-2&categoryId=102`;
+
+    //categories
+    useEffect(() => {
+        const postData = async () => {
+            try {
+                const response = await axios.post(CATEGORIES_URL,
+                    { EmpId, DivisionId, DepartId, DepartGroup, TeamSale }, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
+                console.log('Response Categories:', response.data.data); // ตรวจสอบข้อมูลที่ได้
+
+                // ตรวจสอบว่าข้อมูลที่ได้รับเป็น array หรือไม่ ถ้าไม่ใช่ array ให้ตั้งค่าเป็น array เปล่า
+                const data = Array.isArray(response.data.data) ? response.data.data : [];
+                setCategories(data); // ตั้งค่า categories ให้เป็น array
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+
+            setEmpId(auth.data[0].EmpId);
+            setDivisionId(auth.data[0].DivisionId);
+            setDepartId(auth.data[0].DepartId);
+            setDepartGroup(auth.data[0].DepartGroup);
+            setTeamSale(auth.data[0].TeamSale)
+        };
+        postData();
+    }, [EmpId, DivisionId, DepartId, DepartGroup, TeamSale, auth]);
+
+    //product
+    useEffect(() => {
+        const getData = async () => {
+            if (!selectedCategoryId) return; // หยุดการทำงานหากไม่มี selectedCategoryId
+
+            try {
+                const response = await axios.get(getProductUrl(), {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                console.log('Response Product:', response.data.data);
+
+                // const data = Array.isArray(response.data.data) ? response.data.data : [];
+                // setProduct(data);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+        getData();
+    }, [categories, selectedCategoryId]); // เพิ่ม selectedCategoryId เป็น dependency
+
     const [showAdditionalCategory, setShowAdditionalCategory] = useState(false);
     const [showAdditionalProduct, setShowAdditionalProduct] = useState(false);
 
     const handleCateOptionChange = (event: any) => {
         const selectedValue = event.target.value;
+        setSelectedCategoryId(selectedValue); // อัปเดต selectCategoryId ด้วยค่า CATEGORIES_ID ที่ถูกเลือก
+
         const isTurnOption = selectedValue === 'turn'; // เมื่อเลือก 'turn' จะเปิดฟิลด์เพิ่มเติม
         setShowAdditionalCategory(isTurnOption); // แสดงฟิลด์เพิ่มเติมสำหรับหมวดหมู่สินค้า
         setShowAdditionalProduct(false); // รีเซ็ตการแสดงฟิลด์เพิ่มเติมสำหรับสินค้า
@@ -79,13 +160,18 @@ const SalesPackage: React.FC = () => {
                                                     onChange={handleCateOptionChange}
                                                 >
                                                     <option value=''>เลือกหมวดหมู่สินค้า...</option>
-                                                    <option value='turn'>เครื่องกรองน้ำ</option>
+                                                    {categories.map((item, index) => (
+                                                        <option key={index} value={item.CATEGORIES_ID}>
+                                                            {item.CATEGORIES_NAME_TH}
+                                                        </option>
+                                                    ))}
                                                 </select>
                                             </div>
                                         </div>
 
                                         {/* ฟิลด์เพิ่มเติมที่แสดงเมื่อเลือก "หมวดหมู่สินค้า" */}
-                                        {showAdditionalCategory && (
+                                        {/* <CardProduct /> */}
+                                        {/* {showAdditionalCategory && (
                                             <div className='row mb-6'>
                                                 <div className='col-lg-6 mb-3'>
                                                     <label className='form-label required fw-bold fs-6'>สินค้า</label>
@@ -98,7 +184,7 @@ const SalesPackage: React.FC = () => {
                                                     </select>
                                                 </div>
                                             </div>
-                                        )}
+                                        )} */}
 
                                         {/* ฟิลด์เพิ่มเติมที่แสดงเมื่อเลือก "สินค้า" */}
                                         {showAdditionalProduct && (
@@ -141,4 +227,4 @@ const SalesPackage: React.FC = () => {
     )
 }
 
-export default SalesPackage
+export default SalesPackage;

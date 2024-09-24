@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { KTIcon, toAbsoluteUrl } from '../../../../../_metronic/helpers';
-import { turnStore } from '../../../../modules/stores/galleryStore/turnStore'
+import { turnStore } from '../../../../modules/stores/sales/galleryStore/turnStore'
 
 const TurnGallery: React.FC = () => {
     const { images, addImage, removeImage, loadImages } = turnStore(); // ดึงข้อมูลและ actions จาก zustand
