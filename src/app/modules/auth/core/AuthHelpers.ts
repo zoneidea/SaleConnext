@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {AuthModel} from './_models'
+// import {AuthModel} from './_models'
 
 const AUTH_LOCAL_STORAGE_KEY = 'kt-auth-react-v'
-const getAuth = (): AuthModel | undefined => {
+const getAuth = (): any | undefined => {
   if (!localStorage) {
     return
   }
@@ -13,7 +13,7 @@ const getAuth = (): AuthModel | undefined => {
   }
 
   try {
-    const auth: AuthModel = JSON.parse(lsValue) as AuthModel
+    const auth: any = JSON.parse(lsValue) as any
     if (auth) {
       // You can easily check auth_token expiration also
       return auth
@@ -23,7 +23,7 @@ const getAuth = (): AuthModel | undefined => {
   }
 }
 
-const setAuth = (auth: AuthModel) => {
+const setAuth = (auth: any) => {
   if (!localStorage) {
     return
   }
