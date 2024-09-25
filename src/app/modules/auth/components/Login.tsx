@@ -184,14 +184,18 @@
 //   )
 // }
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
 import * as Yup from 'yup'
 import clsx from 'clsx'
-import { Link, useNavigate } from 'react-router-dom' // นำเข้า useNavigate
+import { Link, useNavigate } from 'react-router-dom' 
 import { useFormik } from 'formik'
 import { login } from '../core/_requests'
 import { useAuth } from '../core/Auth'
 import { KTIcon, toAbsoluteUrl } from '../../../../_metronic/helpers'
+
+//useStore
+import { useCategoryStore, useFetchCategoryStore } from '../../../modules/stores/sales/packageStore/packageStore';
 
 const loginSchema = Yup.object().shape({
   username: Yup.string()
@@ -206,32 +210,67 @@ const initialValues = {
 }
 
 export function Login() {
-  const { saveAuth, setCurrentUser } = useAuth() // นำ setCurrentUser มาใช้
-  const [loading, setLoading] = useState(false)
-  const navigate = useNavigate() // สร้าง navigate function สำหรับการเปลี่ยนเส้นทาง
+  const API_URL_POST_CATEGORIES = import.meta.env.VITE_APP_API_POST_CATEGORIES;
+  const CATEGORIES_URL = `${API_URL_POST_CATEGORIES}/Categories`;
+
+  const {
+    EmpId, setEmpId,
+    DivisionId, setDivisionId,
+    DepartId, setDepartId,
+    DepartGroup, setDepartGroup,
+    TeamSale, setTeamSale,
+  } = useCategoryStore();
+
+  const { fetchCategory, setFetchCategory } = useFetchCategoryStore()
+
+  // ฟังก์ชันเพื่อโพสต์ข้อมูลและอัปเดต store
+  const postData = async () => {
+    try {
+      const response = await axios.post(CATEGORIES_URL, {
+        EmpId, DivisionId, DepartId, DepartGroup, TeamSale 
+      }, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      const data = Array.isArray(response.data.data) ? response.data.data : [];
+      console.log(`data Category after login: `, data);
+      
+      setFetchCategory(data); // อัปเดตข้อมูลลงใน Zustand store
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+
+    // อัปเดต store จากข้อมูล auth
+    setEmpId(auth.data[0].EmpId);
+    setDivisionId(auth.data[0].DivisionId);
+    setDepartId(auth.data[0].DepartId);
+    setDepartGroup(auth.data[0].DepartGroup);
+    setTeamSale(auth.data[0].TeamSale);
+  };
+
+  const { auth, saveAuth, setCurrentUser } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   // ฟังก์ชันรวมสำหรับการขอ permissions
   const requestPermissions = async () => {
     try {
-      // ขอ permission กล้อง
       await navigator.mediaDevices.getUserMedia({ video: true })
       console.log('Camera access granted')
 
-      // ขอ permission ตำแหน่ง (GPS)
-      const locationPermission = await navigator.permissions.query({ name: 'geolocation' })
+      const locationPermission = await navigator.permissions.query({ name: 'geolocation' });
       if (locationPermission.state !== 'granted') {
-        alert('โปรดอนุญาตการเข้าถึงตำแหน่ง (GPS)')
+        alert('โปรดอนุญาตการเข้าถึงตำแหน่ง (GPS)');
       }
 
-      // ขอ permission เขียนไฟล์ (บนอุปกรณ์ที่รองรับ)
-      const filePermission = await navigator.permissions.query({ name: 'persistent-storage' as PermissionName })
+      const filePermission = await navigator.permissions.query({ name: 'persistent-storage' as PermissionName });
       if (filePermission.state !== 'granted') {
-        alert('โปรดอนุญาตการเข้าถึงไฟล์')
+        alert('โปรดอนุญาตการเข้าถึงไฟล์');
       }
-
     } catch (error) {
-      console.error('Error requesting permissions:', error)
-      alert('อุปกรณ์ของคุณไม่รองรับการขอ permissions ทั้งหมด')
+      console.error('Error requesting permissions:', error);
+      alert('อุปกรณ์ของคุณไม่รองรับการขอ permissions ทั้งหมด');
     }
   }
 
@@ -261,7 +300,12 @@ export function Login() {
           setCurrentUser(user);
           setLoading(false);
           navigate('/dashboard');
+
+          // เรียกใช้ requestPermissions หลังจากล็อกอินสำเร็จ
           await requestPermissions();
+
+          // เรียกใช้ postData หลังจากล็อกอินสำเร็จ
+          await postData();
         }
       } catch (error: any) {
         console.log(`error`, error);

@@ -14,14 +14,14 @@ interface CategoryStore {
     setTeamSale: (team: string) => void;
 }
 
-interface ProductStore {
-    EmpId: string;
-    TeamSale: string;
-    CategoryId: string
+interface FetchCategoryStore {
+    fetchCategory: any[];
+    setFetchCategory: (fetchCategory: any[]) => void;
+}
 
-    setEmpId: (id: string) => void;
-    setTeamSaleId: (id: string) => void;
-    setCategoryId: (id: string) => void;
+interface ProductStore {
+    product: any[];
+    setProduct: (product: any[]) => void;
 }
 
 export const useCategoryStore = create<CategoryStore>((set) => ({
@@ -38,12 +38,13 @@ export const useCategoryStore = create<CategoryStore>((set) => ({
     setTeamSale: (team) => set({ TeamSale: team }),
 }));
 
-// export const useProductStore = create<ProductStore>((set) => ({
-//     EmpId: '',
-//     TeamSale: '',
-//     CategoryId: '',
+export const useProductStore = create<ProductStore>((set) => ({
+    product: [],
+    setProduct: (product: any[]) => set({ product }),
+}));
 
-//     setEmpId: (id) => set({ EmpId: id }),
-//     setTeamSaleId: (id) => set({ TeamSale: id }),
-//     setCategoryId: (id) => set({ CategoryId: id }),
-// }));
+export const useFetchCategoryStore = create<FetchCategoryStore>((set) => ({
+    fetchCategory: [],
+    setFetchCategory: (fetchCategory: any[]) => set({ fetchCategory }),
+}));
+

@@ -115,7 +115,7 @@ const SalesCreateCust: React.FC = () => {
                                     className='accordion-button fs-4 fw-bold collapsed border-0 h-50px pt-5 rounded-top px-lg-15 px-7'
                                     data-bs-toggle='collapse'
                                     data-bs-target='#kt_accordion_1_body_1'
-                                    aria-expanded='false'
+                                    aria-expanded='true'
                                     aria-controls='kt_accordion_1_body_1'
                                     style={{ color: 'white', cursor: 'pointer', backgroundColor: '#3777bc' }}
                                 >
@@ -124,7 +124,7 @@ const SalesCreateCust: React.FC = () => {
                             </h2>
                             <div
                                 id='kt_accordion_1_body_1'
-                                className='accordion-collapse collapse'
+                                className='accordion-collapse collapse show'
                                 aria-labelledby='kt_accordion_1_header_1'
                                 data-bs-parent='#kt_accordion_1'
                             >
@@ -262,7 +262,7 @@ const SalesCreateCust: React.FC = () => {
                                         className='accordion-button fs-4 fw-bold collapsed border-0 h-50px pt-5 rounded-top px-lg-15 px-7'
                                         data-bs-toggle='collapse'
                                         data-bs-target='#kt_accordion_2_body_2'
-                                        aria-expanded='false'
+                                        aria-expanded='true'
                                         aria-controls='kt_accordion_2_body_2'
                                         style={{ color: 'white', cursor: 'pointer', backgroundColor: '#3777bc' }}
                                     >
@@ -271,7 +271,7 @@ const SalesCreateCust: React.FC = () => {
                                 </h2>
                                 <div
                                     id='kt_accordion_2_body_2'
-                                    className='accordion-collapse collapse'
+                                    className='accordion-collapse collapse show'
                                     aria-labelledby='kt_accordion_2_header_2'
                                     data-bs-parent='#kt_accordion_2'
                                 >
@@ -435,7 +435,7 @@ const SalesCreateCust: React.FC = () => {
                                             className='accordion-button fs-4 fw-bold collapsed border-0 h-50px pt-5 rounded-top px-lg-15 px-7'
                                             data-bs-toggle='collapse'
                                             data-bs-target='#kt_accordion_3_body_3'
-                                            aria-expanded='false'
+                                            aria-expanded='true'
                                             aria-controls='kt_accordion_3_body_3'
                                             style={{ color: 'white', cursor: 'pointer', backgroundColor: '#3777bc' }}
                                         >
@@ -444,7 +444,7 @@ const SalesCreateCust: React.FC = () => {
                                     </h2>
                                     <div
                                         id='kt_accordion_3_body_3'
-                                        className='accordion-collapse collapse'
+                                        className='accordion-collapse collapse show'
                                         aria-labelledby='kt_accordion_3_header_3'
                                         data-bs-parent='#kt_accordion_3'
                                     >
@@ -586,7 +586,7 @@ const SalesCreateCust: React.FC = () => {
                                             className='accordion-button fs-4 fw-bold collapsed border-0 h-50px pt-5 rounded-top px-lg-15 px-7'
                                             data-bs-toggle='collapse'
                                             data-bs-target='#kt_accordion_4_body_4'
-                                            aria-expanded='false'
+                                            aria-expanded='true'
                                             aria-controls='kt_accordion_4_body_4'
                                             style={{ color: 'white', cursor: 'pointer', backgroundColor: '#3777bc' }}
                                         >
@@ -595,7 +595,7 @@ const SalesCreateCust: React.FC = () => {
                                     </h2>
                                     <div
                                         id='kt_accordion_4_body_4'
-                                        className='accordion-collapse collapse'
+                                        className='accordion-collapse collapse show'
                                         aria-labelledby='kt_accordion_4_header_4'
                                         data-bs-parent='#kt_accordion_4'
                                     >
