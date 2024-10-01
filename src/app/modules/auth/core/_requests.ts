@@ -1,9 +1,7 @@
-// import { AuthModel, UserModel } from "./_models";
-// 
-// export const GET_USER_BY_ACCESSTOKEN_URL = `${API_URL}/verify_token`;
+import { AuthModel, UserModel } from "./_models";
+import axios from "axios";
 
 // Server should return AuthModel
-import axios from "axios";
 
 const API_URL = import.meta.env.VITE_APP_API_THIENSURAT;
 export const LOGIN_URL = `${API_URL}/Login`;

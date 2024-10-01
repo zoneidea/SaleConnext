@@ -24,7 +24,7 @@ const SalesOverview: React.FC = () => {
           </div>
 
           <div className='d-flex justify-content-end mb-5 mt-10'>
-            <Link to='/sale/scanbarcode' className='btn btn-primary w-100 w-md-100 w-lg-auto'>
+            <Link to='/sale/package' className='btn btn-primary w-100 w-md-100 w-lg-auto'>
               เพิ่มรายการ
             </Link>
           </div>

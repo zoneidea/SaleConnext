@@ -58,3 +58,74 @@
         display: none;
     }
 }
+
+// sidebar.scss
+
+// // ปกติ Sidebar จะแสดงผลบน Desktop และซ่อนใน Mobile โดยใช้ media queries
+// @include media-breakpoint-up(lg) {
+//     .app-sidebar-toggle {
+//         box-shadow: var(--#{$prefix}app-sidebar-base-toggle-btn-box-shadow) !important; 
+//         background-color: var(--#{$prefix}app-sidebar-base-toggle-btn-bg-color) !important; 
+//         border: 1px solid var(--#{$prefix}app-sidebar-base-border-color) !important;
+
+//         .active i {
+//             transform: rotateZ(0deg) !important;
+//         }        
+//     }
+
+//     [dir="rtl"] {
+//         .app-sidebar-toggle {
+//             i {
+//                 transform: rotateZ(180deg);
+//             }
+
+//             &.active i {
+//                 transform: rotateZ(0deg) !important;
+//             }
+//         }
+//     }
+        
+//     .app-sidebar-logo {
+//         height: calc(var(--#{$prefix}app-header-height) + 1px); 
+//         display: flex;
+//         align-items: center;
+//         justify-content: space-between;        
+//         position: relative;
+//         flex-shrink: 0;
+//     }
+        
+//     .app-sidebar-menu {
+//         .menu  {
+//             // Root
+//             > .menu-item {
+//                 margin-left: 0.115rem;  
+
+//                 > .menu-link {
+//                     > .menu-title {
+//                         font-weight: $font-weight-bold;
+//                         font-size: 1.1rem;
+//                     }
+//                 }    
+//             }
+//         }    
+//     }
+// }
+
+// // Tablet & mobile modes
+// @include media-breakpoint-down(lg) {
+//     .app-sidebar-logo {
+//         display: none;
+//     }
+
+//     // ซ่อน Sidebar โดยค่าเริ่มต้นใน Mobile
+//     .app-sidebar {
+//         transform: translateX(-100%); /* ซ่อน sidebar */
+//         transition: transform 0.3s ease;
+//     }
+
+//     // เมื่อเปิด Sidebar ใน Mobile
+//     .sidebar-opened .app-sidebar {
+//         transform: translateX(0); /* แสดง sidebar */
+//         transition: transform 0.3s ease;
+//     }
+// }

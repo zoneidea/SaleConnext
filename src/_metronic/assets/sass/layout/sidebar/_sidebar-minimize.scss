@@ -62,3 +62,77 @@
         }
     }
 }
+
+
+// // Sidebar Minimize Mode
+// .app-sidebar-logo-minimize {
+//     display: none;
+// }
+
+// // Sidebar footer
+// .app-sidebar-footer {
+//     .btn-custom {
+//         .btn-icon {
+//             display: none;
+//         }
+//     }
+// }
+
+// // Desktop sidebar minimize mode
+// @include app-layout-minimize(app-sidebar) {
+//     .app-sidebar-logo {
+//         .app-sidebar-logo-default {
+//             display: none;
+//         }
+
+//         .app-sidebar-logo-minimize {
+//             display: inline-block;
+//         }
+//     }
+
+//     .app-sidebar-wrapper {
+//         width: var(--#{$prefix}app-sidebar-width-actual); 
+//     }
+
+//     .app-sidebar-menu {
+//         .menu-content,
+//         .menu-title {
+//             opacity: 0;
+//             @include app-layout-transition(opacity);
+//         }
+
+//         .menu-item.show > .menu-sub {
+//             height: 0;
+//             overflow: hidden;
+//             @include app-layout-transition(height);
+//         }
+//     }
+
+//     .app-sidebar-footer {
+//         .btn-custom {
+//             padding-left: 0 !important;
+//             padding-right: 0 !important;
+
+//             .btn-label {
+//                 width: 0;
+//                 display: none;
+//             }	
+
+//             .btn-icon {
+//                 width: auto;
+//                 display: block;
+//             }
+//         }
+//     }
+// }
+
+// // เพิ่มโค้ดสำหรับเปิด/ปิด Sidebar ในโหมด minimize
+// .sidebar-opened .app-sidebar {
+//     transform: translateX(0); /* แสดง sidebar */
+//     transition: transform 0.3s ease;
+// }
+
+// .app-sidebar {
+//     transform: translateX(-100%); /* ซ่อน sidebar */
+//     transition: transform 0.3s ease;
+// }

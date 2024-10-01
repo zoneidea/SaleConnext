@@ -1,7 +1,7 @@
-// export interface AuthModel {
-//   api_token: string
-//   refreshToken?: string
-// }
+export interface AuthModel {
+  api_token: string
+  refreshToken?: string
+}
 
 // export interface AuthModel {
 //   EmpId: string,

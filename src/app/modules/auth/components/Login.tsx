@@ -188,8 +188,9 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 import * as Yup from 'yup'
 import clsx from 'clsx'
-import { Link, useNavigate } from 'react-router-dom' 
+import { Link, useNavigate } from 'react-router-dom'
 import { useFormik } from 'formik'
+// import { login, getUserByToken } from '../core/_requests'
 import { login } from '../core/_requests'
 import { useAuth } from '../core/Auth'
 import { KTIcon, toAbsoluteUrl } from '../../../../_metronic/helpers'
@@ -210,6 +211,8 @@ const initialValues = {
 }
 
 export function Login() {
+
+
   const API_URL_POST_CATEGORIES = import.meta.env.VITE_APP_API_POST_CATEGORIES;
   const CATEGORIES_URL = `${API_URL_POST_CATEGORIES}/Categories`;
 
@@ -222,20 +225,21 @@ export function Login() {
   } = useCategoryStore();
 
   const { fetchCategory, setFetchCategory } = useFetchCategoryStore()
+  useEffect(() => {
+    console.log(`fetchCategory after login`, fetchCategory);
+  }, [fetchCategory]);
 
   // ฟังก์ชันเพื่อโพสต์ข้อมูลและอัปเดต store
   const postData = async () => {
     try {
       const response = await axios.post(CATEGORIES_URL, {
-        EmpId, DivisionId, DepartId, DepartGroup, TeamSale 
+        EmpId, DivisionId, DepartId, DepartGroup, TeamSale
       }, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
       const data = Array.isArray(response.data.data) ? response.data.data : [];
-      console.log(`data Category after login: `, data);
-      
       setFetchCategory(data); // อัปเดตข้อมูลลงใน Zustand store
     } catch (error) {
       console.error('Error fetching data:', error);
