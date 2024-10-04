@@ -169,10 +169,10 @@ const SalesHirePurchaseAgmt: React.FC = () => {
         {/* End Card Body */}
 
         <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10'>
-          <Link to='/sale/createcust' className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
+          <Link to='/sale/createcust' className='btn btn-secondary w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'>
             ย้อนกลับ
           </Link>
-          <Link to='/sale/watermeas' className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
+          <Link to='/sale/watermeas' className='btn btn-primary w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'>
             ดำเนินการชำระเงิน
           </Link>
         </div>

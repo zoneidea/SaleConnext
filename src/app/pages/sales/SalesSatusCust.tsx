@@ -27,7 +27,7 @@ const SalesSatusCust: FC = () => {
   return (
     <>
       <Content>
-        <div className='d-flex justify-content-between align-items-center mb-7 mt-1 mt-lg-0'>
+        <div className='d-flex justify-content-between align-items-center mb-7 mt-10 mt-lg-0'>
           <div id="kt_page_title" data-kt-swapper="true" data-kt-swapper-mode="prepend"
             data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
             className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
@@ -104,10 +104,10 @@ const SalesSatusCust: FC = () => {
         </div>
 
         <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10'>
-          <Link to='/sale/package' className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
+          <Link to='/sale/package' className='btn btn-secondary w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'>
             ย้อนกลับ
           </Link>
-          <button className='btn btn-primary w-100 w-md-auto align-self-center'
+          <button className='btn btn-primary w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'
             onClick={handleNextClick}
           >
             ถัดไป

@@ -1,13 +1,13 @@
-import {useEffect} from 'react'
-import {Outlet, useLocation} from 'react-router-dom'
-import {HeaderWrapper} from './components/header'
-import {RightToolbar} from '../partials/layout/RightToolbar'
-import {ScrollTop} from './components/scroll-top'
-import {FooterWrapper} from './components/footer'
-import {Sidebar} from './components/sidebar'
-import {ActivityDrawer, DrawerMessenger, InviteUsers, UpgradePlan} from '../partials'
-import {PageDataProvider} from './core'
-import {reInitMenu} from '../helpers'
+import { useEffect } from 'react'
+import { Outlet, useLocation } from 'react-router-dom'
+import { HeaderWrapper } from './components/header'
+import { RightToolbar } from '../partials/layout/RightToolbar'
+import { ScrollTop } from './components/scroll-top'
+import { FooterWrapper } from './components/footer'
+import { Sidebar } from './components/sidebar'
+import { ActivityDrawer, DrawerMessenger, InviteUsers, UpgradePlan } from '../partials'
+import { PageDataProvider } from './core'
+import { reInitMenu } from '../helpers'
 
 const MasterLayout = () => {
   const location = useLocation()
@@ -42,9 +42,9 @@ const MasterLayout = () => {
       {/* <InviteUsers />
       <UpgradePlan /> */}
       {/* end:: Modals */}
-      {/* <ScrollTop /> */}
+      <ScrollTop />
     </PageDataProvider>
   )
 }
 
-export {MasterLayout}
+export { MasterLayout }

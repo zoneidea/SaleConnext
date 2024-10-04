@@ -1,15 +1,17 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Content } from '../../../_metronic/layout/components/content';
 import { useAuth } from '../../modules/auth/core/Auth';
+import { useUUIDStore, useSaveProductStore } from '../../modules/stores/stepsStore';
 
 //useStore
 import {
     useCategoryStore,
     useFetchCategoryStore,
     useProductStore,
-    usePackageStore
+    usePackageStore,
+    useConditionsCheckHistoryStore
 } from '../../modules/stores/sales/packageStore/packageStore';
 
 //component
@@ -17,14 +19,30 @@ import { CardProduct } from './components/cards/CardProduct';
 import { CardPackage } from './components/cards/CardPackage';
 
 const SalesPackage: React.FC = () => {
+    const { REFNO } = useUUIDStore();
+
+    const navigate = useNavigate(); // ใช้ useNavigate สำหรับการเปลี่ยนเส้นทาง
+
     const { auth } = useAuth();
     const [categories, setCategories] = useState<any[]>([]);
     const [packageType, setPackageType] = useState<any[]>([]);
     const [packageList, setPackageList] = useState<any[]>([]);
+    console.log(`packageList: `, packageList); 
 
     const [selectedCategoryId, setSelectedCategoryId] = useState<any>('');
+
     const [selectedProductIndex, setSelectedProductIndex] = useState<number | null>(null);
+    const [selectedItemCode, setSelectedItemCode] = useState<string | null>(null);
+    const [selectedItemDescription, setSelectedItemDescription] = useState<string | null>(null);
+    const [selectedDescriptionEN, setSelectedDescriptionEN] = useState<string | null>(null);
+    const [selectedDescriptionTH, setSelectedDescriptionTH] = useState<string | null>(null);
+    const [selectedSerialNo, setSelectedSerialNo] = useState<string | null>(null);
+    const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+    const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
+    const [selectedTransDate, setSelectedTransDate] = useState<string | null>(null);
+
     const [selectedPackageTypeId, setSelectedPackageTypeId] = useState<number | null>(null);
+
     const [selectedPackageModel, setSelectedPackageModel] = useState<number | null>(null);
 
     const {
@@ -36,25 +54,55 @@ const SalesPackage: React.FC = () => {
     } = useCategoryStore();
 
     const { fetchCategory } = useFetchCategoryStore();
+
     const { product, setProduct } = useProductStore();
+    // console.log(`product: `, product);
+
     const { ItemID, setItemID, PackageTypeID, setPackageTypeID } = usePackageStore();
+
+    const { Model, setModel, } = useConditionsCheckHistoryStore();
+
+    const { PRODUCT, SETPRODUCT, } = useSaveProductStore();
+
+    const SaveProductData = useMemo(() => [
+        {
+            EmpId: EmpId || '',
+            TeamSale: TeamSale || '',
+            SaleCode: "C000000000000",
+            ItemCode: selectedItemCode || '',
+            ItemDescription: selectedItemDescription || '',
+            CategoriesId: selectedCategoryId || '',
+            DescriptionEN: selectedDescriptionEN || '',
+            DescriptionTH: selectedDescriptionTH || '',
+            SerialNo: selectedSerialNo || '',
+            Status: selectedStatus || '',
+            Branch: selectedBranch || '',
+            TransDate: selectedTransDate || '',
+            Package: [],
+        },
+    ], [EmpId, TeamSale, selectedItemCode, selectedItemDescription, selectedCategoryId,
+        selectedDescriptionEN, selectedDescriptionTH, selectedSerialNo,
+        selectedStatus, selectedBranch, selectedTransDate]);
 
     const API_URL_POST_CATEGORIES = import.meta.env.VITE_APP_API_POST_CATEGORIES;
     const CATEGORIES_URL = `${API_URL_POST_CATEGORIES}/Categories`;
 
-    const API_URL_GET_PRODUCT = import.meta.env.VITE_APP_API_GET_PRODUCT;
-    const getProductUrl = () => `${API_URL_GET_PRODUCT}/empid=${EmpId}&teamSale=${TeamSale}&categoryId=${selectedCategoryId}`;
+    const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
+    const getProductUrl = () => `${API_URL_MONGO}/Product/GetStock?empid=${EmpId}&teamSale=${TeamSale}&categoryId=${selectedCategoryId}`;
+    const SAVEPRODUCTPACKAGE = `${API_URL_MONGO}/Contract/saveProductPackage`;
 
     const API_URL_GET_PACKAGE = import.meta.env.VITE_APP_API_GET_PACKAGE;
     const PACKAGE_URL = `${API_URL_GET_PACKAGE}/PackageType`;
     const POST_PACKAGE_URL = `${API_URL_GET_PACKAGE}/PackageList`;
+
+    const API_URL_POST_CONDITIONSCHECKHISTORY = import.meta.env.VITE_APP_API_POST_CONDITIONSCHECKHISTORY
 
     // สร้าง ref สำหรับส่วนแพ็คเกจ
     const packageSectionRef = useRef<HTMLDivElement>(null);
 
     // log เฉพาะเมื่อ selectedCategoryId หรือ selectedCardIndex หรือ selectedPackageTypeId เปลี่ยนแปลง
     useEffect(() => {
-        console.log(fetchCategory, fetchCategory);
+        console.log(`fetchCategory: `, fetchCategory);
     }, [fetchCategory]);
 
     console.log('selectedCategoryId: ', selectedCategoryId);
@@ -66,7 +114,8 @@ const SalesPackage: React.FC = () => {
     useEffect(() => {
         const postData = async () => {
             try {
-                const response = await axios.post(CATEGORIES_URL, { EmpId, DivisionId, DepartId, DepartGroup, TeamSale }, {
+                const response = await axios.post(CATEGORIES_URL,
+                    { EmpId, DivisionId, DepartId, DepartGroup, TeamSale }, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     },
@@ -128,7 +177,8 @@ const SalesPackage: React.FC = () => {
     useEffect(() => {
         const postData = async () => {
             try {
-                const response = await axios.post(POST_PACKAGE_URL, { EmpId, DivisionId, DepartId, DepartGroup, TeamSale, ItemID, PackageTypeID }, {
+                const response = await axios.post(POST_PACKAGE_URL,
+                    { EmpId, DivisionId, DepartId, DepartGroup, TeamSale, ItemID, PackageTypeID }, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     },
@@ -150,20 +200,45 @@ const SalesPackage: React.FC = () => {
         postData();
     }, [EmpId, DivisionId, DepartId, DepartGroup, TeamSale, ItemID, PackageTypeID]);
 
+    useEffect(() => {
+        console.log("SaveProductData:", SaveProductData);
+        if (JSON.stringify(SaveProductData) !== JSON.stringify(PRODUCT)) {
+            console.log("Updating product in store...");
+            SETPRODUCT(SaveProductData);
+        }
+    }, [SaveProductData, PRODUCT, SETPRODUCT]);
+
+    useEffect(() => {
+        if (selectedPackageTypeId !== null && packageSectionRef.current) {
+            packageSectionRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [selectedPackageTypeId]);
+
     const handleCateOptionChange = (event: any) => {
         const value = event.target.value;
         setSelectedCategoryId(value);
 
-        if (selectedCategoryId === null) {
-            setSelectedProductIndex(null);
-            setSelectedPackageTypeId(null);
-            setSelectedPackageModel(null);
-        }
+        // ล้างข้อมูล product ทันทีเมื่อเลือกหมวดหมู่ใหม่
+        setProduct([]);
+
+        // ล้างค่าที่เลือกสำหรับ product, packageType, และ packageModel
+        setSelectedProductIndex(null);
+        setSelectedPackageTypeId(null);
+        setSelectedPackageModel(null);
     };
 
     const handleCardProductClick = (index: number) => {
         setSelectedProductIndex(index);
-        if (selectedCategoryId === null) {
+        setSelectedItemCode(product[index].ItemCode);
+        setSelectedItemDescription(product[index].ItemDescription);
+        setSelectedDescriptionEN(product[index].DescriptionEN);
+        setSelectedDescriptionTH(product[index].DescriptionTH);
+        setSelectedSerialNo(product[index].SerialNo);
+        setSelectedStatus(product[index].Status);
+        setSelectedBranch(product[index].Branch);
+        setSelectedTransDate(product[index].TransDate);
+
+        if (selectedCategoryId === '') {
             setSelectedProductIndex(null);
             setSelectedPackageTypeId(null);
             setSelectedPackageModel(null);
@@ -173,7 +248,7 @@ const SalesPackage: React.FC = () => {
     //เปลี่ยนสไตล์เป็น success เมื่อเลือกปุ่ม package และเลื่อนลงมายังส่วนแพ็คเกจ
     const handlePackageTypeClick = (index: number) => {
         setSelectedPackageTypeId(index);
-        if (selectedCategoryId === null) {
+        if (selectedCategoryId === '') {
             setSelectedProductIndex(null);
             setSelectedPackageTypeId(null);
             setSelectedPackageModel(null);
@@ -192,16 +267,58 @@ const SalesPackage: React.FC = () => {
         }
     };
 
+    // POST บันทึก step ลง mongo && ConditionsCheckHistory
+    const handleNextClick = async () => {
+        try {
+            const response = await axios.post(SAVEPRODUCTPACKAGE,
+                {
+                    REFNO,
+                    PRODUCT,
+                    STATUS: "DRAFT"
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+            const result = response.data;
+            console.log(`Result from saveProductPackage API: `, result);
+
+            // ตรวจสอบ response
+            if (result.message === 'SUCCESS') {
+                // อัปเดตข้อมูล PRODUCT ใน Zustand store
+                SETPRODUCT(result.data);
+                navigate('/sale/statuscust');
+            } else if (result.message === 'FAILED') {
+                navigate('/sale/discount');
+            }
+        } catch (error) {
+            console.error('Error saving product package:', error);
+        }
+    };
+
     return (
         <>
             <Content>
                 <div className='d-flex justify-content-between align-items-center mb-7 mt-10 mt-lg-0'>
-                    <div className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
+                    <div id="kt_page_title" data-kt-swapper="true" data-kt-swapper-mode="prepend"
+                        data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
+                        className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
                         <h1 className="page-heading d-flex text-gray-900 fw-bold fs-3 my-0 flex-column justify-content-center">
                             เลือกแพ็คเกจ
                         </h1>
+                        <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
+                            <li className="breadcrumb-item text-muted">
+                                <a className="text-muted text-hover-primary" href="/metronic8/react/demo1/sales/overview">
+                                    ระบบขาย
+                                </a></li>
+                            <li className="breadcrumb-item"><span className="bullet bg-gray-500 w-5px h-2px"></span></li>
+                            <li className="breadcrumb-item text-gray-900">เลือกแพ็คเกจ</li>
+                        </ul>
                     </div>
                 </div>
+                <p>เลขที่ขาย: {REFNO}</p>
 
                 <div className='accordion mb-10' id='kt_accordion_1'>
                     <div className='accordion-item mb-10'>
@@ -322,12 +439,20 @@ const SalesPackage: React.FC = () => {
                 </div>
 
                 <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10'>
-                    <Link to='/sale/overview' className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
+                    <button
+                        className='btn btn-secondary w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'
+                        onClick={() => navigate('/sale/overview')}
+                    >
                         ย้อนกลับ
-                    </Link>
-                    <Link to='/sale/statuscust' className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
-                        ถัดไป
-                    </Link>
+                    </button>
+                    <button
+                        className={`btn btn-primary w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px 
+                            ${product.length === 0 || selectedProductIndex === null ? 'disabled' : ''}`}
+                        onClick={handleNextClick}
+                        disabled={product.length === 0 || selectedProductIndex === null}
+                    >
+                        บันทึก
+                    </button>
                 </div>
             </Content>
         </>
