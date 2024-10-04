@@ -19,7 +19,29 @@ interface SaveProduct {
     Status: string;
     Branch: string;
     TransDate: string;
-    Package: any[];
+    Package: SavePackage[];
+}
+
+interface SavePackage {
+    MODEL: string;
+    PACKAGETYPEID: number;
+    ORGANIZATIONCODE: string;
+    ITEMID: string;
+    PRODUCTID: string;
+    PACKAGETITLE: string;
+    TOTALPRICE: number;
+    FREEGIFT: {
+        GIFTID: number;
+        GIFTCODE: string;
+        GIFTNAME: string;
+        GIFTPRICE: number | null;
+    }[];
+    PERIODDETAILS: {
+        PAYMENTPERIODDETAILID: string;
+        PAYMENTPERIODNUMBER: number;
+        PAYMENTAMOUNT: number;
+        CLOSEDISCOUNTAMOUNT: number;
+    }[];
 }
 
 interface SaveProductStore {

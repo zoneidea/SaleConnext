@@ -27,7 +27,7 @@ const SalesPackage: React.FC = () => {
     const [categories, setCategories] = useState<any[]>([]);
     const [packageType, setPackageType] = useState<any[]>([]);
     const [packageList, setPackageList] = useState<any[]>([]);
-    console.log(`packageList: `, packageList); 
+    console.log(`packageList: `, packageList);
 
     const [selectedCategoryId, setSelectedCategoryId] = useState<any>('');
 
@@ -40,6 +40,7 @@ const SalesPackage: React.FC = () => {
     const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
     const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
     const [selectedTransDate, setSelectedTransDate] = useState<string | null>(null);
+    const [productId, setProductId] = useState(null);  // สร้าง state สำหรับเก็บ _id
 
     const [selectedPackageTypeId, setSelectedPackageTypeId] = useState<number | null>(null);
 
@@ -78,11 +79,27 @@ const SalesPackage: React.FC = () => {
             Status: selectedStatus || '',
             Branch: selectedBranch || '',
             TransDate: selectedTransDate || '',
-            Package: [],
+            Package: selectedPackageModel !== null ? [
+                {
+                    MODEL: packageList[selectedPackageModel].MODEL,
+                    PACKAGETYPEID: packageList[selectedPackageModel].PACKAGETYPEID,
+                    ORGANIZATIONCODE: packageList[selectedPackageModel].ORGANIZATIONCODE,
+                    ITEMID: packageList[selectedPackageModel].ITEMID,
+                    PRODUCTID: packageList[selectedPackageModel].PRODUCTID,
+                    PACKAGETITLE: packageList[selectedPackageModel].PACKAGETITLE,
+                    TOTALPRICE: packageList[selectedPackageModel].TOTALPRICE,
+                    HASTRADEIN: packageList[selectedPackageModel].HASTRADEIN,
+                    DISCOUNTPRICE: packageList[selectedPackageModel].DISCOUNTPRICE,
+                    SEQUENCE: packageList[selectedPackageModel].SEQUENCE,
+                    PERMITION_ACTIVE: packageList[selectedPackageModel].PERMITION_ACTIVE,
+                    FREEGIFT: packageList[selectedPackageModel].FREEGIFT,
+                    PERIODDETAILS: packageList[selectedPackageModel].PERIODDETAILS
+                }
+            ] : [], // ถ้าไม่มี package ที่เลือกให้เป็น array ว่าง
         },
     ], [EmpId, TeamSale, selectedItemCode, selectedItemDescription, selectedCategoryId,
         selectedDescriptionEN, selectedDescriptionTH, selectedSerialNo,
-        selectedStatus, selectedBranch, selectedTransDate]);
+        selectedStatus, selectedBranch, selectedTransDate, selectedPackageModel, packageList]);
 
     const API_URL_POST_CATEGORIES = import.meta.env.VITE_APP_API_POST_CATEGORIES;
     const CATEGORIES_URL = `${API_URL_POST_CATEGORIES}/Categories`;
@@ -267,14 +284,13 @@ const SalesPackage: React.FC = () => {
         }
     };
 
-    // POST บันทึก step ลง mongo && ConditionsCheckHistory
     const handleNextClick = async () => {
         try {
             const response = await axios.post(SAVEPRODUCTPACKAGE,
                 {
                     REFNO,
                     PRODUCT,
-                    STATUS: "DRAFT"
+                    STATUS: "DRAFT",
                 },
                 {
                     headers: {
@@ -283,7 +299,12 @@ const SalesPackage: React.FC = () => {
                 });
 
             const result = response.data;
+            const newId = result.data[0]._id; // ดึง _id จาก response
+
             console.log(`Result from saveProductPackage API: `, result);
+
+            // อัปเดต state ด้วย _id ที่ได้รับจาก API
+            setProductId(newId);
 
             // ตรวจสอบ response
             if (result.message === 'SUCCESS') {
