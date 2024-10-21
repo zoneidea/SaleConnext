@@ -59,10 +59,8 @@ const SalesPackage: React.FC = () => {
         TeamSale, setTeamSale,
     } = useCategoryStore();
 
-    const { categoryList, loadCategories } = useFetchCategoryStore();
-    useEffect(() => {
-        loadCategories();  // เรียกใช้ฟังก์ชันดึงข้อมูลหมวดหมู่
-    }, []);  // เรียกใช้เมื่อคอมโพเนนต์ถูก mount ครั้งแรก
+    const { fetchCategory  } = useFetchCategoryStore();
+    console.log(`fetchCategory: `, fetchCategory);
 
     const { product, setProduct } = useProductStore();
     // console.log(`product: `, product);
@@ -429,7 +427,7 @@ const SalesPackage: React.FC = () => {
                                                     onChange={handleCateOptionChange}
                                                 >
                                                     <option value=''>เลือกหมวดหมู่สินค้า...</option>
-                                                    {categoryList.map((item, index) => (
+                                                    {fetchCategory.map((item, index) => (
                                                         <option key={index} value={item.CATEGORIES_ID}>
                                                             {item.CATEGORIES_NAME_TH}
                                                         </option>

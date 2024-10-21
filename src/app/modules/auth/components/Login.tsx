@@ -219,11 +219,10 @@ export function Login() {
     TeamSale, setTeamSale,
   } = useCategoryStore();
 
-  const { categoryList, loadCategories, setCategoryList } = useFetchCategoryStore();
+  const { fetchCategory, setFetchCategory } = useFetchCategoryStore();
   useEffect(() => {
-    loadCategories();  // เรียกใช้ฟังก์ชันดึงข้อมูลหมวดหมู่
-    console.log(`categoryList after login: `, categoryList);
-  }, []);  // เรียกใช้เมื่อคอมโพเนนต์ถูก mount ครั้งแรก
+    console.log(`fetchCategory after login`, fetchCategory);
+  }, [fetchCategory]);
 
   const postData = async () => {
     try {
@@ -231,12 +230,11 @@ export function Login() {
         EmpId, DivisionId, DepartId, DepartGroup, TeamSale
       }, {
         headers: {
-          'Content-Type': 'application/json', // เปลี่ยนเป็น application/json
+          'Content-Type': 'multipart/form-data',
         },
       });
-  
       const data = Array.isArray(response.data.data) ? response.data.data : [];
-      setCategoryList(data); // ใช้ฟังก์ชัน setCategoryList จาก store
+      setFetchCategory(data); 
     } catch (error) {
       console.error('Error fetching data:', error);
     }
