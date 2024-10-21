@@ -98,7 +98,7 @@ export const usePackageStore = create<PackageStore>((set) => ({
     DepartGroup: 'S1',
     TeamSale: 'C06AA-8',
     ItemID: '10200039',
-    PackageTypeID: '1',
+    PackageTypeID: '2',
     HASTRADEIN: 1,
     TOTALPRICE: 4500,
     DISCOUNTPRICE: 1000,

@@ -206,6 +206,8 @@ const SalesPackage: React.FC = () => {
                     },
                 });
                 const data = Array.isArray(response.data.data) ? response.data.data : [];
+                console.log(`data PackageList`,data);
+                
                 setPackageList(data);
             } catch (error) {
                 console.error('Error fetching POST_PACKAGE_URL:', error);
@@ -355,7 +357,7 @@ const SalesPackage: React.FC = () => {
     const corsProxy = "https://cors-anywhere.herokuapp.com/";
     const handleCheckCustomer = async () => {
         try {
-            const response = await axios.post(corsProxy + CHECKCUSTOMER_URL, { Search }, {
+            const response = await axios.post(CHECKCUSTOMER_URL, { Search }, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
