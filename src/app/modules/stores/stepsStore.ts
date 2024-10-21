@@ -23,13 +23,16 @@ interface SaveProduct {
 }
 
 interface SavePackage {
+    HASTRADEIN: number
+    TOTALPRICE: number
+    DISCOUNTPRICE: number
+    SEQUENCE: number
     MODEL: string;
     PACKAGETYPEID: number;
     ORGANIZATIONCODE: string;
     ITEMID: string;
     PRODUCTID: string;
     PACKAGETITLE: string;
-    TOTALPRICE: number;
     FREEGIFT: {
         GIFTID: number;
         GIFTCODE: string;

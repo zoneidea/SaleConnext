@@ -1,7 +1,29 @@
 import { Link } from 'react-router-dom'
+import axios from 'axios';
+import { useState, useEffect } from 'react';
 import { Content } from '../../../../../_metronic/layout/components/content'
 
 const Step: React.FC = () => {
+  const API_URL_UPDATE_CONTRACT = import.meta.env.VITE_APP_API_MONGO;
+  const UPDATE_CONTRACT_URL = `${API_URL_UPDATE_CONTRACT}/Contract/updateContract`;
+
+  // useEffect(() => {
+  //   const getDataDraft = async () => {
+  //     try {
+  //       const response = await axios.get(DRAFT_ALLCONTRACT_URL, {
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //         },
+  //       });
+  //       const data = Array.isArray(response.data.data) ? response.data.data : [];
+  //       setDraft(data); // บันทึกข้อมูล draft
+  //     } catch (error) {
+  //       console.error('Error fetching DRAFT_ALLCONTRACT_URL:', error);
+  //     }
+  //   };
+  //   getDataDraft();
+  // }, []);
+
   return (
     <>
       <Content>

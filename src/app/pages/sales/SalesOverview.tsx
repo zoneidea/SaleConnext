@@ -1,8 +1,51 @@
-import { Link } from 'react-router-dom'
-import { Content } from '../../../_metronic/layout/components/content'
-import { SalesItemNumber } from './components/salesItemNumber/SalesItemNumber'
+import axios from 'axios';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { Content } from '../../../_metronic/layout/components/content';
+import { SalesItemNumber } from './components/salesItemNumber/SalesItemNumber';
 
 const SalesOverview: React.FC = () => {
+  const API_URL_GET_ALLCONTRACT = import.meta.env.VITE_APP_API_MONGO;
+  const DRAFT_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=DRAFT`;
+  const FINISH_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=FINISH`;
+
+  const [draft, setDraft] = useState<any[]>([]); // กำหนดให้ state เป็น array เพื่อรองรับ map()
+  const [finish, setFinish] = useState<any[]>([]); // กำหนดให้ state เป็น array เพื่อรองรับ map()
+
+  useEffect(() => {
+    const getDataDraft = async () => {
+      try {
+        const response = await axios.get(DRAFT_ALLCONTRACT_URL, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        const data = Array.isArray(response.data.data) ? response.data.data : [];
+        setDraft(data); // บันทึกข้อมูล draft
+      } catch (error) {
+        console.error('Error fetching DRAFT_ALLCONTRACT_URL:', error);
+      }
+    };
+    getDataDraft();
+  }, []);
+
+  useEffect(() => {
+    const getDataFinish = async () => {
+      try {
+        const response = await axios.get(FINISH_ALLCONTRACT_URL, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        const data = Array.isArray(response.data.data) ? response.data.data : [];
+        setFinish(data); // บันทึกข้อมูล finish
+      } catch (error) {
+        console.error('Error fetching FINISH_ALLCONTRACT_URL:', error);
+      }
+    };
+    getDataFinish();
+  }, []);
+
   return (
     <>
       <Content>
@@ -28,7 +71,6 @@ const SalesOverview: React.FC = () => {
               เพิ่มรายการ
             </Link>
           </div>
-
         </div>
 
         {/* Card Body */}
@@ -55,27 +97,37 @@ const SalesOverview: React.FC = () => {
                   </a>
                 </li>
               </ul>
+
               <div className="tab-content" id="myTabContent">
+                {/* แท็บรายการขายคงค้าง */}
                 <div
                   className="tab-pane fade active show"
                   id="kt_tab_pane_1"
                   role="tabpanel"
                 >
-                  <SalesItemNumber status />
-                  <SalesItemNumber status />
+                  {draft.length > 0 && (
+                    draft.map((item, index) => (
+                      <SalesItemNumber key={index} status="DRAFT" item={item} />
+                    ))
+                  )}
                 </div>
+
+                {/* แท็บรายการขายเสร็จสมบูรณ์ */}
                 <div className="tab-pane fade" id="kt_tab_pane_2" role="tabpanel">
-                  <SalesItemNumber status />
+                  {finish.length > 0 && (
+                    finish.map((item, index) => (
+                      <SalesItemNumber key={index} status="FINISH" item={item} />
+                    ))
+                  )}
                 </div>
               </div>
             </div>
           </div>
         </div>
         {/* End Card Body */}
-
       </Content>
     </>
   )
 }
 
-export { SalesOverview }
+export { SalesOverview };

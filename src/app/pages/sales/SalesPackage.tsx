@@ -19,6 +19,8 @@ import { CardProduct } from './components/cards/CardProduct';
 import { CardPackage } from './components/cards/CardPackage';
 
 const SalesPackage: React.FC = () => {
+    const [showModal, setShowModal] = useState(false); // เริ่มต้นโมดาลปิดอยู่
+
     const { REFNO } = useUUIDStore();
 
     const navigate = useNavigate(); // ใช้ useNavigate สำหรับการเปลี่ยนเส้นทาง
@@ -46,6 +48,9 @@ const SalesPackage: React.FC = () => {
 
     const [selectedPackageModel, setSelectedPackageModel] = useState<number | null>(null);
 
+    const [checktype, setChecktype] = useState<number | null>(null);
+    console.log(`checktype`, checktype);
+
     const {
         EmpId, setEmpId,
         DivisionId, setDivisionId,
@@ -55,13 +60,14 @@ const SalesPackage: React.FC = () => {
     } = useCategoryStore();
 
     const { fetchCategory } = useFetchCategoryStore();
+    console.log(`fetchCategory: `, fetchCategory);
 
     const { product, setProduct } = useProductStore();
     // console.log(`product: `, product);
 
     const { ItemID, setItemID, PackageTypeID, setPackageTypeID } = usePackageStore();
 
-    const { Model, setModel, } = useConditionsCheckHistoryStore();
+    const { Model, setModel } = useConditionsCheckHistoryStore();
 
     const { PRODUCT, SETPRODUCT, } = useSaveProductStore();
 
@@ -114,13 +120,11 @@ const SalesPackage: React.FC = () => {
 
     const API_URL_POST_CONDITIONSCHECKHISTORY = import.meta.env.VITE_APP_API_POST_CONDITIONSCHECKHISTORY
 
+    const API_URL_POST_CHECKCUSTOMER = import.meta.env.VITE_APP_API_THIENSURAT;
+    const CHECKCUSTOMER_URL = `${API_URL_POST_CHECKCUSTOMER}/CheckCustomer`;
+
     // สร้าง ref สำหรับส่วนแพ็คเกจ
     const packageSectionRef = useRef<HTMLDivElement>(null);
-
-    // log เฉพาะเมื่อ selectedCategoryId หรือ selectedCardIndex หรือ selectedPackageTypeId เปลี่ยนแปลง
-    useEffect(() => {
-        console.log(`fetchCategory: `, fetchCategory);
-    }, [fetchCategory]);
 
     console.log('selectedCategoryId: ', selectedCategoryId);
     console.log('selectedProductIndex: ', selectedProductIndex);
@@ -286,36 +290,86 @@ const SalesPackage: React.FC = () => {
 
     const handleNextClick = async () => {
         try {
-            const response = await axios.post(SAVEPRODUCTPACKAGE,
-                {
-                    REFNO,
-                    PRODUCT,
-                    STATUS: "DRAFT",
+            // Save product package
+            const response = await axios.post(SAVEPRODUCTPACKAGE, {
+                REFNO,
+                PRODUCT,
+                STATUS: "DRAFT",
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
                 },
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                });
+            });
 
             const result = response.data;
-            const newId = result.data[0]._id; // ดึง _id จาก response
+            const newId = result.data._id; // ดึง _id จาก response
 
             console.log(`Result from saveProductPackage API: `, result);
 
             // อัปเดต state ด้วย _id ที่ได้รับจาก API
             setProductId(newId);
 
-            // ตรวจสอบ response
-            if (result.message === 'SUCCESS') {
-                // อัปเดตข้อมูล PRODUCT ใน Zustand store
-                SETPRODUCT(result.data);
-                navigate('/sale/statuscust');
-            } else if (result.message === 'FAILED') {
-                navigate('/sale/discount');
+            // เรียก API เพื่อตรวจสอบเงื่อนไข
+            const conditionCheckResponse = await axios.post(API_URL_POST_CONDITIONSCHECKHISTORY, {
+                EmpId, DivisionId, DepartId, DepartGroup, TeamSale, Model
+            }, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            const conditionCheckResult = conditionCheckResponse.data;
+            console.log(`Result from conditionCheck API: `, conditionCheckResult);
+
+            // ตรวจสอบ response checktype
+            setChecktype(conditionCheckResult.checktype); // อัปเดตค่า checktype ใน state
+
+            // แสดง modal โดยทันทีหลังจากได้รับ checktype
+            setShowModal(true);
+
+            if (conditionCheckResult.checktype !== 0) {
+                // ถ้า checktype ไม่เท่ากับ 0
+                SETPRODUCT(result.data); // อัปเดต PRODUCT ใน Zustand store
+                navigate('/sale/discount'); // นำทางไปยังหน้า sale/discount
             }
+
         } catch (error) {
             console.error('Error saving product package:', error);
+        }
+    };
+
+    const [Search, setSearch] = useState<string>(''); // เก็บค่าของเลขบัตรประชาชน
+
+    const handleIdCardChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const value = event.target.value;
+        // ตรวจสอบว่าเป็นตัวเลขและอัปเดตค่า idCard
+        if (/^\d*$/.test(value)) {
+            setSearch(value);
+        }
+    };
+
+    const isValidIdCard = Search.length === 13; // ตรวจสอบว่าค่ามี 13 หลักหรือไม่
+
+    const [isBlacklisted, setIsBlacklisted] = useState<boolean>(false); // สร้าง state สำหรับสถานะแบล็คลิสต์
+
+    const handleCheckCustomer = async () => {
+        try {
+            const response = await axios.post(CHECKCUSTOMER_URL, { Search }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            console.log(`response CheckCustomer: `, response);
+            
+            // if (response.data.Customerstatus === true) {
+            //     setIsBlacklisted(true); // อัปเดตสถานะเป็นแบล็คลิสต์
+            // } else {
+            //     setIsBlacklisted(false); // ไม่ใช่แบล็คลิสต์
+            // }
+
+        } catch (error) {
+            console.error('Error checking customer:', error);
         }
     };
 
@@ -475,6 +529,66 @@ const SalesPackage: React.FC = () => {
                         บันทึก
                     </button>
                 </div>
+
+                {/* Modal Component */}
+                {showModal && (
+                    <>
+                        <div className="modal-backdrop fade show"></div> {/* พื้นหลังจาง */}
+                        <div
+                            className="modal show"
+                            style={{ display: 'block' }}
+                            tabIndex={-1}
+                            id="kt_modal_1"
+                            aria-labelledby="kt_modal_1_label"
+                            aria-hidden={!showModal}
+                        >
+                            <div className="modal-dialog modal-dialog-centered">
+                                <div className="modal-content">
+                                    <div className="modal-header">
+                                        <h5 className="modal-title" id="kt_modal_1_label">
+                                            ตรวจสอบประวัติลูกค้า
+                                        </h5>
+                                        <button
+                                            type="button"
+                                            className="btn btn-icon btn-sm btn-active-light-primary ms-2"
+                                            onClick={() => setShowModal(false)}
+                                            aria-label="Close"
+                                        >
+                                            X
+                                        </button>
+                                    </div>
+                                    <div>
+                                        {isBlacklisted ? (
+                                            <div className="alert alert-danger">
+                                                พบว่าลูกค้าอยู่ในแบล็คลิสต์
+                                            </div>
+                                        ) : (
+                                            <input
+                                                type='text'
+                                                className='form-control form-control-lg form-control-solid'
+                                                placeholder='กรุณากรอกเลขบัตรประชาชน'
+                                                value={Search} // ผูกกับ state idCard
+                                                onChange={handleIdCardChange} // ตรวจสอบการเปลี่ยนแปลง
+                                            />
+                                        )}
+                                    </div>
+                                    <div className="modal-footer">
+                                        <button
+                                            type="button"
+                                            className="btn btn-primary w-100 w-md-auto px-9"
+                                            onClick={handleCheckCustomer}
+                                            disabled={!isValidIdCard} // ปิดการทำงานปุ่มหากเลขไม่ครบ 13 หลัก
+                                        >
+                                            ตรวจสอบ
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </>
+                )}
+                {/* End Modal Component */}
+
             </Content>
         </>
     );

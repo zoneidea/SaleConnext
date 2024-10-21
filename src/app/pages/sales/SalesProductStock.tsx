@@ -61,11 +61,11 @@ const SalesProductStock: React.FC = () => {
                                     id="kt_tab_pane_1"
                                     role="tabpanel"
                                 >
-                                    <SalesItemNumber status />
-                                    <SalesItemNumber status />
+                                    {/* <SalesItemNumber status /> */}
+                                    {/* <SalesItemNumber status /> */}
                                 </div>
                                 <div className="tab-pane fade" id="kt_tab_pane_2" role="tabpanel">
-                                    <SalesItemNumber status />
+                                    {/* <SalesItemNumber status /> */}
                                 </div>
                             </div>
                         </div>

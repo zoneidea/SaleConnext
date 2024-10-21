@@ -2,10 +2,13 @@ import { KTIcon } from '../../../../../_metronic/helpers'
 import { Link } from 'react-router-dom'
 
 interface StatusLabelProps {
-  status: boolean;
+  status: string;
+  item: any
 }
 
-const SalesItemNumber: React.FC<StatusLabelProps> = ({ status }) => {
+const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item }) => {
+  // console.log(`item`, item);
+
   return (
     <>
       {/* begin::Item */}
@@ -21,12 +24,12 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status }) => {
             <div className='fw-bold text-gray-800 text-hover-primary fs-6'>
               เลขรายการขาย
             </div>
-            <span className='text-muted fw-semibold d-block'>54397612</span>
+            <span className='text-muted fw-semibold d-block'>{item.REFNO}</span>
           </div>
           {/* end::Title */}
           {/* begin::Lable */}
-          <span className={`fw-bold py-1 ${status === true ? 'text-success' : 'text-danger'}`}>
-            {status === true ? 'เสร็จสมบูรณ์' : 'กำลังดำเนินการ'}
+          <span className={`fw-bold py-1 ${status === 'FINISH' ? 'text-success' : 'text-danger'}`}>
+            {status === 'FINISH' ? 'เสร็จสมบูรณ์' : 'กำลังดำเนินการ'}
           </span>
           {/* end::Lable */}
         </div>

@@ -190,7 +190,6 @@ import * as Yup from 'yup'
 import clsx from 'clsx'
 import { Link, useNavigate } from 'react-router-dom'
 import { useFormik } from 'formik'
-// import { login, getUserByToken } from '../core/_requests'
 import { login } from '../core/_requests'
 import { useAuth } from '../core/Auth'
 import { KTIcon, toAbsoluteUrl } from '../../../../_metronic/helpers'
@@ -199,10 +198,8 @@ import { KTIcon, toAbsoluteUrl } from '../../../../_metronic/helpers'
 import { useCategoryStore, useFetchCategoryStore } from '../../../modules/stores/sales/packageStore/packageStore';
 
 const loginSchema = Yup.object().shape({
-  username: Yup.string()
-    .required('Username is required'),
-  password: Yup.string()
-    .required('Password is required'),
+  username: Yup.string().required('Username is required'),
+  password: Yup.string().required('Password is required'),
 })
 
 const initialValues = {
@@ -211,8 +208,6 @@ const initialValues = {
 }
 
 export function Login() {
-
-
   const API_URL_POST_CATEGORIES = import.meta.env.VITE_APP_API_POST_CATEGORIES;
   const CATEGORIES_URL = `${API_URL_POST_CATEGORIES}/Categories`;
 
@@ -224,12 +219,11 @@ export function Login() {
     TeamSale, setTeamSale,
   } = useCategoryStore();
 
-  const { fetchCategory, setFetchCategory } = useFetchCategoryStore()
+  const { fetchCategory, setFetchCategory } = useFetchCategoryStore();
   useEffect(() => {
     console.log(`fetchCategory after login`, fetchCategory);
   }, [fetchCategory]);
 
-  // ฟังก์ชันเพื่อโพสต์ข้อมูลและอัปเดต store
   const postData = async () => {
     try {
       const response = await axios.post(CATEGORIES_URL, {
@@ -240,12 +234,11 @@ export function Login() {
         },
       });
       const data = Array.isArray(response.data.data) ? response.data.data : [];
-      setFetchCategory(data); // อัปเดตข้อมูลลงใน Zustand store
+      setFetchCategory(data); 
     } catch (error) {
       console.error('Error fetching data:', error);
     }
 
-    // อัปเดต store จากข้อมูล auth
     setEmpId(auth.data[0].EmpId);
     setDivisionId(auth.data[0].DivisionId);
     setDepartId(auth.data[0].DepartId);
@@ -257,7 +250,6 @@ export function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // ฟังก์ชันรวมสำหรับการขอ permissions
   const requestPermissions = async () => {
     try {
       await navigator.mediaDevices.getUserMedia({ video: true })
@@ -295,6 +287,9 @@ export function Login() {
           setSubmitting(false);
           setLoading(false);
         } else {
+          // บันทึกข้อมูลลงใน localStorage
+          localStorage.setItem('authData', JSON.stringify(response.data));
+
           saveAuth(response.data);
           const user = {
             id: response.data.userId,
@@ -305,10 +300,7 @@ export function Login() {
           setLoading(false);
           navigate('/dashboard');
 
-          // เรียกใช้ requestPermissions หลังจากล็อกอินสำเร็จ
           await requestPermissions();
-
-          // เรียกใช้ postData หลังจากล็อกอินสำเร็จ
           await postData();
         }
       } catch (error: any) {

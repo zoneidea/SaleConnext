@@ -1,24 +1,14 @@
 import { Link } from 'react-router-dom'
 import axios from 'axios';
-import clsx from 'clsx'
-import { useState, useMemo, useEffect } from 'react'
-import { v4 as uuidv4 } from 'uuid';
-import { KTIcon, toAbsoluteUrl } from '../../../_metronic/helpers'
+import { useState, useEffect } from 'react'
 import { Content } from '../../../_metronic/layout/components/content'
-
-//useStore
-import { usePackageStore } from '../../modules/stores/sales/packageStore/packageStore';
+import { useSaveProductStore } from '../../modules/stores/stepsStore';
 
 const SalesDiscount: React.FC = () => {
-    const { HASTRADEIN } = usePackageStore();
-    // console.log(`HASTRADEIN: `, HASTRADEIN);
-
-    const [tradeInBrand, setTradeInBrand] = useState<any[]>([]);
-
     const API_URL_GET_TRADEINBRAND = import.meta.env.VITE_APP_API_POST_CATEGORIES;
     const TRADEINBRAND_URL = `${API_URL_GET_TRADEINBRAND}/Tradeinbrand`;
 
-    // GET GetPackage/PackageType
+    // GET GetPackage/PackageType สำหรับ trade-in brands
     useEffect(() => {
         const getData = async () => {
             try {
@@ -36,6 +26,51 @@ const SalesDiscount: React.FC = () => {
         getData();
     }, []);
 
+    const { PRODUCT } = useSaveProductStore();
+    console.log("PRODUCT: ", PRODUCT);
+
+    // ตรวจสอบว่ามีข้อมูล PRODUCT หรือไม่ก่อนที่จะดึงข้อมูลจากมัน
+    const hasTradeIn = PRODUCT?.[0]?.Package?.[0]?.HASTRADEIN ?? null;
+    console.log("HASTRADEIN: ", hasTradeIn);
+
+    const totalPrice = PRODUCT?.[0]?.Package?.[0]?.TOTALPRICE ?? 0;
+    console.log("TOTALPRICE: ", totalPrice);
+
+    const discountPrice = PRODUCT?.[0]?.Package?.[0]?.DISCOUNTPRICE ?? 0;
+    console.log("DISCOUNTPRICE: ", discountPrice);
+
+    const sequence = PRODUCT?.[0]?.Package?.[0]?.SEQUENCE ?? 0;
+    console.log("SEQUENCE: ", sequence);
+
+    const freeGift = PRODUCT?.[0]?.Package?.[0]?.FREEGIFT ?? [];
+    console.log("FREEGIFT: ", freeGift);
+
+    const [tradeInBrand, setTradeInBrand] = useState<any[]>([]);
+    const [step, setStep] = useState<number>(100); // ค่าเพิ่ม/ลดที่กำหนดเอง
+
+    const [currentSequence, setCurrentSequence] = useState<number>(sequence); // เก็บค่า sequence ปัจจุบัน
+
+    const totalPriceSafe = totalPrice; // ตั้งค่า TOTALPRICE เป็น 0 ถ้าเป็น null
+
+    // Handle increment and decrement functions
+    const handleDecrement = () => {
+        setCurrentSequence((prev) => Math.max(0, prev - step)); // ลดค่า step แต่ไม่ให้ต่ำกว่า 0
+    };
+
+    const handleIncrement = () => {
+        setCurrentSequence((prev) => {
+            // ตรวจสอบว่าเมื่อบวกแล้วจะไม่เกิน DISCOUNTPRICE
+            if (prev + step <= discountPrice) {
+                return prev + step; // เพิ่มค่า step ถ้าไม่เกิน
+            } else {
+                return prev; // ถ้าเกิน DISCOUNTPRICE ไม่ทำอะไร
+            }
+        });
+    };
+
+    // คำนวณราคาหลังหักส่วนลด
+    const finalPrice = Math.max(0, totalPriceSafe - currentSequence); // ราคาหลังหักส่วนลด ไม่ให้ต่ำกว่า 0
+
     return (
         <>
             <Content>
@@ -48,20 +83,18 @@ const SalesDiscount: React.FC = () => {
                         </h1>
                         <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
                             <li className="breadcrumb-item text-muted">
-                                <a className="text-muted text-hover-primary" href="/metronic8/react/demo1/sales/overview">
+                                <Link className="text-muted text-hover-primary" to="/metronic8/react/demo1/sales/overview">
                                     ระบบขาย
-                                </a></li>
+                                </Link></li>
                             <li className="breadcrumb-item"><span className="bullet bg-gray-500 w-5px h-2px"></span></li>
                             <li className="breadcrumb-item text-gray-900">เครื่องเทิร์น / ส่วนลด / ของแถม</li>
                         </ul>
                     </div>
                 </div>
 
-                {/* Card Body */}
                 <div className='accordion mb-10' id='kt_accordion_1'>
-
-                    {/* Start accordion */}
-                    {HASTRADEIN === 1 ? (
+                    {/* Start accordion for trade-in */}
+                    {hasTradeIn === 1 && (
                         <div className='accordion-item mb-10'>
                             <h2 className='accordion-header' id='kt_accordion_1_header_1'>
                                 <h3
@@ -82,10 +115,8 @@ const SalesDiscount: React.FC = () => {
                                 data-bs-parent='#kt_accordion_1'
                             >
                                 <div className='accordion-body'>
-                                    {/* start form */}
                                     <form noValidate className='form'>
                                         <div className='card-body px-lg-9 px-1'>
-                                            {/* ฟิลด์เพิ่มเติมที่แสดงเมื่อเลือก "มีเครื่องเทิร์น" */}
                                             <div className='row mb-6'>
                                                 <div className='col-lg-4 mb-3'>
                                                     <label className='form-label fw-bold fs-6'>เครื่องเทิร์น</label>
@@ -117,117 +148,109 @@ const SalesDiscount: React.FC = () => {
                                             </div>
                                         </div>
                                     </form>
-                                    {/* end form */}
-
                                 </div>
                             </div>
                         </div>
-                    ) : ('')}
-                    {/* End accordion */}
+                    )}
 
-                    {/* Start accordion */}
-                    <div className='accordion-item mb-10'>
-                        <h2 className='accordion-header' id='kt_accordion_2_header_2'>
-                            <h3
-                                className='accordion-button fs-4 fw-bold collapsed border-0 h-50px pt-5 rounded-top px-lg-15 px-7'
-                                data-bs-toggle='collapse'
-                                data-bs-target='#kt_accordion_2_body_2'
-                                aria-expanded='true'
-                                aria-controls='kt_accordion_2_body_2'
-                                style={{ color: 'white', cursor: 'pointer', backgroundColor: '#3777bc' }}
+                    {/* Start accordion for discount */}
+                    {discountPrice !== 0 && (
+                        <div className='accordion-item mb-10'>
+                            <h2 className='accordion-header' id='kt_accordion_2_header_2'>
+                                <h3
+                                    className='accordion-button fs-4 fw-bold collapsed border-0 h-50px pt-5 rounded-top px-lg-15 px-7'
+                                    data-bs-toggle='collapse'
+                                    data-bs-target='#kt_accordion_2_body_2'
+                                    aria-expanded='true'
+                                    aria-controls='kt_accordion_2_body_2'
+                                    style={{ color: 'white', cursor: 'pointer', backgroundColor: '#3777bc' }}
+                                >
+                                    ส่วนลด
+                                </h3>
+                            </h2>
+                            <div
+                                id='kt_accordion_2_body_2'
+                                className='accordion-collapse collapse show'
+                                aria-labelledby='kt_accordion_2_header_2'
+                                data-bs-parent='#kt_accordion_2'
                             >
-
-                                ส่วนลด
-                            </h3>
-                        </h2>
-                        <div
-                            id='kt_accordion_2_body_2'
-                            className='accordion-collapse collapse show'
-                            aria-labelledby='kt_accordion_2_header_2'
-                            data-bs-parent='#kt_accordion_2'
-                        >
-                            <div className='accordion-body'>
-                                {/* start form */}
-                                <form noValidate className='form'>
-                                    <div className='card-body px-lg-9 px-1'>
-                                        {/* ฟิลด์เพิ่มเติมที่แสดงเมื่อเลือก "มีเครื่องเทิร์น" */}
-                                        <div className='row mb-6'>
-                                            <div className='col-lg-6 mb-3'>
-                                                <label className='form-label fw-bold fs-6'>ราคา</label>
-                                                <p className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'>
-                                                    4500
-                                                </p>
-                                            </div>
-                                            <div className='col-lg-6 mb-3'>
-                                                <label className='form-label fw-bold fs-6'>ส่วนลด</label>
-                                                <div className='d-flex align-items-center'>
-                                                    <button className='btn btn-light-primary' type='button'>
-                                                        -
-                                                    </button>
-                                                    <div className='form-control form-control-lg form-control-solid mx-2 mb-0 text-center flex-grow-1'>
-                                                        100
+                                <div className='accordion-body'>
+                                    <form noValidate className='form'>
+                                        <div className='card-body px-lg-9 px-1'>
+                                            <div className='row mb-6'>
+                                                <div className='col-lg-6 mb-3'>
+                                                    <label className='form-label fw-bold fs-6'>ราคา</label>
+                                                    <p className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'>
+                                                        {finalPrice}
+                                                    </p>
+                                                </div>
+                                                <div className='col-lg-6 mb-3'>
+                                                    <label className='form-label fw-bold fs-6'>ส่วนลด</label>
+                                                    <div className='d-flex align-items-center'>
+                                                        <button className='btn btn-light-primary' type='button' onClick={handleDecrement}>
+                                                            -
+                                                        </button>
+                                                        <div className='form-control form-control-lg form-control-solid mx-2 mb-0 text-center flex-grow-1'>
+                                                            {currentSequence}
+                                                        </div>
+                                                        <button className='btn btn-light-primary' type='button' onClick={handleIncrement}>
+                                                            +
+                                                        </button>
                                                     </div>
-                                                    <button className='btn btn-light-primary' type='button'>
-                                                        +
-                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </form>
-                                {/* end form */}
-
+                                    </form>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    {/* End accordion */}
+                    )}
 
-                    {/* Start accordion */}
-                    <div className='accordion-item mb-10'>
-                        <h2 className='accordion-header' id='kt_accordion_3_header_3'>
-                            <h3
-                                className='accordion-button fs-4 fw-bold collapsed border-0 h-50px pt-5 rounded-top px-lg-15 px-7'
-                                data-bs-toggle='collapse'
-                                data-bs-target='#kt_accordion_3_body_3'
-                                aria-expanded='true'
-                                aria-controls='kt_accordion_3_body_3'
-                                style={{ color: 'white', cursor: 'pointer', backgroundColor: '#3777bc' }}
+                    {/* Start accordion for free gift */}
+                    {freeGift.length > 0 && (
+                        <div className='accordion-item mb-10'>
+                            <h2 className='accordion-header' id='kt_accordion_3_header_3'>
+                                <h3
+                                    className='accordion-button fs-4 fw-bold collapsed border-0 h-50px pt-5 rounded-top px-lg-15 px-7'
+                                    data-bs-toggle='collapse'
+                                    data-bs-target='#kt_accordion_3_body_3'
+                                    aria-expanded='true'
+                                    aria-controls='kt_accordion_3_body_3'
+                                    style={{ color: 'white', cursor: 'pointer', backgroundColor: '#3777bc' }}
+                                >
+                                    ของแถม
+                                </h3>
+                            </h2>
+                            <div
+                                id='kt_accordion_3_body_3'
+                                className='accordion-collapse collapse show'
+                                aria-labelledby='kt_accordion_3_header_3'
+                                data-bs-parent='#kt_accordion_3'
                             >
-
-                                ของแถม
-                            </h3>
-                        </h2>
-                        <div
-                            id='kt_accordion_3_body_3'
-                            className='accordion-collapse collapse show'
-                            aria-labelledby='kt_accordion_3_header_3'
-                            data-bs-parent='#kt_accordion_3'
-                        >
-                            <div className='accordion-body'>
-                                {/* start form */}
-                                <form noValidate className='form'>
-                                    <div className='card-body px-lg-9 px-1'>
-                                        {/* ฟิลด์เพิ่มเติมที่แสดงเมื่อเลือก "มีเครื่องเทิร์น" */}
-                                        <div className='row mb-6'>
-                                            <div className='col-lg-12 mb-3'>
-                                                <label className='form-label fw-bold fs-6'>ของแถม</label>
-                                                <select className='form-select form-select-solid form-select-lg'>
-                                                    <option value=''>เลือกของแถม...</option>
-                                                    <option value='AF'>Afghanistan</option>
-                                                </select>
+                                <div className='accordion-body'>
+                                    <form noValidate className='form'>
+                                        <div className='card-body px-lg-9 px-1'>
+                                            <div className='row mb-6'>
+                                                <div className='col-lg-12 mb-3'>
+                                                    <label className='form-label fw-bold fs-6'>ของแถม</label>
+                                                    <select className='form-select form-select-solid form-select-lg'>
+                                                        <option value=''>เลือกของแถม...</option>
+                                                        {freeGift.map((item, index) => (
+                                                            <option key={index} value={item.GIFTID}>
+                                                                {item.GIFTNAME}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </form>
-                                {/* end form */}
-
+                                    </form>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    {/* End accordion */}
+                    )}
 
                 </div>
-                {/* End Card */}
 
                 <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10'>
                     <Link to='/sale/package' className='btn btn-secondary w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'>
@@ -242,5 +265,4 @@ const SalesDiscount: React.FC = () => {
     )
 }
 
-export default SalesDiscount
-
+export default SalesDiscount;
