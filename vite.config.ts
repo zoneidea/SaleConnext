@@ -19,11 +19,11 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src'),  // การใช้ alias '@' เพื่อชี้ไปยังโฟลเดอร์ src
     },
   },
-  // server: {
-  //   https: {
-  //     key: fs.readFileSync('./certs/localhost-key.pem'),  // ใส่คีย์สำหรับ HTTPS
-  //     cert: fs.readFileSync('./certs/localhost.pem'),     // ใส่ใบรับรองสำหรับ HTTPS
-  //   },
-  //   // https: false
-  // }
+  server: {
+    https: {
+      key: fs.readFileSync('./certs/localhost-key.pem'),  // ใส่คีย์สำหรับ HTTPS
+      cert: fs.readFileSync('./certs/localhost.pem'),     // ใส่ใบรับรองสำหรับ HTTPS
+    },
+    // https: false
+  }
 });

@@ -26,6 +26,7 @@ const PrivateRoutes = () => {
   const SalesPhoto = lazy(() => import('../pages/sales/SalesPhoto'))
   const DrawingMapGallery = lazy(() => import('../pages/sales/components/gallery/DrawingMapGallery'))
   const TurnGallery = lazy(() => import('../pages/sales/components/gallery/TurnGallery'))
+  const GoogleMapGPS = lazy(() => import('../pages/sales/components/gps/googleMapGPS'))
 
   return (
     <Routes>
@@ -137,6 +138,14 @@ const PrivateRoutes = () => {
           element={
             <SuspensedView>
               <DrawingMapGallery />
+            </SuspensedView>
+          }
+        />
+         <Route
+          path='sale/gps'
+          element={
+            <SuspensedView>
+              <GoogleMapGPS />
             </SuspensedView>
           }
         />

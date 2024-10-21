@@ -59,8 +59,10 @@ const SalesPackage: React.FC = () => {
         TeamSale, setTeamSale,
     } = useCategoryStore();
 
-    const { fetchCategory } = useFetchCategoryStore();
-    console.log(`fetchCategory: `, fetchCategory);
+    const { categoryList, loadCategories } = useFetchCategoryStore();
+    useEffect(() => {
+        loadCategories();  // เรียกใช้ฟังก์ชันดึงข้อมูลหมวดหมู่
+    }, []);  // เรียกใช้เมื่อคอมโพเนนต์ถูก mount ครั้งแรก
 
     const { product, setProduct } = useProductStore();
     // console.log(`product: `, product);
@@ -350,18 +352,18 @@ const SalesPackage: React.FC = () => {
     };
 
     const isValidIdCard = Search.length === 13; // ตรวจสอบว่าค่ามี 13 หลักหรือไม่
-
     const [isBlacklisted, setIsBlacklisted] = useState<boolean>(false); // สร้าง state สำหรับสถานะแบล็คลิสต์
 
+    const corsProxy = "https://cors-anywhere.herokuapp.com/";
     const handleCheckCustomer = async () => {
         try {
-            const response = await axios.post(CHECKCUSTOMER_URL, { Search }, {
+            const response = await axios.post(corsProxy + CHECKCUSTOMER_URL, { Search }, {
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'multipart/form-data',
                 },
             });
 
-            console.log(`response CheckCustomer: `, response);
+            console.log(`response CheckCustomer: `, response.data);
 
             // if (response.data.Customerstatus === true) {
             //     setIsBlacklisted(true); // อัปเดตสถานะเป็นแบล็คลิสต์
@@ -427,7 +429,7 @@ const SalesPackage: React.FC = () => {
                                                     onChange={handleCateOptionChange}
                                                 >
                                                     <option value=''>เลือกหมวดหมู่สินค้า...</option>
-                                                    {fetchCategory.map((item, index) => (
+                                                    {categoryList.map((item, index) => (
                                                         <option key={index} value={item.CATEGORIES_ID}>
                                                             {item.CATEGORIES_NAME_TH}
                                                         </option>

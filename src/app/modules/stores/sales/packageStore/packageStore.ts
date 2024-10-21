@@ -1,8 +1,10 @@
 import { create } from 'zustand';
+import axios from 'axios';
 
 interface FetchCategoryStore {
-    fetchCategory: any[];
-    setFetchCategory: (fetchCategory: any[]) => void;
+    categoryList: any[];  // เปลี่ยนชื่อ categories เป็น categoryList
+    setCategoryList: (categoryList: any[]) => void;  // ฟังก์ชันสำหรับอัปเดตหมวดหมู่
+    loadCategories: () => Promise<void>;  // ฟังก์ชันสำหรับดึงข้อมูลหมวดหมู่จาก API
 }
 
 interface CategoryStore {
@@ -67,9 +69,19 @@ interface ConditionsCheckHistoryStore {
 }
 
 export const useFetchCategoryStore = create<FetchCategoryStore>((set) => ({
-    fetchCategory: [],
-    setFetchCategory: (fetchCategory: any[]) => set({ fetchCategory }),
-}));
+    categoryList: [],  // state สำหรับเก็บหมวดหมู่
+    setCategoryList: (categoryList: any[]) => set({ categoryList }),  // อัปเดต state ของหมวดหมู่
+
+    // ฟังก์ชันสำหรับดึงข้อมูลหมวดหมู่จาก API
+    loadCategories: async () => {
+        try {
+            const response = await axios.get('/api/categories');  // เรียก API
+            set({ categoryList: response.data });  // อัปเดตหมวดหมู่ใน state
+        } catch (error) {
+            console.error('Error fetching categories:', error);
+        }
+    },
+})); 
 
 export const useCategoryStore = create<CategoryStore>((set) => ({
     EmpId: 'A82517',
