@@ -165,6 +165,7 @@ const SalesPackage: React.FC = () => {
                 const response = await axios.get(getProductUrl(), {
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json',
                     }
                 });
                 const data = Array.isArray(response.data.data) ? response.data.data : [];
@@ -361,7 +362,7 @@ const SalesPackage: React.FC = () => {
             });
 
             console.log(`response CheckCustomer: `, response);
-            
+
             // if (response.data.Customerstatus === true) {
             //     setIsBlacklisted(true); // อัปเดตสถานะเป็นแบล็คลิสต์
             // } else {
