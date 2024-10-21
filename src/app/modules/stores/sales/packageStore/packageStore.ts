@@ -31,7 +31,7 @@ interface PackageStore {
     DepartGroup: string;
     TeamSale: string;
     ItemID: string;
-    PackageTypeID: string
+    PackageTypeID: number;  // เปลี่ยนจาก string เป็น number
     HASTRADEIN: number | null;
     TOTALPRICE: number | null;
     DISCOUNTPRICE: number | null;
@@ -43,7 +43,7 @@ interface PackageStore {
     setDepartGroup: (group: string) => void;
     setTeamSale: (team: string) => void;
     setItemID: (id: string) => void;
-    setPackageTypeID: (id: string) => void;
+    setPackageTypeID: (id: number) => void;  // เปลี่ยนประเภทเป็น number
     setHASTRADEIN: (id: number | null) => void;
     setTOTALPRICE: (price: number | null) => void;
     setDISCOUNTPRICE: (price: number | null) => void;
@@ -72,11 +72,11 @@ export const useFetchCategoryStore = create<FetchCategoryStore>((set) => ({
 }));
 
 export const useCategoryStore = create<CategoryStore>((set) => ({
-    EmpId: 'A82517',
-    DivisionId: 'M1124',
-    DepartId: 'M1011',
-    DepartGroup: 'S1',
-    TeamSale: 'C06AA-8',
+    EmpId: '',
+    DivisionId: '',
+    DepartId: '',
+    DepartGroup: '',
+    TeamSale: '',
 
     setEmpId: (id) => set({ EmpId: id }),
     setDivisionId: (id) => set({ DivisionId: id }),
@@ -92,17 +92,17 @@ export const useProductStore = create<ProductStore>((set) => ({
 
 
 export const usePackageStore = create<PackageStore>((set) => ({
-    EmpId: 'A82517',
-    DivisionId: 'M1124',
-    DepartId: 'M1011',
-    DepartGroup: 'S1',
-    TeamSale: 'C06AA-8',
-    ItemID: '10200039',
-    PackageTypeID: '2',
-    HASTRADEIN: 1,
-    TOTALPRICE: 4500,
-    DISCOUNTPRICE: 1000,
-    SEQUENCE: 100,
+    EmpId: '',
+    DivisionId: '',
+    DepartId: '',
+    DepartGroup: '',
+    TeamSale: '',
+    ItemID: '',
+    PackageTypeID: 0,  // กำหนดค่าเริ่มต้นเป็น number
+    HASTRADEIN: null,
+    TOTALPRICE: null,
+    DISCOUNTPRICE: null,
+    SEQUENCE: null,
 
     setEmpId: (id) => set({ EmpId: id }),
     setDivisionId: (id) => set({ DivisionId: id }),
@@ -110,7 +110,7 @@ export const usePackageStore = create<PackageStore>((set) => ({
     setDepartGroup: (group) => set({ DepartGroup: group }),
     setTeamSale: (team) => set({ TeamSale: team }),
     setItemID: (id) => set({ ItemID: id }),
-    setPackageTypeID: (id) => set({ PackageTypeID: id }),
+    setPackageTypeID: (id: number) => set({ PackageTypeID: id }),  // แก้ไขให้รองรับ number
     setHASTRADEIN: (id: number | null) => set({ HASTRADEIN: id }),
     setTOTALPRICE: (price: number | null) => set({ TOTALPRICE: price }),
     setDISCOUNTPRICE: (price: number | null) => set({ DISCOUNTPRICE: price }),
@@ -118,12 +118,12 @@ export const usePackageStore = create<PackageStore>((set) => ({
 }));
 
 export const useConditionsCheckHistoryStore = create<ConditionsCheckHistoryStore>((set) => ({
-    EmpId: 'A82517',
-    DivisionId: 'M1124',
-    DepartId: 'M1011',
-    DepartGroup: 'S1',
-    TeamSale: 'C06AA-8',
-    Model: '200039C0645_N01',
+    EmpId: '',
+    DivisionId: '',
+    DepartId: '',
+    DepartGroup: '',
+    TeamSale: '',
+    Model: '',
 
     setEmpId: (id) => set({ EmpId: id }),
     setDivisionId: (id) => set({ DivisionId: id }),

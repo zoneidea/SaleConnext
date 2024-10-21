@@ -28,13 +28,17 @@ const SalesPackage: React.FC = () => {
     const { auth } = useAuth();
     const [categories, setCategories] = useState<any[]>([]);
     const [packageType, setPackageType] = useState<any[]>([]);
+    // console.log(`packageType: `, packageType);
+
     const [packageList, setPackageList] = useState<any[]>([]);
-    console.log(`packageList: `, packageList);
+    // console.log(`packageList: `, packageList);
 
     const [selectedCategoryId, setSelectedCategoryId] = useState<any>('');
 
     const [selectedProductIndex, setSelectedProductIndex] = useState<number | null>(null);
     const [selectedItemCode, setSelectedItemCode] = useState<string | null>(null);
+    // console.log(`selectedItemCode: `, selectedItemCode);
+
     const [selectedItemDescription, setSelectedItemDescription] = useState<string | null>(null);
     const [selectedDescriptionEN, setSelectedDescriptionEN] = useState<string | null>(null);
     const [selectedDescriptionTH, setSelectedDescriptionTH] = useState<string | null>(null);
@@ -47,9 +51,10 @@ const SalesPackage: React.FC = () => {
     const [selectedPackageTypeId, setSelectedPackageTypeId] = useState<number | null>(null);
 
     const [selectedPackageModel, setSelectedPackageModel] = useState<number | null>(null);
+    // console.log(`selectedPackageModel: `, selectedPackageModel);
 
     const [checktype, setChecktype] = useState<number | null>(null);
-    console.log(`checktype`, checktype);
+    // console.log(`checktype`, checktype);
 
     const {
         EmpId, setEmpId,
@@ -59,13 +64,15 @@ const SalesPackage: React.FC = () => {
         TeamSale, setTeamSale,
     } = useCategoryStore();
 
-    const { fetchCategory  } = useFetchCategoryStore();
-    console.log(`fetchCategory: `, fetchCategory);
+    const { fetchCategory } = useFetchCategoryStore();
+    // console.log(`fetchCategory: `, fetchCategory);
 
     const { product, setProduct } = useProductStore();
     // console.log(`product: `, product);
 
     const { ItemID, setItemID, PackageTypeID, setPackageTypeID } = usePackageStore();
+    // console.log(`ItemID: `, ItemID);
+    // console.log(`PackageTypeID: `, PackageTypeID);
 
     const { Model, setModel } = useConditionsCheckHistoryStore();
 
@@ -126,10 +133,10 @@ const SalesPackage: React.FC = () => {
     // สร้าง ref สำหรับส่วนแพ็คเกจ
     const packageSectionRef = useRef<HTMLDivElement>(null);
 
-    console.log('selectedCategoryId: ', selectedCategoryId);
-    console.log('selectedProductIndex: ', selectedProductIndex);
-    console.log('selectedPackageTypeId: ', selectedPackageTypeId);
-    console.log('selectedPackageModel: ', selectedPackageModel);
+    // console.log('selectedCategoryId: ', selectedCategoryId);
+    // console.log('selectedProductIndex: ', selectedProductIndex);
+    // console.log('selectedPackageTypeId: ', selectedPackageTypeId);
+    // console.log('selectedPackageModel: ', selectedPackageModel);
 
     // POST GetProduct/Categories
     useEffect(() => {
@@ -206,8 +213,7 @@ const SalesPackage: React.FC = () => {
                     },
                 });
                 const data = Array.isArray(response.data.data) ? response.data.data : [];
-                console.log(`data PackageList`,data);
-                
+                // console.log(`response data from GetPackage/PackageList: `, data);               
                 setPackageList(data);
             } catch (error) {
                 console.error('Error fetching POST_PACKAGE_URL:', error);
@@ -225,7 +231,7 @@ const SalesPackage: React.FC = () => {
     }, [EmpId, DivisionId, DepartId, DepartGroup, TeamSale, ItemID, PackageTypeID]);
 
     useEffect(() => {
-        console.log("SaveProductData:", SaveProductData);
+        // console.log("SaveProductData:", SaveProductData);
         if (JSON.stringify(SaveProductData) !== JSON.stringify(PRODUCT)) {
             console.log("Updating product in store...");
             SETPRODUCT(SaveProductData);
@@ -254,6 +260,8 @@ const SalesPackage: React.FC = () => {
     const handleCardProductClick = (index: number) => {
         setSelectedProductIndex(index);
         setSelectedItemCode(product[index].ItemCode);
+        setItemID(product[index].ItemCode)
+
         setSelectedItemDescription(product[index].ItemDescription);
         setSelectedDescriptionEN(product[index].DescriptionEN);
         setSelectedDescriptionTH(product[index].DescriptionTH);
@@ -272,6 +280,7 @@ const SalesPackage: React.FC = () => {
     //เปลี่ยนสไตล์เป็น success เมื่อเลือกปุ่ม package และเลื่อนลงมายังส่วนแพ็คเกจ
     const handlePackageTypeClick = (index: number) => {
         setSelectedPackageTypeId(index);
+        setPackageTypeID(index); // เก็บค่าใน PackageTypeID ด้วย
         if (selectedCategoryId === '') {
             setSelectedProductIndex(null);
             setSelectedPackageTypeId(null);
@@ -286,10 +295,20 @@ const SalesPackage: React.FC = () => {
 
     const handlePackageModelClick = (index: number) => {
         setSelectedPackageModel(index);
+        if (packageList[index] && packageList[index].MODEL) {
+            setModel(packageList[index].MODEL); // กำหนดค่าให้กับ Model จาก packageList[selectedPackageModel]
+        }
         if (selectedCategoryId === null) {
             setSelectedPackageModel(null);
         }
     };
+
+    useEffect(() => {
+        if (selectedPackageModel !== null && packageList[selectedPackageModel]) {
+            const selectedModel = packageList[selectedPackageModel].MODEL;
+            setModel(selectedModel); // อัปเดตค่า Model จาก packageList[selectedPackageModel]
+        }
+    }, [selectedPackageModel, packageList, setModel]);
 
     const handleNextClick = async () => {
         try {
@@ -320,18 +339,13 @@ const SalesPackage: React.FC = () => {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-
-            const conditionCheckResult = conditionCheckResponse.data;
-            console.log(`Result from conditionCheck API: `, conditionCheckResult);
+            console.log(`Result from conditionCheck API: `, conditionCheckResponse);
 
             // ตรวจสอบ response checktype
-            setChecktype(conditionCheckResult.checktype); // อัปเดตค่า checktype ใน state
-
-            // แสดง modal โดยทันทีหลังจากได้รับ checktype
+            setChecktype(conditionCheckResponse.data.checktype); // อัปเดตค่า checktype ใน state
             setShowModal(true);
 
-            if (conditionCheckResult.checktype !== 0) {
-                // ถ้า checktype ไม่เท่ากับ 0
+            if (conditionCheckResponse.data.checktype === 0) {
                 SETPRODUCT(result.data); // อัปเดต PRODUCT ใน Zustand store
                 navigate('/sale/discount'); // นำทางไปยังหน้า sale/discount
             }
@@ -354,7 +368,6 @@ const SalesPackage: React.FC = () => {
     const isValidIdCard = Search.length === 13; // ตรวจสอบว่าค่ามี 13 หลักหรือไม่
     const [isBlacklisted, setIsBlacklisted] = useState<boolean>(false); // สร้าง state สำหรับสถานะแบล็คลิสต์
 
-    const corsProxy = "https://cors-anywhere.herokuapp.com/";
     const handleCheckCustomer = async () => {
         try {
             const response = await axios.post(CHECKCUSTOMER_URL, { Search }, {
@@ -375,6 +388,13 @@ const SalesPackage: React.FC = () => {
             console.error('Error checking customer:', error);
         }
     };
+
+    console.log(`EmpId: `, EmpId);
+    console.log(`DivisionId: `, DivisionId);
+    console.log(`DepartId: `, DepartId);
+    console.log(`DepartGroup: `, DepartGroup);
+    console.log(`TeamSale: `, TeamSale);
+    console.log(`Model: `, Model);
 
     return (
         <>
