@@ -220,6 +220,8 @@ export function Login() {
   } = useCategoryStore();
 
   const { fetchCategory, setFetchCategory } = useFetchCategoryStore();
+
+  // แสดงข้อมูล fetchCategory เมื่อมีการอัพเดท
   useEffect(() => {
     console.log(`fetchCategory after login`, fetchCategory);
   }, [fetchCategory]);
@@ -234,17 +236,20 @@ export function Login() {
         },
       });
       const data = Array.isArray(response.data.data) ? response.data.data : [];
-      setFetchCategory(data); 
+      
+      // อัพเดท fetchCategory โดยตรง
+      setFetchCategory(data); // กำหนดเป็น array โดยตรง
+      console.log('fetchCategory set with data:', data);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
-
+  
     setEmpId(auth.data[0].EmpId);
     setDivisionId(auth.data[0].DivisionId);
     setDepartId(auth.data[0].DepartId);
     setDepartGroup(auth.data[0].DepartGroup);
     setTeamSale(auth.data[0].TeamSale);
-  };
+  };  
 
   const { auth, saveAuth, setCurrentUser } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -252,8 +257,8 @@ export function Login() {
 
   const requestPermissions = async () => {
     try {
-      await navigator.mediaDevices.getUserMedia({ video: true })
-      console.log('Camera access granted')
+      await navigator.mediaDevices.getUserMedia({ video: true });
+      console.log('Camera access granted');
 
       const locationPermission = await navigator.permissions.query({ name: 'geolocation' });
       if (locationPermission.state !== 'granted') {
@@ -268,7 +273,7 @@ export function Login() {
       console.error('Error requesting permissions:', error);
       alert('อุปกรณ์ของคุณไม่รองรับการขอ permissions ทั้งหมด');
     }
-  }
+  };
 
   const formik = useFormik({
     initialValues,
@@ -298,10 +303,13 @@ export function Login() {
           };
           setCurrentUser(user);
           setLoading(false);
-          navigate('/dashboard');
 
+          // รอการขอ permissions และการ postData ก่อนเปลี่ยนเส้นทาง
           await requestPermissions();
           await postData();
+          
+          // เปลี่ยนเส้นทางหลังจากข้อมูลถูกอัพเดทแล้ว
+          navigate('/dashboard');
         }
       } catch (error: any) {
         console.log(`error`, error);
