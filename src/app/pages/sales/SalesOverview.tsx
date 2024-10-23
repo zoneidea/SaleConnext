@@ -1,17 +1,28 @@
 import axios from 'axios';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Content } from '../../../_metronic/layout/components/content';
 import { SalesItemNumber } from './components/salesItemNumber/SalesItemNumber';
+import { useUUIDStore } from '../../modules/stores/stepsStore';
+
+//useStore
+import { useFetchCategoryStore } from '../../modules/stores/sales/packageStore/packageStore';
 
 const SalesOverview: React.FC = () => {
+  const navigate = useNavigate();
+  const { SETREFNO } = useUUIDStore();
+
   const API_URL_GET_ALLCONTRACT = import.meta.env.VITE_APP_API_MONGO;
   const DRAFT_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=DRAFT`;
   const FINISH_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=FINISH`;
 
+  const { fetchCategory } = useFetchCategoryStore();
+  // console.log(`fetchCategory: `, fetchCategory);
+
   const [draft, setDraft] = useState<any[]>([]); // กำหนดให้ state เป็น array เพื่อรองรับ map()
   const [finish, setFinish] = useState<any[]>([]); // กำหนดให้ state เป็น array เพื่อรองรับ map()
-
+  
   useEffect(() => {
     const getDataDraft = async () => {
       try {
@@ -46,6 +57,11 @@ const SalesOverview: React.FC = () => {
     getDataFinish();
   }, []);
 
+  const handleAddItemClick = () => {
+    SETREFNO(); // Generate a new REFNO before navigating
+    navigate('/sale/package'); // Navigate to the package page
+  };
+
   return (
     <>
       <Content>
@@ -67,9 +83,9 @@ const SalesOverview: React.FC = () => {
           </div>
 
           <div className='d-flex justify-content-end mb-5 mt-10'>
-            <Link to='/sale/package' className='btn btn-primary w-100 w-md-100 w-lg-auto'>
+            <button onClick={handleAddItemClick} className='btn btn-primary w-100 w-md-100 w-lg-auto'>
               เพิ่มรายการ
-            </Link>
+            </button>
           </div>
         </div>
 

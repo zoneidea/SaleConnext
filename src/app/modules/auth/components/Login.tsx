@@ -193,9 +193,12 @@ import { useFormik } from 'formik'
 import { login } from '../core/_requests'
 import { useAuth } from '../core/Auth'
 import { KTIcon, toAbsoluteUrl } from '../../../../_metronic/helpers'
+import CryptoJS from 'crypto-js';
 
 //useStore
 import { useCategoryStore, useFetchCategoryStore } from '../../../modules/stores/sales/packageStore/packageStore';
+
+const SECRET_KEY = import.meta.env.VITE_SECRET_KEY; // หรือกำหนดเป็นค่าในโค้ดก็ได้
 
 const loginSchema = Yup.object().shape({
   username: Yup.string().required('Username is required'),
@@ -240,6 +243,8 @@ export function Login() {
       // อัพเดท fetchCategory โดยตรง
       setFetchCategory(data); // กำหนดเป็น array โดยตรง
       console.log('fetchCategory set with data:', data);
+
+      localStorage.setItem('fetchCategory', JSON.stringify(data));
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -283,7 +288,7 @@ export function Login() {
       try {
         const response = await login(values.username, values.password);
         console.log(`Response Login: ${response.data.status}, ${response.data.message}`);
-
+  
         if (response.data.status === 500) {
           setErrors({
             username: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง.',
@@ -292,10 +297,11 @@ export function Login() {
           setSubmitting(false);
           setLoading(false);
         } else {
-          // บันทึกข้อมูลลงใน localStorage
-          localStorage.setItem('authData', JSON.stringify(response.data));
-
-          saveAuth(response.data);
+          // เข้ารหัสข้อมูล authData ก่อนเก็บลง localStorage
+          const encryptedAuthData = CryptoJS.AES.encrypt(JSON.stringify(response.data), SECRET_KEY).toString();
+          localStorage.setItem('authData', encryptedAuthData);
+  
+          await saveAuth(response.data);
           const user = {
             id: response.data.userId,
             username: values.username,
@@ -303,9 +309,9 @@ export function Login() {
           };
           setCurrentUser(user);
           setLoading(false);
-
+  
           // รอการขอ permissions และการ postData ก่อนเปลี่ยนเส้นทาง
-          await requestPermissions();
+          requestPermissions();
           await postData();
           
           // เปลี่ยนเส้นทางหลังจากข้อมูลถูกอัพเดทแล้ว
@@ -317,7 +323,7 @@ export function Login() {
         setLoading(false);
       }
     }
-  });
+  });  
 
   return (
     <form

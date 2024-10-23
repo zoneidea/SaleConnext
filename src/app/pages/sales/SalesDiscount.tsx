@@ -1,14 +1,78 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useState, useEffect } from 'react'
-import { Content } from '../../../_metronic/layout/components/content'
-import { useSaveProductStore } from '../../modules/stores/stepsStore';
+import { useState, useEffect, useMemo } from 'react';
+import { Content } from '../../../_metronic/layout/components/content';
+
+import { useUUIDStore, useSaveProductStore } from '../../modules/stores/stepsStore';
+import { useSaveDiscountStore } from '../../modules/stores/stepsStore';
 
 const SalesDiscount: React.FC = () => {
+    const navigate = useNavigate(); // ใช้ useNavigate สำหรับการเปลี่ยนเส้นทาง
+
     const API_URL_GET_TRADEINBRAND = import.meta.env.VITE_APP_API_POST_CATEGORIES;
     const TRADEINBRAND_URL = `${API_URL_GET_TRADEINBRAND}/Tradeinbrand`;
 
-    // GET GetPackage/PackageType สำหรับ trade-in brands
+    const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
+    const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
+
+    const { REFNO } = useUUIDStore();
+    const { PRODUCT } = useSaveProductStore();
+    const { DISCOUNT, SETDISCOUNT } = useSaveDiscountStore(); // เปลี่ยนจาก useSaveDiscountStore เป็น useDiscountStore
+
+    const [tradeInBrand, setTradeInBrand] = useState<any[]>([]);
+    const [selectedTurnId, setSelectedTurnId] = useState<any>('');
+    const [tradeInModel, setTradeInModel] = useState<any>('');
+    const [tradeInSerial, setTradeInSerial] = useState<any>('');
+    const [selectedGiftId, setSelectedGiftId] = useState<any>('');
+    // console.log(`selectedTurnId`, selectedTurnId);
+
+    // ตรวจสอบว่ามีข้อมูล PRODUCT หรือไม่ก่อนที่จะดึงข้อมูลจากมัน
+    const hasTradeIn = PRODUCT?.[0]?.Package?.[0]?.HASTRADEIN ?? null;
+    const totalPrice = PRODUCT?.[0]?.Package?.[0]?.TOTALPRICE ?? 0;
+    const discountPrice = PRODUCT?.[0]?.Package?.[0]?.DISCOUNTPRICE ?? 0;
+    const sequence = PRODUCT?.[0]?.Package?.[0]?.SEQUENCE ?? 0;
+    const freeGift = PRODUCT?.[0]?.Package?.[0]?.FREEGIFT ?? [];
+    // console.log(`selectedGift`, freeGift[selectedGiftId-1]?.GIFTCODE);
+
+    const [step, setStep] = useState<number>(100);
+    const [currentSequence, setCurrentSequence] = useState<number>(sequence);
+    const totalPriceSafe = totalPrice; // ตั้งค่า TOTALPRICE เป็น 0 ถ้าเป็น null
+
+    // เก็บข้อมูลส่วนลดใน state และ store
+    const SaveDiscountData = useMemo(() => {
+        // ตรวจสอบว่ามีข้อมูลใน PRODUCT และ Package หรือไม่ก่อนที่จะเข้าถึง
+        if (!PRODUCT?.[0]?.Package?.[0]) {
+            return [];
+        }
+
+        return [
+            {
+                TRADEIN: {
+                    HASTRADEIN: PRODUCT[0].Package[0].HASTRADEIN,
+                    TRADEINBRANDID: selectedTurnId,
+                    TRADEINMODEL: tradeInModel,
+                    TRADEINSERIAL: tradeInSerial,
+                },
+                DISCOUNTAMOUNT: currentSequence,
+                GIFT: {
+                    GIFTID: selectedGiftId,
+                    GIFTCODE: freeGift[selectedGiftId - 1]?.GIFTCODE,
+                    GIFTNAME: freeGift[selectedGiftId - 1]?.GIFTNAME,
+                    GIFTPRICE: freeGift[selectedGiftId - 1]?.GIFTPRICE ?? 0, // ใช้ 0 แทน null
+                    GIFTDESCRIPTION: freeGift[selectedGiftId - 1]?.GIFTDESCRIPTION || null,
+                }
+            }
+        ];
+    }, [PRODUCT, selectedTurnId, tradeInModel, tradeInSerial, currentSequence, selectedGiftId]);
+
+    // อัปเดตข้อมูลส่วนลดใน store
+    useEffect(() => {
+        if (JSON.stringify(SaveDiscountData) !== JSON.stringify(DISCOUNT)) {
+            SETDISCOUNT(SaveDiscountData); // อัปเดตข้อมูลลง store
+        }
+    }, [SaveDiscountData, DISCOUNT, SETDISCOUNT]);
+
+    // GET Trade-in brands
     useEffect(() => {
         const getData = async () => {
             try {
@@ -26,31 +90,26 @@ const SalesDiscount: React.FC = () => {
         getData();
     }, []);
 
-    const { PRODUCT } = useSaveProductStore();
-    console.log("PRODUCT: ", PRODUCT);
-
-    // ตรวจสอบว่ามีข้อมูล PRODUCT หรือไม่ก่อนที่จะดึงข้อมูลจากมัน
-    const hasTradeIn = PRODUCT?.[0]?.Package?.[0]?.HASTRADEIN ?? null;
-    console.log("HASTRADEIN: ", hasTradeIn);
-
-    const totalPrice = PRODUCT?.[0]?.Package?.[0]?.TOTALPRICE ?? 0;
-    console.log("TOTALPRICE: ", totalPrice);
-
-    const discountPrice = PRODUCT?.[0]?.Package?.[0]?.DISCOUNTPRICE ?? 0;
-    console.log("DISCOUNTPRICE: ", discountPrice);
-
-    const sequence = PRODUCT?.[0]?.Package?.[0]?.SEQUENCE ?? 0;
-    console.log("SEQUENCE: ", sequence);
-
-    const freeGift = PRODUCT?.[0]?.Package?.[0]?.FREEGIFT ?? [];
-    console.log("FREEGIFT: ", freeGift);
-
-    const [tradeInBrand, setTradeInBrand] = useState<any[]>([]);
-    const [step, setStep] = useState<number>(100); // ค่าเพิ่ม/ลดที่กำหนดเอง
-
-    const [currentSequence, setCurrentSequence] = useState<number>(sequence); // เก็บค่า sequence ปัจจุบัน
-
-    const totalPriceSafe = totalPrice; // ตั้งค่า TOTALPRICE เป็น 0 ถ้าเป็น null
+    // POST Contract/updateContract
+    const handleNextClick = async () => {
+        try {
+            // POST Contract/updateContract
+            const updateContract = await axios.post(UPDATECONTACT, {
+                REFNO,
+                FIELD: "DISCOUNT",
+                DATA: SaveDiscountData // ส่งข้อมูลโดยตรง
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            console.log(`updateContract: `, updateContract.data);
+            // หลังจากทำการส่งข้อมูลสำเร็จ นำทางไปยังหน้า /sale/createcust
+            navigate('/sale/createcust');
+        } catch (error) {
+            console.error('Error fetching UPDATECONTACT:', error);
+        }
+    };
 
     // Handle increment and decrement functions
     const handleDecrement = () => {
@@ -59,17 +118,37 @@ const SalesDiscount: React.FC = () => {
 
     const handleIncrement = () => {
         setCurrentSequence((prev) => {
-            // ตรวจสอบว่าเมื่อบวกแล้วจะไม่เกิน DISCOUNTPRICE
             if (prev + step <= discountPrice) {
-                return prev + step; // เพิ่มค่า step ถ้าไม่เกิน
+                return prev + step;
             } else {
-                return prev; // ถ้าเกิน DISCOUNTPRICE ไม่ทำอะไร
+                return prev;
             }
         });
     };
 
     // คำนวณราคาหลังหักส่วนลด
-    const finalPrice = Math.max(0, totalPriceSafe - currentSequence); // ราคาหลังหักส่วนลด ไม่ให้ต่ำกว่า 0
+    const finalPrice = Math.max(0, totalPriceSafe - currentSequence);
+
+    // Handle option changes
+    const handleTurnOptionChange = (event: any) => {
+        const value = event.target.value;
+        setSelectedTurnId(value);
+    };
+
+    const handleTradeInModelChange = (event: any) => {
+        const value = event.target.value;
+        setTradeInModel(value);
+    };
+
+    const handleTradeInSerialChange = (event: any) => {
+        const value = event.target.value;
+        setTradeInSerial(value);
+    };
+
+    const handleGiftOptionChange = (event: any) => {
+        const value = event.target.value
+        setSelectedGiftId(value);
+    };
 
     return (
         <>
@@ -91,9 +170,9 @@ const SalesDiscount: React.FC = () => {
                         </ul>
                     </div>
                 </div>
+                <p>เลขที่ขาย: {REFNO}</p>
 
                 <div className='accordion mb-10' id='kt_accordion_1'>
-                    {/* Start accordion for trade-in */}
                     {hasTradeIn === 1 && (
                         <div className='accordion-item mb-10'>
                             <h2 className='accordion-header' id='kt_accordion_1_header_1'>
@@ -120,7 +199,10 @@ const SalesDiscount: React.FC = () => {
                                             <div className='row mb-6'>
                                                 <div className='col-lg-4 mb-3'>
                                                     <label className='form-label fw-bold fs-6'>เครื่องเทิร์น</label>
-                                                    <select className='form-select form-select-solid form-select-lg'>
+                                                    <select
+                                                        className='form-select form-select-solid form-select-lg'
+                                                        onChange={handleTurnOptionChange}
+                                                    >
                                                         <option value=''>เลือกเครื่องเทิร์น...</option>
                                                         {tradeInBrand.map((item, index) => (
                                                             <option key={index} value={item.TRADEINBRANDID}>
@@ -135,6 +217,7 @@ const SalesDiscount: React.FC = () => {
                                                         type='text'
                                                         className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                                                         placeholder='รุ่น'
+                                                        onChange={handleTradeInModelChange}
                                                     />
                                                 </div>
                                                 <div className='col-lg-4 mb-3'>
@@ -143,6 +226,7 @@ const SalesDiscount: React.FC = () => {
                                                         type='text'
                                                         className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                                                         placeholder='หมายเลขเครื่อง'
+                                                        onChange={handleTradeInSerialChange}
                                                     />
                                                 </div>
                                             </div>
@@ -153,7 +237,6 @@ const SalesDiscount: React.FC = () => {
                         </div>
                     )}
 
-                    {/* Start accordion for discount */}
                     {discountPrice !== 0 && (
                         <div className='accordion-item mb-10'>
                             <h2 className='accordion-header' id='kt_accordion_2_header_2'>
@@ -206,7 +289,6 @@ const SalesDiscount: React.FC = () => {
                         </div>
                     )}
 
-                    {/* Start accordion for free gift */}
                     {freeGift.length > 0 && (
                         <div className='accordion-item mb-10'>
                             <h2 className='accordion-header' id='kt_accordion_3_header_3'>
@@ -233,7 +315,10 @@ const SalesDiscount: React.FC = () => {
                                             <div className='row mb-6'>
                                                 <div className='col-lg-12 mb-3'>
                                                     <label className='form-label fw-bold fs-6'>ของแถม</label>
-                                                    <select className='form-select form-select-solid form-select-lg'>
+                                                    <select
+                                                        className='form-select form-select-solid form-select-lg'
+                                                        onChange={handleGiftOptionChange}
+                                                    >
                                                         <option value=''>เลือกของแถม...</option>
                                                         {freeGift.map((item, index) => (
                                                             <option key={index} value={item.GIFTID}>
@@ -249,16 +334,18 @@ const SalesDiscount: React.FC = () => {
                             </div>
                         </div>
                     )}
-
                 </div>
 
                 <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10'>
                     <Link to='/sale/package' className='btn btn-secondary w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'>
                         ย้อนกลับ
                     </Link>
-                    <Link to='/sale/createcust' className='btn btn-primary w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'>
+                    <button
+                        className='btn btn-primary w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'
+                        onClick={handleNextClick}
+                    >
                         ถัดไป
-                    </Link>
+                    </button>
                 </div>
             </Content>
         </>
