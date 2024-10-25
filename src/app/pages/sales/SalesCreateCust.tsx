@@ -589,6 +589,31 @@ const SalesCreateCust: React.FC = () => {
         setSelectedZipcodeForInstall('');
     };
 
+    // ที่อยู่ลูกค้า (เก็บเงิน)
+    const handleProvinceChangeForPayment = (e: ChangeEvent<HTMLSelectElement>) => {
+        const value = Number(e.target.value);
+        setSelectedProvinceForPayment(value);
+        // Reset district, subdistrict, and zipcode
+        setSelectedDistrictForPayment(undefined);
+        setSelectedSubDistrictForPayment(undefined);
+        setSelectedZipcodeForPayment('');
+    };
+
+    const handleDistrictChangeForPayment = (e: ChangeEvent<HTMLSelectElement>) => {
+        const value = Number(e.target.value);
+        setSelectedDistrictForPayment(value);
+        // Reset subdistrict and zipcode
+        setSelectedSubDistrictForPayment(undefined);
+        setSelectedZipcodeForPayment('');
+    };
+
+    const handleSubDistrictChangeForPayment = (e: ChangeEvent<HTMLSelectElement>) => {
+        const value = Number(e.target.value);
+        setSelectedSubDistrictForPayment(value);
+        // Reset zipcode
+        setSelectedZipcodeForPayment('');
+    };
+
     // จัดการติ้กใน accordion ที่อยู่ลูกค้า (ตามบัตร)
     const handleCheckboxChange = (event: ChangeEvent<HTMLInputElement>) => {
         const { name, checked } = event.target;
@@ -1445,6 +1470,8 @@ const SalesCreateCust: React.FC = () => {
                                                         <div className='col-lg-4 mb-3'>
                                                             <label className='form-label required fw-bold fs-6'>บ้านเลขที่</label>
                                                             <input
+                                                                value={addressNumberForPayment}
+                                                                onChange={(e) => setAddressNumberForPayment(e.target.value)}
                                                                 type='text'
                                                                 className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                                                                 placeholder='บ้านเลขที่'
@@ -1453,6 +1480,8 @@ const SalesCreateCust: React.FC = () => {
                                                         <div className='col-lg-4 mb-3'>
                                                             <label className='form-label fw-bold fs-6'>หมู่ที่</label>
                                                             <input
+                                                                value={addressMooForPayment}
+                                                                onChange={(e) => setAddressMooForPayment(e.target.value)}
                                                                 type='text'
                                                                 className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                                                                 placeholder='หมู่ที่'
@@ -1461,6 +1490,8 @@ const SalesCreateCust: React.FC = () => {
                                                         <div className='col-lg-4 mb-3'>
                                                             <label className='form-label fw-bold fs-6'>ตรอก / ซอย</label>
                                                             <input
+                                                                value={addressSoiForPayment}
+                                                                onChange={(e) => setAddressSoiForPayment(e.target.value)}
                                                                 type='text'
                                                                 className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                                                                 placeholder='ตรอก / ซอย'
@@ -1472,6 +1503,8 @@ const SalesCreateCust: React.FC = () => {
                                                         <div className='col-lg-4 mb-3'>
                                                             <label className='form-label fw-bold fs-6'>ถนน</label>
                                                             <input
+                                                                value={addressRoadForPayment}
+                                                                onChange={(e) => setAddressRoadForPayment(e.target.value)}
                                                                 type='text'
                                                                 className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                                                                 placeholder='ถนน'
@@ -1479,16 +1512,30 @@ const SalesCreateCust: React.FC = () => {
                                                         </div>
                                                         <div className='col-lg-4 mb-3'>
                                                             <label className='form-label required fw-bold fs-6'>จังหวัด</label>
-                                                            <select className='form-select form-select-solid form-select-lg'>
+                                                            <select
+                                                                className='form-select form-select-solid form-select-lg'
+                                                                onChange={handleProvinceChangeForPayment}
+                                                            >
                                                                 <option value=''>เลือกจังหวัด...</option>
-                                                                <option value='AF'>Afghanistan</option>
+                                                                {getProvinceForPayment.map((item: any) => (
+                                                                    <option key={item.PROVINCECODE} value={item.PROVINCECODE}>
+                                                                        {item.PROVINCENAME}
+                                                                    </option>
+                                                                ))}
                                                             </select>
                                                         </div>
                                                         <div className='col-lg-4 mb-3'>
                                                             <label className='form-label required fw-bold fs-6'>อำเภอ / เขต</label>
-                                                            <select className='form-select form-select-solid form-select-lg'>
+                                                            <select
+                                                                className='form-select form-select-solid form-select-lg'
+                                                                onChange={handleDistrictChangeForPayment}
+                                                            >
                                                                 <option value=''>เลือกอำเภอ / เขต...</option>
-                                                                <option value='AF'>Afghanistan</option>
+                                                                {Array.isArray(getDistrictForPayment) && getDistrictForPayment.map((item: any) => (
+                                                                    <option key={item.DISTRICTCODE} value={item.DISTRICTCODE}>
+                                                                        {item.DISTRICTNAME}
+                                                                    </option>
+                                                                ))}
                                                             </select>
                                                         </div>
                                                     </div>
@@ -1496,21 +1543,32 @@ const SalesCreateCust: React.FC = () => {
                                                     <div className='row mb-6'>
                                                         <div className='col-lg-4 mb-3'>
                                                             <label className='form-label required fw-bold fs-6'>ตำบล / แขวง</label>
-                                                            <select className='form-select form-select-solid form-select-lg'>
+                                                            <select
+                                                                className='form-select form-select-solid form-select-lg'
+                                                                onChange={handleSubDistrictChangeForPayment}
+                                                            >
                                                                 <option value=''>เลือกตำบล / แขวง...</option>
-                                                                <option value='AF'>Afghanistan</option>
+                                                                {Array.isArray(getSubDistrictForPayment) && getSubDistrictForPayment.map((item: any) => (
+                                                                    <option key={item.SUBDISTRICTCODE} value={item.SUBDISTRICTCODE}>
+                                                                        {item.SUBDISTRICTNAME}
+                                                                    </option>
+                                                                ))}
                                                             </select>
                                                         </div>
                                                         <div className='col-lg-4 mb-3'>
                                                             <label className='form-label required fw-bold fs-6'>รหัสไปรษณีย์</label>
-                                                            <select className='form-select form-select-solid form-select-lg'>
-                                                                <option value=''>เลือกรหัสไปรษณีย์...</option>
-                                                                <option value='AF'>Afghanistan</option>
-                                                            </select>
+                                                            <input
+                                                                type='text'
+                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                                value={selectedZipcodeForPayment}
+                                                                readOnly
+                                                            />
                                                         </div>
                                                         <div className='col-lg-4 mb-3'>
                                                             <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
                                                             <input
+                                                                value={addressPhoneForPayment}
+                                                                onChange={(e) => setAddressPhoneForPayment(e.target.value)}
                                                                 type='text'
                                                                 className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                                                                 placeholder='เบอร์ที่ติดต่อได้'
@@ -1709,6 +1767,16 @@ const SalesCreateCust: React.FC = () => {
                                                                 checked={showBillingSameAsInstallAddress} // ตรวจสอบการเลือก
                                                             />
                                                             <span className='fw-bold ps-2 fs-6 mb-sm-5'>ใช้เหมือนที่อยู่ลูกค้า (ติดตั้ง)</span>
+                                                        </label>
+                                                        <label className='form-check form-check-inline form-check-solid me-5'>
+                                                            <input
+                                                                className='form-check-input'
+                                                                name='showBillingSameAsPaymentAddress'
+                                                                type='checkbox'
+                                                                onChange={handleCheckboxTaxChange}
+                                                                // checked={showBillingSameAsPaymentAddress} // ตรวจสอบการเลือก
+                                                            />
+                                                            <span className='fw-bold ps-2 fs-6 mb-sm-5'>ใช้เหมือนที่อยู่ลูกค้า (เก็บเงิน)</span>
                                                         </label>
                                                     </div>
                                                 </div>
