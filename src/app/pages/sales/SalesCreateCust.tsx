@@ -33,11 +33,6 @@ const SalesCreateCust: React.FC = () => {
     const { addressCard, setAddressCard } = useAddressCardStore();
 
     const [customerTypes, setCustomerTypes] = useState<any[]>([]);
-    const [getProvince, setGetProvince] = useState<any[]>([]);
-    const [getDistrict, setGetDistrict] = useState<any[]>([]);
-    // console.log("getDistrict:", getDistrict);
-    const [getSubDistrict, setGetSubDistrict] = useState<any[]>([]);
-    const [getZipcode, setGetZipcode] = useState<any[]>([]);
 
     const [showCustomerAddress, setShowCustomerAddress] = useState(true);
     const [showInstallAddress, setShowInstallAddress] = useState(false);
@@ -52,15 +47,6 @@ const SalesCreateCust: React.FC = () => {
     const [selectedPrefixId, setSelectedPrefixId] = useState<number>();
     const [selectedSexId, setSelectedSexId] = useState<number>();
 
-    const [selectedProvince, setSelectedProvince] = useState<number>();
-    console.log(`selectedProvince`, selectedProvince);
-    const [selectedDistrict, setSelectedDistrict] = useState<number>();
-    console.log(`selectedDistrict`, selectedDistrict);
-    const [selectedSubDistrict, setSelectedSubDistrict] = useState<number>();
-    console.log(`selectedSubDistrict`, selectedSubDistrict);
-    const [selectedZipcode, setSelectedZipcode] = useState<string>('');
-    console.log(`selectedZipcode`, selectedZipcode);
-
     const [idCard, setIdCard] = useState<string>('');
     const [fullName, setFullName] = useState<string>('');
     const [age, setAge] = useState<string>('');
@@ -71,16 +57,57 @@ const SalesCreateCust: React.FC = () => {
 
     const selectedCustomer = customerTypes.find((type) => type.CUSTOMERTYPE === selectedCustomerType) || { CARDTYPE: [], PREFIX: [], SEX: [] };
 
+    // ที่อยู่ลูกค้า ตามบัตร
+    const [getProvince, setGetProvince] = useState<any[]>([]);
+    const [getDistrict, setGetDistrict] = useState<any[]>([]);
+    const [getSubDistrict, setGetSubDistrict] = useState<any[]>([]);
+    const [getZipcode, setGetZipcode] = useState<any[]>([]);
+
+    // สร้าง state สำหรับ "ที่อยู่ลูกค้า (ตามบัตร)
     const [addressNumber, setAddressNumber] = useState<string>('');
     const [addressMoo, setAddressMoo] = useState<string>('');
     const [addressSoi, setAddressSoi] = useState<string>('');
     const [addressRoad, setAddressRoad] = useState<string>('');
-    const [addressProvince, setAddressProvince] = useState<string>('');
-    const [addressDistrict, setAddressDistrict] = useState<string>('');
-    const [addressSubdistrict, setAddressSubdistrict] = useState<string>('');
-    const [addressZipcode, setAddressZipcode] = useState<string>('');
+    const [selectedProvince, setSelectedProvince] = useState<number>();
+    const [selectedDistrict, setSelectedDistrict] = useState<number>();
+    const [selectedSubDistrict, setSelectedSubDistrict] = useState<number>();
+    const [selectedZipcode, setSelectedZipcode] = useState<string>('');
     const [addressPhone, setAddressPhone] = useState<string>('');
     const [useThisTax, setUseThisTax] = useState<string>('FALSE');
+
+    // ที่อยู่ลูกค้า ติดตั้ง
+    const [getProvinceForInstall, setGetProvinceForInstall] = useState<any[]>([]);
+    const [getDistrictForInstall, setGetDistrictForInstall] = useState<any[]>([]);
+    const [getSubDistrictForInstall, setGetSubDistrictForInstall] = useState<any[]>([]);
+    const [getZipcodeForInstall, setGetZipcodeForInstall] = useState<any[]>([]);
+
+    // สร้าง state สำหรับ "ที่อยู่ลูกค้า (ติดตั้ง)
+    const [addressNumberForInstall, setAddressNumberForInstall] = useState<string>('');
+    const [addressMooForInstall, setAddressMooForInstall] = useState<string>('');
+    const [addressSoiForInstall, setAddressSoiForInstall] = useState<string>('');
+    const [addressRoadForInstall, setAddressRoadForInstall] = useState<string>('');
+    const [selectedProvinceForInstall, setSelectedProvinceForInstall] = useState<number | undefined>();
+    const [selectedDistrictForInstall, setSelectedDistrictForInstall] = useState<number | undefined>();
+    const [selectedSubDistrictForInstall, setSelectedSubDistrictForInstall] = useState<number | undefined>();
+    const [selectedZipcodeForInstall, setSelectedZipcodeForInstall] = useState<string>('');
+    const [addressPhoneForInstall, setAddressPhoneForInstall] = useState<string>('');
+
+    // ที่อยู่ลูกค้า เก็บเงิน
+    const [getProvinceForPayment, setGetProvinceForPayment] = useState<any[]>([]);
+    const [getDistrictForPayment, setGetDistrictForPayment] = useState<any[]>([]);
+    const [getSubDistrictForPayment, setGetSubDistrictForPayment] = useState<any[]>([]);
+    const [getZipcodeForPayment, setGetZipcodeForPayment] = useState<any[]>([]);
+
+    // สร้าง state สำหรับ "ที่อยู่ลูกค้า (เก็บเงิน)
+    const [addressNumberForPayment, setAddressNumberForPayment] = useState<string>('');
+    const [addressMooForPayment, setAddressMooForPayment] = useState<string>('');
+    const [addressSoiForPayment, setAddressSoiForPayment] = useState<string>('');
+    const [addressRoadForPayment, setAddressRoadForPayment] = useState<string>('');
+    const [selectedProvinceForPayment, setSelectedProvinceForPayment] = useState<number | undefined>();
+    const [selectedDistrictForPayment, setSelectedDistrictForPayment] = useState<number | undefined>();
+    const [selectedSubDistrictForPayment, setSelectedSubDistrictForPayment] = useState<number | undefined>();
+    const [selectedZipcodeForPayment, setSelectedZipcodeForPayment] = useState<string>('');
+    const [addressPhoneForPayment, setAddressPhoneForPayment] = useState<string>('');
 
     // สร้าง state สำหรับ "ที่อยู่ลูกค้า (ออกใบกำกับภาษี)
     const [addressNumberForBilling, setAddressNumberForBilling] = useState<string>('');
@@ -92,6 +119,10 @@ const SalesCreateCust: React.FC = () => {
     const [selectedSubDistrictForBilling, setSelectedSubDistrictForBilling] = useState<number | undefined>();
     const [selectedZipcodeForBilling, setSelectedZipcodeForBilling] = useState<string>('');
     const [addressPhoneForBilling, setAddressPhoneForBilling] = useState<string>('');
+
+    // จัดการ accordion ที่อยู่ลูกค้า (ออกใบกำกับภาษี) ให้ติ้กแค่อันใดอันหนึ่ง
+    const [showBillingSameAsCard, setShowBillingSameAsCard] = useState(false);
+    const [showBillingSameAsInstallAddress, setShowBillingSameAsInstallAddress] = useState(false);
 
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -226,6 +257,40 @@ const SalesCreateCust: React.FC = () => {
         getData();
     }, []);
 
+    // GET Province For Install
+    useEffect(() => {
+        const getData = async () => {
+            try {
+                const response = await axios.get(PROVINCE_URL, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    }
+                });
+                setGetProvinceForInstall(response.data);
+            } catch (error) {
+                console.error('Error fetching CUSTOMER_TYPE_URL:', error);
+            }
+        };
+        getData();
+    }, []);
+
+    // GET Province For Payment
+    useEffect(() => {
+        const getData = async () => {
+            try {
+                const response = await axios.get(PROVINCE_URL, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    }
+                });
+                setGetProvinceForPayment(response.data);
+            } catch (error) {
+                console.error('Error fetching CUSTOMER_TYPE_URL:', error);
+            }
+        };
+        getData();
+    }, []);
+
     // POST District
     useEffect(() => {
         const getData = async () => {
@@ -247,12 +312,53 @@ const SalesCreateCust: React.FC = () => {
         getData();
     }, [selectedProvince]);
 
+    // POST District For Install
+    useEffect(() => {
+        const getData = async () => {
+            if (selectedProvinceForInstall) { // ตรวจสอบว่ามี selectedProvince ก่อนการเรียก API
+                try {
+                    const response = await axios.post(DISTRICT_URL, { ProvinceCode: selectedProvinceForInstall }, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        }
+                    });
+                    setGetDistrictForInstall(response.data); // อัปเดต district เมื่อได้รับข้อมูลใหม่
+                } catch (error) {
+                    console.error('Error fetching DISTRICT_URL:', error);
+                }
+            } else {
+                setGetDistrictForInstall([]); // ล้างข้อมูล district เมื่อไม่ได้เลือก province
+            }
+        };
+        getData();
+    }, [selectedProvinceForInstall]);
+
+    // POST District For Payment
+    useEffect(() => {
+        const getData = async () => {
+            if (selectedProvinceForPayment) { // ตรวจสอบว่ามี selectedProvince ก่อนการเรียก API
+                try {
+                    const response = await axios.post(DISTRICT_URL, { ProvinceCode: selectedProvinceForPayment }, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        }
+                    });
+                    setGetDistrictForPayment(response.data); // อัปเดต district เมื่อได้รับข้อมูลใหม่
+                } catch (error) {
+                    console.error('Error fetching DISTRICT_URL:', error);
+                }
+            } else {
+                setGetDistrictForPayment([]); // ล้างข้อมูล district เมื่อไม่ได้เลือก province
+            }
+        };
+        getData();
+    }, [selectedProvinceForPayment]);
+
     // POST SubDistrict
     useEffect(() => {
         const fetchSubDistricts = async () => {
             if (selectedDistrict) {
                 try {
-                    console.log('Fetching SubDistricts for DistrictCode:', selectedDistrict);
                     const response = await axios.post(SUBDISTRICT_URL, { DistrictCode: selectedDistrict }, {
                         headers: {
                             'Content-Type': 'multipart/form-data',
@@ -268,6 +374,48 @@ const SalesCreateCust: React.FC = () => {
         };
         fetchSubDistricts();
     }, [selectedDistrict]);
+
+    // POST SubDistrict For Install
+    useEffect(() => {
+        const fetchSubDistricts = async () => {
+            if (selectedDistrictForInstall) {
+                try {
+                    const response = await axios.post(SUBDISTRICT_URL, { DistrictCode: selectedDistrictForInstall }, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        }
+                    });
+                    setGetSubDistrictForInstall(response.data);
+                } catch (error) {
+                    console.error('Error fetching SUBDISTRICT_URL:', error);
+                }
+            } else {
+                setGetSubDistrictForInstall([]);
+            }
+        };
+        fetchSubDistricts();
+    }, [selectedDistrictForInstall]);
+
+    // POST SubDistrict For Payment
+    useEffect(() => {
+        const fetchSubDistricts = async () => {
+            if (selectedDistrictForPayment) {
+                try {
+                    const response = await axios.post(SUBDISTRICT_URL, { DistrictCode: selectedDistrictForPayment }, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        }
+                    });
+                    setGetSubDistrictForPayment(response.data);
+                } catch (error) {
+                    console.error('Error fetching SUBDISTRICT_URL:', error);
+                }
+            } else {
+                setGetSubDistrictForPayment([]);
+            }
+        };
+        fetchSubDistricts();
+    }, [selectedDistrictForPayment]);
 
     // POST Zipcode
     useEffect(() => {
@@ -291,6 +439,52 @@ const SalesCreateCust: React.FC = () => {
         };
         getZipcode();
     }, [selectedSubDistrict]);
+
+    // POST Zipcode For Install
+    useEffect(() => {
+        const getZipcode = async () => {
+            if (selectedSubDistrictForInstall) {
+                try {
+                    const response = await axios.post(ZIPCODE_URL, { SubDistrictCode: selectedSubDistrictForInstall }, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        }
+                    });
+                    if (response.data.length > 0) {
+                        setSelectedZipcodeForInstall(response.data[0].POSTCODE); // อัปเดตรหัสไปรษณีย์ใน state
+                    }
+                } catch (error) {
+                    console.error('Error fetching ZIPCODE_URL:', error);
+                }
+            } else {
+                setSelectedZipcodeForInstall(''); // เคลียร์ข้อมูลรหัสไปรษณีย์เมื่อไม่เลือกตำบล
+            }
+        };
+        getZipcode();
+    }, [selectedSubDistrictForInstall]);
+
+    // POST Zipcode For Payment
+    useEffect(() => {
+        const getZipcode = async () => {
+            if (selectedSubDistrictForPayment) {
+                try {
+                    const response = await axios.post(ZIPCODE_URL, { SubDistrictCode: selectedSubDistrictForPayment }, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        }
+                    });
+                    if (response.data.length > 0) {
+                        setSelectedZipcodeForPayment(response.data[0].POSTCODE); // อัปเดตรหัสไปรษณีย์ใน state
+                    }
+                } catch (error) {
+                    console.error('Error fetching ZIPCODE_URL:', error);
+                }
+            } else {
+                setSelectedZipcodeForPayment(''); // เคลียร์ข้อมูลรหัสไปรษณีย์เมื่อไม่เลือกตำบล
+            }
+        };
+        getZipcode();
+    }, [selectedSubDistrictForPayment]);
 
     // validate filed
     const validateForm = () => {
@@ -345,6 +539,7 @@ const SalesCreateCust: React.FC = () => {
         }
     };
 
+    // ที่อยู่ลูกค้า (ตามบัตร)
     const handleProvinceChange = (e: ChangeEvent<HTMLSelectElement>) => {
         const value = Number(e.target.value);
         setSelectedProvince(value);
@@ -369,6 +564,32 @@ const SalesCreateCust: React.FC = () => {
         setSelectedZipcode('');
     };
 
+    // ที่อยู่ลูกค้า (ติดตั้ง)
+    const handleProvinceChangeForInstall = (e: ChangeEvent<HTMLSelectElement>) => {
+        const value = Number(e.target.value);
+        setSelectedProvinceForInstall(value);
+        // Reset district, subdistrict, and zipcode
+        setSelectedDistrictForInstall(undefined);
+        setSelectedSubDistrictForInstall(undefined);
+        setSelectedZipcodeForInstall('');
+    };
+
+    const handleDistrictChangeForInstall = (e: ChangeEvent<HTMLSelectElement>) => {
+        const value = Number(e.target.value);
+        setSelectedDistrictForInstall(value);
+        // Reset subdistrict and zipcode
+        setSelectedSubDistrictForInstall(undefined);
+        setSelectedZipcodeForInstall('');
+    };
+
+    const handleSubDistrictChangeForInstall = (e: ChangeEvent<HTMLSelectElement>) => {
+        const value = Number(e.target.value);
+        setSelectedSubDistrictForInstall(value);
+        // Reset zipcode
+        setSelectedZipcodeForInstall('');
+    };
+
+    // จัดการติ้กใน accordion ที่อยู่ลูกค้า (ตามบัตร)
     const handleCheckboxChange = (event: ChangeEvent<HTMLInputElement>) => {
         const { name, checked } = event.target;
 
@@ -377,8 +598,34 @@ const SalesCreateCust: React.FC = () => {
         } else if (name === 'showBillAddress') {
             setShowBillAddress(checked);
         } else if (name === 'showBillingSameAsCard') {
-            // เรียกฟังก์ชัน handleBillingAddressCopy เพื่อคัดลอกหรือเคลียร์ข้อมูล
-            handleBillingAddressCopy(checked);
+            handleBillingAddressCopy(checked); // Copy from customer address
+        } else if (name === 'showBillingSameAsInstallAddress') {
+            handleBillingAddressFromInstallAddressCopy(checked); // Copy from installation address
+        }
+    };
+
+    // จัดการติ้กใน accordion ที่อยู่ลูกค้า (ออกใบกำกับภาษี) ให้ติ้กได้แค่อันใดอันหนึ่ง
+    const handleCheckboxTaxChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const { name, checked } = event.target;
+
+        if (name === 'showBillingSameAsCard') {
+            if (checked) {
+                handleBillingAddressCopy(true); // คัดลอกที่อยู่จาก "ตามบัตร"
+                setShowBillingSameAsInstallAddress(false); // ยกเลิกการเลือกอีกตัวเลือก
+            } else {
+                handleBillingAddressCopy(false); // ล้างข้อมูลที่อยู่การออกใบกำกับภาษี
+            }
+            setShowBillingSameAsCard(checked); // ตั้งค่าให้เลือก/ไม่เลือกตัวเลือกนี้
+        }
+
+        if (name === 'showBillingSameAsInstallAddress') {
+            if (checked) {
+                handleBillingAddressFromInstallAddressCopy(true); // คัดลอกที่อยู่จาก "ติดตั้ง"
+                setShowBillingSameAsCard(false); // ยกเลิกการเลือกอีกตัวเลือก
+            } else {
+                handleBillingAddressFromInstallAddressCopy(false); // ล้างข้อมูลที่อยู่การออกใบกำกับภาษี
+            }
+            setShowBillingSameAsInstallAddress(checked); // ตั้งค่าให้เลือก/ไม่เลือกตัวเลือกนี้
         }
     };
 
@@ -408,9 +655,30 @@ const SalesCreateCust: React.FC = () => {
         }
     };
 
-
-    const handleShowBillTax = () => {
-        setShowBillTax(true);
+    const handleBillingAddressFromInstallAddressCopy = (checked: boolean) => {
+        if (checked) {
+            // คัดลอกข้อมูลจาก "ที่อยู่ลูกค้า (ติดตั้ง)" ไปยัง "ที่อยู่ลูกค้า (ออกใบกำกับภาษี)"
+            setAddressNumberForBilling(addressNumberForInstall);
+            setAddressMooForBilling(addressMooForInstall);
+            setAddressSoiForBilling(addressSoiForInstall);
+            setAddressRoadForBilling(addressRoadForInstall);
+            setSelectedProvinceForBilling(selectedProvinceForInstall); // คัดลอกจังหวัด
+            setSelectedDistrictForBilling(selectedDistrictForInstall); // คัดลอกอำเภอ / เขต
+            setSelectedSubDistrictForBilling(selectedSubDistrictForInstall); // คัดลอกตำบล / แขวง
+            setSelectedZipcodeForBilling(selectedZipcodeForInstall); // คัดลอกรหัสไปรษณีย์
+            setAddressPhoneForBilling(addressPhoneForInstall); // คัดลอกเบอร์โทร
+        } else {
+            // Clear billing address fields
+            setAddressNumberForBilling('');
+            setAddressMooForBilling('');
+            setAddressSoiForBilling('');
+            setAddressRoadForBilling('');
+            setSelectedProvinceForBilling(undefined);
+            setSelectedDistrictForBilling(undefined);
+            setSelectedSubDistrictForBilling(undefined);
+            setSelectedZipcodeForBilling('');
+            setAddressPhoneForBilling('');
+        }
     };
 
     const handleNextClick = async () => {
@@ -1029,8 +1297,8 @@ const SalesCreateCust: React.FC = () => {
                                                         <div className='col-lg-4 mb-3'>
                                                             <label className='form-label required fw-bold fs-6'>บ้านเลขที่</label>
                                                             <input
-                                                                // // value={fields.field4}
-                                                                // onChange={handleTextChange('field4')}
+                                                                value={addressNumberForInstall}
+                                                                onChange={(e) => setAddressNumberForInstall(e.target.value)}
                                                                 type='text'
                                                                 className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                                                                 placeholder='บ้านเลขที่'
@@ -1039,8 +1307,8 @@ const SalesCreateCust: React.FC = () => {
                                                         <div className='col-lg-4 mb-3'>
                                                             <label className='form-label fw-bold fs-6'>หมู่ที่</label>
                                                             <input
-                                                                // // value={fields.field5}
-                                                                // onChange={handleTextChange('field5')}
+                                                                value={addressMooForInstall}
+                                                                onChange={(e) => setAddressMooForInstall(e.target.value)}
                                                                 type='text'
                                                                 className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                                                                 placeholder='หมู่ที่'
@@ -1049,8 +1317,8 @@ const SalesCreateCust: React.FC = () => {
                                                         <div className='col-lg-4 mb-3'>
                                                             <label className='form-label fw-bold fs-6'>ตรอก / ซอย</label>
                                                             <input
-                                                                // // value={fields.field6}
-                                                                // onChange={handleTextChange('field6')}
+                                                                value={addressSoiForInstall}
+                                                                onChange={(e) => setAddressSoiForInstall(e.target.value)}
                                                                 type='text'
                                                                 className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                                                                 placeholder='ตรอก / ซอย'
@@ -1062,6 +1330,8 @@ const SalesCreateCust: React.FC = () => {
                                                         <div className='col-lg-4 mb-3'>
                                                             <label className='form-label fw-bold fs-6'>ถนน</label>
                                                             <input
+                                                                value={addressRoadForInstall}
+                                                                onChange={(e) => setAddressRoadForInstall(e.target.value)}
                                                                 type='text'
                                                                 className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                                                                 placeholder='ถนน'
@@ -1071,10 +1341,10 @@ const SalesCreateCust: React.FC = () => {
                                                             <label className='form-label required fw-bold fs-6'>จังหวัด</label>
                                                             <select
                                                                 className='form-select form-select-solid form-select-lg'
-                                                                onChange={(e) => setSelectedProvince(Number(e.target.value))}
+                                                                onChange={handleProvinceChangeForInstall}
                                                             >
                                                                 <option value=''>เลือกจังหวัด...</option>
-                                                                {getProvince.map((item: any) => (
+                                                                {getProvinceForInstall.map((item: any) => (
                                                                     <option key={item.PROVINCECODE} value={item.PROVINCECODE}>
                                                                         {item.PROVINCENAME}
                                                                     </option>
@@ -1083,9 +1353,16 @@ const SalesCreateCust: React.FC = () => {
                                                         </div>
                                                         <div className='col-lg-4 mb-3'>
                                                             <label className='form-label required fw-bold fs-6'>อำเภอ / เขต</label>
-                                                            <select className='form-select form-select-solid form-select-lg'>
+                                                            <select
+                                                                className='form-select form-select-solid form-select-lg'
+                                                                onChange={handleDistrictChangeForInstall}
+                                                            >
                                                                 <option value=''>เลือกอำเภอ / เขต...</option>
-                                                                <option value='AF'>Afghanistan</option>
+                                                                {Array.isArray(getDistrictForInstall) && getDistrictForInstall.map((item: any) => (
+                                                                    <option key={item.DISTRICTCODE} value={item.DISTRICTCODE}>
+                                                                        {item.DISTRICTNAME}
+                                                                    </option>
+                                                                ))}
                                                             </select>
                                                         </div>
                                                     </div>
@@ -1093,21 +1370,32 @@ const SalesCreateCust: React.FC = () => {
                                                     <div className='row mb-6'>
                                                         <div className='col-lg-4 mb-3'>
                                                             <label className='form-label required fw-bold fs-6'>ตำบล / แขวง</label>
-                                                            <select className='form-select form-select-solid form-select-lg'>
+                                                            <select
+                                                                className='form-select form-select-solid form-select-lg'
+                                                                onChange={handleSubDistrictChangeForInstall}
+                                                            >
                                                                 <option value=''>เลือกตำบล / แขวง...</option>
-                                                                <option value='AF'>Afghanistan</option>
+                                                                {Array.isArray(getSubDistrictForInstall) && getSubDistrictForInstall.map((item: any) => (
+                                                                    <option key={item.SUBDISTRICTCODE} value={item.SUBDISTRICTCODE}>
+                                                                        {item.SUBDISTRICTNAME}
+                                                                    </option>
+                                                                ))}
                                                             </select>
                                                         </div>
                                                         <div className='col-lg-4 mb-3'>
                                                             <label className='form-label required fw-bold fs-6'>รหัสไปรษณีย์</label>
-                                                            <select className='form-select form-select-solid form-select-lg'>
-                                                                <option value=''>เลือกรหัสไปรษณีย์...</option>
-                                                                <option value='AF'>Afghanistan</option>
-                                                            </select>
+                                                            <input
+                                                                type='text'
+                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                                value={selectedZipcodeForInstall}
+                                                                readOnly
+                                                            />
                                                         </div>
                                                         <div className='col-lg-4 mb-3'>
                                                             <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
                                                             <input
+                                                                value={addressPhoneForInstall}
+                                                                onChange={(e) => setAddressPhoneForInstall(e.target.value)}
                                                                 type='text'
                                                                 className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                                                                 placeholder='เบอร์ที่ติดต่อได้'
@@ -1330,15 +1618,25 @@ const SalesCreateCust: React.FC = () => {
                                                         <label className='form-label required fw-bold fs-6'>อำเภอ / เขต</label>
                                                         <select
                                                             className='form-select form-select-solid form-select-lg'
-                                                            value={selectedDistrictForBilling}
+                                                            value={
+                                                                showBillingSameAsInstallAddress
+                                                                    ? selectedDistrictForInstall  // ใช้ค่าจากที่อยู่ติดตั้งถ้าติ๊ก
+                                                                    : selectedDistrictForBilling  // ใช้ค่าจากที่อยู่ใบกำกับภาษีถ้าไม่ติ๊ก
+                                                            }
                                                             onChange={(e) => setSelectedDistrictForBilling(Number(e.target.value))}
                                                         >
                                                             <option value=''>เลือกอำเภอ / เขต...</option>
-                                                            {getDistrict.map((item: any) => (
-                                                                <option key={item.DISTRICTCODE} value={item.DISTRICTCODE}>
-                                                                    {item.DISTRICTNAME}
-                                                                </option>
-                                                            ))}
+                                                            {showBillingSameAsInstallAddress
+                                                                ? getDistrictForInstall.map((item: any) => ( // แสดงตัวเลือกจากที่อยู่ติดตั้งถ้าติ๊ก
+                                                                    <option key={item.DISTRICTCODE} value={item.DISTRICTCODE}>
+                                                                        {item.DISTRICTNAME}
+                                                                    </option>
+                                                                ))
+                                                                : getDistrict.map((item: any) => ( // แสดงตัวเลือกจากที่อยู่ใบกำกับภาษีถ้าไม่ติ๊ก
+                                                                    <option key={item.DISTRICTCODE} value={item.DISTRICTCODE}>
+                                                                        {item.DISTRICTNAME}
+                                                                    </option>
+                                                                ))}
                                                         </select>
                                                     </div>
                                                 </div>
@@ -1348,15 +1646,25 @@ const SalesCreateCust: React.FC = () => {
                                                         <label className='form-label required fw-bold fs-6'>ตำบล / แขวง</label>
                                                         <select
                                                             className='form-select form-select-solid form-select-lg'
-                                                            value={selectedSubDistrictForBilling}
+                                                            value={
+                                                                showBillingSameAsInstallAddress
+                                                                    ? selectedSubDistrictForInstall // ใช้ค่าจากที่อยู่ติดตั้งถ้าติ๊ก
+                                                                    : selectedSubDistrictForBilling // ใช้ค่าจากที่อยู่ใบกำกับภาษีถ้าไม่ติ๊ก
+                                                            }
                                                             onChange={(e) => setSelectedSubDistrictForBilling(Number(e.target.value))}
                                                         >
                                                             <option value=''>เลือกตำบล / แขวง...</option>
-                                                            {getSubDistrict.map((item: any) => (
-                                                                <option key={item.SUBDISTRICTCODE} value={item.SUBDISTRICTCODE}>
-                                                                    {item.SUBDISTRICTNAME}
-                                                                </option>
-                                                            ))}
+                                                            {showBillingSameAsInstallAddress
+                                                                ? getSubDistrictForInstall.map((item: any) => ( // แสดงตัวเลือกจากที่อยู่ติดตั้งถ้าติ๊ก
+                                                                    <option key={item.SUBDISTRICTCODE} value={item.SUBDISTRICTCODE}>
+                                                                        {item.SUBDISTRICTNAME}
+                                                                    </option>
+                                                                ))
+                                                                : getSubDistrict.map((item: any) => ( // แสดงตัวเลือกจากที่อยู่ใบกำกับภาษีถ้าไม่ติ๊ก
+                                                                    <option key={item.SUBDISTRICTCODE} value={item.SUBDISTRICTCODE}>
+                                                                        {item.SUBDISTRICTNAME}
+                                                                    </option>
+                                                                ))}
                                                         </select>
                                                     </div>
                                                     <div className='col-lg-4 mb-3'>
@@ -1387,16 +1695,18 @@ const SalesCreateCust: React.FC = () => {
                                                                 className='form-check-input'
                                                                 name='showBillingSameAsCard'
                                                                 type='checkbox'
-                                                                onChange={handleCheckboxChange}
+                                                                onChange={handleCheckboxTaxChange}
+                                                                checked={showBillingSameAsCard} // ตรวจสอบการเลือก
                                                             />
                                                             <span className='fw-bold ps-2 fs-6 mb-sm-5'>ใช้เหมือนที่อยู่ลูกค้า (ตามบัตร)</span>
                                                         </label>
                                                         <label className='form-check form-check-inline form-check-solid me-5'>
                                                             <input
                                                                 className='form-check-input'
-                                                                name='showBillingSameAsCard'
+                                                                name='showBillingSameAsInstallAddress'
                                                                 type='checkbox'
-                                                                onChange={handleCheckboxChange}
+                                                                onChange={handleCheckboxTaxChange}
+                                                                checked={showBillingSameAsInstallAddress} // ตรวจสอบการเลือก
                                                             />
                                                             <span className='fw-bold ps-2 fs-6 mb-sm-5'>ใช้เหมือนที่อยู่ลูกค้า (ติดตั้ง)</span>
                                                         </label>
