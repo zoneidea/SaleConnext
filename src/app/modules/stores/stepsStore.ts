@@ -6,6 +6,25 @@ interface UUIDStore {
     SETREFNO: () => void;
 }
 
+export const useUUIDStore = create<UUIDStore>((set) => ({
+    REFNO: (() => {
+        // ตรวจสอบใน localStorage ว่ามี REFNO หรือไม่
+        const storedREFNO = localStorage.getItem('REFNO');
+        if (storedREFNO) {
+            return storedREFNO; // ถ้ามีค่า ให้ใช้ค่าเดิมที่บันทึกไว้
+        } else {
+            const newREFNO = uuidv4().replace(/-/g, '').toUpperCase();
+            localStorage.setItem('REFNO', newREFNO); // บันทึกค่าใหม่ลงใน localStorage
+            return newREFNO; // คืนค่าใหม่ที่สร้าง
+        }
+    })(),
+    SETREFNO: () => {
+        const newREFNO = uuidv4().replace(/-/g, '').toUpperCase();
+        localStorage.setItem('REFNO', newREFNO); // บันทึกค่าใหม่ลงใน localStorage
+        set({ REFNO: newREFNO });
+    },
+}));
+
 // หน้า package
 interface SaveProduct {
     EmpId: string;
@@ -54,11 +73,6 @@ interface SaveProductStore {
     SETPRODUCT: (PRODUCT: SaveProduct[]) => void;
 }
 
-export const useUUIDStore = create<UUIDStore>((set) => ({
-    REFNO: uuidv4().replace(/-/g, '').toUpperCase(),
-    SETREFNO: () => set({ REFNO: uuidv4().replace(/-/g, '').toUpperCase() }),
-}));
-
 export const useSaveProductStore = create<SaveProductStore>((set) => ({
     PRODUCT: [],
     SETPRODUCT: (newProduct) => set({ PRODUCT: newProduct }),
@@ -94,4 +108,107 @@ interface SaveDiscountStore {
 export const useSaveDiscountStore = create<SaveDiscountStore>((set) => ({
     DISCOUNT: [],
     SETDISCOUNT: (newDiscount) => set({ DISCOUNT: newDiscount }),
+}));
+
+// หน้า createCust ข้อมูลลูกค้า
+interface SaveCardType {
+    CARDTYPE: number;
+    CARDTYPECODE: string;
+    CARDTYPENAME: string;
+}
+
+interface SavePrefix {
+    PREFIXID: number
+    PREFIXCODE: string
+    PREFIXNAME: string
+}
+
+interface SaveSex {
+    SEXID: number
+    SEXCODE: string
+    SEXNAME: string
+}
+
+interface CustomerType {
+    CUSTOMERTYPE: string;
+    CUSTOMERTYPENAME: string;
+    CUSTOMERID: string;
+    CUSTOMERNAME: string;
+    CUSTOMERMD: string; // Managing Director
+    CUSTOMERDOB: string;
+    CUSTOMERRAGE: string;
+    CUSTOMERMOBILE: string
+    CUSTOMERWORKPHONE: string
+    CUSTOMERPHONE: string
+    CUSTOMEREMAIL: string
+    CARDTYPE: SaveCardType[];
+    PREFIX: SavePrefix[];
+    SEX: SaveSex[];
+}
+
+interface SaveCustomerStore {
+    saveCustomerTypes: CustomerType[]
+    setSaveCustomerTypes: (customerTypes: CustomerType[]) => void
+}
+
+export const useSaveCustomerStore = create<SaveCustomerStore>((set) => ({
+    saveCustomerTypes: [],
+    setSaveCustomerTypes: (saveCustomerTypes) => set({ saveCustomerTypes }),
+}))
+
+// หน้า createCust ที่อยู่
+interface AddressCard {
+    ADDRESSNUMBER: string;
+    ADDRESSMOO: string,
+    ADDRESSSOI: string;
+    ADDRESSROAD: string;
+    ADDRESSPROVINCE: string;
+    ADDRESSDISTRICT: string;
+    ADDRESSSUBDISTRICT: string;
+    ADDRESSZIPCODE: string;
+    ADDRESSPHONE: string;
+    USETHISTAX: string;
+}
+
+// Define the interface for the store
+interface AddressCardStore {
+    addressCard: AddressCard;
+    setAddressCard: (newAddress: AddressCard) => void;
+    clearAddressCard: () => void;
+}
+
+// Create the Zustand store
+export const useAddressCardStore = create<AddressCardStore>((set) => ({
+    addressCard: {
+        ADDRESSNUMBER: '',
+        ADDRESSMOO: '',
+        ADDRESSSOI: '',
+        ADDRESSROAD: '',
+        ADDRESSPROVINCE: '',
+        ADDRESSDISTRICT: '',
+        ADDRESSSUBDISTRICT: '',
+        ADDRESSZIPCODE: '',
+        ADDRESSPHONE: '',
+        USETHISTAX: 'FALSE',
+    },
+
+    // Function to set a new address
+    setAddressCard: (newAddress: AddressCard) => set({ addressCard: newAddress }),
+
+    // Function to clear the address (reset to initial state)
+    clearAddressCard: () =>
+        set({
+            addressCard: {
+                ADDRESSNUMBER: '',
+                ADDRESSMOO: '',
+                ADDRESSSOI: '',
+                ADDRESSROAD: '',
+                ADDRESSPROVINCE: '',
+                ADDRESSDISTRICT: '',
+                ADDRESSSUBDISTRICT: '',
+                ADDRESSZIPCODE: '',
+                ADDRESSPHONE: '',
+                USETHISTAX: 'FALSE',
+            },
+        }),
 }));

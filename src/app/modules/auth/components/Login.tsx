@@ -193,12 +193,12 @@ import { useFormik } from 'formik'
 import { login } from '../core/_requests'
 import { useAuth } from '../core/Auth'
 import { KTIcon, toAbsoluteUrl } from '../../../../_metronic/helpers'
-import CryptoJS from 'crypto-js';
 
 //useStore
 import { useCategoryStore, useFetchCategoryStore } from '../../../modules/stores/sales/packageStore/packageStore';
 
-const SECRET_KEY = import.meta.env.VITE_SECRET_KEY; // หรือกำหนดเป็นค่าในโค้ดก็ได้
+// นำเข้า crypto-js สำหรับการเข้ารหัส
+import CryptoJS from 'crypto-js'
 
 const loginSchema = Yup.object().shape({
   username: Yup.string().required('Username is required'),
@@ -211,8 +211,8 @@ const initialValues = {
 }
 
 export function Login() {
-  const API_URL_POST_CATEGORIES = import.meta.env.VITE_APP_API_POST_CATEGORIES;
-  const CATEGORIES_URL = `${API_URL_POST_CATEGORIES}/Categories`;
+  const API_URL_POST_CATEGORIES = import.meta.env.VITE_APP_API_SALECONNEXT;
+  const CATEGORIES_URL = `${API_URL_POST_CATEGORIES}/GetProduct/Categories`;
 
   const {
     EmpId, setEmpId,
@@ -260,6 +260,9 @@ export function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // คีย์ลับสำหรับการเข้ารหัสข้อมูล
+  const SECRET_KEY = import.meta.env.VITE_APP_SECRET_KEY
+
   const requestPermissions = async () => {
     try {
       await navigator.mediaDevices.getUserMedia({ video: true });
@@ -288,7 +291,7 @@ export function Login() {
       try {
         const response = await login(values.username, values.password);
         console.log(`Response Login: ${response.data.status}, ${response.data.message}`);
-  
+
         if (response.data.status === 500) {
           setErrors({
             username: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง.',
@@ -298,10 +301,16 @@ export function Login() {
           setLoading(false);
         } else {
           // เข้ารหัสข้อมูล authData ก่อนเก็บลง localStorage
-          const encryptedAuthData = CryptoJS.AES.encrypt(JSON.stringify(response.data), SECRET_KEY).toString();
+          const authData = JSON.stringify(response.data);
+          const encryptedAuthData = CryptoJS.AES.encrypt(authData, SECRET_KEY).toString();
+          
+          // ตรวจสอบข้อมูลที่เข้ารหัสก่อนเก็บลง localStorage
+          // console.log('Encrypted authData:', encryptedAuthData);
+
+          // เก็บข้อมูลที่เข้ารหัสลงใน localStorage
           localStorage.setItem('authData', encryptedAuthData);
-  
-          await saveAuth(response.data);
+
+          saveAuth(response.data);
           const user = {
             id: response.data.userId,
             username: values.username,
@@ -309,7 +318,7 @@ export function Login() {
           };
           setCurrentUser(user);
           setLoading(false);
-  
+
           // รอการขอ permissions และการ postData ก่อนเปลี่ยนเส้นทาง
           requestPermissions();
           await postData();
@@ -323,7 +332,7 @@ export function Login() {
         setLoading(false);
       }
     }
-  });  
+  });
 
   return (
     <form

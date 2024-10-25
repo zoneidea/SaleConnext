@@ -126,23 +126,19 @@ const SalesPackage: React.FC = () => {
         selectedDescriptionEN, selectedDescriptionTH, selectedSerialNo,
         selectedStatus, selectedBranch, selectedTransDate, selectedPackageModel, packageList]);
 
-    const API_URL_POST_CATEGORIES = import.meta.env.VITE_APP_API_POST_CATEGORIES;
+    const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
+    const CATEGORIES_URL = `${API_SALECONNEXT}/GetProduct/Categories`;
+    const PACKAGE_URL = `${API_SALECONNEXT}/GetPackage/PackageType`;
+    const POST_PACKAGE_URL = `${API_SALECONNEXT}/GetPackage/PackageList`;
+    const API_URL_POST_CONDITIONSCHECKHISTORY = `${API_SALECONNEXT}/ConditionsCheckHistory`;
 
-    const CATEGORIES_URL = `${API_URL_POST_CATEGORIES}/Categories`;
+    const API_URL_POST_CHECKCUSTOMER = import.meta.env.VITE_APP_API_THIENSURAT;
+    const CHECKCUSTOMER_URL = `${API_URL_POST_CHECKCUSTOMER}/CheckCustomer`;
 
     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
     const getProductUrl = () => `${API_URL_MONGO}/Product/GetStock?empid=${EmpId}&teamSale=${TeamSale}&categoryId=${selectedCategoryId}`;
     const SAVEPRODUCTPACKAGE = `${API_URL_MONGO}/Contract/saveProductPackage`;
     const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
-
-    const API_URL_GET_PACKAGE = import.meta.env.VITE_APP_API_GET_PACKAGE;
-    const PACKAGE_URL = `${API_URL_GET_PACKAGE}/PackageType`;
-    const POST_PACKAGE_URL = `${API_URL_GET_PACKAGE}/PackageList`;
-
-    const API_URL_POST_CONDITIONSCHECKHISTORY = import.meta.env.VITE_APP_API_POST_CONDITIONSCHECKHISTORY
-
-    const API_URL_POST_CHECKCUSTOMER = import.meta.env.VITE_APP_API_THIENSURAT;
-    const CHECKCUSTOMER_URL = `${API_URL_POST_CHECKCUSTOMER}/CheckCustomer`;
 
     // สร้าง ref สำหรับส่วนแพ็คเกจ
     const packageSectionRef = useRef<HTMLDivElement>(null);
@@ -405,7 +401,7 @@ const SalesPackage: React.FC = () => {
                                                 },
                                             });
                                       
-                                            console.log(`updateContract: `, updateContract.data);
+                                            console.log(`updateContract CUSTOMERSTATUS: `, updateContract.data);
                                             navigate('/sale/discount');
                                         } catch (error) {
                                             console.error('Error updating contract:', error);
@@ -430,7 +426,7 @@ const SalesPackage: React.FC = () => {
                                                 },
                                             });
 
-                                            console.log(`updateContract: `, updateContract.data);
+                                            console.log(`updateContract CUSTOMERSTATUS: `, updateContract.data);
                                             navigate('/sale/overview');
                                         } catch (error) {
                                             console.error('Error updating contract:', error);
@@ -461,7 +457,7 @@ const SalesPackage: React.FC = () => {
                         },
                     });
               
-                    console.log(`updateContract: `, updateContract.data);
+                    console.log(`updateContract CUSTOMERSTATUS: `, updateContract.data);
                     navigate('/sale/discount');
                 } catch (error) {
                     console.error('Error updating contract:', error);

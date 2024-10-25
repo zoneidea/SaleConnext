@@ -7,17 +7,17 @@ import { useUUIDStore, useSaveProductStore } from '../../modules/stores/stepsSto
 import { useSaveDiscountStore } from '../../modules/stores/stepsStore';
 
 const SalesDiscount: React.FC = () => {
-    const navigate = useNavigate(); // ใช้ useNavigate สำหรับการเปลี่ยนเส้นทาง
+    const navigate = useNavigate();
 
-    const API_URL_GET_TRADEINBRAND = import.meta.env.VITE_APP_API_POST_CATEGORIES;
-    const TRADEINBRAND_URL = `${API_URL_GET_TRADEINBRAND}/Tradeinbrand`;
+    const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
+    const TRADEINBRAND_URL = `${API_SALECONNEXT}/GetProduct/Tradeinbrand`;
 
     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
     const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
 
     const { REFNO } = useUUIDStore();
     const { PRODUCT } = useSaveProductStore();
-    const { DISCOUNT, SETDISCOUNT } = useSaveDiscountStore(); // เปลี่ยนจาก useSaveDiscountStore เป็น useDiscountStore
+    const { DISCOUNT, SETDISCOUNT } = useSaveDiscountStore();
 
     const [tradeInBrand, setTradeInBrand] = useState<any[]>([]);
     const [selectedTurnId, setSelectedTurnId] = useState<any>('');
@@ -97,13 +97,13 @@ const SalesDiscount: React.FC = () => {
             const updateContract = await axios.post(UPDATECONTACT, {
                 REFNO,
                 FIELD: "DISCOUNT",
-                DATA: SaveDiscountData // ส่งข้อมูลโดยตรง
+                DATA: SaveDiscountData 
             }, {
                 headers: {
                     'Content-Type': 'application/json',
                 },
             });
-            console.log(`updateContract: `, updateContract.data);
+            console.log(`updateContract DISCOUNT: `, updateContract.data);
             // หลังจากทำการส่งข้อมูลสำเร็จ นำทางไปยังหน้า /sale/createcust
             navigate('/sale/createcust');
         } catch (error) {

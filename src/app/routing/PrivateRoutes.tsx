@@ -20,6 +20,7 @@ const PrivateRoutes = () => {
   const SalesDiscount = lazy(() => import('../pages/sales/SalesDiscount'))
   const SalesPackage = lazy(() => import('../pages/sales/SalesPackage'))
   const SalesProductStock = lazy(() => import('../pages/sales/SalesProductStock'))
+  const SalesPDPA = lazy(() => import('../pages/sales/SalesPDPA'))
 
   //กล้อง + รูป
   const DeviceScanBarcode = lazy(() => import('../pages/sales/components/accessCam/DeviceScanBarcode'))
@@ -162,6 +163,14 @@ const PrivateRoutes = () => {
           element={
             <SuspensedView>
               <SalesProductStock />
+            </SuspensedView>
+          }
+        />
+         <Route
+          path='sale/pdpa'
+          element={
+            <SuspensedView>
+              <SalesPDPA />
             </SuspensedView>
           }
         />
