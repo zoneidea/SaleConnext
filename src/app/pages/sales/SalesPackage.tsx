@@ -67,17 +67,22 @@ const SalesPackage: React.FC = () => {
 
     const {
         EmpId, setEmpId,
+        TeamSale, setTeamSale,
+        SaleCode, setSaleCode,
+        SupEmpId, setSupEmpId,
+        SecEmpId, setSecEmpId,
         DivisionId, setDivisionId,
         DepartId, setDepartId,
         DepartGroup, setDepartGroup,
-        TeamSale, setTeamSale,
     } = useCategoryStore();
-
+    // console.log(`EmpId`, EmpId);
+    // console.log(`EmpId`, EmpId);
+    
     const { fetchCategory } = useFetchCategoryStore();
     // console.log(`fetchCategory: `, fetchCategory);
 
     const getCategoryLocal = localStorage.getItem("fetchCategory");
-    const parsegetCategoryLocal = getCategoryLocal ? JSON.parse(getCategoryLocal) : null;    
+    const parsegetCategoryLocal = getCategoryLocal ? JSON.parse(getCategoryLocal) : null;
 
     const { product, setProduct } = useProductStore();
     // console.log(`product: `, product);
@@ -122,7 +127,7 @@ const SalesPackage: React.FC = () => {
                 }
             ] : [], // ถ้าไม่มี package ที่เลือกให้เป็น array ว่าง
         },
-    ], [EmpId, TeamSale, selectedItemCode, selectedItemDescription, selectedCategoryId,
+    ], [EmpId, TeamSale, SaleCode, SupEmpId, SecEmpId, selectedItemCode, selectedItemDescription, selectedCategoryId,
         selectedDescriptionEN, selectedDescriptionTH, selectedSerialNo,
         selectedStatus, selectedBranch, selectedTransDate, selectedPackageModel, packageList]);
 
@@ -167,13 +172,16 @@ const SalesPackage: React.FC = () => {
             }
 
             setEmpId(auth.data[0].EmpId);
+            setTeamSale(auth.data[0].TeamSale);
+            setSaleCode(auth.data[0].SaleCode);
+            setSupEmpId(auth.data[0].SupEmp);
+            setSecEmpId(auth.data[0].SecEmp);
             setDivisionId(auth.data[0].DivisionId);
             setDepartId(auth.data[0].DepartId);
             setDepartGroup(auth.data[0].DepartGroup);
-            setTeamSale(auth.data[0].TeamSale);
         };
         postData();
-    }, [EmpId, DivisionId, DepartId, DepartGroup, TeamSale, auth]);
+    }, [EmpId, TeamSale, SaleCode, SupEmpId, SecEmpId, DivisionId, DepartId, DepartGroup, auth]);
 
     // GET Product/GetStock?
     useEffect(() => {
@@ -235,10 +243,10 @@ const SalesPackage: React.FC = () => {
             }
 
             setEmpId(EmpId);
+            setTeamSale(TeamSale);
             setDivisionId(DivisionId);
             setDepartId(DepartId);
             setDepartGroup(DepartGroup);
-            setTeamSale(TeamSale);
             setItemID(ItemID);
             setPackageTypeID(PackageTypeID);
         };
@@ -331,8 +339,13 @@ const SalesPackage: React.FC = () => {
             // Save product package
             const response = await axios.post(SAVEPRODUCTPACKAGE, {
                 REFNO,
-                PRODUCT,
+                EMPID: EmpId,
+                TEAMSALE: TeamSale,
+                SALECODE: SaleCode,
+                SUPEMPID: SupEmpId,
+                SECEMPID: SecEmpId,
                 STATUS: "DRAFT",
+                PRODUCT,
             }, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -355,8 +368,10 @@ const SalesPackage: React.FC = () => {
 
             setChecktype(conditionCheckResponse.data.checktype); // อัปเดตค่า checktype ใน state
 
+            let updateData;
+
             if (conditionCheckResponse.data.checktype !== 0) {
-                MySwal.fire({
+                const { value: idCard } = await MySwal.fire({
                     title: 'ตรวจสอบประวัติลูกค้า',
                     html: `
                         <input 
@@ -373,99 +388,60 @@ const SalesPackage: React.FC = () => {
                     cancelButtonText: 'ยกเลิก',
                     preConfirm: async () => {
                         const input = (document.getElementById('idCardInput') as HTMLInputElement).value;
-                        setSearch(input);
                         if (input.length === 13) {
-                            try {
-                                // เรียก API ตรวจสอบลูกค้า
-                                const apiResponse = await axios.post(CHECKCUSTOMER_URL, { Search: input }, {
-                                    headers: {
-                                        'Content-Type': 'multipart/form-data',
-                                    },
-                                });
-
-                                if (apiResponse.data.Customerstatus === false) {
-                                    MySwal.fire({
-                                        text: apiResponse.data.message,
-                                        icon: 'error',
-                                        confirmButtonText: 'ตกลง'
-                                    }).then(async () => {
-                                        // ยิง API UPDATECONTACT หลังจากกดตกลง
-                                        try {
-                                            const updateContract = await axios.post(UPDATECONTACT, {
-                                                REFNO,
-                                                FIELD: "CUSTOMERSTATUS",
-                                                DATA: [Search, conditionCheckResponse.data.checktype, conditionCheckResponse.data.message]
-                                            }, {
-                                                headers: {
-                                                    'Content-Type': 'application/json',
-                                                },
-                                            });
-                                      
-                                            console.log(`updateContract CUSTOMERSTATUS: `, updateContract.data);
-                                            navigate('/sale/discount');
-                                        } catch (error) {
-                                            console.error('Error updating contract:', error);
-                                            MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถอัปเดตข้อมูลได้', 'error');
-                                        }
-                                    });
-                                } else {
-                                    MySwal.fire({
-                                        text: apiResponse.data.message,
-                                        icon: 'error',
-                                        confirmButtonText: 'ตกลง'
-                                    }).then(async () => {
-                                        // ยิง API UPDATECONTACT หลังจากกดตกลง
-                                        try {
-                                            const updateContract = await axios.post(UPDATECONTACT, {
-                                                REFNO,
-                                                FIELD: "CUSTOMERSTATUS",
-                                                DATA: [Search, conditionCheckResponse.data.checktype, conditionCheckResponse.data.message]
-                                            }, {
-                                                headers: {
-                                                    'Content-Type': 'application/json',
-                                                },
-                                            });
-
-                                            console.log(`updateContract CUSTOMERSTATUS: `, updateContract.data);
-                                            navigate('/sale/overview');
-                                        } catch (error) {
-                                            console.error('Error updating contract:', error);
-                                            MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถอัปเดตข้อมูลได้', 'error');
-                                        }
-                                    });
-                                }
-                            } catch (error) {
-                                console.error('Error checking customer:', error);
-                                MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถตรวจสอบข้อมูลได้', 'error');
-                            }
+                            return input;
                         } else {
                             MySwal.showValidationMessage('กรุณากรอกเลขบัตรประชาชนให้ครบ 13 หลัก');
+                            return null;
                         }
                     }
                 });
-            } else {
-                SETPRODUCT(result.data); // อัปเดต PRODUCT ใน Zustand store
-                 // ยิง API UPDATECONTACT หลังจากกดตกลง
-                 try {
-                    const updateContract = await axios.post(UPDATECONTACT, {
-                        REFNO,
-                        FIELD: "CUSTOMERSTATUS",
-                        DATA: ["", conditionCheckResponse.data.checktype, conditionCheckResponse.data.message]
-                    }, {
+
+                if (idCard) {
+                    setSearch(idCard);
+                    const apiResponse = await axios.post(CHECKCUSTOMER_URL, { Search: idCard }, {
                         headers: {
-                            'Content-Type': 'application/json',
+                            'Content-Type': 'multipart/form-data',
                         },
                     });
-              
-                    console.log(`updateContract CUSTOMERSTATUS: `, updateContract.data);
-                    navigate('/sale/discount');
-                } catch (error) {
-                    console.error('Error updating contract:', error);
-                    MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถอัปเดตข้อมูลได้', 'error');
+
+                    const { Customerstatus, message } = apiResponse.data;
+                    const destination = Customerstatus ? '/sale/overview' : '/sale/discount';
+
+                    await MySwal.fire({
+                        text: message,
+                        icon: Customerstatus ? 'success' : 'error',
+                        confirmButtonText: 'ตกลง'
+                    });
+
+                    updateData = [idCard, conditionCheckResponse.data.checktype, message];
+
+                    navigate(destination); // นำทางไปยังหน้าที่ต้องการ
                 }
+            } else {
+                SETPRODUCT(result.data); // อัปเดต PRODUCT ใน Zustand store
+                updateData = ["", conditionCheckResponse.data.checktype, conditionCheckResponse.data.message];
                 navigate('/sale/discount'); // นำทางไปยังหน้า sale/discount
             }
 
+            // เรียก API UPDATECONTACT หลังจากเสร็จสิ้นเงื่อนไขทั้งหมด
+            try {
+                const updateContract = await axios.post(UPDATECONTACT, {
+                    REFNO,
+                    EMPID: EmpId,
+                    TEAMSALE: TeamSale,
+                    FIELD: "CUSTOMERSTATUS",
+                    DATA: updateData,
+                }, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                console.log(`updateContract CUSTOMERSTATUS: `, updateContract.data);
+            } catch (error) {
+                console.error('Error updating contract:', error);
+                MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถอัปเดตข้อมูลได้', 'error');
+            }
         } catch (error) {
             console.error('Error saving product package:', error);
             MySwal.fire({

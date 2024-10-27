@@ -7,16 +7,22 @@ interface FetchCategoryStore {
 
 interface CategoryStore {
     EmpId: string;
+    TeamSale: string;
+    SaleCode: string;
+    SupEmpId: string;
+    SecEmpId: string;
     DivisionId: string;
     DepartId: string;
     DepartGroup: string;
-    TeamSale: string;
 
     setEmpId: (id: string) => void;
+    setTeamSale: (team: string) => void;
+    setSaleCode: (id: string) => void;
+    setSupEmpId: (id: string) => void;
+    setSecEmpId: (id: string) => void;
     setDivisionId: (id: string) => void;
     setDepartId: (id: string) => void;
     setDepartGroup: (group: string) => void;
-    setTeamSale: (team: string) => void;
 }
 
 interface ProductStore {
@@ -73,16 +79,22 @@ export const useFetchCategoryStore = create<FetchCategoryStore>((set) => ({
 
 export const useCategoryStore = create<CategoryStore>((set) => ({
     EmpId: '',
+    TeamSale: '',
+    SaleCode: '',
+    SupEmpId: '',
+    SecEmpId: '',
     DivisionId: '',
     DepartId: '',
     DepartGroup: '',
-    TeamSale: '',
 
     setEmpId: (id) => set({ EmpId: id }),
+    setTeamSale: (team) => set({ TeamSale: team }),
+    setSaleCode: (id) => set({ SaleCode: id }),
+    setSupEmpId: (id) => set({ SupEmpId: id }),
+    setSecEmpId: (id) => set({ SecEmpId: id }),
     setDivisionId: (id) => set({ DivisionId: id }),
     setDepartId: (id) => set({ DepartId: id }),
     setDepartGroup: (group) => set({ DepartGroup: group }),
-    setTeamSale: (team) => set({ TeamSale: team }),
 }));
 
 export const useProductStore = create<ProductStore>((set) => ({

@@ -7,7 +7,7 @@ import { ToolbarWrapper } from '../../../_metronic/layout/components/toolbar'
 import { Content } from '../../../_metronic/layout/components/content'
 import { TablesWidget5 } from '../../../_metronic/partials/widgets'
 
-const SalesHirePurchaseAgmt: React.FC = () => {
+const SalesContract: React.FC = () => {
   return (
     <>
       <Content>
@@ -182,4 +182,4 @@ const SalesHirePurchaseAgmt: React.FC = () => {
   )
 }
 
-export default SalesHirePurchaseAgmt
+export default SalesContract

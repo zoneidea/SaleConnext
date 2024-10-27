@@ -216,10 +216,13 @@ export function Login() {
 
   const {
     EmpId, setEmpId,
+    TeamSale, setTeamSale,
+    SaleCode, setSaleCode,
+    SupEmpId, setSupEmpId,
+    SecEmpId, setSecEmpId,
     DivisionId, setDivisionId,
     DepartId, setDepartId,
     DepartGroup, setDepartGroup,
-    TeamSale, setTeamSale,
   } = useCategoryStore();
 
   const { fetchCategory, setFetchCategory } = useFetchCategoryStore();
@@ -250,10 +253,13 @@ export function Login() {
     }
   
     setEmpId(auth.data[0].EmpId);
+    setTeamSale(auth.data[0].TeamSale);
+    setSaleCode(auth.data[0].SaleCode);
+    setSupEmpId(auth.data[0].SupEmp);
+    setSecEmpId(auth.data[0].SecEmp);
     setDivisionId(auth.data[0].DivisionId);
     setDepartId(auth.data[0].DepartId);
     setDepartGroup(auth.data[0].DepartGroup);
-    setTeamSale(auth.data[0].TeamSale);
   };  
 
   const { auth, saveAuth, setCurrentUser } = useAuth();

@@ -2,12 +2,20 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useState, useEffect, useMemo } from 'react';
 import { Content } from '../../../_metronic/layout/components/content';
+import { useAuth } from '../../modules/auth/core/Auth';
 
 import { useUUIDStore, useSaveProductStore } from '../../modules/stores/stepsStore';
 import { useSaveDiscountStore } from '../../modules/stores/stepsStore';
 
 const SalesDiscount: React.FC = () => {
     const navigate = useNavigate();
+
+    const { auth } = useAuth();
+    const EmpId = auth?.data?.[0]?.EmpId || '';
+    const TeamSale = auth?.data?.[0]?.TeamSale || '';
+    const SaleCode = auth?.data?.[0]?.SaleCode || '';
+    const SupEmpId = auth?.data?.[0]?.SupEmp || '';
+    const SecEmpId = auth?.data?.[0]?.SecEmp || '';
 
     const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
     const TRADEINBRAND_URL = `${API_SALECONNEXT}/GetProduct/Tradeinbrand`;
@@ -96,6 +104,11 @@ const SalesDiscount: React.FC = () => {
             // POST Contract/updateContract
             const updateContract = await axios.post(UPDATECONTACT, {
                 REFNO,
+                EMPID: EmpId,
+                TEAMSALE: TeamSale,
+                SALECODE: SaleCode,
+                SUPEMPID: SupEmpId,
+                SECEMPID: SecEmpId,
                 FIELD: "DISCOUNT",
                 DATA: SaveDiscountData 
             }, {

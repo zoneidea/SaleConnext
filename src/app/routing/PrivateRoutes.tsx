@@ -13,7 +13,7 @@ const PrivateRoutes = () => {
   const SalesProduct = lazy(() => import('../pages/sales/SalesProduct'))
   const SalesCreateCust = lazy(() => import('../pages/sales/SalesCreateCust'))
   const SalesWaterMeas = lazy(() => import('../pages/sales/SalesWaterMeas'))
-  const SalesHirePurchaseAgmt = lazy(() => import('../pages/sales/SalesHirePurchaseAgmt'))
+  const SalesContract = lazy(() => import('../pages/sales/SalesContract'))
   const SalesReceipt = lazy(() => import('../pages/sales/SalesReceipt'))
   const SalesAddCustInfo = lazy(() => import('../pages/sales/SalesAddCustInfo'))
   const Step = lazy(() => import('../pages/sales/components/step/Step'))
@@ -79,10 +79,10 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/hirepurchaseagmt'
+          path='sale/contract'
           element={
             <SuspensedView>
-              <SalesHirePurchaseAgmt />
+              <SalesContract />
             </SuspensedView>
           }
         />
