@@ -2247,7 +2247,7 @@ const SalesCreateCust: React.FC = () => {
         }
     }, [SaveCustomertData, saveCustomerTypes, setSaveCustomerTypes]);
 
-    const SaveAddressCardData = useMemo(() => {
+    const SaveAddressData = useMemo(() => {
         return [
             {
                 ADDRESSCARD: {
@@ -2262,19 +2262,53 @@ const SalesCreateCust: React.FC = () => {
                     ADDRESSPHONE: addressPhone,
                     USETHISTAX: useThisTax,
                 },
+                ADDRESSINSTALLATION: {
+                    ADDRESSNUMBER: addressNumberForInstall,
+                    ADDRESSMOO: addressMooForInstall,
+                    ADDRESSSOI: addressSoiForInstall,
+                    ADDRESSROAD: addressRoadForInstall,
+                    ADDRESSPROVINCE: selectedProvinceForInstall,
+                    ADDRESSDISTRICT: selectedDistrictForInstall,
+                    ADDRESSSUBDISTRICT: selectedSubDistrictForInstall,
+                    ADDRESSZIPCODE: selectedZipcodeForInstall,
+                    ADDRESSPHONE: addressPhoneForInstall,
+                    USETHISTAX: useThisTax,
+                },
+                ADDRESSPAYMENT: {
+                    ADDRESSNUMBER: addressNumberForPayment,
+                    ADDRESSMOO: addressMooForPayment,
+                    ADDRESSSOI: addressSoiForPayment,
+                    ADDRESSROAD: addressRoadForPayment,
+                    ADDRESSPROVINCE: selectedProvinceForPayment,
+                    ADDRESSDISTRICT: selectedDistrictForPayment,
+                    ADDRESSSUBDISTRICT: selectedSubDistrictForPayment,
+                    ADDRESSZIPCODE: selectedZipcodeForPayment,
+                    ADDRESSPHONE: addressPhoneForPayment,
+                    USETHISTAX: useThisTax,
+                },
+                ADDRESSTAX: {
+                    ADDRESSNUMBER: addressNumberForBilling,
+                    ADDRESSMOO: addressMooForBilling,
+                    ADDRESSSOI: addressSoiForBilling,
+                    ADDRESSROAD: addressRoadForBilling,
+                    ADDRESSPROVINCE: selectedProvinceForBilling,
+                    ADDRESSDISTRICT: selectedDistrictForBilling,
+                    ADDRESSSUBDISTRICT: selectedSubDistrictForBilling,
+                    ADDRESSZIPCODE: selectedZipcodeForBilling,
+                    ADDRESSPHONE: addressPhoneForBilling,
+                    USETHISTAX: useThisTax,
+                },
             },
         ];
     }, [
-        addressNumber,
-        addressMoo,
-        addressSoi,
-        addressRoad,
-        selectedProvince,
-        selectedDistrict,
-        selectedSubDistrict,
-        selectedZipcode,
-        addressPhone,
-        useThisTax
+        addressNumber, addressMoo, addressSoi, addressRoad, selectedProvince, selectedDistrict, selectedSubDistrict, 
+        selectedZipcode, addressPhone, useThisTax,
+        addressNumberForInstall, addressMooForInstall, addressSoiForInstall, addressRoadForInstall, selectedProvinceForInstall, 
+        selectedDistrictForInstall, selectedSubDistrictForInstall, selectedZipcodeForInstall, addressPhoneForInstall,
+        addressNumberForPayment, addressMooForPayment, addressSoiForPayment, addressRoadForPayment, selectedProvinceForPayment, 
+        selectedDistrictForPayment, selectedSubDistrictForPayment, selectedZipcodeForPayment, addressPhoneForPayment,
+        addressNumberForBilling, addressMooForBilling, addressSoiForBilling, addressRoadForBilling, selectedProvinceForBilling, 
+        selectedDistrictForBilling, selectedSubDistrictForBilling, selectedZipcodeForBilling, addressPhoneForBilling,
     ]);
 
     // GET Customertype
@@ -2609,7 +2643,7 @@ const SalesCreateCust: React.FC = () => {
                         SUPEMPID: SupEmpId,
                         SECEMPID: SecEmpId,
                         FIELD: "ADDRESS",
-                        DATA: SaveAddressCardData
+                        DATA: SaveAddressData
                     }, {
                         headers: {
                             'Content-Type': 'application/json',
