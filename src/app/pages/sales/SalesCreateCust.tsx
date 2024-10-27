@@ -2540,6 +2540,95 @@ const SalesCreateCust: React.FC = () => {
         getZipcode();
     }, [selectedSubDistrictForPayment]);
 
+    // เช็คว่า User กรอก ที่อยู่ลูกค้า (ออกใบกำกับภาษี) ไหม ถ้ากรอก USETHISTAX เป็น true ไม่กรอกเป็น false
+    useEffect(() => {
+        // ตรวจสอบว่าข้อมูลทั้งหมดถูกกรอกหรือไม่
+        if (
+            addressNumberForBilling &&
+            selectedProvinceForBilling !== undefined &&
+            selectedDistrictForBilling !== undefined &&
+            selectedSubDistrictForBilling !== undefined &&
+            selectedZipcodeForBilling &&
+            addressPhoneForBilling
+        ) {
+            setUseThisTax("TRUE");  // ถ้าข้อมูลครบให้ตั้งค่าเป็น "TRUE"
+        } else {
+            setUseThisTax("FALSE"); // ถ้าข้อมูลไม่ครบให้ตั้งค่าเป็น "FALSE"
+        }
+    }, [
+        addressNumberForBilling,
+        selectedProvinceForBilling,
+        selectedDistrictForBilling,
+        selectedSubDistrictForBilling,
+        selectedZipcodeForBilling,
+        addressPhoneForBilling
+    ]);
+
+    // ยิง UPDATECONTACT 
+    useEffect(() => {
+        if (
+            // ที่อยู่ลูกค้า ตามบัตร
+            addressNumber &&
+            selectedProvince !== undefined &&
+            selectedDistrict !== undefined &&
+            selectedSubDistrict !== undefined &&
+            selectedZipcode &&
+            addressPhone ||
+
+            // ที่อยู่ลูกค้า ติดตั้ง
+            addressNumberForInstall &&
+            selectedProvinceForInstall !== undefined &&
+            selectedDistrictForInstall !== undefined &&
+            selectedSubDistrictForInstall !== undefined &&
+            selectedZipcodeForInstall &&
+            addressPhoneForInstall ||
+
+            // ที่อยู่ลูกค้า เก็บเงิน
+            addressNumberForPayment &&
+            selectedProvinceForPayment !== undefined &&
+            selectedDistrictForPayment !== undefined &&
+            selectedSubDistrictForPayment !== undefined &&
+            selectedZipcodeForPayment &&
+            addressPhoneForPayment ||
+
+            // ที่อยู่ลูกค้า ออกใบกำกับ
+            addressNumberForBilling &&
+            selectedProvinceForBilling !== undefined &&
+            selectedDistrictForBilling !== undefined &&
+            selectedSubDistrictForBilling !== undefined &&
+            selectedZipcodeForBilling &&
+            addressPhoneForBilling
+        ) {
+            const updateContactData = async () => {
+                try {
+                    const response = await axios.post(UPDATECONTACT, {
+                        REFNO,
+                        EMPID: EmpId,
+                        TEAMSALE: TeamSale,
+                        SALECODE: SaleCode,
+                        SUPEMPID: SupEmpId,
+                        SECEMPID: SecEmpId,
+                        FIELD: "ADDRESS",
+                        DATA: SaveAddressCardData
+                    }, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    });
+                    console.log("updateContract ADDRESS: ", response.data);
+                } catch (error) {
+                    console.error('Error updating contact:', error);
+                }
+            };
+            updateContactData();
+        }
+    }, [
+        addressNumber, addressSoi, addressRoad, selectedProvince, selectedDistrict, selectedSubDistrict, selectedZipcode, addressPhone, useThisTax,
+        addressNumberForInstall, addressSoiForInstall, addressRoadForInstall, selectedProvinceForInstall, selectedDistrictForInstall, selectedSubDistrictForInstall, selectedZipcodeForInstall, addressPhoneForInstall,
+        addressNumberForPayment, addressSoiForPayment, addressRoadForPayment, selectedProvinceForPayment, selectedDistrictForPayment, selectedSubDistrictForPayment, selectedZipcodeForPayment, addressPhoneForPayment,
+        addressNumberForBilling, addressSoiForBilling, addressRoadForBilling, selectedProvinceForBilling, selectedDistrictForBilling, selectedSubDistrictForBilling, selectedZipcodeForBilling, addressPhoneForBilling,
+    ]);
+
     // validate filed
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {};
