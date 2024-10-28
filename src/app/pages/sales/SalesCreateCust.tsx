@@ -26,6 +26,10 @@ const SalesCreateCust: React.FC = () => {
     const SupEmpId = auth?.data?.[0]?.SupEmp || '';
     const SecEmpId = auth?.data?.[0]?.SecEmp || '';
 
+    const { REFNO } = useUUIDStore();
+    const { saveCustomerTypes, setSaveCustomerTypes } = useSaveCustomerStore()
+    // console.log(`saveCustomerTypes`,saveCustomerTypes);
+
     const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
     const CUSTOMER_TYPE_URL = `${API_SALECONNEXT}/GetCustomertype`;
     const PROVINCE_URL = `${API_SALECONNEXT}/GetAddress/Province`;
@@ -35,10 +39,6 @@ const SalesCreateCust: React.FC = () => {
 
     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
     const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
-
-    const { REFNO } = useUUIDStore();
-    const { saveCustomerTypes, setSaveCustomerTypes } = useSaveCustomerStore()
-    // console.log(`saveCustomerTypes`,saveCustomerTypes);
 
     const {
         addressCard, setAddressCard,
@@ -125,6 +125,11 @@ const SalesCreateCust: React.FC = () => {
     const [addressPhoneForPayment, setAddressPhoneForPayment] = useState<string>('');
 
     // สร้าง state สำหรับ "ที่อยู่ลูกค้า (ออกใบกำกับภาษี)
+    const [getProvinceForBilling, setGetProvinceForBilling] = useState<any[]>([]);
+    const [getDistrictForBilling, setGetDistrictForBilling] = useState<any[]>([]);
+    const [getSubDistrictForBilling, setGetSubDistrictForBilling] = useState<any[]>([]);
+    const [getZipcodeForBilling, setGetZipcodeForBilling] = useState<any[]>([]);
+
     const [addressNumberForBilling, setAddressNumberForBilling] = useState<string>('');
     const [addressMooForBilling, setAddressMooForBilling] = useState<string>('');
     const [addressSoiForBilling, setAddressSoiForBilling] = useState<string>('');
@@ -209,56 +214,86 @@ const SalesCreateCust: React.FC = () => {
         }
     }, [SaveCustomertData, saveCustomerTypes, setSaveCustomerTypes]);
 
-    const SaveAddressData = useMemo(() => ({
-        ADDRESSCARD: {
-            ADDRESSNUMBER: addressNumber,
-            ADDRESSMOO: addressMoo,
-            ADDRESSSOI: addressSoi,
-            ADDRESSROAD: addressRoad,
-            ADDRESSPROVINCE: selectedProvince ? selectedProvince.toString() : '',
-            ADDRESSDISTRICT: selectedDistrict ? selectedDistrict.toString() : '',
-            ADDRESSSUBDISTRICT: selectedSubDistrict ? selectedSubDistrict.toString() : '',
-            ADDRESSZIPCODE: selectedZipcode,
-            ADDRESSPHONE: addressPhone,
-            USETHISTAX: useThisTax,
-        },
-        ADDRESSINSTALLATION: {
-            ADDRESSNUMBER: addressNumberForInstall,
-            ADDRESSMOO: addressMooForInstall,
-            ADDRESSSOI: addressSoiForInstall,
-            ADDRESSROAD: addressRoadForInstall,
-            ADDRESSPROVINCE: selectedProvinceForInstall ? selectedProvinceForInstall.toString() : '',
-            ADDRESSDISTRICT: selectedDistrictForInstall ? selectedDistrictForInstall.toString() : '',
-            ADDRESSSUBDISTRICT: selectedSubDistrictForInstall ? selectedSubDistrictForInstall.toString() : '',
-            ADDRESSZIPCODE: selectedZipcodeForInstall,
-            ADDRESSPHONE: addressPhoneForInstall,
-            USETHISTAX: useThisTax,
-        },
-        ADDRESSPAYMENT: {
-            ADDRESSNUMBER: addressNumberForPayment,
-            ADDRESSMOO: addressMooForPayment,
-            ADDRESSSOI: addressSoiForPayment,
-            ADDRESSROAD: addressRoadForPayment,
-            ADDRESSPROVINCE: selectedProvinceForPayment ? selectedProvinceForPayment.toString() : '',
-            ADDRESSDISTRICT: selectedDistrictForPayment ? selectedDistrictForPayment.toString() : '',
-            ADDRESSSUBDISTRICT: selectedSubDistrictForPayment ? selectedSubDistrictForPayment.toString() : '',
-            ADDRESSZIPCODE: selectedZipcodeForPayment,
-            ADDRESSPHONE: addressPhoneForPayment,
-            USETHISTAX: useThisTax,
-        },
-        ADDRESSTAX: {
-            ADDRESSNUMBER: addressNumberForBilling,
-            ADDRESSMOO: addressMooForBilling,
-            ADDRESSSOI: addressSoiForBilling,
-            ADDRESSROAD: addressRoadForBilling,
-            ADDRESSPROVINCE: selectedProvinceForBilling ? selectedProvinceForBilling.toString() : '',
-            ADDRESSDISTRICT: selectedDistrictForBilling ? selectedDistrictForBilling.toString() : '',
-            ADDRESSSUBDISTRICT: selectedSubDistrictForBilling ? selectedSubDistrictForBilling.toString() : '',
-            ADDRESSZIPCODE: selectedZipcodeForBilling,
-            ADDRESSPHONE: addressPhoneForBilling,
-            USETHISTAX: useThisTax,
-        },
-    }), [
+    const SaveAddressData = useMemo(() => {
+        const province = getProvince.find(p => String(p.PROVINCECODE) === String(selectedProvince));
+        const district = getDistrict.find(p => String(p.DISTRICTCODE) === String(selectedDistrict));
+        const subDistrict = getSubDistrict.find(p => String(p.SUBDISTRICTCODE) === String(selectedSubDistrict));
+
+        const provinceForInstall = getProvinceForInstall.find(p => String(p.PROVINCECODE) === String(selectedProvinceForInstall));
+        const districtForInstall = getDistrictForInstall.find(p => String(p.DISTRICTCODE) === String(selectedDistrictForInstall));
+        const subDistrictForInstall = getSubDistrictForInstall.find(p => String(p.SUBDISTRICTCODE) === String(selectedSubDistrictForInstall));
+
+        const provinceForPayment = getProvinceForPayment.find(p => String(p.PROVINCECODE) === String(selectedProvinceForPayment));
+        const districtForPayment = getDistrictForPayment.find(p => String(p.DISTRICTCODE) === String(selectedDistrictForPayment));
+        const subDistrictForPayment = getSubDistrictForPayment.find(p => String(p.SUBDISTRICTCODE) === String(selectedSubDistrictForPayment));
+
+        const provinceForBilling = getProvince.find(p => String(p.PROVINCECODE) === String(selectedProvinceForBilling));
+        const districtForBilling = getDistrictForBilling.find(p => String(p.DISTRICTCODE) === String(selectedDistrictForBilling));
+        const subDistrictForBilling = getSubDistrictForBilling.find(p => String(p.SUBDISTRICTCODE) === String(selectedSubDistrictForBilling));
+
+        return {
+            ADDRESSCARD: {
+                ADDRESSNUMBER: addressNumber,
+                ADDRESSMOO: addressMoo,
+                ADDRESSSOI: addressSoi,
+                ADDRESSROAD: addressRoad,
+                ADDRESSPROVINCE: selectedProvince ? selectedProvince.toString() : '',
+                ADDRESSPROVINCENAME: province ? province.PROVINCENAME : '',
+                ADDRESSDISTRICT: selectedDistrict ? selectedDistrict.toString() : '',
+                ADDRESSDISTRICTNAME: district ? district.DISTRICTNAME : '',
+                ADDRESSSUBDISTRICT: selectedSubDistrict ? selectedSubDistrict.toString() : '',
+                ADDRESSSUBDISTRICTNAME: subDistrict ? subDistrict.SUBDISTRICTNAME : '',
+                ADDRESSZIPCODE: selectedZipcode,
+                ADDRESSPHONE: addressPhone,
+                USETHISTAX: useThisTax,
+            },
+            ADDRESSINSTALLATION: {
+                ADDRESSNUMBER: addressNumberForInstall,
+                ADDRESSMOO: addressMooForInstall,
+                ADDRESSSOI: addressSoiForInstall,
+                ADDRESSROAD: addressRoadForInstall,
+                ADDRESSPROVINCE: selectedProvinceForInstall ? selectedProvinceForInstall.toString() : '',
+                ADDRESSPROVINCENAME: provinceForInstall ? provinceForInstall.PROVINCENAME : '',
+                ADDRESSDISTRICT: selectedDistrictForInstall ? selectedDistrictForInstall.toString() : '',
+                ADDRESSDISTRICTNAME: districtForInstall ? districtForInstall.DISTRICTNAME : '',
+                ADDRESSSUBDISTRICT: selectedSubDistrictForInstall ? selectedSubDistrictForInstall.toString() : '',
+                ADDRESSSUBDISTRICTNAME: subDistrictForInstall ? subDistrictForInstall.SUBDISTRICTNAME : '',
+                ADDRESSZIPCODE: selectedZipcodeForInstall,
+                ADDRESSPHONE: addressPhoneForInstall,
+                USETHISTAX: useThisTax,
+            },
+            ADDRESSPAYMENT: {
+                ADDRESSNUMBER: addressNumberForPayment,
+                ADDRESSMOO: addressMooForPayment,
+                ADDRESSSOI: addressSoiForPayment,
+                ADDRESSROAD: addressRoadForPayment,
+                ADDRESSPROVINCE: selectedProvinceForPayment ? selectedProvinceForPayment.toString() : '',
+                ADDRESSPROVINCENAME: provinceForPayment ? provinceForPayment.PROVINCENAME : '',
+                ADDRESSDISTRICT: selectedDistrictForPayment ? selectedDistrictForPayment.toString() : '',
+                ADDRESSDISTRICTNAME: districtForPayment ? districtForPayment.DISTRICTNAME : '',
+                ADDRESSSUBDISTRICT: selectedSubDistrictForPayment ? selectedSubDistrictForPayment.toString() : '',
+                ADDRESSSUBDISTRICTNAME: subDistrictForPayment ? subDistrictForPayment.SUBDISTRICTNAME : '',
+                ADDRESSZIPCODE: selectedZipcodeForPayment,
+                ADDRESSPHONE: addressPhoneForPayment,
+                USETHISTAX: useThisTax,
+            },
+            ADDRESSTAX: {
+                ADDRESSNUMBER: addressNumberForBilling,
+                ADDRESSMOO: addressMooForBilling,
+                ADDRESSSOI: addressSoiForBilling,
+                ADDRESSROAD: addressRoadForBilling,
+                ADDRESSPROVINCE: selectedProvinceForBilling ? selectedProvinceForBilling.toString() : '',
+                ADDRESSPROVINCENAME: provinceForBilling ? provinceForBilling.PROVINCENAME : '',
+                ADDRESSDISTRICT: selectedDistrictForBilling ? selectedDistrictForBilling.toString() : '',
+                ADDRESSDISTRICTNAME: districtForBilling ? districtForBilling.DISTRICTNAME : '',
+                ADDRESSSUBDISTRICT: selectedSubDistrictForBilling ? selectedSubDistrictForBilling.toString() : '',
+                ADDRESSSUBDISTRICTNAME: subDistrictForBilling ? subDistrictForBilling.SUBDISTRICTNAME : '',
+                ADDRESSZIPCODE: selectedZipcodeForBilling,
+                ADDRESSPHONE: addressPhoneForBilling,
+                USETHISTAX: useThisTax,
+            },
+        };
+    }, [
         addressNumber, addressMoo, addressSoi, addressRoad, selectedProvince, selectedDistrict, selectedSubDistrict,
         selectedZipcode, addressPhone, useThisTax,
         addressNumberForInstall, addressMooForInstall, addressSoiForInstall, addressRoadForInstall, selectedProvinceForInstall,
@@ -267,6 +302,7 @@ const SalesCreateCust: React.FC = () => {
         selectedDistrictForPayment, selectedSubDistrictForPayment, selectedZipcodeForPayment, addressPhoneForPayment,
         addressNumberForBilling, addressMooForBilling, addressSoiForBilling, addressRoadForBilling, selectedProvinceForBilling,
         selectedDistrictForBilling, selectedSubDistrictForBilling, selectedZipcodeForBilling, addressPhoneForBilling,
+        getProvince, getProvinceForInstall, getProvinceForPayment
     ]);
 
     // อัปเดตข้อมูลส่วน address ลง store
@@ -370,6 +406,23 @@ const SalesCreateCust: React.FC = () => {
         getData();
     }, []);
 
+    // GET Province For Billing tax
+    useEffect(() => {
+        const getData = async () => {
+            try {
+                const response = await axios.get(PROVINCE_URL, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    }
+                });
+                setGetProvinceForBilling(response.data);
+            } catch (error) {
+                console.error('Error fetching CUSTOMER_TYPE_URL:', error);
+            }
+        };
+        getData();
+    }, []);
+
     // POST District
     useEffect(() => {
         const getData = async () => {
@@ -433,6 +486,27 @@ const SalesCreateCust: React.FC = () => {
         getData();
     }, [selectedProvinceForPayment]);
 
+    // POST District For Billing tax
+    useEffect(() => {
+        const getData = async () => {
+            if (selectedProvinceForBilling) { // ตรวจสอบว่ามี selectedProvince ก่อนการเรียก API
+                try {
+                    const response = await axios.post(DISTRICT_URL, { ProvinceCode: selectedProvinceForBilling }, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        }
+                    });
+                    setGetDistrictForBilling(response.data); // อัปเดต district เมื่อได้รับข้อมูลใหม่
+                } catch (error) {
+                    console.error('Error fetching DISTRICT_URL:', error);
+                }
+            } else {
+                setGetDistrictForBilling([]); // ล้างข้อมูล district เมื่อไม่ได้เลือก province
+            }
+        };
+        getData();
+    }, [selectedProvinceForBilling]);
+
     // POST SubDistrict
     useEffect(() => {
         const fetchSubDistricts = async () => {
@@ -495,6 +569,27 @@ const SalesCreateCust: React.FC = () => {
         };
         fetchSubDistricts();
     }, [selectedDistrictForPayment]);
+
+    // POST SubDistrict For Billing tax
+    useEffect(() => {
+        const fetchSubDistricts = async () => {
+            if (selectedDistrictForBilling) {
+                try {
+                    const response = await axios.post(SUBDISTRICT_URL, { DistrictCode: selectedDistrictForBilling }, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        }
+                    });
+                    setGetSubDistrictForBilling(response.data);
+                } catch (error) {
+                    console.error('Error fetching SUBDISTRICT_URL:', error);
+                }
+            } else {
+                setGetSubDistrictForBilling([]);
+            }
+        };
+        fetchSubDistricts();
+    }, [selectedDistrictForBilling]);
 
     // POST Zipcode
     useEffect(() => {
@@ -564,6 +659,29 @@ const SalesCreateCust: React.FC = () => {
         };
         getZipcode();
     }, [selectedSubDistrictForPayment]);
+
+    // POST Zipcode For Billing tax
+    useEffect(() => {
+        const getZipcode = async () => {
+            if (selectedSubDistrictForBilling) {
+                try {
+                    const response = await axios.post(ZIPCODE_URL, { SubDistrictCode: selectedSubDistrictForBilling }, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        }
+                    });
+                    if (response.data.length > 0) {
+                        setSelectedZipcodeForBilling(response.data[0].POSTCODE); // อัปเดตรหัสไปรษณีย์ใน state
+                    }
+                } catch (error) {
+                    console.error('Error fetching ZIPCODE_URL:', error);
+                }
+            } else {
+                setSelectedZipcodeForBilling(''); // เคลียร์ข้อมูลรหัสไปรษณีย์เมื่อไม่เลือกตำบล
+            }
+        };
+        getZipcode();
+    }, [selectedSubDistrictForBilling]);
 
     // เช็คว่า User กรอก ที่อยู่ลูกค้า (ออกใบกำกับภาษี) ไหม ถ้ากรอก USETHISTAX เป็น true ไม่กรอกเป็น false
     useEffect(() => {
@@ -2069,9 +2187,9 @@ const SalesCreateCust: React.FC = () => {
                             <Link to='/sale/discount' className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
                                 ย้อนกลับ
                             </Link>
-                            <button className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0' type='submit'>
+                            <Link to='/sale/pdpa' className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
                                 จัดเก็บข้อมูล
-                            </button>
+                            </Link>
                         </div>
                     )}
                 </form>

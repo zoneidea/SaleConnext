@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Content } from '../../../_metronic/layout/components/content';
 import { SalesItemNumber } from './components/salesItemNumber/SalesItemNumber';
 import { useUUIDStore } from '../../modules/stores/stepsStore';
+import { useAuth } from '../../modules/auth/core/Auth';
 
 //useStore
 import { useFetchCategoryStore } from '../../modules/stores/sales/packageStore/packageStore';
@@ -13,9 +14,16 @@ const SalesOverview: React.FC = () => {
   const navigate = useNavigate();
   const { SETREFNO } = useUUIDStore();
 
+  const { auth } = useAuth();
+  const EmpId = auth?.data?.[0]?.EmpId || '';
+  const TeamSale = auth?.data?.[0]?.TeamSale || '';
+  const SaleCode = auth?.data?.[0]?.SaleCode || '';
+  const SupEmpId = auth?.data?.[0]?.SupEmp || '';
+  const SecEmpId = auth?.data?.[0]?.SecEmp || '';
+
   const API_URL_GET_ALLCONTRACT = import.meta.env.VITE_APP_API_MONGO;
-  const DRAFT_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=DRAFT`;
-  const FINISH_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=FINISH`;
+  const DRAFT_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=DRAFT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`;
+  const FINISH_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=FINISH&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`;
 
   const { fetchCategory } = useFetchCategoryStore();
   // console.log(`fetchCategory: `, fetchCategory);

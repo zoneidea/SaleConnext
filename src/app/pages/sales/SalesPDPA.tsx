@@ -4,17 +4,99 @@ import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import SignaturePad from 'react-signature-pad-wrapper';
 import { Content } from '../../../_metronic/layout/components/content';
-import { SalesItemNumber } from './components/salesItemNumber/SalesItemNumber';
-import { useUUIDStore } from '../../modules/stores/stepsStore';
+import { useUUIDStore, useSaveCustomerStore } from '../../modules/stores/stepsStore';
+import { useAuth } from '../../modules/auth/core/Auth';
 
 const SalesPDPA: React.FC = () => {
-  const signaturePadRef = useRef<any>(null);
+  const navigate = useNavigate()
 
+  const { auth } = useAuth();
+  const EmpId = auth?.data?.[0]?.EmpId || '';
+  const TeamSale = auth?.data?.[0]?.TeamSale || '';
+  const SaleCode = auth?.data?.[0]?.SaleCode || '';
+  const SupEmpId = auth?.data?.[0]?.SupEmp || '';
+  const SecEmpId = auth?.data?.[0]?.SecEmp || '';
+
+  const { REFNO } = useUUIDStore();
+
+  const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
+  const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
+
+  const { saveCustomerTypes } = useSaveCustomerStore()
+  // console.log(`saveCustomerTypes`, saveCustomerTypes);
+
+  const [consentGiven, setConsentGiven] = useState(false); // ให้ความยินยอม
+  const [consentNotGiven, setConsentNotGiven] = useState(false); // ไม่ให้ความยินยอม
+
+  const signaturePadRef = useRef<any>(null);
+  const [signatureDataURL, setSignatureDataURL] = useState<string | null>(null);
+  // console.log(`signatureDataURL`, signatureDataURL);
+
+  // ตรวจสอบว่า `signaturePadRef` พร้อมใช้งานแล้ว
+  useEffect(() => {
+    if (signaturePadRef.current) {
+      // console.log("SignaturePad is ready");
+    }
+  }, [signaturePadRef]);
+
+  const clear = () => signaturePadRef.current?.clear()
+
+  // Function to save the signature
   const saveSignature = () => {
-    const signatureData = signaturePadRef.current?.toDataURL('image/png');
-    console.log(signatureData); // ส่งข้อมูลไปที่เซิร์ฟเวอร์หรือบันทึก
-    signaturePadRef.current?.clear();
+    if (signaturePadRef.current && !signaturePadRef.current.isEmpty()) {  // ตรวจสอบว่ามีข้อมูลใน pad
+      const signatureData = signaturePadRef.current.toDataURL('image/png'); // สร้าง Data URL
+      const base64Data = signatureData.replace(/^data:image\/png;base64,/, ''); // ตัด data:image/png;base64, ออก
+      setSignatureDataURL(base64Data); // เก็บเฉพาะข้อมูล base64 ใน state
+      signaturePadRef.current.clear()
+
+      handleNextClick()
+    } else {
+      console.log("Signature pad is empty or not ready."); // แจ้งเตือนหากไม่มีการเซ็น
+    }
   };
+
+  // ให้ความยินยอมหรือไม่
+  const handleConsentChange = (isGiven: boolean) => {
+    if (isGiven) {
+      setConsentGiven(true);
+      setConsentNotGiven(false);
+    } else {
+      setConsentGiven(false);
+      setConsentNotGiven(true);
+    }
+  };
+
+  const currentDate = new Date();
+  const formattedDate = `${currentDate.getDate()}/${currentDate.getMonth() + 1}/${currentDate.getFullYear()}`;
+
+  const handleNextClick = async () => {
+    try {
+      const updateContract = await axios.post(UPDATECONTACT, {
+        REFNO,
+        EMPID: EmpId,
+        TEAMSALE: TeamSale,
+        SALECODE: SaleCode,
+        SUPEMPID: SupEmpId,
+        SECEMPID: SecEmpId,
+        FIELD: "PDPA",
+        DATA: [consentGiven, signatureDataURL]
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      console.log(`updateContract PDPA: `, updateContract.data);
+      navigate('/sale/contract');
+    } catch (error) {
+      console.error('Error fetching PDPA:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (signatureDataURL) {
+      handleNextClick();
+    }
+  }, [signatureDataURL]);
 
   return (
     <>
@@ -36,6 +118,8 @@ const SalesPDPA: React.FC = () => {
             </ul>
           </div>
         </div>
+        <p>เลขที่ขาย: {REFNO}</p>
+
         <div className='card mb-10 px-4'>
           <div className='card-body flex justify-between items-center p-5'>
             <div className='col-12 text-center'>
@@ -107,17 +191,21 @@ const SalesPDPA: React.FC = () => {
               <div className='col-lg-6 mb-3 mt-xl-5'>
                 <label className='form-check form-check-inline form-check-solid me-5'>
                   <input
-                    className='form-check-input'
-                    name='showInstallAddress'
-                    type='checkbox'
+                    className="form-check-input"
+                    name="showInstallAddress"
+                    type="checkbox"
+                    checked={consentGiven}
+                    onChange={() => handleConsentChange(true)}
                   />
                   <span className='fw-bold ps-2 fs-6 mb-sm-5'>ให้ความยินยอม</span>
                 </label>
                 <label className='form-check form-check-inline form-check-solid me-5 mt-3 mt-sm-0'>
                   <input
-                    className='form-check-input'
-                    name='showBillAddress'
-                    type='checkbox'
+                    className="form-check-input"
+                    name="showBillAddress"
+                    type="checkbox"
+                    checked={consentNotGiven}
+                    onChange={() => handleConsentChange(false)}
                   />
                   <span className='fw-bold ps-2 fs-6'>ไม่ให้ความยินยอม</span>
                 </label>
@@ -128,19 +216,28 @@ const SalesPDPA: React.FC = () => {
               <SignaturePad
                 ref={signaturePadRef}
                 options={{ minWidth: 1, maxWidth: 3, penColor: 'rgb(0, 0, 0)' }}
-                canvasProps={{ className: 'responsive-canvas', style: { border: '1px solid grey', borderRadius: '10px' } }} 
-                />
+                canvasProps={{ className: 'responsive-canvas', style: { border: '1px solid grey', borderRadius: '10px' } }}
+              />
+
+              <div className='mt-5 mb-5'>
+                <button onClick={clear}>Clear</button>
+              </div>
+
               <span className="fs-1">&nbsp;</span>
-              <span className="fs-6" >ลงชื่อ...................................................เจ้าของข้อมูล</span>
+              <span className="fs-6" >ลงชื่อ {signatureDataURL ? (
+                <img src={signatureDataURL} alt="ลายเซ็น" style={{ maxWidth: '100px', marginTop: '10px' }} />
+              ) : (
+                <span>เจ้าของข้อมูล</span>
+              )}</span>
               <br />
               <br />
-              <span className="fs-6" >(..............................................................)</span>
+              <span className="fs-6" >( {saveCustomerTypes[0].CUSTOMERNAME} )</span>
               <br />
               <br />
-              <span className="fs-6" >เลขประจำตัวประชาชน..............................................</span>
+              <span className="fs-6" >เลขประจำตัวประชาชน {saveCustomerTypes[0].CUSTOMERID} </span>
               <br />
               <br />
-              <span className="fs-6" >วันที่.............../.............../...............</span>
+              <span className="fs-6" >วันที่ {formattedDate} </span>
               <span className="fs-1">&nbsp;</span>
             </div>
           </div>
@@ -149,7 +246,10 @@ const SalesPDPA: React.FC = () => {
           <Link to='/sale/discount' className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
             ย้อนกลับ
           </Link>
-          <button className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0' type='button' onClick={saveSignature}>
+          <button className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
+            type='button'
+            onClick={saveSignature}
+          >
             จัดเก็บข้อมูล
           </button>
         </div>
