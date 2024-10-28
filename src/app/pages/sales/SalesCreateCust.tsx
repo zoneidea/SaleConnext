@@ -295,14 +295,19 @@ const SalesCreateCust: React.FC = () => {
         };
     }, [
         addressNumber, addressMoo, addressSoi, addressRoad, selectedProvince, selectedDistrict, selectedSubDistrict,
-        selectedZipcode, addressPhone, useThisTax,
+        selectedZipcode, addressPhone, useThisTax, getProvince, getDistrict, getSubDistrict,
+
         addressNumberForInstall, addressMooForInstall, addressSoiForInstall, addressRoadForInstall, selectedProvinceForInstall,
         selectedDistrictForInstall, selectedSubDistrictForInstall, selectedZipcodeForInstall, addressPhoneForInstall,
+        getProvinceForInstall, getDistrictForInstall, getSubDistrictForInstall,
+
         addressNumberForPayment, addressMooForPayment, addressSoiForPayment, addressRoadForPayment, selectedProvinceForPayment,
         selectedDistrictForPayment, selectedSubDistrictForPayment, selectedZipcodeForPayment, addressPhoneForPayment,
+        getProvinceForPayment, getDistrictForPayment, getSubDistrictForPayment,
+
         addressNumberForBilling, addressMooForBilling, addressSoiForBilling, addressRoadForBilling, selectedProvinceForBilling,
         selectedDistrictForBilling, selectedSubDistrictForBilling, selectedZipcodeForBilling, addressPhoneForBilling,
-        getProvince, getProvinceForInstall, getProvinceForPayment
+        getProvinceForBilling, getDistrictForBilling, getSubDistrictForBilling,
     ]);
 
     // อัปเดตข้อมูลส่วน address ลง store
@@ -767,9 +772,14 @@ const SalesCreateCust: React.FC = () => {
         }
     }, [
         addressNumber, addressSoi, addressRoad, selectedProvince, selectedDistrict, selectedSubDistrict, selectedZipcode, addressPhone, useThisTax,
+
         addressNumberForInstall, addressSoiForInstall, addressRoadForInstall, selectedProvinceForInstall, selectedDistrictForInstall, selectedSubDistrictForInstall, selectedZipcodeForInstall, addressPhoneForInstall,
+
         addressNumberForPayment, addressSoiForPayment, addressRoadForPayment, selectedProvinceForPayment, selectedDistrictForPayment, selectedSubDistrictForPayment, selectedZipcodeForPayment, addressPhoneForPayment,
+
         addressNumberForBilling, addressSoiForBilling, addressRoadForBilling, selectedProvinceForBilling, selectedDistrictForBilling, selectedSubDistrictForBilling, selectedZipcodeForBilling, addressPhoneForBilling,
+
+        SaveAddressData
     ]);
 
     // validate filed
@@ -928,6 +938,9 @@ const SalesCreateCust: React.FC = () => {
                 setShowBillingSameAsPaymentAddress(false); // ยกเลิกการเลือกที่อยู่เก็บเงิน
             } else {
                 handleBillingAddressCopy(false); // ล้างข้อมูลที่อยู่การออกใบกำกับภาษี
+                setSelectedProvinceForBilling(0); // ล้างฟิลด์ จังหวัด
+                setSelectedDistrictForBilling(0); // ล้างฟิลด์ อำเภอ/เขต
+                setSelectedSubDistrictForBilling(0); // ล้างฟิลด์ ตำบล/แขวง
             }
             setShowBillingSameAsCard(checked); // ตั้งค่าให้เลือก/ไม่เลือกตัวเลือกนี้
         }
@@ -939,6 +952,9 @@ const SalesCreateCust: React.FC = () => {
                 setShowBillingSameAsPaymentAddress(false); // ยกเลิกการเลือกที่อยู่เก็บเงิน
             } else {
                 handleBillingAddressFromInstallAddressCopy(false); // ล้างข้อมูลที่อยู่การออกใบกำกับภาษี
+                setSelectedProvinceForBilling(0); // ล้างฟิลด์ จังหวัด
+                setSelectedDistrictForBilling(0); // ล้างฟิลด์ อำเภอ/เขต
+                setSelectedSubDistrictForBilling(0); // ล้างฟิลด์ ตำบล/แขวง
             }
             setShowBillingSameAsInstallAddress(checked); // ตั้งค่าให้เลือก/ไม่เลือกตัวเลือกนี้
         }
@@ -950,6 +966,9 @@ const SalesCreateCust: React.FC = () => {
                 setShowBillingSameAsInstallAddress(false); // ยกเลิกการเลือกที่อยู่ติดตั้ง
             } else {
                 handleBillingAddressFromPaymentAddressCopy(false); // ล้างข้อมูลที่อยู่การออกใบกำกับภาษี
+                setSelectedProvinceForBilling(0); // ล้างฟิลด์ จังหวัด
+                setSelectedDistrictForBilling(0); // ล้างฟิลด์ อำเภอ/เขต
+                setSelectedSubDistrictForBilling(0); // ล้างฟิลด์ ตำบล/แขวง
             }
             setShowBillingSameAsPaymentAddress(checked); // ตั้งค่าให้เลือก/ไม่เลือกตัวเลือกนี้
         }
@@ -968,7 +987,7 @@ const SalesCreateCust: React.FC = () => {
             setSelectedZipcodeForBilling(selectedZipcode);
             setAddressPhoneForBilling(addressPhone);
         } else {
-            // เคลียร์ข้อมูลเมื่อยกเลิกการติ๊กเช็คบ็อกซ์
+            // ล้างข้อมูลทั้งหมดเมื่อยกเลิกการติ๊กเช็คบ็อกซ์
             setAddressNumberForBilling('');
             setAddressMooForBilling('');
             setAddressSoiForBilling('');
