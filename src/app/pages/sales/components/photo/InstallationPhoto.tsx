@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { toAbsoluteUrl } from '../../../../../_metronic/helpers';
-import { useTurnStore } from '../../../../modules/stores/sales/photoStore/photoStore';
+import { usePhotoInstallationStore } from '../../../../modules/stores/sales/photoStore/photoStore';
 
-const TurnGallery: React.FC = () => {
-    const { images, addImage, removeImage, loadImages } = useTurnStore();
+const InstallationPhoto: React.FC = () => {
+    const { images, addImage, removeImage, loadImages } = usePhotoInstallationStore();
     const [error, setError] = useState<string | null>(null);
 
     const isIOS: boolean = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -162,4 +162,4 @@ const TurnGallery: React.FC = () => {
     );
 };
 
-export default TurnGallery;
+export default InstallationPhoto;

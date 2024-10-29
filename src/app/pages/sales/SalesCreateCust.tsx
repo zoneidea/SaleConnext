@@ -49,9 +49,9 @@ const SalesCreateCust: React.FC = () => {
 
     const [customerTypes, setCustomerTypes] = useState<any[]>([]);
 
+    // เพิ่ม state สำหรับจัดการค่าการติ้กใน "ที่อยู่ลูกค้า (ตามบัตร)"
     const [showCustomerAddress, setShowCustomerAddress] = useState(true);
     const [showInstallAddress, setShowInstallAddress] = useState(false);
-    const [showBillAddress, setShowBillAddress] = useState(false);
     const [showBillTax, setShowBillTax] = useState(false);
 
     const [valueCalendar, setValueCalendar] = useState<Date | null>(null);
@@ -84,6 +84,8 @@ const SalesCreateCust: React.FC = () => {
     const [addressSoi, setAddressSoi] = useState<string>('');
     const [addressRoad, setAddressRoad] = useState<string>('');
     const [selectedProvince, setSelectedProvince] = useState<number>();
+    // console.log(`selectedProvince`, selectedProvince);
+
     const [selectedDistrict, setSelectedDistrict] = useState<number>();
     const [selectedSubDistrict, setSelectedSubDistrict] = useState<number>();
     const [selectedZipcode, setSelectedZipcode] = useState<string>('');
@@ -98,6 +100,8 @@ const SalesCreateCust: React.FC = () => {
 
     // สร้าง state สำหรับ "ที่อยู่ลูกค้า (ติดตั้ง)
     const [addressNumberForInstall, setAddressNumberForInstall] = useState<string>('');
+    // console.log(`addressNumberForInstall`, addressNumberForInstall);
+
     const [addressMooForInstall, setAddressMooForInstall] = useState<string>('');
     const [addressSoiForInstall, setAddressSoiForInstall] = useState<string>('');
     const [addressRoadForInstall, setAddressRoadForInstall] = useState<string>('');
@@ -115,6 +119,8 @@ const SalesCreateCust: React.FC = () => {
 
     // สร้าง state สำหรับ "ที่อยู่ลูกค้า (เก็บเงิน)
     const [addressNumberForPayment, setAddressNumberForPayment] = useState<string>('');
+    // console.log(`addressNumberForPayment`, addressNumberForPayment);
+
     const [addressMooForPayment, setAddressMooForPayment] = useState<string>('');
     const [addressSoiForPayment, setAddressSoiForPayment] = useState<string>('');
     const [addressRoadForPayment, setAddressRoadForPayment] = useState<string>('');
@@ -139,6 +145,9 @@ const SalesCreateCust: React.FC = () => {
     const [selectedSubDistrictForBilling, setSelectedSubDistrictForBilling] = useState<number | undefined>();
     const [selectedZipcodeForBilling, setSelectedZipcodeForBilling] = useState<string>('');
     const [addressPhoneForBilling, setAddressPhoneForBilling] = useState<string>('');
+
+    // สร้าง state สำหรับควบคุมการติ๊ก
+    const [useSameAsCardAddress, setUseSameAsCardAddress] = useState(false);
 
     // จัดการ accordion ที่อยู่ลูกค้า (ออกใบกำกับภาษี) ให้ติ้กแค่อันใดอันหนึ่ง
     const [showBillingSameAsCard, setShowBillingSameAsCard] = useState(false);
@@ -913,18 +922,28 @@ const SalesCreateCust: React.FC = () => {
     // จัดการติ้กใน accordion ที่อยู่ลูกค้า (ตามบัตร)
     const handleCheckboxChange = (event: ChangeEvent<HTMLInputElement>) => {
         const { name, checked } = event.target;
-
+    
         if (name === 'showInstallAddress') {
             setShowInstallAddress(checked);
-        } else if (name === 'showBillAddress') {
-            setShowBillAddress(checked);
-        } else if (name === 'showBillingSameAsCard') {
-            handleBillingAddressCopy(checked); // Copy from customer address
-        } else if (name === 'showBillingSameAsInstallAddress') {
-            handleBillingAddressFromInstallAddressCopy(checked); // Copy from installation address
-        } else if (name === 'showBillingSameAsPaymentAddress') {
-            handleBillingAddressFromPaymentAddressCopy(checked);
+    
+            if (checked) {
+                // คัดลอกข้อมูลจากที่อยู่ติดตั้งไปยังที่อยู่ตามบัตร
+                setAddressNumberForInstall(addressNumber);
+                setAddressMooForInstall(addressMoo);
+                setAddressSoiForInstall(addressSoi);
+                setAddressRoadForInstall(addressRoad);
+                setSelectedProvinceForInstall(selectedProvince);
+                setSelectedDistrictForInstall(selectedDistrict);
+                setSelectedSubDistrictForInstall(selectedSubDistrict);
+                setSelectedZipcodeForInstall(selectedZipcode);
+                setAddressPhoneForInstall(addressPhone);
+            }
         }
+    };
+
+    // ฟังก์ชันเพื่อล้างการติ๊กเมื่อมีการเปลี่ยนแปลงข้อมูลใน accordion ที่อยู่ลูกค้า (ติดตั้ง)
+    const resetShowInstallAddress = () => {
+        setShowInstallAddress(false);
     };
 
     // จัดการติ้กใน accordion ที่อยู่ลูกค้า (ออกใบกำกับภาษี) ให้ติ้กได้แค่อันใดอันหนึ่ง
@@ -1641,156 +1660,178 @@ const SalesCreateCust: React.FC = () => {
                         )}
                         {/* End accordion ที่อยู่ลูกค้า (ตามบัตร)*/}
 
-                        {/* Start accordion ที่อยู่ลูกค้า (ติดตั้ง)*/}
-                        {showCustomerAddress && !showInstallAddress && (
-                            <div className='accordion mb-10' id='kt_accordion_3'>
-
-                                <div className='accordion-item mb-10'>
-                                    <h2 className='accordion-header' id='kt_accordion_3_header_3'>
-                                        <h3
-                                            className='accordion-button fs-4 fw-bold collapsed border-0 h-50px pt-5 rounded-top px-lg-15 px-7'
-                                            data-bs-toggle='collapse'
-                                            data-bs-target='#kt_accordion_3_body_3'
-                                            aria-expanded='true'
-                                            aria-controls='kt_accordion_3_body_3'
-                                            style={{ color: 'white', cursor: 'pointer', backgroundColor: '#3777bc' }}
-                                        >
-                                            ที่อยู่ลูกค้า (ติดตั้ง)
-                                        </h3>
-                                    </h2>
-                                    <div
-                                        id='kt_accordion_3_body_3'
-                                        className='accordion-collapse collapse show'
-                                        aria-labelledby='kt_accordion_3_header_3'
-                                        data-bs-parent='#kt_accordion_3'
+                        {/* Start accordion ที่อยู่ลูกค้า (ติดตั้ง) */}
+                        <div className='accordion mb-10' id='kt_accordion_3'>
+                            <div className='accordion-item mb-10'>
+                                <h2 className='accordion-header' id='kt_accordion_3_header_3'>
+                                    <h3
+                                        className='accordion-button fs-4 fw-bold collapsed border-0 h-50px pt-5 rounded-top px-lg-15 px-7'
+                                        data-bs-toggle='collapse'
+                                        data-bs-target='#kt_accordion_3_body_3'
+                                        aria-expanded='true'
+                                        aria-controls='kt_accordion_3_body_3'
+                                        style={{ color: 'white', cursor: 'pointer', backgroundColor: '#3777bc' }}
                                     >
-                                        <div className='accordion-body'>
-                                            {/* start form */}
-                                            <form noValidate className='form'>
-                                                <div className='card-body px-lg-9 px-1'>
-
-                                                    <div className='row mb-6'>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>บ้านเลขที่</label>
-                                                            <input
-                                                                value={addressNumberForInstall}
-                                                                onChange={(e) => setAddressNumberForInstall(e.target.value)}
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='บ้านเลขที่'
-                                                            />
-                                                        </div>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label fw-bold fs-6'>หมู่ที่</label>
-                                                            <input
-                                                                value={addressMooForInstall}
-                                                                onChange={(e) => setAddressMooForInstall(e.target.value)}
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='หมู่ที่'
-                                                            />
-                                                        </div>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label fw-bold fs-6'>ตรอก / ซอย</label>
-                                                            <input
-                                                                value={addressSoiForInstall}
-                                                                onChange={(e) => setAddressSoiForInstall(e.target.value)}
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='ตรอก / ซอย'
-                                                            />
-                                                        </div>
+                                        ที่อยู่ลูกค้า (ติดตั้ง)
+                                    </h3>
+                                </h2>
+                                <div
+                                    id='kt_accordion_3_body_3'
+                                    className='accordion-collapse collapse show'
+                                    aria-labelledby='kt_accordion_3_header_3'
+                                    data-bs-parent='#kt_accordion_3'
+                                >
+                                    <div className='accordion-body'>
+                                        <form noValidate className='form'>
+                                            <div className='card-body px-lg-9 px-1'>
+                                                <div className='row mb-6'>
+                                                    <div className='col-lg-4 mb-3'>
+                                                        <label className='form-label required fw-bold fs-6'>บ้านเลขที่</label>
+                                                        <input
+                                                            value={addressNumberForInstall}
+                                                            onChange={(e) => {
+                                                                setAddressNumberForInstall(e.target.value);
+                                                                resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                            }}
+                                                            type='text'
+                                                            className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                            placeholder='บ้านเลขที่'
+                                                        />
                                                     </div>
-
-                                                    <div className='row mb-6'>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label fw-bold fs-6'>ถนน</label>
-                                                            <input
-                                                                value={addressRoadForInstall}
-                                                                onChange={(e) => setAddressRoadForInstall(e.target.value)}
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='ถนน'
-                                                            />
-                                                        </div>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>จังหวัด</label>
-                                                            <select
-                                                                className='form-select form-select-solid form-select-lg'
-                                                                onChange={handleProvinceChangeForInstall}
-                                                            >
-                                                                <option value=''>เลือกจังหวัด...</option>
-                                                                {getProvinceForInstall.map((item: any) => (
-                                                                    <option key={item.PROVINCECODE} value={item.PROVINCECODE}>
-                                                                        {item.PROVINCENAME}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                        </div>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>อำเภอ / เขต</label>
-                                                            <select
-                                                                className='form-select form-select-solid form-select-lg'
-                                                                onChange={handleDistrictChangeForInstall}
-                                                            >
-                                                                <option value=''>เลือกอำเภอ / เขต...</option>
-                                                                {Array.isArray(getDistrictForInstall) && getDistrictForInstall.map((item: any) => (
-                                                                    <option key={item.DISTRICTCODE} value={item.DISTRICTCODE}>
-                                                                        {item.DISTRICTNAME}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                        </div>
+                                                    <div className='col-lg-4 mb-3'>
+                                                        <label className='form-label fw-bold fs-6'>หมู่ที่</label>
+                                                        <input
+                                                            value={addressMooForInstall}
+                                                            onChange={(e) => {
+                                                                setAddressMooForInstall(e.target.value);
+                                                                resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                            }}
+                                                            type='text'
+                                                            className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                            placeholder='หมู่ที่'
+                                                        />
                                                     </div>
-
-                                                    <div className='row mb-6'>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>ตำบล / แขวง</label>
-                                                            <select
-                                                                className='form-select form-select-solid form-select-lg'
-                                                                onChange={handleSubDistrictChangeForInstall}
-                                                            >
-                                                                <option value=''>เลือกตำบล / แขวง...</option>
-                                                                {Array.isArray(getSubDistrictForInstall) && getSubDistrictForInstall.map((item: any) => (
-                                                                    <option key={item.SUBDISTRICTCODE} value={item.SUBDISTRICTCODE}>
-                                                                        {item.SUBDISTRICTNAME}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                        </div>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>รหัสไปรษณีย์</label>
-                                                            <input
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                value={selectedZipcodeForInstall}
-                                                                readOnly
-                                                            />
-                                                        </div>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
-                                                            <input
-                                                                value={addressPhoneForInstall}
-                                                                onChange={(e) => setAddressPhoneForInstall(e.target.value)}
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='เบอร์ที่ติดต่อได้'
-                                                            />
-                                                        </div>
+                                                    <div className='col-lg-4 mb-3'>
+                                                        <label className='form-label fw-bold fs-6'>ตรอก / ซอย</label>
+                                                        <input
+                                                            value={addressSoiForInstall}
+                                                            onChange={(e) => {
+                                                                setAddressSoiForInstall(e.target.value);
+                                                                resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                            }}
+                                                            type='text'
+                                                            className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                            placeholder='ตรอก / ซอย'
+                                                        />
                                                     </div>
-
                                                 </div>
-                                            </form>
-                                            {/* end form */}
-                                        </div>
+
+                                                <div className='row mb-6'>
+                                                    <div className='col-lg-4 mb-3'>
+                                                        <label className='form-label fw-bold fs-6'>ถนน</label>
+                                                        <input
+                                                            value={addressRoadForInstall}
+                                                            onChange={(e) => {
+                                                                setAddressRoadForInstall(e.target.value);
+                                                                resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                            }}
+                                                            type='text'
+                                                            className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                            placeholder='ถนน'
+                                                        />
+                                                    </div>
+                                                    <div className='col-lg-4 mb-3'>
+                                                        <label className='form-label required fw-bold fs-6'>จังหวัด</label>
+                                                        <select
+                                                            className='form-select form-select-solid form-select-lg'
+                                                            value={selectedProvinceForInstall}
+                                                            onChange={(e) => {
+                                                                setSelectedProvinceForInstall(Number(e.target.value))
+                                                                resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                            }}
+                                                        >
+                                                            <option value=''>เลือกจังหวัด...</option>
+                                                            {getProvinceForInstall.map((item: any) => (
+                                                                <option key={item.PROVINCECODE} value={item.PROVINCECODE}>
+                                                                    {item.PROVINCENAME}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                    <div className='col-lg-4 mb-3'>
+                                                        <label className='form-label required fw-bold fs-6'>อำเภอ / เขต</label>
+                                                        <select
+                                                            className='form-select form-select-solid form-select-lg'
+                                                            value={selectedDistrictForInstall}
+                                                            onChange={(e) => {
+                                                                setSelectedDistrictForInstall(Number(e.target.value))
+                                                                resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                            }}
+                                                        >
+                                                            <option value=''>เลือกอำเภอ / เขต...</option>
+                                                            {getDistrictForInstall.map((item: any) => (
+                                                                <option key={item.DISTRICTCODE} value={item.DISTRICTCODE}>
+                                                                    {item.DISTRICTNAME}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <div className='row mb-6'>
+                                                    <div className='col-lg-4 mb-3'>
+                                                        <label className='form-label required fw-bold fs-6'>ตำบล / แขวง</label>
+                                                        <select
+                                                            className='form-select form-select-solid form-select-lg'
+                                                            value={selectedSubDistrictForInstall}
+                                                            onChange={(e) => {
+                                                                setSelectedSubDistrictForInstall(Number(e.target.value))
+                                                                resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                            }}
+                                                        >
+                                                            <option value=''>เลือกตำบล / แขวง...</option>
+                                                            {getSubDistrictForInstall.map((item: any) => (
+                                                                <option key={item.SUBDISTRICTCODE} value={item.SUBDISTRICTCODE}>
+                                                                    {item.SUBDISTRICTNAME}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+
+                                                    <div className='col-lg-4 mb-3'>
+                                                        <label className='form-label required fw-bold fs-6'>รหัสไปรษณีย์</label>
+                                                        <input
+                                                            type='text'
+                                                            className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                            value={selectedZipcodeForInstall}
+                                                            readOnly
+                                                        />
+                                                    </div>
+                                                    <div className='col-lg-4 mb-3'>
+                                                        <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
+                                                        <input
+                                                            value={addressPhoneForInstall}
+                                                            onChange={(e) => {
+                                                                setAddressPhoneForInstall(e.target.value)
+                                                                resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                            }}
+                                                            type='text'
+                                                            className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                            placeholder='เบอร์ที่ติดต่อได้'
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                        {/* end form */}
                                     </div>
                                 </div>
                             </div>
-                        )}
-                        {/* End accordion ที่อยู่ลูกค้า (ติดตั้ง)*/}
+                        </div>
+                        {/* End accordion ที่อยู่ลูกค้า (ติดตั้ง) */}
 
                         {/* Start accordion ที่อยู่ลูกค้า (เก็บเงิน)*/}
-                        {showCustomerAddress && !showBillAddress && (
+                        {showCustomerAddress && (
                             <div className='accordion mb-10' id='kt_accordion_4'>
 
                                 <div className='accordion-item mb-10'>

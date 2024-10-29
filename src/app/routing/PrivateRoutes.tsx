@@ -25,9 +25,14 @@ const PrivateRoutes = () => {
   //กล้อง + รูป
   const DeviceScanBarcode = lazy(() => import('../pages/sales/components/accessCam/DeviceScanBarcode'))
   const SalesPhoto = lazy(() => import('../pages/sales/SalesPhoto'))
-  const DrawingMapGallery = lazy(() => import('../pages/sales/components/photo/DrawingMapPhoto'))
   const GoogleMapGPS = lazy(() => import('../pages/sales/components/gps/googleMapGPS'))
-  
+  const DrawingMapPhoto = lazy(() => import('../pages/sales/components/photo/DrawingMapPhoto'))
+  const TurnPhoto = lazy(() => import('../pages/sales/components/photo/TurnPhoto'))
+  const InstallationPhoto = lazy(() => import('../pages/sales/components/photo/InstallationPhoto'))
+  const HomeCustomerPhoto = lazy(() => import('../pages/sales/components/photo/HomeCustomerPhoto'))
+  const CustomerPhoto = lazy(() => import('../pages/sales/components/photo/CustomerPhoto'))
+  const EquipmentPhoto = lazy(() => import('../pages/sales/components/photo/EquipmentPhoto'))
+
   //หัวข้อ สินค้าในสต๊อก
   const ProductStock = lazy(() => import('../pages/productstock/ProductStock'))
 
@@ -129,14 +134,6 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/gps'
-          element={
-            <SuspensedView>
-              <GoogleMapGPS />
-            </SuspensedView>
-          }
-        />
-        <Route
           path='productstock'
           element={
             <SuspensedView>
@@ -161,19 +158,59 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
+          <Route
+            path='sale/photo/gps'
+            element={
+              <SuspensedView>
+                <GoogleMapGPS />
+              </SuspensedView>
+            }
+          />
         <Route
           path='sale/photo/drawing-map'
           element={
             <SuspensedView>
-              <DrawingMapGallery />
+              <DrawingMapPhoto />
             </SuspensedView>
           }
         />
         <Route
-          path='sale/photo/drawing-map'
+          path='sale/photo/turn'
           element={
             <SuspensedView>
-              <DrawingMapGallery />
+              <TurnPhoto />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path='sale/photo/installation'
+          element={
+            <SuspensedView>
+              <InstallationPhoto />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path='sale/photo/home-customer'
+          element={
+            <SuspensedView>
+              <HomeCustomerPhoto />
+            </SuspensedView>
+          }
+        />
+         <Route
+          path='sale/photo/customer'
+          element={
+            <SuspensedView>
+              <CustomerPhoto />
+            </SuspensedView>
+          }
+        />
+          <Route
+          path='sale/photo/equipment'
+          element={
+            <SuspensedView>
+              <EquipmentPhoto />
             </SuspensedView>
           }
         />
