@@ -20,10 +20,10 @@ export default defineConfig({
     },
   },
   server: {
-    https: {
-      key: fs.readFileSync('./certs/localhost-key.pem'),  // ใส่คีย์สำหรับ HTTPS
-      cert: fs.readFileSync('./certs/localhost.pem'),     // ใส่ใบรับรองสำหรับ HTTPS
-    },
-    // https: false
+    // https: {
+    //   key: fs.readFileSync('./certs/localhost-key.pem'),  // ใส่คีย์สำหรับ HTTPS
+    //   cert: fs.readFileSync('./certs/localhost.pem'),     // ใส่ใบรับรองสำหรับ HTTPS
+    // },
+    https: false
   }
 });
