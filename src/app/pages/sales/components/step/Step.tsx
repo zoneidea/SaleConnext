@@ -1,28 +1,56 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import axios from 'axios';
 import { useState, useEffect } from 'react';
 import { Content } from '../../../../../_metronic/layout/components/content'
 
-const Step: React.FC = () => {
-  const API_URL_UPDATE_CONTRACT = import.meta.env.VITE_APP_API_MONGO;
-  const UPDATE_CONTRACT_URL = `${API_URL_UPDATE_CONTRACT}/Contract/updateContract`;
 
-  // useEffect(() => {
-  //   const getDataDraft = async () => {
-  //     try {
-  //       const response = await axios.get(DRAFT_ALLCONTRACT_URL, {
-  //         headers: {
-  //           'Content-Type': 'application/json',
-  //         },
-  //       });
-  //       const data = Array.isArray(response.data.data) ? response.data.data : [];
-  //       setDraft(data); // บันทึกข้อมูล draft
-  //     } catch (error) {
-  //       console.error('Error fetching DRAFT_ALLCONTRACT_URL:', error);
-  //     }
-  //   };
-  //   getDataDraft();
-  // }, []);
+interface ItemProps {
+  REFNO: String,
+  EMPID: String,
+  TEAMSALE: String,
+  SALECODE: String,
+  SUPEMPID: String,
+  SECEMPID: String,
+  STATUS: String,
+  PRODUCT: [],
+  CUSTOMERSTATUS: [],
+  DISCOUNT: [],
+  CUSTOMERDETAIL: [],
+  ADDRESS: [],
+  PDPA: [],
+  CONTRACT: [],
+  IMAGE: []
+}
+
+const Step: React.FC = () => {
+  const location = useLocation();
+  const item = location.state as ItemProps || [];
+
+  const [data, setData] = useState([])
+  const [product, setProduct] = useState([])
+
+  const API_URL_UPDATE_CONTRACT = import.meta.env.VITE_APP_API_MONGO;
+  const GET_CONTRACT_URL = `${API_URL_UPDATE_CONTRACT}/Contract/GetContractSummary`;
+
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const response = await axios.get(GET_CONTRACT_URL + '?refno=' + item?.REFNO, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        const data = Array.isArray(response.data.data) ? response.data.data : [];
+        // product = data?.[0]?.PRODUCT || []
+        // console.log('product', product)
+        setData(data);
+        setProduct(data?.[0]?.PRODUCT)
+      } catch (error) {
+        console.error('Error fetching DRAFT_ALLCONTRACT_URL:', error);
+      }
+    };
+    getData();
+  }, []);
 
   return (
     <>
@@ -49,55 +77,115 @@ const Step: React.FC = () => {
         <div className='card mb-10'>
           <div className='card-body d-flex align-items-center py-5 pt-12'>
             <div className='col-12'>
-
-              {/* begin::Item */}
               <Link to=''>
                 <div className='d-flex align-items-center pb-8'>
-                  {/* begin::Bullet */}
-                  <span className='bullet bullet-vertical h-40px bg-success'></span>
-                  {/* end::Bullet */}
-                  {/* begin::Checkbox */}
-                  <div className='form-check form-check-custom form-check-solid mx-5'>
-                    <input className='form-check-input' type='checkbox' value='' />
-                  </div>
-                  {/* end::Checkbox */}
-                  {/* begin::Description */}
+                  <span className={`bullet bullet-vertical h-40px ${product?.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
+                  <div className='form-check form-check-custom form-check-solid mx-5'></div>
                   <div className='flex-grow-1'>
-                    <div className='text-gray-800 text-hover-primary fw-bold fs-6'>
-                      ขั้นตอนที่ 1
+                    <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
+                      {`1. เลือกแพ็คเกจ`}
                     </div>
-                    <span className='text-muted fw-semibold d-block'>เลือกแพ็คเกจ</span>
+                    {
+                      product?.length !== 0 && (
+                        <span className='text-muted fw-semibold d-block'>{`สินค้า: ${product?.[0]?.ItemDescription}`}</span>
+                      )
+                    }
+                    {
+                      product?.length ?
+                        product?.[0]?.Package.length && (
+                          <span className='text-muted fw-semibold d-block'>{`แพ็คเกจ: ${product?.[0]?.Package[0]?.PACKAGETITLE}`}</span>
+                        )
+                        :
+                        null
+                    }
+
                   </div>
-                  {/* end::Description */}
-                  {/* <span className='badge badge-light-success fs-8 fw-bold'>New</span> */}
                 </div>
               </Link>
-              {/* end:Item */}
-
-              {/* begin::Item */}
-              <Link to=''>
+              {/* <Link to=''>
                 <div className='d-flex align-items-center pb-8'>
-                  {/* begin::Bullet */}
-                  <span className='bullet bullet-vertical h-40px bg-success'></span>
-                  {/* end::Bullet */}
-                  {/* begin::Checkbox */}
-                  <div className='form-check form-check-custom form-check-solid mx-5'>
-                    <input className='form-check-input' type='checkbox' value='' />
-                  </div>
-                  {/* end::Checkbox */}
-                  {/* begin::Description */}
+                  <span className={`bullet bullet-vertical h-40px ${item?.CUSTOMERSTATUS.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
+                  <div className='form-check form-check-custom form-check-solid mx-5'></div>
                   <div className='flex-grow-1'>
-                    <div className='text-gray-800 text-hover-primary fw-bold fs-6'>
-                      ขั้นตอนที่ 2
+                    <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
+                      {`2. ตรวจสอบข้อมูลลูกค้า`}
                     </div>
-                    <span className='text-muted fw-semibold d-block'>ตรวจสอบสินค้า</span>
+                    <span className='text-muted fw-semibold d-block'>ตรวจสอบข้อมูลลูกค้า</span>
                   </div>
-                  {/* end::Description */}
-                  {/* <span className='badge badge-light-success fs-8 fw-bold'>New</span> */}
                 </div>
-              </Link>
-              {/* end:Item */}
-
+              </Link> */}
+              {/* <Link to=''>
+                <div className='d-flex align-items-center pb-8'>
+                  <span className={`bullet bullet-vertical h-40px ${item?.DISCOUNT.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
+                  <div className='form-check form-check-custom form-check-solid mx-5'> </div>
+                  <div className='flex-grow-1'>
+                    <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
+                      {`3. ส่วนลด/เครื่องเทิร์น/ของแถม`}
+                    </div>
+                    <span className='text-muted fw-semibold d-block'>ตรวจสอบข้อมูลลูกค้า</span>
+                  </div>
+                </div>
+              </Link> */}
+              {/* <Link to=''>
+                <div className='d-flex align-items-center pb-8'>
+                  <span className={`bullet bullet-vertical h-40px ${item?.CUSTOMERDETAIL.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
+                  <div className='form-check form-check-custom form-check-solid mx-5'></div>
+                  <div className='flex-grow-1'>
+                    <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
+                      {`4. บันทึกข้อมูลลูกค้า`}
+                    </div>
+                    <span className='text-muted fw-semibold d-block'>ตรวจสอบข้อมูลลูกค้า</span>
+                  </div>
+                </div>
+              </Link> */}
+              {/* <Link to=''>
+                <div className='d-flex align-items-center pb-8'>
+                  <span className={`bullet bullet-vertical h-40px ${item?.ADDRESS.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
+                  <div className='form-check form-check-custom form-check-solid mx-5'></div>
+                  <div className='flex-grow-1'>
+                    <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
+                      {`5. บันทึกที่อยู่ลูกค้า`}
+                    </div>
+                    <span className='text-muted fw-semibold d-block'>ตรวจสอบข้อมูลลูกค้า</span>
+                  </div>
+                </div>
+              </Link> */}
+              {/* <Link to=''>
+                <div className='d-flex align-items-center pb-8'>
+                  <span className={`bullet bullet-vertical h-40px ${item?.PDPA.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
+                  <div className='form-check form-check-custom form-check-solid mx-5'></div>
+                  <div className='flex-grow-1'>
+                    <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
+                      {`6. PDPA`}
+                    </div>
+                    <span className='text-muted fw-semibold d-block'>ตรวจสอบข้อมูลลูกค้า</span>
+                  </div>
+                </div>
+              </Link> */}
+              {/* <Link to=''>
+                <div className='d-flex align-items-center pb-8'>
+                  <span className={`bullet bullet-vertical h-40px ${item?.CONTRACT.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
+                  <div className='form-check form-check-custom form-check-solid mx-5'></div>
+                  <div className='flex-grow-1'>
+                    <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
+                      {`7. รายละเอียดสัญญา`}
+                    </div>
+                    <span className='text-muted fw-semibold d-block'>ตรวจสอบข้อมูลลูกค้า</span>
+                  </div>
+                </div>
+              </Link> */}
+              {/* <Link to=''>
+                <div className='d-flex align-items-center pb-8'>
+                  <span className={`bullet bullet-vertical h-40px ${item?.IMAGE.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
+                  <div className='form-check form-check-custom form-check-solid mx-5'></div>
+                  <div className='flex-grow-1'>
+                    <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
+                      {`8. ถ่ายรูป`}
+                    </div>
+                    <span className='text-muted fw-semibold d-block'>ตรวจสอบข้อมูลลูกค้า</span>
+                  </div>
+                </div>
+              </Link> */}
             </div>
           </div>
         </div>
