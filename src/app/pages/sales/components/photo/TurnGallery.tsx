@@ -1,20 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { KTIcon, toAbsoluteUrl } from '../../../../../_metronic/helpers';
-import { turnStore } from '../../../../modules/stores/sales/galleryStore/turnStore'
+import { toAbsoluteUrl } from '../../../../../_metronic/helpers';
+import { useTurnStore } from '../../../../modules/stores/sales/photoStore/photoStore';
 
 const TurnGallery: React.FC = () => {
-    const { images, addImage, removeImage, loadImages } = turnStore(); // ดึงข้อมูลและ actions จาก zustand
-    const [error, setError] = useState<string | null>(null); // สำหรับเก็บข้อความแสดงข้อผิดพลาด
+    const { images, addImage, removeImage, loadImages } = useTurnStore();
+    const [error, setError] = useState<string | null>(null);
 
     const isIOS: boolean = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isAndroid: boolean = /Android/.test(navigator.userAgent);
     const isTablet: boolean = /Tablet|iPad/.test(navigator.userAgent);
     const isPC: boolean = !isIOS && !isAndroid && !isTablet;
 
-    // ดึงรูปภาพจาก sessionStorage ทุกครั้งที่ component โหลดใหม่
     useEffect(() => {
-        loadImages(); // โหลดรูปภาพจาก sessionStorage ผ่าน zustand
+        loadImages();
     }, [loadImages]);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -25,21 +24,64 @@ const TurnGallery: React.FC = () => {
 
         const file = event.target.files?.[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onload = () => {
-                if (reader.result) {
-                    // บันทึก currentImage และเพิ่มรูปลง store
-                    addImage(reader.result as string);
-                    setError(null); // ล้างข้อความแสดงข้อผิดพลาดถ้ามี
-                }
-            };
-            reader.readAsDataURL(file); // แปลงไฟล์เป็น Data URL
+            if (file.size > 3 * 1024 * 1024) {
+                resizeImage(file);
+            } else {
+                readImageFile(file);
+            }
         }
     };
 
-    // ฟังก์ชันเพื่อลบรูปภาพที่แสดงอยู่
+    const readImageFile = (file: File) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            if (reader.result) {
+                addImage(reader.result as string);
+                setError(null);
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const resizeImage = (file: File) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                const maxSize = 1024;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > maxSize) {
+                        height *= maxSize / width;
+                        width = maxSize;
+                    }
+                } else {
+                    if (height > maxSize) {
+                        width *= maxSize / height;
+                        height = maxSize;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                ctx?.drawImage(img, 0, 0, width, height);
+
+                const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.7); // ย่อขนาดและบีบอัดภาพ
+                addImage(resizedDataUrl);
+                setError(null);
+            };
+            img.src = e.target?.result as string;
+        };
+        reader.readAsDataURL(file);
+    };
+
     const handleDeleteImage = (image: string) => {
-        removeImage(image); // ลบรูปภาพจาก store
+        removeImage(image);
     };
 
     return (
@@ -50,7 +92,7 @@ const TurnGallery: React.FC = () => {
                         <label className='btn btn-primary w-100 w-md-auto align-self-center'
                             htmlFor="camera-input"
                             style={{ cursor: 'pointer', padding: '10px', border: '1px solid #ccc', display: 'inline-block' }}>
-                            เลือกรูปจากคลัง
+                            เลือกรูปจากคลัง / ใช้กล้อง
                         </label>
                     </div>
                     {error && (
@@ -63,7 +105,7 @@ const TurnGallery: React.FC = () => {
                         type="file"
                         accept="image/*"
                         onChange={handleFileChange}
-                        style={{ display: 'none' }} // ซ่อน input file แบบดั้งเดิม
+                        style={{ display: 'none' }}
                     />
                 </>
             ) : (
@@ -72,28 +114,26 @@ const TurnGallery: React.FC = () => {
                 </div>
             )}
 
-            {/* แสดงรูปภาพที่เลือก */}
             <div>
                 {!isPC ? (
                     <div>
                         {images.length > 0 && (
                             <div className='d-flex flex-column flex-md-row justify-content-between mx-5'>
-                                {images.slice(0, 3).map((image, index) => ( // แสดงสูงสุด 3 รูป
+                                {images.slice(0, 3).map((image, index) => (
                                     <div className='border border-gray-500' key={index}>
                                         <div className='d-flex justify-content-between align-items-center mb-3'>
                                             <img
-                                                src={image} // แสดงรูปที่เลือก
+                                                src={image}
                                                 alt={`Captured ${index + 1}`}
                                                 style={{
                                                     width: '300px', height: 'auto',
                                                 }}
                                             />
-                                            {/* ไอคอนถังขยะสำหรับลบรูป */}
                                             <img
                                                 className='mx-2 h-30px theme-light-show'
                                                 src={toAbsoluteUrl('media/settings/trash-svgrepo-com.svg')}
                                                 alt='ลบรูป'
-                                                onClick={() => handleDeleteImage(image)} // เรียกใช้ฟังก์ชันลบเมื่อกดที่ไอคอน
+                                                onClick={() => handleDeleteImage(image)}
                                                 style={{ cursor: 'pointer' }}
                                             />
                                         </div>

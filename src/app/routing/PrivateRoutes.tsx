@@ -25,8 +25,7 @@ const PrivateRoutes = () => {
   //กล้อง + รูป
   const DeviceScanBarcode = lazy(() => import('../pages/sales/components/accessCam/DeviceScanBarcode'))
   const SalesPhoto = lazy(() => import('../pages/sales/SalesPhoto'))
-  const DrawingMapGallery = lazy(() => import('../pages/sales/components/gallery/DrawingMapGallery'))
-  const TurnGallery = lazy(() => import('../pages/sales/components/gallery/TurnGallery'))
+  const DrawingMapGallery = lazy(() => import('../pages/sales/components/photo/DrawingMapPhoto'))
   const GoogleMapGPS = lazy(() => import('../pages/sales/components/gps/googleMapGPS'))
 
   return (
@@ -135,15 +134,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/turn'
-          element={
-            <SuspensedView>
-              <TurnGallery />
-            </SuspensedView>
-          }
-        />
-        <Route
-          path='sale/productstock'
+          path='productstock'
           element={
             <SuspensedView>
               <SalesProductStock />
@@ -168,10 +159,18 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/drawing-map'
+          path='sale/photo/drawing-map'
           element={
             <SuspensedView>
-              <TurnGallery />
+              <DrawingMapGallery />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path='sale/photo/drawing-map'
+          element={
+            <SuspensedView>
+              <DrawingMapGallery />
             </SuspensedView>
           }
         />

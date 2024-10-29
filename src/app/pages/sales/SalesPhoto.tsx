@@ -29,7 +29,7 @@ const SalesPhoto: React.FC = () => {
                     <div className='card col-lg-3 col-6'>
                         <Link className='card-body d-flex flex-column justify-content-between 
                         bgi-no-repeat bgi-size-cover bgi-position-x-center pb-0'
-                            to='/crafted/pages/profile/overview'
+                            to='/sale/photo/idcard'
                         >
                             <div className='mb-10'>
                                 <div className='fw-bold text-gray-800 text-center'>
@@ -51,7 +51,7 @@ const SalesPhoto: React.FC = () => {
                     <div className='card col-lg-3 col-6'>
                         <Link className='card-body d-flex flex-column justify-content-between 
                         bgi-no-repeat bgi-size-cover bgi-position-x-center pb-0'
-                            to='/sale/gps'
+                            to='/sale/photo/gps'
                         >
                             <div className='mb-10'>
                                 <div className='fw-bold text-gray-800 text-center'>
@@ -73,7 +73,7 @@ const SalesPhoto: React.FC = () => {
                     <div className='card col-lg-3 col-6'>
                         <Link
                             className='card-body d-flex flex-column justify-content-between bgi-no-repeat bgi-size-cover bgi-position-x-center pb-0'
-                            to='/sale/drawing-map'
+                            to='/sale/photo/drawing-map'
                         >
                             <div className='mb-10'>
                                 <div className='fw-bold text-gray-800 text-center'>
@@ -95,7 +95,7 @@ const SalesPhoto: React.FC = () => {
                     <div className='card col-lg-3 col-6'>
                         <Link className='card-body d-flex flex-column justify-content-between 
                         bgi-no-repeat bgi-size-cover bgi-position-x-center pb-0'
-                            to='/sale/turn'
+                            to='/sale/photo/turn'
                         >
                             <div className='mb-10'>
                                 <div className='fw-bold text-gray-800 text-center'>
@@ -119,7 +119,7 @@ const SalesPhoto: React.FC = () => {
                     <div className='card col-lg-3 col-6'>
                         <Link className='card-body d-flex flex-column justify-content-between 
                         bgi-no-repeat bgi-size-cover bgi-position-x-center pb-0'
-                            to='/crafted/pages/profile/overview'
+                            to='/sale/photo/installation'
                         >
                             <div className='mb-10'>
                                 <div className='fw-bold text-gray-800 text-center'>
@@ -141,7 +141,7 @@ const SalesPhoto: React.FC = () => {
                     <div className='card col-lg-3 col-6'>
                         <Link className='card-body d-flex flex-column justify-content-between 
                         bgi-no-repeat bgi-size-cover bgi-position-x-center pb-0'
-                            to='/crafted/pages/profile/overview'
+                            to='/sale/photo/home-customer'
                         >
                             <div className='mb-10'>
                                 <div className='fw-bold text-gray-800 text-center'>
@@ -163,7 +163,7 @@ const SalesPhoto: React.FC = () => {
                     <div className='card col-lg-3 col-6'>
                         <Link className='card-body d-flex flex-column justify-content-between 
                         bgi-no-repeat bgi-size-cover bgi-position-x-center pb-0'
-                            to='/crafted/pages/profile/overview'
+                            to='/sale/photo/customer'
                         >
                             <div className='mb-10'>
                                 <div className='fw-bold text-gray-800 text-center'>
@@ -185,7 +185,7 @@ const SalesPhoto: React.FC = () => {
                     <div className='card col-lg-3 col-6'>
                         <Link className='card-body d-flex flex-column justify-content-between 
                         bgi-no-repeat bgi-size-cover bgi-position-x-center pb-0'
-                            to='/crafted/pages/profile/overview'
+                            to='/sale/photo/equipment'
                         >
                             <div className='mb-10'>
                                 <div className='fw-bold text-gray-800 text-center'>
