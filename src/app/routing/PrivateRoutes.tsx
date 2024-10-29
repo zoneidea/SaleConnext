@@ -36,6 +36,9 @@ const PrivateRoutes = () => {
   //หัวข้อ สินค้าในสต๊อก
   const ProductStock = lazy(() => import('../pages/productstock/ProductStock'))
 
+  //หัวข้อ ระบบตรวจสัญญา
+  const ContractChecker = lazy(() => import('../pages/contractChecker/contractChecker'))
+
   return (
     <Routes>
       <Route element={<MasterLayout />}>
@@ -158,14 +161,14 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
-          <Route
-            path='sale/photo/gps'
-            element={
-              <SuspensedView>
-                <GoogleMapGPS />
-              </SuspensedView>
-            }
-          />
+        <Route
+          path='sale/photo/gps'
+          element={
+            <SuspensedView>
+              <GoogleMapGPS />
+            </SuspensedView>
+          }
+        />
         <Route
           path='sale/photo/drawing-map'
           element={
@@ -198,7 +201,7 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
-         <Route
+        <Route
           path='sale/photo/customer'
           element={
             <SuspensedView>
@@ -206,11 +209,19 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
-          <Route
+        <Route
           path='sale/photo/equipment'
           element={
             <SuspensedView>
               <EquipmentPhoto />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path='contract-checker'
+          element={
+            <SuspensedView>
+              <ContractChecker />
             </SuspensedView>
           }
         />
