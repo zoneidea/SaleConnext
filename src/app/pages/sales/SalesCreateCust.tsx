@@ -52,8 +52,9 @@ const SalesCreateCust: React.FC = () => {
     // เพิ่ม state สำหรับจัดการค่าการติ้กใน "ที่อยู่ลูกค้า (ตามบัตร)"
     const [showCustomerAddress, setShowCustomerAddress] = useState(true);
     const [showInstallAddress, setShowInstallAddress] = useState(false);
-    console.log(`showInstallAddress`, showInstallAddress);
-    
+    const [showPaymentAddress, setShowPaymentAddress] = useState(false);
+    // console.log(`showInstallAddress`, showInstallAddress);
+
     const [showBillTax, setShowBillTax] = useState(false);
 
     const [valueCalendar, setValueCalendar] = useState<Date | null>(null);
@@ -924,12 +925,12 @@ const SalesCreateCust: React.FC = () => {
     // จัดการติ้กใน accordion ที่อยู่ลูกค้า (ตามบัตร)
     const handleCheckboxChange = (event: ChangeEvent<HTMLInputElement>) => {
         const { name, checked } = event.target;
-    
+
         if (name === 'showInstallAddress') {
             setShowInstallAddress(checked);
-    
+
             if (checked) {
-                // คัดลอกข้อมูลจากที่อยู่ติดตั้งไปยังที่อยู่ตามบัตร
+                // คัดลอกข้อมูลจากที่อยู่ตามบัตร ไปยังที่อยู่ติดตั้ง
                 setAddressNumberForInstall(addressNumber);
                 setAddressMooForInstall(addressMoo);
                 setAddressSoiForInstall(addressSoi);
@@ -941,11 +942,33 @@ const SalesCreateCust: React.FC = () => {
                 setAddressPhoneForInstall(addressPhone);
             }
         }
+
+        if (name === 'showPaymentAddress') {
+            setShowPaymentAddress(checked);
+
+            if (checked) {
+                // คัดลอกข้อมูลจากที่อยู่ตามบัตร ไปยังที่อยู่เก็บเงิน
+                setAddressNumberForPayment(addressNumber);
+                setAddressMooForPayment(addressMoo);
+                setAddressSoiForPayment(addressSoi);
+                setAddressRoadForPayment(addressRoad);
+                setSelectedProvinceForPayment(selectedProvince);
+                setSelectedDistrictForPayment(selectedDistrict);
+                setSelectedSubDistrictForPayment(selectedSubDistrict);
+                setSelectedZipcodeForPayment(selectedZipcode);
+                setAddressPhoneForPayment(addressPhone);
+            }
+        }
     };
 
-    // ฟังก์ชันเพื่อล้างการติ๊กเมื่อมีการเปลี่ยนแปลงข้อมูลใน accordion ที่อยู่ลูกค้า (ติดตั้ง)
+    // ฟังก์ชันเพื่อล้างการติ๊กใน  accordion ที่อยู่ลูกค้า (ตามบัตร) เมื่อมีการเปลี่ยนแปลงข้อมูลใน accordion ที่อยู่ลูกค้า (ติดตั้ง)
     const resetShowInstallAddress = () => {
         setShowInstallAddress(false);
+    };
+
+    // ฟังก์ชันเพื่อล้างการติ๊กใน  accordion ที่อยู่ลูกค้า (ตามบัตร) เมื่อมีการเปลี่ยนแปลงข้อมูลใน accordion ที่อยู่ลูกค้า (เก็บเงิน)
+    const resetShowPaymentAddress = () => {
+        setShowPaymentAddress(false);
     };
 
     // จัดการติ้กใน accordion ที่อยู่ลูกค้า (ออกใบกำกับภาษี) ให้ติ้กได้แค่อันใดอันหนึ่ง
@@ -1645,8 +1668,9 @@ const SalesCreateCust: React.FC = () => {
                                                                 <input
                                                                     onChange={handleCheckboxChange}
                                                                     className='form-check-input'
-                                                                    name='showBillAddress'
+                                                                    name='showPaymentAddress'
                                                                     type='checkbox'
+                                                                    checked={showPaymentAddress}
                                                                 />
                                                                 <span className='fw-bold ps-2 fs-6'>ใช้เหมือนที่อยู่ลูกค้า (เก็บเงิน)</span>
                                                             </label>
@@ -1866,7 +1890,10 @@ const SalesCreateCust: React.FC = () => {
                                                             <label className='form-label required fw-bold fs-6'>บ้านเลขที่</label>
                                                             <input
                                                                 value={addressNumberForPayment}
-                                                                onChange={(e) => setAddressNumberForPayment(e.target.value)}
+                                                                onChange={(e) => {
+                                                                    setAddressNumberForPayment(e.target.value)
+                                                                    resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                                }}
                                                                 type='text'
                                                                 className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                                                                 placeholder='บ้านเลขที่'
@@ -1876,7 +1903,10 @@ const SalesCreateCust: React.FC = () => {
                                                             <label className='form-label fw-bold fs-6'>หมู่ที่</label>
                                                             <input
                                                                 value={addressMooForPayment}
-                                                                onChange={(e) => setAddressMooForPayment(e.target.value)}
+                                                                onChange={(e) => {
+                                                                    setAddressMooForPayment(e.target.value)
+                                                                    resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                                }}
                                                                 type='text'
                                                                 className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                                                                 placeholder='หมู่ที่'
@@ -1886,7 +1916,10 @@ const SalesCreateCust: React.FC = () => {
                                                             <label className='form-label fw-bold fs-6'>ตรอก / ซอย</label>
                                                             <input
                                                                 value={addressSoiForPayment}
-                                                                onChange={(e) => setAddressSoiForPayment(e.target.value)}
+                                                                onChange={(e) => {
+                                                                    setAddressSoiForPayment(e.target.value)
+                                                                    resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                                }}
                                                                 type='text'
                                                                 className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                                                                 placeholder='ตรอก / ซอย'
@@ -1899,7 +1932,10 @@ const SalesCreateCust: React.FC = () => {
                                                             <label className='form-label fw-bold fs-6'>ถนน</label>
                                                             <input
                                                                 value={addressRoadForPayment}
-                                                                onChange={(e) => setAddressRoadForPayment(e.target.value)}
+                                                                onChange={(e) => {
+                                                                    setAddressRoadForPayment(e.target.value)
+                                                                    resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                                }}
                                                                 type='text'
                                                                 className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                                                                 placeholder='ถนน'
@@ -1909,7 +1945,11 @@ const SalesCreateCust: React.FC = () => {
                                                             <label className='form-label required fw-bold fs-6'>จังหวัด</label>
                                                             <select
                                                                 className='form-select form-select-solid form-select-lg'
-                                                                onChange={handleProvinceChangeForPayment}
+                                                                value={selectedProvinceForPayment}
+                                                                onChange={(e) => {
+                                                                    setSelectedProvinceForPayment(Number(e.target.value))
+                                                                    resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                                }}
                                                             >
                                                                 <option value=''>เลือกจังหวัด...</option>
                                                                 {getProvinceForPayment.map((item: any) => (
@@ -1923,7 +1963,11 @@ const SalesCreateCust: React.FC = () => {
                                                             <label className='form-label required fw-bold fs-6'>อำเภอ / เขต</label>
                                                             <select
                                                                 className='form-select form-select-solid form-select-lg'
-                                                                onChange={handleDistrictChangeForPayment}
+                                                                value={selectedDistrictForPayment}
+                                                                onChange={(e) => {
+                                                                    setSelectedDistrictForPayment(Number(e.target.value))
+                                                                    resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                                }}
                                                             >
                                                                 <option value=''>เลือกอำเภอ / เขต...</option>
                                                                 {Array.isArray(getDistrictForPayment) && getDistrictForPayment.map((item: any) => (
@@ -1940,7 +1984,11 @@ const SalesCreateCust: React.FC = () => {
                                                             <label className='form-label required fw-bold fs-6'>ตำบล / แขวง</label>
                                                             <select
                                                                 className='form-select form-select-solid form-select-lg'
-                                                                onChange={handleSubDistrictChangeForPayment}
+                                                                value={selectedSubDistrictForPayment}
+                                                                onChange={(e) => {
+                                                                    setSelectedSubDistrictForPayment(Number(e.target.value))
+                                                                    resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                                }}
                                                             >
                                                                 <option value=''>เลือกตำบล / แขวง...</option>
                                                                 {Array.isArray(getSubDistrictForPayment) && getSubDistrictForPayment.map((item: any) => (
@@ -1963,7 +2011,10 @@ const SalesCreateCust: React.FC = () => {
                                                             <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
                                                             <input
                                                                 value={addressPhoneForPayment}
-                                                                onChange={(e) => setAddressPhoneForPayment(e.target.value)}
+                                                                onChange={(e) => {
+                                                                    setAddressPhoneForPayment(e.target.value)
+                                                                    resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                                }}
                                                                 type='text'
                                                                 className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                                                                 placeholder='เบอร์ที่ติดต่อได้'
