@@ -127,22 +127,6 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/photo'
-          element={
-            <SuspensedView>
-              <SalesPhoto />
-            </SuspensedView>
-          }
-        />
-        <Route
-          path='sale/drawing-map'
-          element={
-            <SuspensedView>
-              <DrawingMapGallery />
-            </SuspensedView>
-          }
-        />
-         <Route
           path='sale/gps'
           element={
             <SuspensedView>
@@ -166,7 +150,7 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
-         <Route
+        <Route
           path='sale/pdpa'
           element={
             <SuspensedView>
@@ -174,6 +158,24 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
+        {/* เริ่ม รูปและแกลอรี่ */}
+        <Route
+          path='sale/photo'
+          element={
+            <SuspensedView>
+              <SalesPhoto />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path='sale/drawing-map'
+          element={
+            <SuspensedView>
+              <TurnGallery />
+            </SuspensedView>
+          }
+        />
+        {/* จบ รูปและแกลอรี่ */}
         {/* Page Not Found */}
         <Route path='*' element={<Navigate to='/error/404' />} />
       </Route>

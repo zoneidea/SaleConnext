@@ -29,10 +29,12 @@ const SalesDiscount: React.FC = () => {
 
     const [tradeInBrand, setTradeInBrand] = useState<any[]>([]);
     const [selectedTurnId, setSelectedTurnId] = useState<any>('');
+    // console.log(`selectedTurnId`, selectedTurnId);
+    const [selectedTradeInBrandName, setSelectedTradeInBrandName] = useState<string>('');
+    console.log(`selectedTradeInBrandName`, selectedTradeInBrandName);
     const [tradeInModel, setTradeInModel] = useState<any>('');
     const [tradeInSerial, setTradeInSerial] = useState<any>('');
     const [selectedGiftId, setSelectedGiftId] = useState<any>('');
-    // console.log(`selectedTurnId`, selectedTurnId);
 
     // ตรวจสอบว่ามีข้อมูล PRODUCT หรือไม่ก่อนที่จะดึงข้อมูลจากมัน
     const hasTradeIn = PRODUCT?.[0]?.Package?.[0]?.HASTRADEIN ?? null;
@@ -46,18 +48,36 @@ const SalesDiscount: React.FC = () => {
     const [currentSequence, setCurrentSequence] = useState<number>(sequence);
     const totalPriceSafe = totalPrice; // ตั้งค่า TOTALPRICE เป็น 0 ถ้าเป็น null
 
+    // อัปเดต selectedTradeInBrandName เมื่อ selectedTurnId หรือ tradeInBrand เปลี่ยน
+    useEffect(() => {
+        console.log("Selected TradeIn ID:", selectedTurnId);
+        // console.log("TradeIn Brand List:", tradeInBrand);
+        
+        const selectedTradeInBrand = tradeInBrand.find(
+            (brand) => String(brand.TRADEINBRANDID) === String(selectedTurnId) // แปลงเป็นสตริงก่อนการเปรียบเทียบ
+        );
+        
+        if (selectedTradeInBrand) {
+            setSelectedTradeInBrandName(selectedTradeInBrand.TRADEINBRANDNAME || '');
+            // console.log("Found TradeIn Brand Name:", selectedTradeInBrand.TRADEINBRANDNAME);
+        } else {
+            setSelectedTradeInBrandName(''); // รีเซ็ตค่าเมื่อไม่มีการเลือก
+            console.log("No TradeIn Brand Name Found");
+        }
+    }, [selectedTurnId, tradeInBrand]);    
+
     // เก็บข้อมูลส่วนลดใน state และ store
     const SaveDiscountData = useMemo(() => {
-        // ตรวจสอบว่ามีข้อมูลใน PRODUCT และ Package หรือไม่ก่อนที่จะเข้าถึง
         if (!PRODUCT?.[0]?.Package?.[0]) {
             return [];
         }
-
+    
         return [
             {
                 TRADEIN: {
                     HASTRADEIN: PRODUCT[0].Package[0].HASTRADEIN,
                     TRADEINBRANDID: selectedTurnId,
+                    TRADEINBRANDNAME: selectedTradeInBrandName, // ใช้ selectedTradeInBrandName ที่อัปเดตจาก useEffect
                     TRADEINMODEL: tradeInModel,
                     TRADEINSERIAL: tradeInSerial,
                 },
@@ -66,12 +86,12 @@ const SalesDiscount: React.FC = () => {
                     GIFTID: selectedGiftId,
                     GIFTCODE: freeGift[selectedGiftId - 1]?.GIFTCODE,
                     GIFTNAME: freeGift[selectedGiftId - 1]?.GIFTNAME,
-                    GIFTPRICE: freeGift[selectedGiftId - 1]?.GIFTPRICE ?? 0, // ใช้ 0 แทน null
+                    GIFTPRICE: freeGift[selectedGiftId - 1]?.GIFTPRICE ?? 0,
                     GIFTDESCRIPTION: freeGift[selectedGiftId - 1]?.GIFTDESCRIPTION || null,
-                }
-            }
+                },
+            },
         ];
-    }, [PRODUCT, selectedTurnId, tradeInModel, tradeInSerial, currentSequence, selectedGiftId]);
+    }, [PRODUCT, selectedTurnId, tradeInModel, tradeInSerial, currentSequence, selectedGiftId, selectedTradeInBrandName]);
 
     // อัปเดตข้อมูลส่วนลดใน store
     useEffect(() => {
@@ -110,7 +130,7 @@ const SalesDiscount: React.FC = () => {
                 SUPEMPID: SupEmpId,
                 SECEMPID: SecEmpId,
                 FIELD: "DISCOUNT",
-                DATA: SaveDiscountData 
+                DATA: SaveDiscountData
             }, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -166,7 +186,7 @@ const SalesDiscount: React.FC = () => {
     return (
         <>
             <Content>
-                <div className='d-flex justify-content-between align-items-center mb-7 mt-10 mt-lg-0'>
+                <div className='d-flex justify-content-between align-items-center mb-7 mt-7 mt-lg-0'>
                     <div id="kt_page_title" data-kt-swapper="true" data-kt-swapper-mode="prepend"
                         data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
                         className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">

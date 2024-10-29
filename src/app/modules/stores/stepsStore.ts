@@ -82,6 +82,7 @@ export const useSaveProductStore = create<SaveProductStore>((set) => ({
 interface SaveTradeIn {
     HASTRADEIN: number;
     TRADEINBRANDID: number;
+    TRADEINBRANDNAME: string
     TRADEINMODEL: string;
     TRADEINSERIAL: string;
 }
@@ -163,8 +164,11 @@ interface AddressCard {
     ADDRESSSOI: string;
     ADDRESSROAD: string;
     ADDRESSPROVINCE: string | number;
+    ADDRESSPROVINCENAME: string
     ADDRESSDISTRICT: string | number;
+    ADDRESSDISTRICTNAME: string
     ADDRESSSUBDISTRICT: string | number;
+    ADDRESSSUBDISTRICTNAME: string
     ADDRESSZIPCODE: string;
     ADDRESSPHONE: string;
     USETHISTAX: string;
@@ -176,8 +180,11 @@ interface AddressInstallation {
     ADDRESSSOI: string;
     ADDRESSROAD: string;
     ADDRESSPROVINCE: string | number;
+    ADDRESSPROVINCENAME: string
     ADDRESSDISTRICT: string | number;
+    ADDRESSDISTRICTNAME: string
     ADDRESSSUBDISTRICT: string | number;
+    ADDRESSSUBDISTRICTNAME: string
     ADDRESSZIPCODE: string;
     ADDRESSPHONE: string;
     USETHISTAX: string;
@@ -189,8 +196,11 @@ interface AddressPayment {
     ADDRESSSOI: string;
     ADDRESSROAD: string;
     ADDRESSPROVINCE: string | number;
+    ADDRESSPROVINCENAME: string
     ADDRESSDISTRICT: string | number;
+    ADDRESSDISTRICTNAME: string
     ADDRESSSUBDISTRICT: string | number;
+    ADDRESSSUBDISTRICTNAME: string
     ADDRESSZIPCODE: string;
     ADDRESSPHONE: string;
     USETHISTAX: string;
@@ -202,8 +212,11 @@ interface AddressTax {
     ADDRESSSOI: string;
     ADDRESSROAD: string;
     ADDRESSPROVINCE: string | number;
+    ADDRESSPROVINCENAME: string
     ADDRESSDISTRICT: string | number;
+    ADDRESSDISTRICTNAME: string
     ADDRESSSUBDISTRICT: string | number;
+    ADDRESSSUBDISTRICTNAME: string
     ADDRESSZIPCODE: string;
     ADDRESSPHONE: string;
     USETHISTAX: string;
@@ -236,8 +249,11 @@ export const useSaveAddressStore = create<AddressStore>((set) => ({
         ADDRESSSOI: '',
         ADDRESSROAD: '',
         ADDRESSPROVINCE: '',
+        ADDRESSPROVINCENAME: '',
         ADDRESSDISTRICT: '',
+        ADDRESSDISTRICTNAME: '',
         ADDRESSSUBDISTRICT: '',
+        ADDRESSSUBDISTRICTNAME: '',
         ADDRESSZIPCODE: '',
         ADDRESSPHONE: '',
         USETHISTAX: '',
@@ -248,11 +264,14 @@ export const useSaveAddressStore = create<AddressStore>((set) => ({
         ADDRESSSOI: '',
         ADDRESSROAD: '',
         ADDRESSPROVINCE: '',
+        ADDRESSPROVINCENAME: '',
         ADDRESSDISTRICT: '',
+        ADDRESSDISTRICTNAME: '',
         ADDRESSSUBDISTRICT: '',
+        ADDRESSSUBDISTRICTNAME: '',
         ADDRESSZIPCODE: '',
         ADDRESSPHONE: '',
-        USETHISTAX: 'FALSE',
+        USETHISTAX: '',
     },
     addressPayment: {
         ADDRESSNUMBER: '',
@@ -260,8 +279,11 @@ export const useSaveAddressStore = create<AddressStore>((set) => ({
         ADDRESSSOI: '',
         ADDRESSROAD: '',
         ADDRESSPROVINCE: '',
+        ADDRESSPROVINCENAME: '',
         ADDRESSDISTRICT: '',
+        ADDRESSDISTRICTNAME: '',
         ADDRESSSUBDISTRICT: '',
+        ADDRESSSUBDISTRICTNAME: '',
         ADDRESSZIPCODE: '',
         ADDRESSPHONE: '',
         USETHISTAX: '',
@@ -272,8 +294,11 @@ export const useSaveAddressStore = create<AddressStore>((set) => ({
         ADDRESSSOI: '',
         ADDRESSROAD: '',
         ADDRESSPROVINCE: '',
+        ADDRESSPROVINCENAME: '',
         ADDRESSDISTRICT: '',
+        ADDRESSDISTRICTNAME: '',
         ADDRESSSUBDISTRICT: '',
+        ADDRESSSUBDISTRICTNAME: '',
         ADDRESSZIPCODE: '',
         ADDRESSPHONE: '',
         USETHISTAX: '',
@@ -294,8 +319,11 @@ export const useSaveAddressStore = create<AddressStore>((set) => ({
                 ADDRESSSOI: '',
                 ADDRESSROAD: '',
                 ADDRESSPROVINCE: '',
+                ADDRESSPROVINCENAME: '',
                 ADDRESSDISTRICT: '',
+                ADDRESSDISTRICTNAME: '',
                 ADDRESSSUBDISTRICT: '',
+                ADDRESSSUBDISTRICTNAME: '',
                 ADDRESSZIPCODE: '',
                 ADDRESSPHONE: '',
                 USETHISTAX: '',
@@ -310,8 +338,11 @@ export const useSaveAddressStore = create<AddressStore>((set) => ({
                 ADDRESSSOI: '',
                 ADDRESSROAD: '',
                 ADDRESSPROVINCE: '',
+                ADDRESSPROVINCENAME: '',
                 ADDRESSDISTRICT: '',
+                ADDRESSDISTRICTNAME: '',
                 ADDRESSSUBDISTRICT: '',
+                ADDRESSSUBDISTRICTNAME: '',
                 ADDRESSZIPCODE: '',
                 ADDRESSPHONE: '',
                 USETHISTAX: '',
@@ -326,8 +357,11 @@ export const useSaveAddressStore = create<AddressStore>((set) => ({
                 ADDRESSSOI: '',
                 ADDRESSROAD: '',
                 ADDRESSPROVINCE: '',
+                ADDRESSPROVINCENAME: '',
                 ADDRESSDISTRICT: '',
+                ADDRESSDISTRICTNAME: '',
                 ADDRESSSUBDISTRICT: '',
+                ADDRESSSUBDISTRICTNAME: '',
                 ADDRESSZIPCODE: '',
                 ADDRESSPHONE: '',
                 USETHISTAX: '',
@@ -342,8 +376,11 @@ export const useSaveAddressStore = create<AddressStore>((set) => ({
                 ADDRESSSOI: '',
                 ADDRESSROAD: '',
                 ADDRESSPROVINCE: '',
+                ADDRESSPROVINCENAME: '',
                 ADDRESSDISTRICT: '',
+                ADDRESSDISTRICTNAME: '',
                 ADDRESSSUBDISTRICT: '',
+                ADDRESSSUBDISTRICTNAME: '',
                 ADDRESSZIPCODE: '',
                 ADDRESSPHONE: '',
                 USETHISTAX: '',

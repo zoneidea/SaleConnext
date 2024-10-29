@@ -184,6 +184,258 @@
 //   )
 // }
 
+// import { useState, useEffect } from 'react'
+// import axios from 'axios'
+// import * as Yup from 'yup'
+// import clsx from 'clsx'
+// import { Link, useNavigate } from 'react-router-dom'
+// import { useFormik } from 'formik'
+// import { login } from '../core/_requests'
+// import { useAuth } from '../core/Auth'
+// import { KTIcon, toAbsoluteUrl } from '../../../../_metronic/helpers'
+
+// //useStore
+// import { useCategoryStore, useFetchCategoryStore } from '../../../modules/stores/sales/packageStore/packageStore';
+
+// // นำเข้า crypto-js สำหรับการเข้ารหัส
+// import CryptoJS from 'crypto-js'
+
+// const loginSchema = Yup.object().shape({
+//   username: Yup.string().required('Username is required'),
+//   password: Yup.string().required('Password is required'),
+// })
+
+// const initialValues = {
+//   username: '082517',
+//   password: 'Aa87654321',
+// }
+
+// export function Login() {
+//   const API_URL_POST_CATEGORIES = import.meta.env.VITE_APP_API_SALECONNEXT;
+//   const CATEGORIES_URL = `${API_URL_POST_CATEGORIES}/GetProduct/Categories`;
+
+//   const {
+//     EmpId, setEmpId,
+//     TeamSale, setTeamSale,
+//     SaleCode, setSaleCode,
+//     SupEmpId, setSupEmpId,
+//     SecEmpId, setSecEmpId,
+//     DivisionId, setDivisionId,
+//     DepartId, setDepartId,
+//     DepartGroup, setDepartGroup,
+//   } = useCategoryStore();
+
+//   const { fetchCategory, setFetchCategory } = useFetchCategoryStore();
+
+//   // แสดงข้อมูล fetchCategory เมื่อมีการอัพเดท
+//   useEffect(() => {
+//     console.log(`fetchCategory after login`, fetchCategory);
+//   }, [fetchCategory]);
+
+//   const postData = async () => {
+//     try {
+//       const response = await axios.post(CATEGORIES_URL, {
+//         EmpId, DivisionId, DepartId, DepartGroup, TeamSale
+//       }, {
+//         headers: {
+//           'Content-Type': 'multipart/form-data',
+//         },
+//       });
+//       const data = Array.isArray(response.data.data) ? response.data.data : [];
+
+//       // อัพเดท fetchCategory โดยตรง
+//       setFetchCategory(data); // กำหนดเป็น array โดยตรง
+//       console.log('fetchCategory set with data:', data);
+
+//       localStorage.setItem('fetchCategory', JSON.stringify(data));
+//     } catch (error) {
+//       console.error('Error fetching data:', error);
+//     }
+
+//     setEmpId(auth.data[0].EmpId);
+//     setTeamSale(auth.data[0].TeamSale);
+//     setSaleCode(auth.data[0].SaleCode);
+//     setSupEmpId(auth.data[0].SupEmp);
+//     setSecEmpId(auth.data[0].SecEmp);
+//     setDivisionId(auth.data[0].DivisionId);
+//     setDepartId(auth.data[0].DepartId);
+//     setDepartGroup(auth.data[0].DepartGroup);
+//   };  
+
+//   const { auth, saveAuth, setCurrentUser } = useAuth();
+//   const [loading, setLoading] = useState(false);
+//   const navigate = useNavigate();
+
+//   // คีย์ลับสำหรับการเข้ารหัสข้อมูล
+//   const SECRET_KEY = import.meta.env.VITE_APP_SECRET_KEY
+
+//   const requestPermissions = async () => {
+//     try {
+//       await navigator.mediaDevices.getUserMedia({ video: true });
+//       console.log('Camera access granted');
+
+//       const locationPermission = await navigator.permissions.query({ name: 'geolocation' });
+//       if (locationPermission.state !== 'granted') {
+//         alert('โปรดอนุญาตการเข้าถึงตำแหน่ง (GPS)');
+//       }
+
+//       const filePermission = await navigator.permissions.query({ name: 'persistent-storage' as PermissionName });
+//       if (filePermission.state !== 'granted') {
+//         alert('โปรดอนุญาตการเข้าถึงไฟล์');
+//       }
+//     } catch (error) {
+//       console.error('Error requesting permissions:', error);
+//       alert('อุปกรณ์ของคุณไม่รองรับการขอ permissions ทั้งหมด');
+//     }
+//   };
+
+//   const formik = useFormik({
+//     initialValues,
+//     validationSchema: loginSchema,
+//     onSubmit: async (values, { setSubmitting, setErrors }) => {
+//       setLoading(true);
+//       try {
+//         const response = await login(values.username, values.password);
+//         console.log(`Response Login: ${response.data.status}, ${response.data.message}`);
+
+//         if (response.data.status === 500) {
+//           setErrors({
+//             username: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง.',
+//             password: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง.',
+//           });
+//           setSubmitting(false);
+//           setLoading(false);
+//         } else {
+//           // เข้ารหัสข้อมูล authData ก่อนเก็บลง localStorage
+//           const authData = JSON.stringify(response.data);
+//           const encryptedAuthData = CryptoJS.AES.encrypt(authData, SECRET_KEY).toString();
+
+//           // ตรวจสอบข้อมูลที่เข้ารหัสก่อนเก็บลง localStorage
+//           // console.log('Encrypted authData:', encryptedAuthData);
+
+//           // เก็บข้อมูลที่เข้ารหัสลงใน localStorage
+//           localStorage.setItem('authData', encryptedAuthData);
+
+//           saveAuth(response.data);
+//           const user = {
+//             id: response.data.userId,
+//             username: values.username,
+//             ...response.data.userDetails,
+//           };
+//           setCurrentUser(user);
+//           setLoading(false);
+
+//           // รอการขอ permissions และการ postData ก่อนเปลี่ยนเส้นทาง
+//           requestPermissions();
+//           await postData();
+
+//           // เปลี่ยนเส้นทางหลังจากข้อมูลถูกอัพเดทแล้ว
+//           navigate('/dashboard');
+//         }
+//       } catch (error: any) {
+//         console.log(`error`, error);
+//         setSubmitting(false);
+//         setLoading(false);
+//       }
+//     }
+//   });
+
+//   return (
+//     <form
+//       className='form w-100'
+//       onSubmit={formik.handleSubmit}
+//       noValidate
+//       id='kt_login_signin_form'
+//     >
+//       <div className='text-center mb-11'>
+//         <img
+//           alt='Logo'
+//           src={toAbsoluteUrl('media/logos/logo-sabuyconnext.svg')}
+//           className='h-50px'
+//         />
+//       </div>
+//       {formik.status ? (
+//         <div className='mb-lg-15 alert alert-danger'>
+//           <div className='alert-text font-weight-bold'>{formik.status}</div>
+//         </div>
+//       ) : (
+//         <div className='mb-10 bg-light-info p-8 rounded'>
+//           <div className='text-info'>
+//             Use username <strong>082517</strong> and password <strong>Aa87654321</strong> to continue.
+//           </div>
+//         </div>
+//       )}
+
+//       <div className='fv-row mb-3'>
+//         <label className='form-label fw-bolder text-gray-900 fs-6 mb-0'>Username</label>
+//         <input
+//           type='text'
+//           autoComplete='off'
+//           {...formik.getFieldProps('username')}
+//           className={clsx(
+//             'form-control bg-transparent',
+//             {
+//               'is-invalid': formik.touched.username && formik.errors.username,
+//             },
+//             {
+//               'is-valid': formik.touched.username && !formik.errors.username,
+//             }
+//           )}
+//         />
+//         {formik.touched.username && formik.errors.username && (
+//           <div className='fv-plugins-message-container'>
+//             <div className='fv-help-block'>
+//               <span role='alert'>{formik.errors.username}</span>
+//             </div>
+//           </div>
+//         )}
+//       </div>
+
+//       <div className='fv-row mb-3'>
+//         <label className='form-label fw-bolder text-gray-900 fs-6 mb-0'>Password</label>
+//         <input
+//           type='password'
+//           autoComplete='off'
+//           {...formik.getFieldProps('password')}
+//           className={clsx(
+//             'form-control bg-transparent',
+//             {
+//               'is-invalid': formik.touched.password && formik.errors.password,
+//             },
+//             {
+//               'is-valid': formik.touched.password && !formik.errors.password,
+//             }
+//           )}
+//         />
+//         {formik.touched.password && formik.errors.password && (
+//           <div className='fv-plugins-message-container'>
+//             <div className='fv-help-block'>
+//               <span role='alert'>{formik.errors.password}</span>
+//             </div>
+//           </div>
+//         )}
+//       </div>
+
+//       <div className='d-grid my-10'>
+//         <button
+//           type='submit'
+//           id='kt_sign_in_submit'
+//           className='btn btn-primary'
+//           disabled={formik.isSubmitting || !formik.isValid}
+//         >
+//           {!loading && <span className='indicator-label'>เข้าสู่ระบบ</span>}
+//           {loading && (
+//             <span className='indicator-progress' style={{ display: 'block' }}>
+//               Please wait...
+//               <span className='spinner-border spinner-border-sm align-middle ms-2'></span>
+//             </span>
+//           )}
+//         </button>
+//       </div>
+//     </form>
+//   )
+// }
+
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import * as Yup from 'yup'
@@ -193,11 +445,7 @@ import { useFormik } from 'formik'
 import { login } from '../core/_requests'
 import { useAuth } from '../core/Auth'
 import { KTIcon, toAbsoluteUrl } from '../../../../_metronic/helpers'
-
-//useStore
 import { useCategoryStore, useFetchCategoryStore } from '../../../modules/stores/sales/packageStore/packageStore';
-
-// นำเข้า crypto-js สำหรับการเข้ารหัส
 import CryptoJS from 'crypto-js'
 
 const loginSchema = Yup.object().shape({
@@ -225,12 +473,14 @@ export function Login() {
     DepartGroup, setDepartGroup,
   } = useCategoryStore();
 
+   // สถานะเพื่อติดตามการโหลด fetchCategory
   const { fetchCategory, setFetchCategory } = useFetchCategoryStore();
 
-  // แสดงข้อมูล fetchCategory เมื่อมีการอัพเดท
   useEffect(() => {
     console.log(`fetchCategory after login`, fetchCategory);
   }, [fetchCategory]);
+
+  const [isFetchCategoryLoaded, setIsFetchCategoryLoaded] = useState(false);
 
   const postData = async () => {
     try {
@@ -243,30 +493,22 @@ export function Login() {
       });
       const data = Array.isArray(response.data.data) ? response.data.data : [];
       
-      // อัพเดท fetchCategory โดยตรง
-      setFetchCategory(data); // กำหนดเป็น array โดยตรง
+      setFetchCategory(data);
+      localStorage.setItem('fetchCategory', JSON.stringify(data));
       console.log('fetchCategory set with data:', data);
 
-      localStorage.setItem('fetchCategory', JSON.stringify(data));
+      // เมื่อ fetchCategory โหลดเสร็จ ให้ตั้งค่า isFetchCategoryLoaded เป็น true
+      setIsFetchCategoryLoaded(true);
     } catch (error) {
       console.error('Error fetching data:', error);
+      setIsFetchCategoryLoaded(false); // ในกรณีเกิดข้อผิดพลาด
     }
-  
-    setEmpId(auth.data[0].EmpId);
-    setTeamSale(auth.data[0].TeamSale);
-    setSaleCode(auth.data[0].SaleCode);
-    setSupEmpId(auth.data[0].SupEmp);
-    setSecEmpId(auth.data[0].SecEmp);
-    setDivisionId(auth.data[0].DivisionId);
-    setDepartId(auth.data[0].DepartId);
-    setDepartGroup(auth.data[0].DepartGroup);
   };  
 
   const { auth, saveAuth, setCurrentUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // คีย์ลับสำหรับการเข้ารหัสข้อมูล
   const SECRET_KEY = import.meta.env.VITE_APP_SECRET_KEY
 
   const requestPermissions = async () => {
@@ -306,14 +548,8 @@ export function Login() {
           setSubmitting(false);
           setLoading(false);
         } else {
-          // เข้ารหัสข้อมูล authData ก่อนเก็บลง localStorage
           const authData = JSON.stringify(response.data);
           const encryptedAuthData = CryptoJS.AES.encrypt(authData, SECRET_KEY).toString();
-          
-          // ตรวจสอบข้อมูลที่เข้ารหัสก่อนเก็บลง localStorage
-          // console.log('Encrypted authData:', encryptedAuthData);
-
-          // เก็บข้อมูลที่เข้ารหัสลงใน localStorage
           localStorage.setItem('authData', encryptedAuthData);
 
           saveAuth(response.data);
@@ -323,14 +559,28 @@ export function Login() {
             ...response.data.userDetails,
           };
           setCurrentUser(user);
-          setLoading(false);
 
-          // รอการขอ permissions และการ postData ก่อนเปลี่ยนเส้นทาง
-          requestPermissions();
+          // ขอ permissions และ postData ก่อนเข้าสู่ระบบ
+          await requestPermissions();
+
+          // ตรวจสอบให้แน่ใจว่า postData เสร็จสิ้นก่อนที่จะดำเนินการต่อ
           await postData();
-          
-          // เปลี่ยนเส้นทางหลังจากข้อมูลถูกอัพเดทแล้ว
-          navigate('/dashboard');
+
+          // รอจนกว่า fetchCategory จะถูกโหลดเสร็จสมบูรณ์
+          if (isFetchCategoryLoaded) {
+            // กำหนดค่า EmpId และอื่น ๆ หลังจาก postData
+            setEmpId(response.data.userDetails.EmpId);
+            setTeamSale(response.data.userDetails.TeamSale);
+            setSaleCode(response.data.userDetails.SaleCode);
+            setSupEmpId(response.data.userDetails.SupEmp);
+            setSecEmpId(response.data.userDetails.SecEmp);
+            setDivisionId(response.data.userDetails.DivisionId);
+            setDepartId(response.data.userDetails.DepartId);
+            setDepartGroup(response.data.userDetails.DepartGroup);
+
+            setLoading(false);
+            navigate('/dashboard'); // เปลี่ยนเส้นทางไปที่ dashboard หลังจากทุกอย่างเสร็จสมบูรณ์
+          }
         }
       } catch (error: any) {
         console.log(`error`, error);
