@@ -7,9 +7,7 @@ interface StatusLabelProps {
 }
 
 const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item }) => {
-  const navigate = useNavigate();
-  // console.log(`item`, item);
-  let customer, product, productPackage;
+  let customer, product, productPackage, createdAt;
   if (item.CUSTOMERDETAIL.length > 0) {
     customer = <span className='text-gray-600 fw-semibold d-block'>{`ชื่อลูกค้า: ${item.CUSTOMERDETAIL[0].CUSTOMERNAME}`}</span>
   }
@@ -21,10 +19,14 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item }) => {
     }
   }
 
+  if (item.CONTRACT.length > 0) {
+    createdAt = <span className='text-gray-600 fw-semibold d-block'>{`วันที่ทำสัญญา: ${item.CONTRACT[0].createdAt}`}</span>
+  }
+
   return (
     <>
       {/* begin::Item */}
-      <Link to='/sale/step' state={ item } >
+      <Link to='/sale/step' state={item} >
         <div className='d-flex align-items-center bg-light-warning rounded p-5 mb-3 col-12'>
           {/* begin::Icon */}
           <span className='text-warning me-5'>
@@ -36,26 +38,11 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item }) => {
             <div className='fw-bold text-gray-800 text-hover-primary fs-6'>
               {`REFNO: ${item.REFNO}`}
             </div>
-            {/* <span className='text-muted fw-semibold d-block'>{item.REFNO}</span> */}
             {customer}
             {product}
             {productPackage}
+            {createdAt}
           </div>
-          {/* end::Title */}
-          {/* begin::Lable */}
-          {/* <span className={`fw-bold py-1 ${status === 'FINISH' ? 'text-success' : item.STATUS === 'DRAFT' ? 'text-danger' : 'text-warning'}`}> */}
-            {/* {status === 'FINISH' ? 'เสร็จสมบูรณ์' : 'กำลังดำเนินการ'} */}
-            {/* {
-              item.STATUS === 'DRAFT' ?
-                'กำลังดำเนินการ'
-                :
-                item.STATUS === 'EDIT' ?
-                  'แก้ไข'
-                  :
-                  'เสร็จสมบูรณ์'
-            }
-          </span> */}
-          {/* end::Lable */}
         </div>
       </Link>
       {/* end::Item */}
