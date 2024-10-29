@@ -214,14 +214,14 @@ const Step: React.FC = () => {
                       {`7. รายละเอียดสัญญา`}
                     </div>
                     {
-                      data?.[0]?.PDPA?.length !== 0 && (
+                      data?.[0]?.CONTRACT?.length !== 0 && (
                         <span className='text-gray-700 fw-semibold d-block'>{`วันที่ทำสัญญา: ${data?.[0]?.CONTRACT?.[0]?.createdAt}`}</span>
                       )
                     }
                   </div>
                 </div>
               </Link>
-              {/* <Link to=''>
+              <Link to=''>
                 <div className='d-flex align-items-center pb-8'>
                   <span className={`bullet bullet-vertical h-40px ${item?.IMAGE.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
                   <div className='form-check form-check-custom form-check-solid mx-5'></div>
@@ -229,10 +229,9 @@ const Step: React.FC = () => {
                     <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
                       {`8. ถ่ายรูป`}
                     </div>
-                    <span className='text-gray-700 fw-semibold d-block'>ตรวจสอบข้อมูลลูกค้า</span>
                   </div>
                 </div>
-              </Link> */}
+              </Link>
             </div>
           </div>
         </div>
