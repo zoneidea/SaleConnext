@@ -27,8 +27,6 @@ const Step: React.FC = () => {
   const item = location.state as ItemProps || [];
 
   const [data, setData] = useState<any[]>([])
-  const [product, setProduct] = useState<any[]>([])
-
   const API_URL_UPDATE_CONTRACT = import.meta.env.VITE_APP_API_MONGO;
   const GET_CONTRACT_URL = `${API_URL_UPDATE_CONTRACT}/Contract/GetContractSummary`;
 
@@ -41,10 +39,7 @@ const Step: React.FC = () => {
           },
         });
         const data = Array.isArray(response.data.data) ? response.data.data : [];
-        // product = data?.[0]?.PRODUCT || []
-        // console.log('product', product)
         setData(data);
-        setProduct(data?.[0]?.PRODUCT)
       } catch (error) {
         console.error('Error fetching DRAFT_ALLCONTRACT_URL:', error);
       }
@@ -75,25 +70,33 @@ const Step: React.FC = () => {
 
         {/* Card Body */}
         <div className='card mb-10'>
-          <div className='card-body d-flex align-items-center py-5 pt-12'>
+          <div className='card-body d-flex align-items-center'>
+            <div className='flex-grow-1'>
+              <div className='text-gray-800 text-hover-primary fw-bold fs-4'>
+                {`REFNO: ${item?.REFNO}`}
+              </div>
+              <span className={`${data?.[0]?.STATUS === 'DRAFT' ? 'text-warning' : 'text-danger'} fw-semibold d-block fs-6`}>{`สถานะ: ${data?.[0]?.STATUS === 'DRAFT' ? 'ยังไม่ได้ตรวจสอบ' : 'แก้ไข'}`}</span>
+            </div>
+          </div>
+          <div className='card-body d-flex align-items-center py-5 pt-6'>
             <div className='col-12'>
               <Link to=''>
                 <div className='d-flex align-items-center pb-8'>
-                  <span className={`bullet bullet-vertical h-40px ${product?.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
+                  <span className={`bullet bullet-vertical h-40px ${data?.[0]?.PRODUCT?.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
                   <div className='form-check form-check-custom form-check-solid mx-5'></div>
                   <div className='flex-grow-1'>
                     <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
                       {`1. เลือกแพ็คเกจ`}
                     </div>
                     {
-                      product?.length !== 0 && (
-                        <span className='text-muted fw-semibold d-block'>{`สินค้า: ${product?.[0]?.ItemDescription}`}</span>
+                      data?.[0]?.PRODUCT?.length !== 0 && (
+                        <span className='text-gray-700 fw-semibold d-block'>{`สินค้า: ${data?.[0]?.PRODUCT?.[0]?.ItemDescription}`}</span>
                       )
                     }
                     {
-                      product?.length ?
-                        product?.[0]?.Package.length && (
-                          <span className='text-muted fw-semibold d-block'>{`แพ็คเกจ: ${product?.[0]?.Package[0]?.PACKAGETITLE}`}</span>
+                      data?.[0]?.PRODUCT?.length ?
+                        data?.[0]?.PRODUCT?.[0]?.Package.length && (
+                          <span className='text-gray-700 fw-semibold d-block'>{`แพ็คเกจ: ${data?.[0]?.PRODUCT?.[0]?.Package[0]?.PACKAGETITLE}`}</span>
                         )
                         :
                         null
@@ -102,78 +105,122 @@ const Step: React.FC = () => {
                   </div>
                 </div>
               </Link>
-              {/* <Link to=''>
+              <Link to=''>
                 <div className='d-flex align-items-center pb-8'>
-                  <span className={`bullet bullet-vertical h-40px ${item?.CUSTOMERSTATUS.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
+                  <span className={`bullet bullet-vertical h-40px ${data?.[0]?.CUSTOMERSTATUS.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
                   <div className='form-check form-check-custom form-check-solid mx-5'></div>
                   <div className='flex-grow-1'>
                     <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
                       {`2. ตรวจสอบข้อมูลลูกค้า`}
                     </div>
-                    <span className='text-muted fw-semibold d-block'>ตรวจสอบข้อมูลลูกค้า</span>
+                    {
+                      data?.[0]?.CUSTOMERSTATUS?.length !== 0 && (
+                        <span className='text-gray-700 fw-semibold d-block'>{`สถานะ: ${data?.[0]?.CUSTOMERSTATUS?.[2]}`}</span>
+                      )
+                    }
                   </div>
                 </div>
-              </Link> */}
-              {/* <Link to=''>
+              </Link>
+              <Link to=''>
                 <div className='d-flex align-items-center pb-8'>
-                  <span className={`bullet bullet-vertical h-40px ${item?.DISCOUNT.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
+                  <span className={`bullet bullet-vertical h-40px ${data?.[0]?.DISCOUNT.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
                   <div className='form-check form-check-custom form-check-solid mx-5'> </div>
                   <div className='flex-grow-1'>
                     <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
                       {`3. ส่วนลด/เครื่องเทิร์น/ของแถม`}
                     </div>
-                    <span className='text-muted fw-semibold d-block'>ตรวจสอบข้อมูลลูกค้า</span>
+                    {
+                      data?.[0]?.DISCOUNT?.length !== 0 && (
+                        <span className='text-gray-700 fw-semibold d-block'>{`${data?.[0]?.DISCOUNT?.[0]?.TRADEIN?.HASTRADEIN === 0 ? 'ไม่มีเครื่องเทิร์น' : 'มีเครื่องเทิร์น'}`}</span>
+                      )
+                    }
+                    {
+                      data?.[0]?.DISCOUNT?.[0]?.TRADEIN?.HASTRADEIN === 1 && (
+                        <span className='text-gray-700 fw-semibold d-block'>{`แบรนด์: ${data?.[0]?.DISCOUNT?.[0]?.TRADEIN?.TRADEINBRANDNAME} รุ่น: ${data?.[0]?.DISCOUNT?.[0]?.TRADEIN?.TRADEINMODEL}`}</span>
+                      )
+                    }
                   </div>
                 </div>
-              </Link> */}
-              {/* <Link to=''>
+              </Link>
+              <Link to=''>
                 <div className='d-flex align-items-center pb-8'>
-                  <span className={`bullet bullet-vertical h-40px ${item?.CUSTOMERDETAIL.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
+                  <span className={`bullet bullet-vertical h-40px ${data?.[0]?.CUSTOMERDETAIL.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
                   <div className='form-check form-check-custom form-check-solid mx-5'></div>
                   <div className='flex-grow-1'>
                     <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
                       {`4. บันทึกข้อมูลลูกค้า`}
                     </div>
-                    <span className='text-muted fw-semibold d-block'>ตรวจสอบข้อมูลลูกค้า</span>
+                    {
+                      data?.[0]?.CUSTOMERDETAIL?.length !== 0 && (
+                        <span className='text-gray-700 fw-semibold d-block'>{`ปะเภทลูกค้า: ${data?.[0]?.CUSTOMERDETAIL?.[0]?.CUSTOMERTYPENAME}`}</span>
+                      )
+                    }
+                    {
+                      data?.[0]?.CUSTOMERDETAIL?.length !== 0 && (
+                        <span className='text-gray-700 fw-semibold d-block'>{`ชื่อลูกค้า: ${data?.[0]?.CUSTOMERDETAIL?.[0]?.CUSTOMERNAME}`}</span>
+                      )
+                    }
                   </div>
                 </div>
-              </Link> */}
-              {/* <Link to=''>
+              </Link>
+              <Link to=''>
                 <div className='d-flex align-items-center pb-8'>
-                  <span className={`bullet bullet-vertical h-40px ${item?.ADDRESS.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
+                  <span className={`bullet bullet-vertical h-40px ${data?.[0]?.ADDRESS.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
                   <div className='form-check form-check-custom form-check-solid mx-5'></div>
                   <div className='flex-grow-1'>
                     <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
                       {`5. บันทึกที่อยู่ลูกค้า`}
                     </div>
-                    <span className='text-muted fw-semibold d-block'>ตรวจสอบข้อมูลลูกค้า</span>
+                    {
+                      data?.[0]?.ADDRESS?.length !== 0 && (
+                        <span className='text-gray-700 fw-semibold d-block'>{`ที่อยู่ตามบัตรฯ: ${data?.[0]?.ADDRESS?.[0]?.ADDRESSCARD?.ADDRESSSUBDISTRICTNAME} ${data?.[0]?.ADDRESS?.[0]?.ADDRESSCARD?.ADDRESSDISTRICTNAME} ${data?.[0]?.ADDRESS?.[0]?.ADDRESSCARD?.ADDRESSPROVINCENAME} ${data?.[0]?.ADDRESS?.[0]?.ADDRESSCARD?.ADDRESSZIPCODE}`}</span>
+                      )
+                    }
+                    {
+                      data?.[0]?.ADDRESS?.length !== 0 && (
+                        <span className='text-gray-700 fw-semibold d-block'>{`ที่อยู่ติดตั้ง: ${data?.[0]?.ADDRESS?.[0]?.ADDRESSINSTALLATION?.ADDRESSSUBDISTRICTNAME} ${data?.[0]?.ADDRESS?.[0]?.ADDRESSINSTALLATION?.ADDRESSDISTRICTNAME} ${data?.[0]?.ADDRESS?.[0]?.ADDRESSINSTALLATION?.ADDRESSPROVINCENAME} ${data?.[0]?.ADDRESS?.[0]?.ADDRESSINSTALLATION?.ADDRESSZIPCODE}`}</span>
+                      )
+                    }
+                    {
+                      data?.[0]?.ADDRESS?.length !== 0 && (
+                        <span className='text-gray-700 fw-semibold d-block'>{`ที่อยู่เก็บเงิน: ${data?.[0]?.ADDRESS?.[0]?.ADDRESSPAYMENT?.ADDRESSSUBDISTRICTNAME} ${data?.[0]?.ADDRESS?.[0]?.ADDRESSPAYMENT?.ADDRESSDISTRICTNAME} ${data?.[0]?.ADDRESS?.[0]?.ADDRESSPAYMENT?.ADDRESSPROVINCENAME} ${data?.[0]?.ADDRESS?.[0]?.ADDRESSPAYMENT?.ADDRESSZIPCODE}`}</span>
+                      )
+                    }
                   </div>
                 </div>
-              </Link> */}
-              {/* <Link to=''>
+              </Link>
+              <Link to=''>
                 <div className='d-flex align-items-center pb-8'>
-                  <span className={`bullet bullet-vertical h-40px ${item?.PDPA.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
+                  <span className={`bullet bullet-vertical h-40px ${data?.[0]?.PDPA.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
                   <div className='form-check form-check-custom form-check-solid mx-5'></div>
                   <div className='flex-grow-1'>
                     <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
                       {`6. PDPA`}
                     </div>
-                    <span className='text-muted fw-semibold d-block'>ตรวจสอบข้อมูลลูกค้า</span>
+                    {
+                      data?.[0]?.PDPA?.length !== 0 && (
+                        <span className='text-gray-700 fw-semibold d-block'>{`การยืนยอมให้ใช้ข้อมูล: ${data?.[0]?.PDPA?.[0] ? 'ยินยอม' : 'ไม่ยินยอม'}`}</span>
+                      )
+                    }
                   </div>
                 </div>
-              </Link> */}
-              {/* <Link to=''>
+              </Link>
+              <Link to=''>
                 <div className='d-flex align-items-center pb-8'>
-                  <span className={`bullet bullet-vertical h-40px ${item?.CONTRACT.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
+                  <span className={`bullet bullet-vertical h-40px ${data?.[0]?.CONTRACT.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
                   <div className='form-check form-check-custom form-check-solid mx-5'></div>
                   <div className='flex-grow-1'>
                     <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
                       {`7. รายละเอียดสัญญา`}
                     </div>
-                    <span className='text-muted fw-semibold d-block'>ตรวจสอบข้อมูลลูกค้า</span>
+                    {
+                      data?.[0]?.PDPA?.length !== 0 && (
+                        <span className='text-gray-700 fw-semibold d-block'>{`วันที่ทำสัญญา: ${data?.[0]?.CONTRACT?.[0]?.createdAt}`}</span>
+                      )
+                    }
                   </div>
                 </div>
-              </Link> */}
+              </Link>
               {/* <Link to=''>
                 <div className='d-flex align-items-center pb-8'>
                   <span className={`bullet bullet-vertical h-40px ${item?.IMAGE.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
@@ -182,7 +229,7 @@ const Step: React.FC = () => {
                     <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
                       {`8. ถ่ายรูป`}
                     </div>
-                    <span className='text-muted fw-semibold d-block'>ตรวจสอบข้อมูลลูกค้า</span>
+                    <span className='text-gray-700 fw-semibold d-block'>ตรวจสอบข้อมูลลูกค้า</span>
                   </div>
                 </div>
               </Link> */}
