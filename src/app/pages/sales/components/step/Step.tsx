@@ -26,8 +26,8 @@ const Step: React.FC = () => {
   const location = useLocation();
   const item = location.state as ItemProps || [];
 
-  const [data, setData] = useState([])
-  const [product, setProduct] = useState([])
+  const [data, setData] = useState<any[]>([])
+  const [product, setProduct] = useState<any[]>([])
 
   const API_URL_UPDATE_CONTRACT = import.meta.env.VITE_APP_API_MONGO;
   const GET_CONTRACT_URL = `${API_URL_UPDATE_CONTRACT}/Contract/GetContractSummary`;
