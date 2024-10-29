@@ -500,8 +500,7 @@ const SalesPackage: React.FC = () => {
                             id='kt_accordion_1_body_1'
                             className='accordion-collapse collapse show'
                             aria-labelledby='kt_accordion_1_header_1'
-                            data-bs-parent='#kt_accordion_1'
-                        >
+                            data-bs-parent='#kt_accordion_1' >
                             <div className='accordion-body'>
                                 <form noValidate className='form'>
                                     <div className='card-body px-lg-9 px-1'>

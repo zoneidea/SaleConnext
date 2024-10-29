@@ -41,6 +41,7 @@ const SalesOverview: React.FC = () => {
         });
         const data = Array.isArray(response.data.data) ? response.data.data : [];
         setDraft(data); // บันทึกข้อมูล draft
+        console.log('Draft: ', data)
       } catch (error) {
         console.error('Error fetching DRAFT_ALLCONTRACT_URL:', error);
       }
@@ -58,6 +59,7 @@ const SalesOverview: React.FC = () => {
         });
         const data = Array.isArray(response.data.data) ? response.data.data : [];
         setFinish(data); // บันทึกข้อมูล finish
+        console.log('Finish: ', data)
       } catch (error) {
         console.error('Error fetching FINISH_ALLCONTRACT_URL:', error);
       }
@@ -134,6 +136,11 @@ const SalesOverview: React.FC = () => {
                       <SalesItemNumber key={index} status="DRAFT" item={item} />
                     ))
                   )}
+                  {
+                    draft.length === 0 && (
+                      <span className='text-gray-800 fw-bold d-block'>{`ไม่มีรายการคงค้าง`}</span>
+                    )
+                  }
                 </div>
 
                 {/* แท็บรายการขายเสร็จสมบูรณ์ */}
@@ -143,6 +150,11 @@ const SalesOverview: React.FC = () => {
                       <SalesItemNumber key={index} status="FINISH" item={item} />
                     ))
                   )}
+                  {
+                    finish.length === 0 && (
+                      <span className='text-gray-800 fw-bold d-block'>{`ไม่มีรายการที่เสร็จสมบูรณ์`}</span>
+                    )
+                  }
                 </div>
               </div>
             </div>

@@ -15,7 +15,7 @@ const CardProduct: FC<Props> = ({ DescriptionTH, ItemDescription, ItemCode, Seri
                 <div className="col-12">
                     <div className={`rounded border mb-3 px-7 py-7`}
                         style={{
-                            backgroundColor: isSelected ? '#ACE1AF' : '#fcfcfc',
+                            backgroundColor: isSelected ? '#ACE1AF' : '#dbdfe9',
                             transition: 'background-color 0.2s ease, color 0.2s ease'
                         }}>
                         <div className="d-flex align-items-center">

@@ -7,9 +7,7 @@ interface StatusLabelProps {
 }
 
 const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item }) => {
-  const navigate = useNavigate();
-  // console.log(`item`, item);
-  let customer, product, productPackage;
+  let customer, product, productPackage, createdAt, statusTxt;
   if (item.CUSTOMERDETAIL.length > 0) {
     customer = <span className='text-gray-600 fw-semibold d-block'>{`ชื่อลูกค้า: ${item.CUSTOMERDETAIL[0].CUSTOMERNAME}`}</span>
   }
@@ -21,44 +19,60 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item }) => {
     }
   }
 
+  if (item.CONTRACT.length > 0) {
+    createdAt = <span className='text-gray-600 fw-semibold d-block'>{`วันที่ทำสัญญา: ${item.CONTRACT[0].createdAt}`}</span>
+  }
+
+  if (item.STATUS === 'DRAFT') {
+    statusTxt = <span className='text-warning fw-semibold d-block'>{`ร่าง`}</span>
+  } else if (item.STATUS === 'EDIT') {
+    statusTxt = <span className='text-danger fw-semibold d-block'>{`แก้ไข`}</span>
+  } else if (item.STATUS === 'FINISH') {
+    statusTxt = <span className='text-danger fw-semibold d-block'>{`เสร็จสมบูรณ์`}</span>
+  } else if (item.STATUS === 'PENDING') {
+    statusTxt = <span className='text-danger fw-semibold d-block'>{`รอตรวจสอบ`}</span>
+  }
+
+  console.log(`${status} item: `, item)
+
   return (
     <>
-      {/* begin::Item */}
-      <Link to='/sale/step' state={ item } >
-        <div className='d-flex align-items-center bg-light-warning rounded p-5 mb-3 col-12'>
-          {/* begin::Icon */}
-          <span className='text-warning me-5'>
-            <KTIcon iconName='abstract-26' className='text-warning fs-1 me-5' />
-          </span>
-          {/* end::Icon */}
-          {/* begin::Title */}
-          <div className='flex-grow-1 me-2'>
-            <div className='fw-bold text-gray-800 text-hover-primary fs-6'>
-              {`REFNO: ${item.REFNO}`}
+      {
+        status === 'DRAFT' ?
+          <Link to='/sale/step' state={item} >
+            <div className='d-flex align-items-center bg-light-warning rounded p-5 mb-3 col-12'>
+              <span className='text-warning me-5'>
+                <KTIcon iconName='abstract-26' className='text-warning fs-1 me-5' />
+              </span>
+              <div className='flex-grow-1 me-2'>
+                <div className='fw-bold text-gray-800 text-hover-primary fs-6'>
+                  {`REFNO: ${item.REFNO}`}
+                </div>
+                {customer}
+                {product}
+                {productPackage}
+                {createdAt}
+                {statusTxt}
+              </div>
             </div>
-            {/* <span className='text-muted fw-semibold d-block'>{item.REFNO}</span> */}
-            {customer}
-            {product}
-            {productPackage}
+          </Link>
+          :
+          <div className='d-flex align-items-center bg-light-success rounded p-5 mb-3 col-12'>
+            <span className='text-warning me-5'>
+              <KTIcon iconName='abstract-26' className='text-warning fs-1 me-5' />
+            </span>
+            <div className='flex-grow-1 me-2'>
+              <div className='fw-bold text-gray-800 text-hover-primary fs-6'>
+                {`REFNO: ${item.REFNO}`}
+              </div>
+              {customer}
+              {product}
+              {productPackage}
+              {createdAt}
+              {statusTxt}
+            </div>
           </div>
-          {/* end::Title */}
-          {/* begin::Lable */}
-          {/* <span className={`fw-bold py-1 ${status === 'FINISH' ? 'text-success' : item.STATUS === 'DRAFT' ? 'text-danger' : 'text-warning'}`}> */}
-            {/* {status === 'FINISH' ? 'เสร็จสมบูรณ์' : 'กำลังดำเนินการ'} */}
-            {/* {
-              item.STATUS === 'DRAFT' ?
-                'กำลังดำเนินการ'
-                :
-                item.STATUS === 'EDIT' ?
-                  'แก้ไข'
-                  :
-                  'เสร็จสมบูรณ์'
-            }
-          </span> */}
-          {/* end::Lable */}
-        </div>
-      </Link>
-      {/* end::Item */}
+      }
     </>
   )
 }
