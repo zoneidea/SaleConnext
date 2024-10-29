@@ -52,6 +52,8 @@ const SalesCreateCust: React.FC = () => {
     // เพิ่ม state สำหรับจัดการค่าการติ้กใน "ที่อยู่ลูกค้า (ตามบัตร)"
     const [showCustomerAddress, setShowCustomerAddress] = useState(true);
     const [showInstallAddress, setShowInstallAddress] = useState(false);
+    console.log(`showInstallAddress`, showInstallAddress);
+    
     const [showBillTax, setShowBillTax] = useState(false);
 
     const [valueCalendar, setValueCalendar] = useState<Date | null>(null);
@@ -1635,6 +1637,7 @@ const SalesCreateCust: React.FC = () => {
                                                                     className='form-check-input'
                                                                     name='showInstallAddress'
                                                                     type='checkbox'
+                                                                    checked={showInstallAddress}
                                                                 />
                                                                 <span className='fw-bold ps-2 fs-6 mb-sm-5'>ใช้เหมือนที่อยู่ลูกค้า (ติดตั้ง)</span>
                                                             </label>

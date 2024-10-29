@@ -150,7 +150,7 @@ const SidebarMenuMain = () => {
 
   // เก็บข้อมูลเมนูเป็น array
   const [menu, setMenu] = useState<any[]>([])
-  console.log(`menu`, menu);
+  // console.log(`menu`, menu);
   
   // GET GetMenu
   useEffect(() => {
