@@ -9,6 +9,7 @@ import { DashboardWrapper } from '../pages/dashboard/DashboardWrapper'
 import { SalesWrapper } from '../pages/sales/SalesWrapper'
 
 const PrivateRoutes = () => {
+  //หัวข้อ ระบบขาย
   const SalesSatusCust = lazy(() => import('../pages/sales/SalesSatusCust'))
   const SalesProduct = lazy(() => import('../pages/sales/SalesProduct'))
   const SalesCreateCust = lazy(() => import('../pages/sales/SalesCreateCust'))
@@ -19,7 +20,6 @@ const PrivateRoutes = () => {
   const Step = lazy(() => import('../pages/sales/components/step/Step'))
   const SalesDiscount = lazy(() => import('../pages/sales/SalesDiscount'))
   const SalesPackage = lazy(() => import('../pages/sales/SalesPackage'))
-  const SalesProductStock = lazy(() => import('../pages/sales/SalesProductStock'))
   const SalesPDPA = lazy(() => import('../pages/sales/SalesPDPA'))
 
   //กล้อง + รูป
@@ -27,6 +27,9 @@ const PrivateRoutes = () => {
   const SalesPhoto = lazy(() => import('../pages/sales/SalesPhoto'))
   const DrawingMapGallery = lazy(() => import('../pages/sales/components/photo/DrawingMapPhoto'))
   const GoogleMapGPS = lazy(() => import('../pages/sales/components/gps/googleMapGPS'))
+  
+  //หัวข้อ สินค้าในสต๊อก
+  const ProductStock = lazy(() => import('../pages/productstock/ProductStock'))
 
   return (
     <Routes>
@@ -137,7 +140,7 @@ const PrivateRoutes = () => {
           path='productstock'
           element={
             <SuspensedView>
-              <SalesProductStock />
+              <ProductStock />
             </SuspensedView>
           }
         />
