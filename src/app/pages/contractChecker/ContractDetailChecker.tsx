@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, ChangeEvent } from 'react';
 import { Content } from '../../../_metronic/layout/components/content';
 import { useAuth } from '../../modules/auth/core/Auth';
 import { useUUIDStore, useSaveProductStore } from '../../modules/stores/stepsStore';
@@ -43,13 +43,98 @@ const SalesPackage: React.FC = () => {
     const navigate = useNavigate();
     const MySwal = withReactContent(Swal);
 
+    const { auth } = useAuth();
+    const EmpId = auth?.data?.[0]?.EmpId || '';
+    const TeamSale = auth?.data?.[0]?.TeamSale || '';
+    const SaleCode = auth?.data?.[0]?.SaleCode || '';
+    const SupEmpId = auth?.data?.[0]?.SupEmp || '';
+    const SecEmpId = auth?.data?.[0]?.SecEmp || '';
 
     const location = useLocation();
     const item = location.state as ItemProps || [];
 
+    const refno = item?.REFNO
     const product = item?.PRODUCT
     const customer = item?.CUSTOMERDETAIL
     const address = item?.ADDRESS
+
+    const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
+    const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
+
+    // เก็บข้อมูลส่วนลดใน state และ store
+    const UpdateCheckerCommentData = useMemo(() => {
+        // if (!PRODUCT?.[0]?.Package?.[0]) {
+        //     return [];
+        // }
+
+        // return [
+        //     {
+        //         TRADEIN: {
+        //             HASTRADEIN: PRODUCT[0].Package[0].HASTRADEIN,
+        //             TRADEINBRANDID: selectedTurnId,
+        //             TRADEINBRANDNAME: selectedTradeInBrandName, // ใช้ selectedTradeInBrandName ที่อัปเดตจาก useEffect
+        //             TRADEINMODEL: tradeInModel,
+        //             TRADEINSERIAL: tradeInSerial,
+        //         },
+        //         DISCOUNTAMOUNT: currentSequence,
+        //         GIFT: {
+        //             GIFTID: selectedGiftId,
+        //             GIFTCODE: freeGift[selectedGiftId - 1]?.GIFTCODE,
+        //             GIFTNAME: freeGift[selectedGiftId - 1]?.GIFTNAME,
+        //             GIFTPRICE: freeGift[selectedGiftId - 1]?.GIFTPRICE ?? 0,
+        //             GIFTDESCRIPTION: freeGift[selectedGiftId - 1]?.GIFTDESCRIPTION || null,
+        //         },
+        //     },
+        // ];
+    }, []);
+
+    // POST Contract/updateContract
+    const handleSaveClick = async () => {
+        try {
+            // POST Contract/updateContract
+            const updateContract = await axios.post(UPDATECONTACT, {
+                REFNO: refno,
+                EMPID: EmpId,
+                TEAMSALE: TeamSale,
+                SALECODE: SaleCode,
+                SUPEMPID: SupEmpId,
+                SECEMPID: SecEmpId,
+                FIELD: "CHECKERCOMMENT",
+                DATA: UpdateCheckerCommentData
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            console.log(`updateContract DISCOUNT: `, updateContract.data);
+            // หลังจากทำการส่งข้อมูลสำเร็จ นำทางไปยังหน้า /sale/createcust
+            // navigate('/sale/createcust');
+        } catch (error) {
+            console.error('Error fetching UPDATECONTACT:', error);
+        }
+    };
+
+    const [cbxApproveSelected, setApproveSelected] = useState(false);
+    const [cbxRejectSelected, setRejectSelected] = useState(false);
+    const [cbxCancelSelected, setCancelSelected] = useState(false);
+
+    const handleCheckboxChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const { name, checked } = event.target;
+
+        if (name === 'cbxApprove') {
+            setApproveSelected(true)
+            setRejectSelected(false)
+            setCancelSelected(false)
+        } else if (name === 'cbxReject') {
+            setApproveSelected(false)
+            setRejectSelected(true)
+            setCancelSelected(false)
+        } else {
+            setApproveSelected(false)
+            setRejectSelected(false)
+            setCancelSelected(true)
+        }
+    };
 
     return (
         <>
@@ -104,7 +189,7 @@ const SalesPackage: React.FC = () => {
                                                         value={product?.[0]?.ItemDescription}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0' />
+                                                        className='form-control bg-transparent form-control-lg mb-3 mb-lg-0' />
                                                 </div>
                                                 <div className='col-lg-6 mb-3'>
                                                     <label className='form-label fw-bold fs-6'>แพ็คเกจ</label>
@@ -112,7 +197,7 @@ const SalesPackage: React.FC = () => {
                                                         value={product?.[0]?.Package?.[0]?.PACKAGETITLE}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0' />
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0' />
                                                 </div>
                                             </div>
                                         </div>
@@ -148,7 +233,7 @@ const SalesPackage: React.FC = () => {
                                                         value={customer?.[0]?.CUSTOMERTYPENAME}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0' />
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0' />
                                                 </div>
                                                 <div className='col-lg-6 mb-3'>
                                                     <label className='form-label fw-bold fs-6'>ประเภทบัตร</label>
@@ -156,7 +241,7 @@ const SalesPackage: React.FC = () => {
                                                         value={customer?.[0]?.CARDTYPE?.[0]?.CARDTYPENAME}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0' />
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0' />
                                                 </div>
                                             </div>
                                         </div>
@@ -169,7 +254,7 @@ const SalesPackage: React.FC = () => {
                                                         value={customer?.[0]?.CUSTOMERID}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
                                                     />
                                                 </div>
                                                 <div className='col-lg-4 mb-3'>
@@ -178,7 +263,7 @@ const SalesPackage: React.FC = () => {
                                                         value={customer?.[0]?.PREFIX?.[0]?.PREFIXNAME}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
                                                     />
                                                 </div>
                                                 <div className='col-lg-4'>
@@ -187,7 +272,7 @@ const SalesPackage: React.FC = () => {
                                                         value={customer?.[0]?.CUSTOMERNAME}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
                                                     />
                                                 </div>
                                             </div>
@@ -200,7 +285,7 @@ const SalesPackage: React.FC = () => {
                                                         value={customer?.[0]?.CUSTOMERDOB}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
                                                     />
                                                 </div>
                                                 <div className='col-lg-4 mb-3'>
@@ -209,7 +294,7 @@ const SalesPackage: React.FC = () => {
                                                         value={customer?.[0]?.CUSTOMERRAGE}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
                                                     />
                                                 </div>
                                                 <div className='col-lg-4'>
@@ -218,7 +303,7 @@ const SalesPackage: React.FC = () => {
                                                         value={customer?.[0]?.SEX?.[0]?.SEXNAME}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
                                                     />
                                                 </div>
                                             </div>
@@ -231,7 +316,7 @@ const SalesPackage: React.FC = () => {
                                                         value={customer?.[0]?.CUSTOMERMOBILE}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
                                                     />
                                                 </div>
                                                 <div className='col-lg-3 mb-3'>
@@ -240,7 +325,7 @@ const SalesPackage: React.FC = () => {
                                                         value={customer?.[0]?.CUSTOMERPHONE}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
                                                     />
                                                 </div>
                                                 <div className='col-lg-3'>
@@ -249,7 +334,7 @@ const SalesPackage: React.FC = () => {
                                                         value={customer?.[0]?.SEX?.[0]?.CUSTOMERWORKPHONE}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
                                                     />
                                                 </div>
                                                 <div className='col-lg-3'>
@@ -258,7 +343,7 @@ const SalesPackage: React.FC = () => {
                                                         value={customer?.[0]?.SEX?.[0]?.CUSTOMEREMAIL}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
                                                     />
                                                 </div>
                                             </div>
@@ -294,7 +379,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSCARD?.ADDRESSNUMBER}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0' />
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0' />
                                                 </div>
                                                 <div className='col-lg-4 mb-3'>
                                                     <label className='form-label fw-bold fs-6'>หมู่ที่</label>
@@ -302,7 +387,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSCARD?.ADDRESSMOO}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0' />
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0' />
                                                 </div>
                                                 <div className='col-lg-4 mb-3'>
                                                     <label className='form-label fw-bold fs-6'>ซอย</label>
@@ -310,7 +395,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSCARD?.ADDRESSSOI}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0' />
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0' />
                                                 </div>
                                             </div>
                                         </div>
@@ -323,7 +408,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSCARD?.ADDRESSROAD}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
                                                     />
                                                 </div>
                                                 <div className='col-lg-4 mb-3'>
@@ -332,7 +417,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSCARD?.ADDRESSSUBDISTRICTNAME}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
                                                     />
                                                 </div>
                                                 <div className='col-lg-4'>
@@ -341,7 +426,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSCARD?.ADDRESSDISTRICTNAME}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
                                                     />
                                                 </div>
                                             </div>
@@ -354,7 +439,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSCARD?.ADDRESSPROVINCENAME}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
                                                     />
                                                 </div>
                                                 <div className='col-lg-4 mb-3'>
@@ -363,7 +448,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSCARD?.ADDRESSZIPCODE}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
                                                     />
                                                 </div>
                                                 <div className='col-lg-4'></div>
@@ -401,7 +486,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSINSTALLATION?.ADDRESSNUMBER}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0' />
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0' />
                                                 </div>
                                                 <div className='col-lg-4 mb-3'>
                                                     <label className='form-label fw-bold fs-6'>หมู่ที่</label>
@@ -409,7 +494,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSINSTALLATION?.ADDRESSMOO}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0' />
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0' />
                                                 </div>
                                                 <div className='col-lg-4 mb-3'>
                                                     <label className='form-label fw-bold fs-6'>ซอย</label>
@@ -417,7 +502,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSINSTALLATION?.ADDRESSSOI}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0' />
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0' />
                                                 </div>
                                             </div>
                                         </div>
@@ -430,7 +515,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSINSTALLATION?.ADDRESSROAD}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
                                                     />
                                                 </div>
                                                 <div className='col-lg-4 mb-3'>
@@ -439,7 +524,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSINSTALLATION?.ADDRESSSUBDISTRICTNAME}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
                                                     />
                                                 </div>
                                                 <div className='col-lg-4'>
@@ -448,7 +533,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSINSTALLATION?.ADDRESSDISTRICTNAME}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
                                                     />
                                                 </div>
                                             </div>
@@ -461,7 +546,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSINSTALLATION?.ADDRESSPROVINCENAME}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
                                                     />
                                                 </div>
                                                 <div className='col-lg-4 mb-3'>
@@ -470,7 +555,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSINSTALLATION?.ADDRESSZIPCODE}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
                                                     />
                                                 </div>
                                                 <div className='col-lg-4'></div>
@@ -508,7 +593,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSPAYMENT?.ADDRESSNUMBER}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0' />
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0' />
                                                 </div>
                                                 <div className='col-lg-4 mb-3'>
                                                     <label className='form-label fw-bold fs-6'>หมู่ที่</label>
@@ -516,7 +601,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSPAYMENT?.ADDRESSMOO}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0' />
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0' />
                                                 </div>
                                                 <div className='col-lg-4 mb-3'>
                                                     <label className='form-label fw-bold fs-6'>ซอย</label>
@@ -524,7 +609,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSPAYMENT?.ADDRESSSOI}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0' />
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0' />
                                                 </div>
                                             </div>
                                         </div>
@@ -537,7 +622,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSPAYMENT?.ADDRESSROAD}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
                                                     />
                                                 </div>
                                                 <div className='col-lg-4 mb-3'>
@@ -546,7 +631,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSPAYMENT?.ADDRESSSUBDISTRICTNAME}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
                                                     />
                                                 </div>
                                                 <div className='col-lg-4'>
@@ -555,7 +640,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSPAYMENT?.ADDRESSDISTRICTNAME}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
                                                     />
                                                 </div>
                                             </div>
@@ -568,7 +653,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSPAYMENT?.ADDRESSPROVINCENAME}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
                                                     />
                                                 </div>
                                                 <div className='col-lg-4 mb-3'>
@@ -577,7 +662,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSPAYMENT?.ADDRESSZIPCODE}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
                                                     />
                                                 </div>
                                                 <div className='col-lg-4'></div>
@@ -615,7 +700,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSTAX?.ADDRESSNUMBER}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0' />
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0' />
                                                 </div>
                                                 <div className='col-lg-4 mb-3'>
                                                     <label className='form-label fw-bold fs-6'>หมู่ที่</label>
@@ -623,7 +708,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSTAX?.ADDRESSMOO}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0' />
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0' />
                                                 </div>
                                                 <div className='col-lg-4 mb-3'>
                                                     <label className='form-label fw-bold fs-6'>ซอย</label>
@@ -631,7 +716,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSTAX?.ADDRESSSOI}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0' />
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0' />
                                                 </div>
                                             </div>
                                         </div>
@@ -644,7 +729,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSTAX?.ADDRESSROAD}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
                                                     />
                                                 </div>
                                                 <div className='col-lg-4 mb-3'>
@@ -653,7 +738,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSTAX?.ADDRESSSUBDISTRICTNAME}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
                                                     />
                                                 </div>
                                                 <div className='col-lg-4'>
@@ -662,7 +747,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSTAX?.ADDRESSDISTRICTNAME}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
                                                     />
                                                 </div>
                                             </div>
@@ -675,7 +760,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSTAX?.ADDRESSPROVINCENAME}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
                                                     />
                                                 </div>
                                                 <div className='col-lg-4 mb-3'>
@@ -684,7 +769,7 @@ const SalesPackage: React.FC = () => {
                                                         value={address?.[0]?.ADDRESSTAX?.ADDRESSZIPCODE}
                                                         type='text'
                                                         disabled={true}
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                                                        className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
                                                     />
                                                 </div>
                                                 <div className='col-lg-4'></div>
@@ -699,37 +784,37 @@ const SalesPackage: React.FC = () => {
 
                 <div className='row mb-6'>
                     <div className='col-lg-4 mb-3'>
-                        <label className='form-check form-check-inline form-check-solid me-5'>
+                        <label className='form-check form-check-inline me-5'>
                             <input
-                                // onChange={null}
+                                onChange={handleCheckboxChange}
                                 className='form-check-input'
-                                name='showInstallAddress'
+                                name='cbxApprove'
                                 type='checkbox'
-                            // checked={showInstallAddress}
+                                checked={cbxApproveSelected}
                             />
                             <span className='fw-bold ps-2 fs-6 mb-sm-5'>ผ่าน</span>
                         </label>
                     </div>
                     <div className='col-lg-4 mb-3'>
-                        <label className='form-check form-check-inline form-check-solid me-5 mt-3 mt-sm-0'>
+                        <label className='form-check form-check-inline me-5 mt-3 mt-sm-0'>
                             <input
-                                // onChange={null}
+                                onChange={handleCheckboxChange}
                                 className='form-check-input'
-                                name='showPaymentAddress'
+                                name='cbxReject'
                                 type='checkbox'
-                            // checked={showPaymentAddress}
+                                checked={cbxRejectSelected}
                             />
                             <span className='fw-bold ps-2 fs-6'>ไม่ผ่าน</span>
                         </label>
                     </div>
                     <div className='col-lg-4 mb-3'>
-                        <label className='form-check form-check-inline form-check-solid me-5 mt-3 mt-sm-0'>
+                        <label className='form-check form-check-inline me-5 mt-3 mt-sm-0'>
                             <input
-                                // onChange={null}
+                                onChange={handleCheckboxChange}
                                 className='form-check-input'
-                                name='showPaymentAddress'
+                                name='cbxCancel'
                                 type='checkbox'
-                            // checked={showPaymentAddress}
+                                checked={cbxCancelSelected}
                             />
                             <span className='fw-bold ps-2 fs-6'>ยกเลิกสัญญา</span>
                         </label>
@@ -743,7 +828,7 @@ const SalesPackage: React.FC = () => {
                             value={''}
                             type='text'
                             multiple
-                            className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                            className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
                         />
                     </div>
                 </div>
