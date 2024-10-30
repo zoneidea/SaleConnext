@@ -39,6 +39,7 @@ const PrivateRoutes = () => {
   //หัวข้อ ระบบตรวจสัญญา
   const ContractChecker = lazy(() => import('../pages/contractChecker/ContractChecker'))
   const ContractCheckerStep = lazy(() => import('../pages/contractChecker/step/Step'))
+  const ContractDetailChecker = lazy(() => import('../pages/contractChecker/ContractDetailChecker'))
 
   return (
     <Routes>
@@ -231,6 +232,14 @@ const PrivateRoutes = () => {
           element={
             <SuspensedView>
               <ContractCheckerStep />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path='contract-checker/detailChecker'
+          element={
+            <SuspensedView>
+              <ContractDetailChecker />
             </SuspensedView>
           }
         />

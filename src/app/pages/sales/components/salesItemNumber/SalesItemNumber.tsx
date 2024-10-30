@@ -74,7 +74,7 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item }) => {
               </div>
             </div>
             :
-            <Link to='/contract-checker/step' state={item} >
+            <Link to='/contract-checker/detailChecker' state={item} >
               <div className='d-flex align-items-center bg-light-warning rounded p-5 mb-3 col-12'>
                 <span className='text-warning me-5'>
                   <KTIcon iconName='abstract-26' className='text-warning fs-1 me-5' />

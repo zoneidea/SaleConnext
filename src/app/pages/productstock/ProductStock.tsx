@@ -23,7 +23,7 @@ const SalesProductStock: React.FC = () => {
     const [loadingProducts, setLoadingProducts] = useState(false); // เพิ่ม state สำหรับการโหลดสินค้า
 
     const [categories, setCategories] = useState<any[]>([]);
-    const { product, setProduct } = useProductStore();
+    const {product, setProduct } = useProductStore();
     const [selectedCategoryId, setSelectedCategoryId] = useState<any>('');
     const [selectedProductIndex, setSelectedProductIndex] = useState<number | null>(null);
 

@@ -72,7 +72,7 @@ const Step: React.FC = () => {
         <div className='card mb-10'>
           <div className='card-body d-flex align-items-center'>
             <div className='flex-grow-1'>
-              <div className='text-gray-800 text-hover-primary fw-bold fs-4'>
+              <div className='text-gray-800 fw-bold fs-4'>
                 {`REFNO: ${item?.REFNO}`}
               </div>
               <span className={`${data?.[0]?.STATUS === 'DRAFT' ? 'text-warning' : 'text-danger'} fw-semibold d-block fs-6`}>{`สถานะ: ${data?.[0]?.STATUS === 'DRAFT' ? 'ยังไม่ได้ตรวจสอบ' : 'แก้ไข'}`}</span>
@@ -80,7 +80,7 @@ const Step: React.FC = () => {
           </div>
           <div className='card-body d-flex align-items-center py-5 pt-6'>
             <div className='col-12'>
-              <Link to=''>
+              <Link to='/contract-checker/packageChecker' state={data?.[0]}>
                 <div className='d-flex align-items-center pb-8'>
                   <span className={`bullet bullet-vertical h-40px ${data?.[0]?.PRODUCT?.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
                   <div className='form-check form-check-custom form-check-solid mx-5'></div>
