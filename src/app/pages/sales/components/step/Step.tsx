@@ -101,23 +101,20 @@ const Step: React.FC = () => {
                       )
                     }
                     {
-                      data?.[0]?.PRODUCT?.length ?
+                      data?.[0]?.PRODUCT?.length &&
                         data?.[0]?.PRODUCT?.[0]?.Package.length && (
                           <span className='text-gray-700 fw-semibold d-block'>{`แพ็คเกจ: ${data?.[0]?.PRODUCT?.[0]?.Package[0]?.PACKAGETITLE}`}</span>
                         )
-                        :
-                        null
                     }
-
                   </div>
                 </div>
               </Link>
-              <Link to=''>
+              {/* <Link to=''> */}
                 <div className='d-flex align-items-center pb-8'>
                   <span className={`bullet bullet-vertical h-40px ${data?.[0]?.CUSTOMERSTATUS.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
                   <div className='form-check form-check-custom form-check-solid mx-5'></div>
                   <div className='flex-grow-1'>
-                    <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
+                    <div className='text-gray-800 fw-bold fs-2'>
                       {`2. ตรวจสอบข้อมูลลูกค้า`}
                     </div>
                     {
@@ -127,7 +124,7 @@ const Step: React.FC = () => {
                     }
                   </div>
                 </div>
-              </Link>
+              {/* </Link> */}
               <Link to=''>
                 <div className='d-flex align-items-center pb-8'>
                   <span className={`bullet bullet-vertical h-40px ${data?.[0]?.DISCOUNT.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
