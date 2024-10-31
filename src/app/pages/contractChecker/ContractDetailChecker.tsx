@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { useState, useEffect, useRef, useMemo, ChangeEvent } from 'react';
+import { useState, useEffect, useRef, useMemo, ChangeEvent, Key } from 'react';
 import { Content } from '../../../_metronic/layout/components/content';
 import { useAuth } from '../../modules/auth/core/Auth';
 import { useUUIDStore, useSaveProductStore } from '../../modules/stores/stepsStore';
@@ -57,15 +57,16 @@ const SalesPackage: React.FC = () => {
     const product = item?.PRODUCT
     const customer = item?.CUSTOMERDETAIL
     const address = item?.ADDRESS
+    const image = item?.IMAGE
 
     const [comment, setComment] = useState('')
     const [cbxApproveSelected, setApproveSelected] = useState(true);
     const [cbxRejectSelected, setRejectSelected] = useState(false);
     const [cbxCancelSelected, setCancelSelected] = useState(false);
 
-    const [image, setImage] = useState([
-        { image: 1 }, { image: 2 }, { image: 3 }
-    ])
+    // const [image, setImage] = useState([
+    //     { image: 1 }, { image: 2 }, { image: 3 }
+    // ])
 
     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
     const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContractValidate`;
@@ -802,26 +803,26 @@ const SalesPackage: React.FC = () => {
                             </div>
                         </div>
                         <div className='d-flex flex-column flex-md-row mx-5 mb-5'>
-                            {image.map((image, index) => (
-                                <div className='m-5' key={index}>
-                                    <div className='d-flex justify-content-between mb-3'>
-                                        {/* <img
-                                            src={image}
-                                            alt={`Captured ${index + 1}`}
-                                            style={{
-                                                width: '300px', height: 'auto',
-                                            }}
-                                        /> */}
-                                        <img
-                                            className='theme-light-show'
-                                            src={'https://placehold.co/600x400'}
-                                            alt='ลบรูป'
-                                            // onClick={() => handleDeleteImage(image)}
-                                            style={{ width: '200px', height: 'auto', cursor: 'pointer' }}
-                                        />
+                            {
+                                image?.[0].IMAGECARD.length !== 0 ? (
+                                    image?.[0].IMAGECARD?.map((image: any, index: Key | null | undefined) => (
+                                        <div className='m-5' key={index}>
+                                            <div className='d-flex justify-content-between mb-3'>
+                                                <img
+                                                    src={`data:${image}`}
+                                                    style={{
+                                                        width: '200px', height: 'auto',
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className='text-center my-7'>
+                                        <h5>ไม่มีรุปภาพบัตรประชาชนลูกค้า</h5>
                                     </div>
-                                </div>
-                            ))}
+                                )
+                            }
                         </div>
                         <hr />
 
@@ -833,26 +834,26 @@ const SalesPackage: React.FC = () => {
                             </div>
                         </div>
                         <div className='d-flex flex-column flex-md-row mx-5'>
-                            {image.map((image, index) => (
-                                <div className='m-5' key={index}>
-                                    <div className='d-flex justify-content-between mb-3'>
-                                        {/* <img
-                                            src={image}
-                                            alt={`Captured ${index + 1}`}
-                                            style={{
-                                                width: '300px', height: 'auto',
-                                            }}
-                                        /> */}
-                                        <img
-                                            className='theme-light-show'
-                                            src={'https://placehold.co/600x400'}
-                                            alt='ลบรูป'
-                                            // onClick={() => handleDeleteImage(image)}
-                                            style={{ width: '200px', height: 'auto', cursor: 'pointer' }}
-                                        />
+                            {
+                                image?.[0].IMAGEGPS.length !== 0 ? (
+                                    image?.[0].IMAGEGPS?.map((image: any, index: Key | null | undefined) => (
+                                        <div className='m-5' key={index}>
+                                            <div className='d-flex justify-content-between mb-3'>
+                                                <img
+                                                    src={`data:${image}`}
+                                                    style={{
+                                                        width: '200px', height: 'auto',
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className='text-center my-7'>
+                                        <h5>ไม่มีรุปภาพบันทึกหน้าจอ GPS</h5>
                                     </div>
-                                </div>
-                            ))}
+                                )
+                            }
                         </div>
                         <hr />
 
@@ -864,26 +865,26 @@ const SalesPackage: React.FC = () => {
                             </div>
                         </div>
                         <div className='d-flex flex-column flex-md-row mx-5'>
-                            {image.map((image, index) => (
-                                <div className='m-5' key={index}>
-                                    <div className='d-flex justify-content-between mb-3'>
-                                        {/* <img
-                                            src={image}
-                                            alt={`Captured ${index + 1}`}
-                                            style={{
-                                                width: '300px', height: 'auto',
-                                            }}
-                                        /> */}
-                                        <img
-                                            className='theme-light-show'
-                                            src={'https://placehold.co/600x400'}
-                                            alt='ลบรูป'
-                                            // onClick={() => handleDeleteImage(image)}
-                                            style={{ width: '200px', height: 'auto', cursor: 'pointer' }}
-                                        />
+                            {
+                                image?.[0].IMAGEMAP.length !== 0 ? (
+                                    image?.[0].IMAGEMAP?.map((image: any, index: Key | null | undefined) => (
+                                        <div className='m-5' key={index}>
+                                            <div className='d-flex justify-content-between mb-3'>
+                                                <img
+                                                    src={`data:${image}`}
+                                                    style={{
+                                                        width: '200px', height: 'auto',
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className='text-center my-7'>
+                                        <h5>ไม่มีรุปภาพแผนที่</h5>
                                     </div>
-                                </div>
-                            ))}
+                                )
+                            }
                         </div>
                         <hr />
 
@@ -895,26 +896,26 @@ const SalesPackage: React.FC = () => {
                             </div>
                         </div>
                         <div className='d-flex flex-column flex-md-row mx-5'>
-                            {image.map((image, index) => (
-                                <div className='m-5' key={index}>
-                                    <div className='d-flex justify-content-between mb-3'>
-                                        {/* <img
-                                            src={image}
-                                            alt={`Captured ${index + 1}`}
-                                            style={{
-                                                width: '300px', height: 'auto',
-                                            }}
-                                        /> */}
-                                        <img
-                                            className='theme-light-show'
-                                            src={'https://placehold.co/600x400'}
-                                            alt='ลบรูป'
-                                            // onClick={() => handleDeleteImage(image)}
-                                            style={{ width: '200px', height: 'auto', cursor: 'pointer' }}
-                                        />
+                            {
+                                image?.[0].IMAGETRADEIN.length !== 0 ? (
+                                    image?.[0].IMAGETRADEIN?.map((image: string | undefined, index: Key | null | undefined) => (
+                                        <div className='m-5' key={index}>
+                                            <div className='d-flex justify-content-between mb-3'>
+                                                <img
+                                                    src={`data:${image}`}
+                                                    style={{
+                                                        width: '200px', height: 'auto',
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className='text-center my-7'>
+                                        <h5>ไม่มีรุปภาพเครื่องเทิร์น</h5>
                                     </div>
-                                </div>
-                            ))}
+                                )
+                            }
                         </div>
                         <hr />
 
@@ -926,26 +927,26 @@ const SalesPackage: React.FC = () => {
                             </div>
                         </div>
                         <div className='d-flex flex-column flex-md-row mx-5'>
-                            {image.map((image, index) => (
-                                <div className='m-5' key={index}>
-                                    <div className='d-flex justify-content-between mb-3'>
-                                        {/* <img
-                                            src={image}
-                                            alt={`Captured ${index + 1}`}
-                                            style={{
-                                                width: '300px', height: 'auto',
-                                            }}
-                                        /> */}
-                                        <img
-                                            className='theme-light-show'
-                                            src={'https://placehold.co/600x400'}
-                                            alt='ลบรูป'
-                                            // onClick={() => handleDeleteImage(image)}
-                                            style={{ width: '200px', height: 'auto', cursor: 'pointer' }}
-                                        />
+                            {
+                                image?.[0].IMAGEINSTALLATION.length !== 0 ? (
+                                    image?.[0].IMAGEINSTALLATION?.map((image: any, index: Key | null | undefined) => (
+                                        <div className='m-5' key={index}>
+                                            <div className='d-flex justify-content-between mb-3'>
+                                                <img
+                                                    src={`data:${image}`}
+                                                    style={{
+                                                        width: '200px', height: 'auto',
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className='text-center my-7'>
+                                        <h5>ไม่มีรุปภาพการติดตั้งเครื่อง</h5>
                                     </div>
-                                </div>
-                            ))}
+                                )
+                            }
                         </div>
                         <hr />
 
@@ -957,26 +958,26 @@ const SalesPackage: React.FC = () => {
                             </div>
                         </div>
                         <div className='d-flex flex-column flex-md-row mx-5'>
-                            {image.map((image, index) => (
-                                <div className='m-5' key={index}>
-                                    <div className='d-flex justify-content-between mb-3'>
-                                        {/* <img
-                                            src={image}
-                                            alt={`Captured ${index + 1}`}
-                                            style={{
-                                                width: '300px', height: 'auto',
-                                            }}
-                                        /> */}
-                                        <img
-                                            className='theme-light-show'
-                                            src={'https://placehold.co/600x400'}
-                                            alt='ลบรูป'
-                                            // onClick={() => handleDeleteImage(image)}
-                                            style={{ width: '200px', height: 'auto', cursor: 'pointer' }}
-                                        />
+                            {
+                                image?.[0]?.IMAGECUSTOMERHOME.length !== 0 ? (
+                                    image?.[0]?.IMAGECUSTOMERHOME.map((image: any, index: Key | null | undefined) => (
+                                        <div className='m-5' key={index}>
+                                            <div className='d-flex justify-content-between mb-3'>
+                                                <img
+                                                    src={`data:${image}`}
+                                                    style={{
+                                                        width: '200px', height: 'auto',
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className='text-center my-7'>
+                                        <h5>ไม่มีรุปภาพบ้านลูกค้า</h5>
                                     </div>
-                                </div>
-                            ))}
+                                )
+                            }
                         </div>
                         <hr />
 
@@ -988,26 +989,26 @@ const SalesPackage: React.FC = () => {
                             </div>
                         </div>
                         <div className='d-flex flex-column flex-md-row mx-5'>
-                            {image.map((image, index) => (
-                                <div className='m-5' key={index}>
-                                    <div className='d-flex justify-content-between mb-3'>
-                                        {/* <img
-                                            src={image}
-                                            alt={`Captured ${index + 1}`}
-                                            style={{
-                                                width: '300px', height: 'auto',
-                                            }}
-                                        /> */}
-                                        <img
-                                            className='theme-light-show'
-                                            src={'https://placehold.co/600x400'}
-                                            alt='ลบรูป'
-                                            // onClick={() => handleDeleteImage(image)}
-                                            style={{ width: '200px', height: 'auto', cursor: 'pointer' }}
-                                        />
+                            {
+                                image?.[0]?.IMAGECUSTOMER.length !== 0 ? (
+                                    image?.[0]?.IMAGECUSTOMER.map((image: any, index: Key | null | undefined) => (
+                                        <div className='m-5' key={index}>
+                                            <div className='d-flex justify-content-between mb-3'>
+                                                <img
+                                                    src={`data:${image}`}
+                                                    style={{
+                                                        width: '200px', height: 'auto',
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className='text-center my-7'>
+                                        <h5>ไม่มีรุปภาพลูกค้า</h5>
                                     </div>
-                                </div>
-                            ))}
+                                )
+                            }
                         </div>
                         <hr />
 
@@ -1019,26 +1020,26 @@ const SalesPackage: React.FC = () => {
                             </div>
                         </div>
                         <div className='d-flex flex-column flex-md-row mx-5'>
-                            {image.map((image, index) => (
-                                <div className='m-5' key={index}>
-                                    <div className='d-flex justify-content-between mb-3'>
-                                        {/* <img
-                                            src={image}
-                                            alt={`Captured ${index + 1}`}
-                                            style={{
-                                                width: '300px', height: 'auto',
-                                            }}
-                                        /> */}
-                                        <img
-                                            className='theme-light-show'
-                                            src={'https://placehold.co/600x400'}
-                                            alt='ลบรูป'
-                                            // onClick={() => handleDeleteImage(image)}
-                                            style={{ width: '200px', height: 'auto', cursor: 'pointer' }}
-                                        />
+                            {
+                                image?.[0]?.IMAGETDS.length !== 0 ? (
+                                    image?.[0]?.IMAGETDS.map((image: any, index: Key | null | undefined) => (
+                                        <div className='m-5' key={index}>
+                                            <div className='d-flex justify-content-between mb-3'>
+                                                <img
+                                                    src={`data:${image}`}
+                                                    style={{
+                                                        width: '200px', height: 'auto',
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className='text-center my-7'>
+                                        <h5>ไม่มีรุปภาพอุปกรณ์วัดค่าน้ำ</h5>
                                     </div>
-                                </div>
-                            ))}
+                                )
+                            }
                         </div>
                         <hr />
                     </div>
