@@ -58,65 +58,65 @@ const SalesPackage: React.FC = () => {
     const customer = item?.CUSTOMERDETAIL
     const address = item?.ADDRESS
 
+    const [comment, setComment] = useState('')
+    const [cbxApproveSelected, setApproveSelected] = useState(true);
+    const [cbxRejectSelected, setRejectSelected] = useState(false);
+    const [cbxCancelSelected, setCancelSelected] = useState(false);
+
+    const [image, setImage] = useState([
+        { image: 1 }, { image: 2 }, { image: 3 }
+    ])
+
     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
-    const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
+    const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContractValidate`;
 
     // เก็บข้อมูลส่วนลดใน state และ store
     const UpdateCheckerCommentData = useMemo(() => {
-        // if (!PRODUCT?.[0]?.Package?.[0]) {
-        //     return [];
-        // }
-
-        // return [
-        //     {
-        //         TRADEIN: {
-        //             HASTRADEIN: PRODUCT[0].Package[0].HASTRADEIN,
-        //             TRADEINBRANDID: selectedTurnId,
-        //             TRADEINBRANDNAME: selectedTradeInBrandName, // ใช้ selectedTradeInBrandName ที่อัปเดตจาก useEffect
-        //             TRADEINMODEL: tradeInModel,
-        //             TRADEINSERIAL: tradeInSerial,
-        //         },
-        //         DISCOUNTAMOUNT: currentSequence,
-        //         GIFT: {
-        //             GIFTID: selectedGiftId,
-        //             GIFTCODE: freeGift[selectedGiftId - 1]?.GIFTCODE,
-        //             GIFTNAME: freeGift[selectedGiftId - 1]?.GIFTNAME,
-        //             GIFTPRICE: freeGift[selectedGiftId - 1]?.GIFTPRICE ?? 0,
-        //             GIFTDESCRIPTION: freeGift[selectedGiftId - 1]?.GIFTDESCRIPTION || null,
-        //         },
-        //     },
-        // ];
-    }, []);
+        return {
+            APPROVE: cbxApproveSelected,
+            REJECT: cbxRejectSelected,
+            CANCEL: cbxCancelSelected,
+            COMMENT: comment
+        };
+    }, [cbxApproveSelected, cbxRejectSelected, cbxCancelSelected, comment]);
 
     // POST Contract/updateContract
     const handleSaveClick = async () => {
         try {
-            // POST Contract/updateContract
-            const updateContract = await axios.post(UPDATECONTACT, {
+            // POST Contract/updateContractValidate
+            let obj = {
                 REFNO: refno,
-                EMPID: EmpId,
-                TEAMSALE: TeamSale,
-                SALECODE: SaleCode,
-                SUPEMPID: SupEmpId,
-                SECEMPID: SecEmpId,
-                FIELD: "CHECKERCOMMENT",
                 DATA: UpdateCheckerCommentData
-            }, {
+            }
+
+            const updateContract = await axios.post(UPDATECONTACT, obj, {
                 headers: {
                     'Content-Type': 'application/json',
                 },
             });
-            console.log(`updateContract DISCOUNT: `, updateContract.data);
+            console.log(`Checker Contract: `, obj);
             // หลังจากทำการส่งข้อมูลสำเร็จ นำทางไปยังหน้า /sale/createcust
-            // navigate('/sale/createcust');
+
+            if (updateContract.status === 200) {
+                await MySwal.fire({
+                    text: "ตรวจสอบ " + refno + " แล้ว",
+                    icon: 'success',
+                    confirmButtonText: 'ตกลง'
+                }).then(() => {
+                    navigate('/contract-checker');
+                });
+            } else {
+                await MySwal.fire({
+                    text: updateContract.data.message,
+                    icon: 'error',
+                    confirmButtonText: 'ตกลง'
+                });
+            }
+
         } catch (error) {
             console.error('Error fetching UPDATECONTACT:', error);
         }
     };
-
-    const [cbxApproveSelected, setApproveSelected] = useState(false);
-    const [cbxRejectSelected, setRejectSelected] = useState(false);
-    const [cbxCancelSelected, setCancelSelected] = useState(false);
 
     const handleCheckboxChange = (event: ChangeEvent<HTMLInputElement>) => {
         const { name, checked } = event.target;
@@ -781,6 +781,268 @@ const SalesPackage: React.FC = () => {
                         </div>
                     </div>
                 </div>
+                <div className='accordion mb-10' id='kt_accordion_1'>
+                    <div className='accordion-item mb-10'>
+                        <h2 className='accordion-header' id='kt_accordion_1_header_1'>
+                            <h3
+                                className='accordion-button fs-4 fw-bold border-0 h-50px pt-5 rounded-top px-lg-15 px-7'
+                                data-bs-toggle='collapse'
+                                data-bs-target='#kt_accordion_1_body_1'
+                                aria-expanded='true'
+                                aria-controls='kt_accordion_1_body_1'
+                                style={{ color: 'white', cursor: 'pointer', backgroundColor: '#3777bc' }}>
+                                รูปภาพ
+                            </h3>
+                        </h2>
+                        <div className='card-body d-flex align-items-center mb-4'>
+                            <div className='flex-grow-1'>
+                                <div className='text-gray-800 fw-bold fs-4'>
+                                    ภาพถ่ายบัตรประชาชน
+                                </div>
+                            </div>
+                        </div>
+                        <div className='d-flex flex-column flex-md-row mx-5 mb-5'>
+                            {image.map((image, index) => (
+                                <div className='m-5' key={index}>
+                                    <div className='d-flex justify-content-between mb-3'>
+                                        {/* <img
+                                            src={image}
+                                            alt={`Captured ${index + 1}`}
+                                            style={{
+                                                width: '300px', height: 'auto',
+                                            }}
+                                        /> */}
+                                        <img
+                                            className='theme-light-show'
+                                            src={'https://placehold.co/600x400'}
+                                            alt='ลบรูป'
+                                            // onClick={() => handleDeleteImage(image)}
+                                            style={{ width: '200px', height: 'auto', cursor: 'pointer' }}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <hr />
+
+                        <div className='card-body d-flex align-items-center mb-4'>
+                            <div className='flex-grow-1'>
+                                <div className='text-gray-800 fw-bold fs-4'>
+                                    รูปแผนที่ GPS
+                                </div>
+                            </div>
+                        </div>
+                        <div className='d-flex flex-column flex-md-row mx-5'>
+                            {image.map((image, index) => (
+                                <div className='m-5' key={index}>
+                                    <div className='d-flex justify-content-between mb-3'>
+                                        {/* <img
+                                            src={image}
+                                            alt={`Captured ${index + 1}`}
+                                            style={{
+                                                width: '300px', height: 'auto',
+                                            }}
+                                        /> */}
+                                        <img
+                                            className='theme-light-show'
+                                            src={'https://placehold.co/600x400'}
+                                            alt='ลบรูป'
+                                            // onClick={() => handleDeleteImage(image)}
+                                            style={{ width: '200px', height: 'auto', cursor: 'pointer' }}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <hr />
+
+                        <div className='card-body d-flex align-items-center mb-4'>
+                            <div className='flex-grow-1'>
+                                <div className='text-gray-800 fw-bold fs-4'>
+                                    รูปวาดแผนที่
+                                </div>
+                            </div>
+                        </div>
+                        <div className='d-flex flex-column flex-md-row mx-5'>
+                            {image.map((image, index) => (
+                                <div className='m-5' key={index}>
+                                    <div className='d-flex justify-content-between mb-3'>
+                                        {/* <img
+                                            src={image}
+                                            alt={`Captured ${index + 1}`}
+                                            style={{
+                                                width: '300px', height: 'auto',
+                                            }}
+                                        /> */}
+                                        <img
+                                            className='theme-light-show'
+                                            src={'https://placehold.co/600x400'}
+                                            alt='ลบรูป'
+                                            // onClick={() => handleDeleteImage(image)}
+                                            style={{ width: '200px', height: 'auto', cursor: 'pointer' }}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <hr />
+
+                        <div className='card-body d-flex align-items-center mb-4'>
+                            <div className='flex-grow-1'>
+                                <div className='text-gray-800 fw-bold fs-4'>
+                                    รูปเครื่องเทิร์น
+                                </div>
+                            </div>
+                        </div>
+                        <div className='d-flex flex-column flex-md-row mx-5'>
+                            {image.map((image, index) => (
+                                <div className='m-5' key={index}>
+                                    <div className='d-flex justify-content-between mb-3'>
+                                        {/* <img
+                                            src={image}
+                                            alt={`Captured ${index + 1}`}
+                                            style={{
+                                                width: '300px', height: 'auto',
+                                            }}
+                                        /> */}
+                                        <img
+                                            className='theme-light-show'
+                                            src={'https://placehold.co/600x400'}
+                                            alt='ลบรูป'
+                                            // onClick={() => handleDeleteImage(image)}
+                                            style={{ width: '200px', height: 'auto', cursor: 'pointer' }}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <hr />
+
+                        <div className='card-body d-flex align-items-center mb-4'>
+                            <div className='flex-grow-1'>
+                                <div className='text-gray-800 fw-bold fs-4'>
+                                    รูปติดตั้งเครื่อง
+                                </div>
+                            </div>
+                        </div>
+                        <div className='d-flex flex-column flex-md-row mx-5'>
+                            {image.map((image, index) => (
+                                <div className='m-5' key={index}>
+                                    <div className='d-flex justify-content-between mb-3'>
+                                        {/* <img
+                                            src={image}
+                                            alt={`Captured ${index + 1}`}
+                                            style={{
+                                                width: '300px', height: 'auto',
+                                            }}
+                                        /> */}
+                                        <img
+                                            className='theme-light-show'
+                                            src={'https://placehold.co/600x400'}
+                                            alt='ลบรูป'
+                                            // onClick={() => handleDeleteImage(image)}
+                                            style={{ width: '200px', height: 'auto', cursor: 'pointer' }}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <hr />
+
+                        <div className='card-body d-flex align-items-center mb-4'>
+                            <div className='flex-grow-1'>
+                                <div className='text-gray-800 fw-bold fs-4'>
+                                    รูปบ้านลูกค้า
+                                </div>
+                            </div>
+                        </div>
+                        <div className='d-flex flex-column flex-md-row mx-5'>
+                            {image.map((image, index) => (
+                                <div className='m-5' key={index}>
+                                    <div className='d-flex justify-content-between mb-3'>
+                                        {/* <img
+                                            src={image}
+                                            alt={`Captured ${index + 1}`}
+                                            style={{
+                                                width: '300px', height: 'auto',
+                                            }}
+                                        /> */}
+                                        <img
+                                            className='theme-light-show'
+                                            src={'https://placehold.co/600x400'}
+                                            alt='ลบรูป'
+                                            // onClick={() => handleDeleteImage(image)}
+                                            style={{ width: '200px', height: 'auto', cursor: 'pointer' }}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <hr />
+
+                        <div className='card-body d-flex align-items-center mb-4'>
+                            <div className='flex-grow-1'>
+                                <div className='text-gray-800 fw-bold fs-4'>
+                                    รูปลูกค้า
+                                </div>
+                            </div>
+                        </div>
+                        <div className='d-flex flex-column flex-md-row mx-5'>
+                            {image.map((image, index) => (
+                                <div className='m-5' key={index}>
+                                    <div className='d-flex justify-content-between mb-3'>
+                                        {/* <img
+                                            src={image}
+                                            alt={`Captured ${index + 1}`}
+                                            style={{
+                                                width: '300px', height: 'auto',
+                                            }}
+                                        /> */}
+                                        <img
+                                            className='theme-light-show'
+                                            src={'https://placehold.co/600x400'}
+                                            alt='ลบรูป'
+                                            // onClick={() => handleDeleteImage(image)}
+                                            style={{ width: '200px', height: 'auto', cursor: 'pointer' }}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <hr />
+
+                        <div className='card-body d-flex align-items-center mb-4'>
+                            <div className='flex-grow-1'>
+                                <div className='text-gray-800 fw-bold fs-4'>
+                                    รูปอุปกรณ์วัดค่าน้ำ
+                                </div>
+                            </div>
+                        </div>
+                        <div className='d-flex flex-column flex-md-row mx-5'>
+                            {image.map((image, index) => (
+                                <div className='m-5' key={index}>
+                                    <div className='d-flex justify-content-between mb-3'>
+                                        {/* <img
+                                            src={image}
+                                            alt={`Captured ${index + 1}`}
+                                            style={{
+                                                width: '300px', height: 'auto',
+                                            }}
+                                        /> */}
+                                        <img
+                                            className='theme-light-show'
+                                            src={'https://placehold.co/600x400'}
+                                            alt='ลบรูป'
+                                            // onClick={() => handleDeleteImage(image)}
+                                            style={{ width: '200px', height: 'auto', cursor: 'pointer' }}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <hr />
+                    </div>
+                </div>
 
                 <div className='row mb-6'>
                     <div className='col-lg-4 mb-3'>
@@ -824,12 +1086,9 @@ const SalesPackage: React.FC = () => {
                 <div className='row mb-6'>
                     <div className='col-lg-6 mb-3'>
                         <label className='form-label fw-bold fs-6'>รายละเอียดเพิ่มเติม</label>
-                        <input
-                            value={''}
-                            type='text'
-                            multiple
-                            className='form-control form-control-lg bg-transparent mb-3 mb-lg-0'
-                        />
+                        <textarea
+                            onChange={(e) => setComment(e.target.value)}
+                            className='form-control bg-transparent mb-3 mb-lg-0 h-100' />
                     </div>
                 </div>
 
@@ -837,9 +1096,11 @@ const SalesPackage: React.FC = () => {
                     <Link to='/contract-checker' className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
                         ย้อนกลับ
                     </Link>
-                    <Link to='' className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
+                    <button
+                        className='btn btn-primary w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'
+                        onClick={handleSaveClick}>
                         บันทึกการตรวจสอบ
-                    </Link>
+                    </button>
                 </div>
             </Content>
         </>

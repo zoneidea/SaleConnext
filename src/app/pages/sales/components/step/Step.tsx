@@ -6,26 +6,27 @@ import { Content } from '../../../../../_metronic/layout/components/content'
 
 interface ItemProps {
   REFNO: String,
+  CONTNO: String,
   EMPID: String,
   TEAMSALE: String,
   SALECODE: String,
   SUPEMPID: String,
   SECEMPID: String,
   STATUS: String,
-  PRODUCT: [],
-  CUSTOMERSTATUS: [],
-  DISCOUNT: [],
-  CUSTOMERDETAIL: [],
-  ADDRESS: [],
-  PDPA: [],
-  CONTRACT: [],
-  IMAGE: []
+  PRODUCT: [any],
+  CUSTOMERSTATUS: [any],
+  DISCOUNT: [any],
+  CUSTOMERDETAIL: [any],
+  ADDRESS: [any],
+  PDPA: [any],
+  CONTRACT: [any],
+  IMAGE: [any],
+  CHECKERCOMMENT: [any]
 }
 
 const Step: React.FC = () => {
   const location = useLocation();
   const item = location.state as ItemProps || [];
-
   const [data, setData] = useState<any[]>([])
   const API_URL_UPDATE_CONTRACT = import.meta.env.VITE_APP_API_MONGO;
   const GET_CONTRACT_URL = `${API_URL_UPDATE_CONTRACT}/Contract/GetContractSummary`;
@@ -33,19 +34,20 @@ const Step: React.FC = () => {
   useEffect(() => {
     const getData = async () => {
       try {
-        const response = await axios.get(GET_CONTRACT_URL + '?refno=' + item?.REFNO, {
+        const response = await axios.get(GET_CONTRACT_URL + '?refno=' + item.REFNO, {
           headers: {
             'Content-Type': 'application/json',
           },
         });
         const data = Array.isArray(response.data.data) ? response.data.data : [];
         setData(data);
+        console.log('Load data', data)
       } catch (error) {
         console.error('Error fetching DRAFT_ALLCONTRACT_URL:', error);
       }
     };
     getData();
-  }, []);
+  }, [location]);
 
   return (
     <>
@@ -76,11 +78,16 @@ const Step: React.FC = () => {
                 {`REFNO: ${item?.REFNO}`}
               </div>
               <span className={`${data?.[0]?.STATUS === 'DRAFT' ? 'text-warning' : 'text-danger'} fw-semibold d-block fs-6`}>{`สถานะ: ${data?.[0]?.STATUS === 'DRAFT' ? 'ยังไม่ได้ตรวจสอบ' : 'แก้ไข'}`}</span>
+              {
+                data?.[0]?.CHECKKERCOMMENT?.COMMENT && (
+                  <span className={`text-danger fw-semibold d-block fs-6`}>{`คอมเม้นท์: ${data?.[0]?.CHECKKERCOMMENT?.[0]?.COMMENT}`}</span>
+                )
+              }
             </div>
           </div>
           <div className='card-body d-flex align-items-center py-5 pt-6'>
             <div className='col-12'>
-              <Link to=''>
+              <Link to='../sale/update/updateSalePackage' state={data?.[0]}>
                 <div className='d-flex align-items-center pb-8'>
                   <span className={`bullet bullet-vertical h-40px ${data?.[0]?.PRODUCT?.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
                   <div className='form-check form-check-custom form-check-solid mx-5'></div>
@@ -223,7 +230,7 @@ const Step: React.FC = () => {
               </Link>
               <Link to=''>
                 <div className='d-flex align-items-center pb-8'>
-                  <span className={`bullet bullet-vertical h-40px ${item?.IMAGE.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
+                  <span className={`bullet bullet-vertical h-40px ${data?.[0]?.IMAGE.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
                   <div className='form-check form-check-custom form-check-solid mx-5'></div>
                   <div className='flex-grow-1'>
                     <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
