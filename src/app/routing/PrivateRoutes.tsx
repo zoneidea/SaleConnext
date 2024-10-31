@@ -25,7 +25,8 @@ const PrivateRoutes = () => {
   //กล้อง + รูป
   const DeviceScanBarcode = lazy(() => import('../pages/sales/components/accessCam/DeviceScanBarcode'))
   const SalesPhoto = lazy(() => import('../pages/sales/SalesPhoto'))
-  const GoogleMapGPS = lazy(() => import('../pages/sales/components/gps/googleMapGPS'))
+  const IdCardPhoto = lazy(() => import('../pages/sales/components/photo/IdCardPhoto'))
+  const GoogleMapGPS = lazy(() => import('../pages/sales/components/photo/googleMapGPS'))
   const DrawingMapPhoto = lazy(() => import('../pages/sales/components/photo/DrawingMapPhoto'))
   const TurnPhoto = lazy(() => import('../pages/sales/components/photo/TurnPhoto'))
   const InstallationPhoto = lazy(() => import('../pages/sales/components/photo/InstallationPhoto'))
@@ -167,6 +168,14 @@ const PrivateRoutes = () => {
           }
         />
         <Route
+          path='sale/photo/idcard'
+          element={
+            <SuspensedView>
+              <IdCardPhoto />
+            </SuspensedView>
+          }
+        />
+        <Route
           path='sale/photo/gps'
           element={
             <SuspensedView>
@@ -230,7 +239,7 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
-         <Route
+        <Route
           path='contract-checker/step'
           element={
             <SuspensedView>

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { Content } from '../../../_metronic/layout/components/content';
 import { useAuth } from '../../modules/auth/core/Auth';
 import { useUUIDStore, useSaveProductStore } from '../../modules/stores/stepsStore';
+import '/public/splash-screen.css';
 
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
@@ -29,8 +30,9 @@ const SalesPackage: React.FC = () => {
 
     const { auth } = useAuth();
 
-    const [loadingCategories, setLoadingCategories] = useState(true); // เพิ่ม state สำหรับการโหลดหมวดหมู่
-    const [loadingProducts, setLoadingProducts] = useState(false); // เพิ่ม state สำหรับการโหลดสินค้า
+    // State สำหรับตรวจสอบสถานะการโหลด
+    const [loadingCategories, setLoadingCategories] = useState(true);
+    const [loadingProducts, setLoadingProducts] = useState(true)
 
     const [categories, setCategories] = useState<any[]>([]);
     const [packageType, setPackageType] = useState<any[]>([]);
@@ -165,10 +167,10 @@ const SalesPackage: React.FC = () => {
                 });
                 const data = Array.isArray(response.data.data) ? response.data.data : [];
                 setCategories(data);
-                setLoadingCategories(false);
             } catch (error) {
                 console.error('Error fetching CATEGORIES_URL:', error);
-                setLoadingCategories(false);
+            } finally {
+                setLoadingCategories(false); // เปลี่ยนสถานะการโหลดเมื่อข้อมูลเสร็จ
             }
 
             setEmpId(auth.data[0].EmpId);
@@ -187,7 +189,7 @@ const SalesPackage: React.FC = () => {
     useEffect(() => {
         const getData = async () => {
             if (!selectedCategoryId) return;
-            setLoadingProducts(true); // ตั้งค่า state ให้เริ่มโหลดสินค้า
+            setLoadingProducts(true);
 
             try {
                 const response = await axios.get(getProductUrl(), {
@@ -201,7 +203,7 @@ const SalesPackage: React.FC = () => {
             } catch (error) {
                 console.error('Error fetching getProductUrl:', error);
             } finally {
-                setLoadingProducts(false); // เสร็จสิ้นการโหลดสินค้า
+                setLoadingProducts(false); // เปลี่ยนสถานะการโหลดเมื่อข้อมูลเสร็จ
             }
         };
         getData();
@@ -236,7 +238,7 @@ const SalesPackage: React.FC = () => {
                     },
                 });
                 const data = Array.isArray(response.data.data) ? response.data.data : [];
-                // console.log(`response data from GetPackage/PackageList: `, data);               
+                console.log(`response data from GetPackage/PackageList: `, data);
                 setPackageList(data);
             } catch (error) {
                 console.error('Error fetching POST_PACKAGE_URL:', error);
@@ -519,6 +521,17 @@ const SalesPackage: React.FC = () => {
                                                 </select>
                                             </div>
                                         </div>
+
+                                        {/* แสดง UI การโหลดสินค้า */}
+                                        {(loadingCategories || loadingProducts) && (
+                                            <div id="splash-screen" className="splash-screen">
+                                                <div className="loader-wrapper">
+                                                    <span className="loader"></span>
+                                                    <span className="loading-text">Loading...</span>
+                                                </div>
+                                            </div>
+                                        )}
+
                                         {selectedCategoryId.length > 0 && product.length > 0 ? (
                                             <label className='form-label required fw-bold fs-3 mt-7 mt-xl-10'>รายการสินค้า</label>
                                         ) : ('')}
@@ -540,7 +553,15 @@ const SalesPackage: React.FC = () => {
                                                         />
                                                     </div>
                                                 ))}
-                                                {product.length !== 0 ? (
+
+                                                {/* หากไม่มีสินค้าให้แสดงข้อความนี้ */}
+                                                {product.length === 0 && !loadingProducts && (
+                                                    <div className='text-center my-7'>
+                                                        <h5>ไม่มีรายการสินค้า</h5>
+                                                    </div>
+                                                )}
+
+                                                {product.length !== 0 && (
                                                     <div className='container my-10 my-xl-10'>
                                                         <div className='row d-flex'>
                                                             <label className='form-label required fw-bold fs-3'>ประเภทการชำระ</label>
@@ -563,13 +584,10 @@ const SalesPackage: React.FC = () => {
                                                             ))}
                                                         </div>
                                                     </div>
-                                                ) : (
-                                                    <div className='text-center my-7'>
-                                                        <h5>ไม่มีรายการสินค้า</h5>
-                                                    </div>
                                                 )}
                                             </div>
                                         )}
+
                                         {/* ส่วนของแพ็คเกจที่จะเลื่อนมาที่นี่ */}
                                         {selectedPackageTypeId !== null && selectedCategoryId.length > 0 && product.length > 0 && packageList.length > 0 ? (
                                             <div className='my-10 my-xl-10' ref={packageSectionRef}>
@@ -631,7 +649,6 @@ const SalesPackage: React.FC = () => {
                         บันทึก
                     </button>
                 </div>
-
 
             </Content>
         </>

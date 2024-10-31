@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom';
 import { toAbsoluteUrl } from '../../../../../_metronic/helpers';
 import { usePhotoTurnStore } from '../../../../modules/stores/sales/photoStore/photoStore';
 
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+
 const TurnPhoto: React.FC = () => {
     const { images, addImage, removeImage, loadImages } = usePhotoTurnStore();
     const [error, setError] = useState<string | null>(null);
@@ -82,6 +85,44 @@ const TurnPhoto: React.FC = () => {
 
     const handleDeleteImage = (image: string) => {
         removeImage(image);
+    };
+
+    // POST Contract/updateContract
+    const handleNextClick = async () => {
+        try {
+            const updateContract = await axios.post(UPDATECONTACT, {
+                REFNO,
+                EMPID: EmpId,
+                TEAMSALE: TeamSale,
+                SALECODE: SaleCode,
+                SUPEMPID: SupEmpId,
+                SECEMPID: SecEmpId,
+                FIELD: "IMAGE",
+                DATA: {
+                    "DRAWINGMAP": images
+                }
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            console.log(`updateContract IMAGE: `, updateContract.data);
+            // แสดง SweetAlert เมื่อบันทึกสำเร็จ
+            Swal.fire({
+                icon: 'success',
+                title: 'สำเร็จ!',
+                text: 'บันทึกรูปภาพลงระบบเรียบร้อยแล้ว',
+            });
+        } catch (error) {
+            console.error('Error fetching UPDATECONTACT IMAGE:', error);
+            // แสดง SweetAlert เมื่อเกิดข้อผิดพลาด
+            Swal.fire({
+                icon: 'error',
+                title: 'เกิดข้อผิดพลาด!',
+                text: 'ไม่สามารถบันทึกรูปภาพได้ กรุณาลองใหม่อีกครั้ง',
+            });
+        }
     };
 
     return (

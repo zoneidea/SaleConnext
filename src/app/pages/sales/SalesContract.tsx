@@ -91,15 +91,12 @@ const SalesContract: React.FC = () => {
             data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
             className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
             <h1 className="page-heading d-flex text-gray-900 fw-bold fs-3 my-0 flex-column justify-content-center">
-              {PRODUCT[0].Package[0].PACKAGETYPEID == 1 ? (
-                <span>
-                  ใบสัญญา
-                </span>
+              {PRODUCT[0]?.Package[0]?.PACKAGETYPEID === 1 ? (
+                <span>ใบสัญญา</span>
               ) : (
-                <span>
-                  ใบสัญญาเช่าซื้อ
-                </span>
+                <span>ใบสัญญาเช่าซื้อ</span>
               )}
+
             </h1>
             <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
               <li className="breadcrumb-item text-muted">
@@ -107,7 +104,7 @@ const SalesContract: React.FC = () => {
                   ระบบขาย
                 </a></li>
               <li className="breadcrumb-item"><span className="bullet bg-gray-500 w-5px h-2px"></span></li>
-              {PRODUCT[0].Package[0].PACKAGETYPEID == 1 ? (
+              {PRODUCT[0]?.Package[0]?.PACKAGETYPEID === 1 ? (
                 <li className="breadcrumb-item text-gray-900">ใบสัญญา</li>
               ) : (
                 <li className="breadcrumb-item text-gray-900">ใบสัญญาเช่าซื้อ</li>
@@ -123,7 +120,7 @@ const SalesContract: React.FC = () => {
 
             {/* begin::Header */}
             <div className='d-flex justify-content-between align-items-center mb-7 mt-5'>
-              {PRODUCT[0].Package[0].PACKAGETYPEID == 1 ? (
+              {PRODUCT[0]?.Package[0]?.PACKAGETYPEID == 1 ? (
                 <h3 className='card-title'>ใบสัญญา</h3>
               ) : (
                 <h3 className='card-title'>ใบสัญญาเช่าซื้อ</h3>
@@ -162,7 +159,7 @@ const SalesContract: React.FC = () => {
               <label className='col-lg-4 fw-bold text-muted'>ผู้เช่าซื้อ</label>
               <div className='col-lg-8'>
                 <a href='#' className='fw-bold fs-6 text-gray-900 text-hover-primary'>
-                  {saveCustomerTypes[0].CUSTOMERNAME}
+                  {saveCustomerTypes[0]?.CUSTOMERNAME}
                 </a>
               </div>
             </div>
@@ -170,7 +167,7 @@ const SalesContract: React.FC = () => {
             <div className='row mb-7'>
               <label className='col-lg-4 fw-bold text-muted'>เลขที่บัตรประชาชน</label>
               <div className='col-lg-8'>
-                <span className='fw-bolder fs-6 text-gray-900'>{saveCustomerTypes[0].CUSTOMERID}</span>
+                <span className='fw-bolder fs-6 text-gray-900'>{saveCustomerTypes[0]?.CUSTOMERID}</span>
               </div>
             </div>
 
@@ -232,53 +229,53 @@ const SalesContract: React.FC = () => {
             <div className='row mb-10'>
               <label className='col-lg-4 fw-bold text-muted'>สินค้า</label>
               <div className='col-lg-8'>
-                <span className='fw-bold fs-6'>{PRODUCT[0].ItemDescription}</span>
+                <span className='fw-bold fs-6'>{PRODUCT[0]?.ItemDescription}</span>
               </div>
             </div>
 
-            <div className='row mb-10'>
-              <label className='col-lg-4 fw-bold text-muted'>แพ็คเกจ</label>
-              <div className='col-lg-8'>
-                {PRODUCT[0]?.Package?.[0]?.PACKAGETITLE && (
-                  <span className='fw-bold fs-6'>{PRODUCT[0].Package[0].PACKAGETITLE}</span>
-                )}
+            {PRODUCT[0]?.Package?.[0]?.PACKAGETITLE && (
+              <div className='row mb-10'>
+                <label className='col-lg-4 fw-bold text-muted'>แพ็คเกจ</label>
+                <div className='col-lg-8'>
+                  <span className='fw-bold fs-6'>{PRODUCT[0]?.Package[0]?.PACKAGETITLE}</span>
+                </div>
               </div>
-            </div>
+            )}
 
-            <div className='row align-items-center mb-10'>
-              <label className='col-lg-4 fw-bold text-muted mb-0'>ราคา</label>
-              <div className='col-lg-8 d-flex justify-content-between'>
-                {PRODUCT[0]?.Package?.[0]?.TOTALPRICE && (
-                  <span className='fw-bold fs-6'>{PRODUCT[0].Package[0].TOTALPRICE}</span>
-                )}
-                <span className='badge badge-light-success'>บาท</span>
+            {PRODUCT[0]?.Package?.[0]?.TOTALPRICE && (
+              <div className='row align-items-center mb-10'>
+                <label className='col-lg-4 fw-bold text-muted mb-0'>ราคา</label>
+                <div className='col-lg-8 d-flex justify-content-between'>
+                  <span className='fw-bold fs-6'>{PRODUCT[0]?.Package[0]?.TOTALPRICE}</span>
+                  <span className='badge badge-light-success'>บาท</span>
+                </div>
               </div>
-            </div>
+            )}
 
             {DISCOUNT[0]?.TRADEIN?.TRADEINBRANDNAME && (
               <div className='row align-items-center mb-10'>
                 <label className='col-lg-4 fw-bold text-muted mb-0'>เครื่องเทิร์น</label>
                 <div className='col-lg-8 d-flex justify-content-between'>
-                  <span className='fw-bold fs-6'>{DISCOUNT[0].TRADEIN.TRADEINBRANDNAME}</span>
+                  <span className='fw-bold fs-6'>{DISCOUNT[0]?.TRADEIN?.TRADEINBRANDNAME}</span>
                 </div>
               </div>
             )}
 
-            <div className='row align-items-center mb-10'>
-              <label className='col-lg-4 fw-bold text-muted mb-0'>ส่วนลด</label>
-              <div className='col-lg-8 d-flex justify-content-between'>
-                {DISCOUNT[0]?.DISCOUNTAMOUNT && (
-                  <span className='fw-bold fs-6'>{DISCOUNT[0].DISCOUNTAMOUNT}</span>
-                )}
-                <span className='badge badge-light-success'>บาท</span>
+            {DISCOUNT[0]?.DISCOUNTAMOUNT && (
+              <div className='row align-items-center mb-10'>
+                <label className='col-lg-4 fw-bold text-muted mb-0'>ส่วนลด</label>
+                <div className='col-lg-8 d-flex justify-content-between'>
+                  <span className='fw-bold fs-6'>{DISCOUNT[0]?.DISCOUNTAMOUNT}</span>
+                  <span className='badge badge-light-success'>บาท</span>
+                </div>
               </div>
-            </div>
+            )}
 
             {DISCOUNT[0]?.GIFT?.GIFTNAME && (
               <div className='row align-items-center mb-10'>
                 <label className='col-lg-4 fw-bold text-muted mb-0'>ของแถม</label>
                 <div className='col-lg-8 d-flex justify-content-between'>
-                  <span className='fw-bold fs-6'>{DISCOUNT[0].GIFT.GIFTNAME}</span>
+                  <span className='fw-bold fs-6'>{DISCOUNT[0]?.GIFT?.GIFTNAME}</span>
                 </div>
               </div>
             )}
@@ -292,20 +289,20 @@ const SalesContract: React.FC = () => {
             </div> */}
 
             {/* ถ้าเป็นเงินสดไม่ต้องแสดง */}
-            {PRODUCT[0].Package[0].PACKAGETYPEID !== 1 && (
+            {PRODUCT[0]?.Package[0]?.PACKAGETYPEID !== 1 && (
               <>
                 <div className='row align-items-center mb-10'>
                   <label className='col-lg-4 fw-bold text-muted mb-0'>งวดที่ 1 ที่ต้องชำระ</label>
                   <div className='col-lg-8 d-flex justify-content-between'>
-                    <span className='fw-bold fs-6'>{PRODUCT[0].Package[0].PERIODDETAILS[0].PAYMENTAMOUNT}</span>
+                    <span className='fw-bold fs-6'>{PRODUCT[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTAMOUNT}</span>
                     <span className='badge badge-light-success'>บาท</span>
                   </div>
                 </div>
 
                 <div className='row align-items-center mb-10'>
-                  <label className='col-lg-4 fw-bold text-muted mb-0'>งวดที่ 2 ถึง {PRODUCT[0].Package[0].PERIODDETAILS.length} ต้องชำระงวดละ</label>
+                  <label className='col-lg-4 fw-bold text-muted mb-0'>งวดที่ 2 ถึง {PRODUCT[0]?.Package[0]?.PERIODDETAILS.length} ต้องชำระงวดละ</label>
                   <div className='col-lg-8 d-flex justify-content-between'>
-                    <span className='fw-bold fs-6'>{PRODUCT[0].Package[0].PERIODDETAILS[1].PAYMENTAMOUNT}</span>
+                    <span className='fw-bold fs-6'>{PRODUCT[0]?.Package[0]?.PERIODDETAILS[1]?.PAYMENTAMOUNT}</span>
                     <span className='badge badge-light-success'>บาท</span>
                   </div>
                 </div>

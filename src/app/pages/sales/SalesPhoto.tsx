@@ -100,7 +100,7 @@ const SalesPhoto: React.FC = () => {
                             <div className='mb-10'>
                                 <div className='fw-bold text-gray-800 text-center'>
                                     <span className='position-relative d-inline-block text-dangeropacity-75-hover fs-lg-2 fs-28'>
-                                        รูปเครื่องเทริน์
+                                        รูปเครื่องเทิร์น
                                     </span>
                                 </div>
                             </div>
@@ -205,7 +205,7 @@ const SalesPhoto: React.FC = () => {
                 </div>
 
                 <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10'>
-                    <Link to='/sale/watermeas' className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
+                    <Link to='/sale/contract' className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
                         ย้อนกลับ
                     </Link>
                     {/* <Link to='/sale/gallery' className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'>

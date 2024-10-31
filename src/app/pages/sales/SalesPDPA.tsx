@@ -174,7 +174,7 @@ const SalesPDPA: React.FC = () => {
         TEAMSALE: TeamSale,
         FIELD: "PDPA",
         CONTNO: contNo,
-        DATA: [consentGiven, signatureDataURL, inputOTP]
+        DATA: [{ CONSENTGIVEN: consentGiven, SIGNATURE: signatureDataURL, OTP: inputOTP }]
       }, {
         headers: {
           'Content-Type': 'application/json',

@@ -1,5 +1,37 @@
 import { create } from 'zustand';
 
+// รูปบัตรปชช
+interface photoIdCardStore {
+  images: string[];
+  addImage: (image: string) => void;
+  removeImage: (image: string) => void;
+  loadImages: () => void;
+}
+
+export const usePhotoIdCardStore = create<photoIdCardStore>((set) => ({
+  images: JSON.parse(localStorage.getItem('IdCardImages') || '[]'),
+  addImage: (image) => {
+    set((state) => {
+      const newImages = [...state.images, image];
+      localStorage.setItem('IdCardImages', JSON.stringify(newImages));
+      console.log('Images after add:', newImages); // เพิ่ม log เพื่อตรวจสอบข้อมูลใน state
+      return { images: newImages };
+    });
+  },
+  removeImage: (image) => {
+    set((state) => {
+      const newImages = state.images.filter((img) => img !== image);
+      localStorage.setItem('IdCardImages', JSON.stringify(newImages));
+      console.log('Images after remove:', newImages); // เพิ่ม log เพื่อตรวจสอบข้อมูลใน state
+      return { images: newImages };
+    });
+  },
+  loadImages: () => {
+    const savedImages = localStorage.getItem('IdCardImages');
+    set({ images: savedImages ? JSON.parse(savedImages) : [] });
+  },
+}));
+
 // รูปวาดแผนที่
 interface photoDrawingMapStore {
   images: string[];

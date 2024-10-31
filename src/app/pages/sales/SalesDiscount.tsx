@@ -25,23 +25,33 @@ const SalesDiscount: React.FC = () => {
 
     const { REFNO } = useUUIDStore();
     const { PRODUCT } = useSaveProductStore();
+    // console.log(`PRODUCT`, PRODUCT)
+
     const { DISCOUNT, SETDISCOUNT } = useSaveDiscountStore();
 
     const [tradeInBrand, setTradeInBrand] = useState<any[]>([]);
+    // console.log(`tradeInBrand`, tradeInBrand);
+
     const [selectedTurnId, setSelectedTurnId] = useState<any>('');
     // console.log(`selectedTurnId`, selectedTurnId);
     const [selectedTradeInBrandName, setSelectedTradeInBrandName] = useState<string>('');
-    console.log(`selectedTradeInBrandName`, selectedTradeInBrandName);
+    // console.log(`selectedTradeInBrandName`, selectedTradeInBrandName);
     const [tradeInModel, setTradeInModel] = useState<any>('');
     const [tradeInSerial, setTradeInSerial] = useState<any>('');
     const [selectedGiftId, setSelectedGiftId] = useState<any>('');
 
     // ตรวจสอบว่ามีข้อมูล PRODUCT หรือไม่ก่อนที่จะดึงข้อมูลจากมัน
     const hasTradeIn = PRODUCT?.[0]?.Package?.[0]?.HASTRADEIN ?? null;
+    console.log(`hasTradeIn`, hasTradeIn);
+
     const totalPrice = PRODUCT?.[0]?.Package?.[0]?.TOTALPRICE ?? 0;
     const discountPrice = PRODUCT?.[0]?.Package?.[0]?.DISCOUNTPRICE ?? 0;
+    console.log(`discountPrice`, discountPrice);
+    
     const sequence = PRODUCT?.[0]?.Package?.[0]?.SEQUENCE ?? 0;
     const freeGift = PRODUCT?.[0]?.Package?.[0]?.FREEGIFT ?? [];
+    console.log(`freeGift`, freeGift);
+    
     // console.log(`selectedGift`, freeGift[selectedGiftId-1]?.GIFTCODE);
 
     const [step, setStep] = useState<number>(100);
@@ -50,28 +60,28 @@ const SalesDiscount: React.FC = () => {
 
     // อัปเดต selectedTradeInBrandName เมื่อ selectedTurnId หรือ tradeInBrand เปลี่ยน
     useEffect(() => {
-        console.log("Selected TradeIn ID:", selectedTurnId);
+        // console.log("Selected TradeIn ID:", selectedTurnId);
         // console.log("TradeIn Brand List:", tradeInBrand);
-        
+
         const selectedTradeInBrand = tradeInBrand.find(
             (brand) => String(brand.TRADEINBRANDID) === String(selectedTurnId) // แปลงเป็นสตริงก่อนการเปรียบเทียบ
         );
-        
+
         if (selectedTradeInBrand) {
             setSelectedTradeInBrandName(selectedTradeInBrand.TRADEINBRANDNAME || '');
             // console.log("Found TradeIn Brand Name:", selectedTradeInBrand.TRADEINBRANDNAME);
         } else {
             setSelectedTradeInBrandName(''); // รีเซ็ตค่าเมื่อไม่มีการเลือก
-            console.log("No TradeIn Brand Name Found");
+            // console.log("No TradeIn Brand Name Found");
         }
-    }, [selectedTurnId, tradeInBrand]);    
+    }, [selectedTurnId, tradeInBrand]);
 
     // เก็บข้อมูลส่วนลดใน state และ store
     const SaveDiscountData = useMemo(() => {
         if (!PRODUCT?.[0]?.Package?.[0]) {
             return [];
         }
-    
+
         return [
             {
                 TRADEIN: {
@@ -369,7 +379,13 @@ const SalesDiscount: React.FC = () => {
                     )}
                 </div>
 
-                <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10'>
+                {hasTradeIn === null && discountPrice === 0 && freeGift.length === 0 && (
+                    <div className='text-center mt-20'>
+                        <h5>ไม่มี เครื่องเทิร์น / ส่วนลด / ของแถม</h5>
+                    </div>
+                )}
+
+                <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-20'>
                     <Link to='/sale/package' className='btn btn-secondary w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'>
                         ย้อนกลับ
                     </Link>

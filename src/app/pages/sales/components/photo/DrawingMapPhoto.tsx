@@ -1,9 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 import { toAbsoluteUrl } from '../../../../../_metronic/helpers';
 import { usePhotoDrawingMapStore } from '../../../../modules/stores/sales/photoStore/photoStore';
+import { useAuth } from '../../../../modules/auth/core/Auth';
+import { useUUIDStore } from '../../../../modules/stores/stepsStore';
 
-const DrawingMapGallery: React.FC = () => {
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+
+const DrawingMapPhoto: React.FC = () => {
+    const { REFNO } = useUUIDStore();
+    const { auth } = useAuth();
+    const EmpId = auth?.data?.[0]?.EmpId || '';
+    const TeamSale = auth?.data?.[0]?.TeamSale || '';
+    const SaleCode = auth?.data?.[0]?.SaleCode || '';
+    const SupEmpId = auth?.data?.[0]?.SupEmp || '';
+    const SecEmpId = auth?.data?.[0]?.SecEmp || '';
+
+    const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
+    const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
+
     const { images, addImage, removeImage, loadImages } = usePhotoDrawingMapStore();
     const [error, setError] = useState<string | null>(null);
 
@@ -50,7 +67,7 @@ const DrawingMapGallery: React.FC = () => {
             img.onload = () => {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
-                
+
                 const maxSize = 1024;
                 let width = img.width;
                 let height = img.height;
@@ -71,7 +88,10 @@ const DrawingMapGallery: React.FC = () => {
                 canvas.height = height;
                 ctx?.drawImage(img, 0, 0, width, height);
 
-                const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.7); // ย่อขนาดและบีบอัดภาพ
+                // ตรวจสอบประเภทของไฟล์ก่อนบีบอัด
+                const fileType = file.type; // "image/jpeg" หรือ "image/png"
+                const resizedDataUrl = canvas.toDataURL(fileType === 'image/png' ? 'image/png' : 'image/jpeg', 0.7); // ใช้ type ของไฟล์ที่ถูกอัปโหลด
+
                 addImage(resizedDataUrl);
                 setError(null);
             };
@@ -82,6 +102,44 @@ const DrawingMapGallery: React.FC = () => {
 
     const handleDeleteImage = (image: string) => {
         removeImage(image);
+    };
+
+    // POST Contract/updateContract
+    const handleNextClick = async () => {
+        try {
+            const updateContract = await axios.post(UPDATECONTACT, {
+                REFNO,
+                EMPID: EmpId,
+                TEAMSALE: TeamSale,
+                SALECODE: SaleCode,
+                SUPEMPID: SupEmpId,
+                SECEMPID: SecEmpId,
+                FIELD: "IMAGE",
+                DATA: {
+                    "IMAGEGPS": images
+                }
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            console.log(`updateContract IMAGE: `, updateContract.data);
+            // แสดง SweetAlert เมื่อบันทึกสำเร็จ
+            Swal.fire({
+                icon: 'success',
+                title: 'สำเร็จ!',
+                text: 'บันทึกรูปภาพลงระบบเรียบร้อยแล้ว',
+            });
+        } catch (error) {
+            console.error('Error fetching UPDATECONTACT IMAGE:', error);
+            // แสดง SweetAlert เมื่อเกิดข้อผิดพลาด
+            Swal.fire({
+                icon: 'error',
+                title: 'เกิดข้อผิดพลาด!',
+                text: 'ไม่สามารถบันทึกรูปภาพได้ กรุณาลองใหม่อีกครั้ง',
+            });
+        }
     };
 
     return (
@@ -145,9 +203,13 @@ const DrawingMapGallery: React.FC = () => {
                             <Link to='/sale/photo' className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
                                 ย้อนกลับ
                             </Link>
-                            <Link to='' className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
+                            <button
+                                className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
+                                type='button'
+                                onClick={handleNextClick}
+                            >
                                 บันทึกรูปภาพลงระบบ
-                            </Link>
+                            </button>
                         </div>
                     </div>
                 ) : (
@@ -162,4 +224,4 @@ const DrawingMapGallery: React.FC = () => {
     );
 };
 
-export default DrawingMapGallery;
+export default DrawingMapPhoto;
