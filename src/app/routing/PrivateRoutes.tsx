@@ -41,6 +41,9 @@ const PrivateRoutes = () => {
   const ContractCheckerStep = lazy(() => import('../pages/contractChecker/step/Step'))
   const ContractDetailChecker = lazy(() => import('../pages/contractChecker/ContractDetailChecker'))
 
+  // Update contract
+  const UpdateContractPackage = lazy(() => import('../pages/sales/update/UpdateSalesPackage'))
+
   return (
     <Routes>
       <Route element={<MasterLayout />}>
@@ -243,6 +246,17 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
+
+        {/* Update contract route  */}
+        <Route
+          path='sale/update/updateSalePackage'
+          element={
+            <SuspensedView>
+              <UpdateContractPackage />
+            </SuspensedView>
+          }
+        />
+
         {/* จบ รูปและแกลอรี่ */}
         {/* Page Not Found */}
         <Route path='*' element={<Navigate to='/error/404' />} />

@@ -142,11 +142,11 @@ const ContractChecker: React.FC = () => {
                         </div>
                     </div>
                 </div>
-                <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10'>
+                {/* <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10'>
                     <Link to='' className='btn btn-secondary w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'>
                         ย้อนกลับ
                     </Link>
-                </div>
+                </div> */}
 
             </Content>
         </>
