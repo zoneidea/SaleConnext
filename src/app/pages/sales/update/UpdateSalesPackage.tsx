@@ -41,7 +41,7 @@ interface ItemProps {
     CHECKERCOMMENT: [any]
 }
 
-const SalesPackage: React.FC = () => {
+const UpdateSalesPackage: React.FC = () => {
     const navigate = useNavigate(); // ใช้ useNavigate สำหรับการเปลี่ยนเส้นทาง
     const MySwal = withReactContent(Swal);
 
@@ -615,4 +615,4 @@ const SalesPackage: React.FC = () => {
     );
 }
 
-export default SalesPackage;
+export default UpdateSalesPackage;

@@ -26,7 +26,7 @@ const PrivateRoutes = () => {
   const DeviceScanBarcode = lazy(() => import('../pages/sales/components/accessCam/DeviceScanBarcode'))
   const SalesPhoto = lazy(() => import('../pages/sales/SalesPhoto'))
   const IdCardPhoto = lazy(() => import('../pages/sales/components/photo/IdCardPhoto'))
-  const GoogleMapGPS = lazy(() => import('../pages/sales/components/photo/googleMapGPS'))
+  const GoogleMapGPS = lazy(() => import('../pages/sales/components/photo/GoogleMapGPS'))
   const DrawingMapPhoto = lazy(() => import('../pages/sales/components/photo/DrawingMapPhoto'))
   const TurnPhoto = lazy(() => import('../pages/sales/components/photo/TurnPhoto'))
   const InstallationPhoto = lazy(() => import('../pages/sales/components/photo/InstallationPhoto'))
@@ -45,6 +45,7 @@ const PrivateRoutes = () => {
   // Update contract
   const UpdateContractPackage = lazy(() => import('../pages/sales/update/UpdateSalesPackage'))
   const UpdateContractDiscount = lazy(() => import('../pages/sales/update/UpdateSaleDiscount'))
+  const UpdateContractCustDetail = lazy(() => import('../pages/sales/update/UpdateSaleCustDetail'))
 
   return (
     <Routes>
@@ -266,11 +267,20 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
-         <Route
+        <Route
           path='sale/update/updateSaleDiscount'
           element={
             <SuspensedView>
               <UpdateContractDiscount />
+            </SuspensedView>
+          }
+        />
+
+        <Route
+          path='sale/update/updateCustDetail'
+          element={
+            <SuspensedView>
+              <UpdateContractCustDetail />
             </SuspensedView>
           }
         />

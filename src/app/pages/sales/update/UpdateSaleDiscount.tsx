@@ -9,7 +9,6 @@ import { useSaveDiscountStore } from '../../../modules/stores/stepsStore';
 
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
-import { isEmptyArray } from 'formik';
 
 interface ItemProps {
     REFNO: String,
@@ -31,7 +30,7 @@ interface ItemProps {
     CHECKERCOMMENT: [any]
 }
 
-const SalesDiscount: React.FC = () => {
+const UpdateSalesDiscount: React.FC = () => {
     const navigate = useNavigate();
     const MySwal = withReactContent(Swal);
 
@@ -277,7 +276,7 @@ const SalesDiscount: React.FC = () => {
                                     ระบบขาย
                                 </Link></li>
                             <li className="breadcrumb-item"><span className="bullet bg-gray-500 w-5px h-2px"></span></li>
-                            <li className="breadcrumb-item text-gray-900">เครื่องเทิร์น / ส่วนลด / ของแถม</li>
+                            <li className="breadcrumb-item text-gray-900">แก้ไขเครื่องเทิร์น / ส่วนลด / ของแถม</li>
                         </ul>
                     </div>
                 </div>
@@ -471,4 +470,4 @@ const SalesDiscount: React.FC = () => {
     )
 }
 
-export default SalesDiscount;
+export default UpdateSalesDiscount;

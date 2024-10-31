@@ -72,6 +72,7 @@ const SalesCreateCust: React.FC = () => {
     const [mobile, setMobile] = useState<string>('');
     const [phone, setPhone] = useState<string>('');
     const [workPhone, setWorkPhone] = useState<string>('');
+    const [nameMD, setNameMD] = useState<string>('');
 
     const selectedCustomer = customerTypes.find((type) => type.CUSTOMERTYPE === selectedCustomerType) || { CARDTYPE: [], PREFIX: [], SEX: [] };
 
@@ -170,7 +171,7 @@ const SalesCreateCust: React.FC = () => {
                 CUSTOMERTYPENAME: customerTypeData ? customerTypeData.CUSTOMERTYPENAME : '', // ตรวจสอบว่าข้อมูล customerTypeData มีหรือไม่
                 CUSTOMERID: idCard,
                 CUSTOMERNAME: fullName,
-                CUSTOMERMD: '',
+                CUSTOMERMD: nameMD,
                 CUSTOMERDOB: valueCalendar ? dayjs(valueCalendar).format('YYYY-MM-DD') : '',
                 CUSTOMERRAGE: valueAge ? valueAge.toString() : '',
                 CUSTOMERMOBILE: mobile,
@@ -1404,6 +1405,7 @@ const SalesCreateCust: React.FC = () => {
                                                             <input
                                                                 // value={fields.idCard}
                                                                 // onChange={handleTextChange('idCard')}
+                                                                onChange={(e) => setFullName(e.target.value)}
                                                                 type='text'
                                                                 className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                                                                 placeholder='ชื่อบริษัท'
@@ -1419,6 +1421,7 @@ const SalesCreateCust: React.FC = () => {
                                                             <input
                                                                 // value={fields.idCard}
                                                                 // onChange={handleTextChange('idCard')}
+                                                                onChange={handleIdCardChange}
                                                                 type='text'
                                                                 className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                                                                 placeholder='เลขประจำตัวผู้เสียภาษี'
@@ -1441,8 +1444,8 @@ const SalesCreateCust: React.FC = () => {
                                                         <div className='col-lg-4 mb-3'>
                                                             <label className='form-label required fw-bold fs-6'>กรรมการผู้มีอำนาจ</label>
                                                             <input
-                                                                // value={fields.fullname}
-                                                                // onChange={handleTextChange('fullname')}
+                                                                value={nameMD}
+                                                                onChange={(e) => setNameMD(e.target.value)}
                                                                 type='text'
                                                                 className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                                                                 placeholder='กรรมการผู้มีอำนาจ'
@@ -1454,17 +1457,21 @@ const SalesCreateCust: React.FC = () => {
                                                             <div className='col-lg-6 mb-3'>
                                                                 <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
                                                                 <input
+                                                                    value={mobile}
                                                                     type='text'
                                                                     className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                                                                     placeholder='เบอร์ที่ติดต่อได้'
+                                                                    onChange={(e) => setMobile(e.target.value)}
                                                                 />
                                                             </div>
                                                             <div className='col-lg-6 mb-3'>
                                                                 <label className='form-label fw-bold fs-6'>เบอร์บ้าน</label>
                                                                 <input
+                                                                    value={phone}
                                                                     type='text'
                                                                     className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                                                                     placeholder='เบอร์บ้าน'
+                                                                    onChange={(e) => setPhone(e.target.value)}
                                                                 />
                                                             </div>
                                                         </div>
@@ -1473,16 +1480,18 @@ const SalesCreateCust: React.FC = () => {
                                                             <div className='col-lg-6 mb-3'>
                                                                 <label className='form-label fw-bold fs-6'>เบอร์ที่ทำงาน</label>
                                                                 <input
+                                                                    value={workPhone}
                                                                     type='text'
                                                                     className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                                                                     placeholder='เบอร์ที่ทำงาน'
+                                                                    onChange={(e) => setWorkPhone(e.target.value)}
                                                                 />
                                                             </div>
                                                             <div className='col-lg-6 mb-3'>
                                                                 <label className='form-label fw-bold fs-6'>อีเมล์</label>
                                                                 <input
-                                                                    // value={fields.email}
-                                                                    // onChange={handleTextChange("email")}
+                                                                    value={email}
+                                                                    onChange={(e) => setEmail(e.target.value)}
                                                                     type='text'
                                                                     className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                                                                     placeholder='อีเมล์'
@@ -1495,17 +1504,36 @@ const SalesCreateCust: React.FC = () => {
                                             )}
                                             {/* End กรณีประเภทลูกค้าเป็น นิติบุคคล */}
 
-                                            <button
-                                                className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
-                                                type='button'
-                                                onClick={handleNextClick}
-                                                disabled={!selectedCustomerType || !selectedCardType || !idCard ||
-                                                    !selectedPrefixId || !fullName || !valueCalendar || !valueAge ||
-                                                    !selectedSexId || !mobile}
-                                            >
-                                                เพิ่มที่อยู่ลูกค้า
-                                            </button>
+                                            {
+                                                selectedCustomerType == "0" || selectedCustomerType == "2" && (
+                                                    <>
+                                                        <button
+                                                            className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
+                                                            type='button'
+                                                            onClick={handleNextClick}
+                                                            disabled={!selectedCustomerType || !selectedCardType || !idCard ||
+                                                                !selectedPrefixId || !fullName || !valueCalendar || !valueAge ||
+                                                                !selectedSexId || !mobile} >
+                                                            เพิ่มที่อยู่ลูกค้า
+                                                        </button>
+                                                    </>
+                                                )
+                                            }
 
+                                            {
+                                                selectedCustomerType == "1" && (
+                                                    <>
+                                                        <button
+                                                            className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
+                                                            type='button'
+                                                            onClick={handleNextClick}
+                                                            disabled={!selectedCustomerType || !idCard ||
+                                                                !selectedPrefixId || !nameMD || !mobile} >
+                                                            เพิ่มที่อยู่นิติบุคคล
+                                                        </button>
+                                                    </>
+                                                )
+                                            }
                                         </div>
                                     </form>
                                     {/* end form */}
