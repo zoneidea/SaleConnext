@@ -1,14 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { GoogleMap, LoadScript } from '@react-google-maps/api';
+import React, { useState, useEffect, useRef } from 'react';
+import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api'; // Include Marker here
 import { Link } from 'react-router-dom';
+import { toPng } from 'html-to-image'; // นำเข้า html-to-image
+
+import { useAuth } from '../../../../modules/auth/core/Auth';
+import { useUUIDStore } from '../../../../modules/stores/stepsStore';
+import axios from 'axios';
+import {
+  usePhotoIdCardStore,
+  usePhotoDrawingMapStore,
+  usePhotoTurnStore,
+  usePhotoInstallationStore,
+  usePhotoHomeCustomerStore,
+  usePhotoCustomerStore,
+  usePhotoEquipmentStore
+} from '../../../../modules/stores/sales/photoStore/photoStore';
+
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
 
 const API_KEY_GOOGLE_MAP = import.meta.env.VITE_APP_GOOGLE_MAP_KEY as string;
-const API_KEY_GOOGLE_MAP_STATIC = import.meta.env.VITE_APP_GOOGLE_MAP_STATIC as string;
 
 // กำหนดขนาดของแผนที่
-const containerStyle = {
+const containerStyle: React.CSSProperties = {
   width: '100%',
-  height: '100vh', // ปรับความสูงเป็น 100% ของความสูงหน้าจอ
+  height: '100vh',
 };
 
 // สร้าง interface สำหรับตำแหน่ง
@@ -33,7 +49,7 @@ const LocationFinder: React.FC = () => {
             latitude: pos.coords.latitude,
             longitude: pos.coords.longitude,
           });
-          setError(null); // ลบข้อผิดพลาดถ้าสำเร็จ
+          setError(null);
         },
         (err) => {
           switch (err.code) {
@@ -56,20 +72,6 @@ const LocationFinder: React.FC = () => {
     }
   };
 
-  // ฟังก์ชันสำหรับตรวจสอบว่าเป็นอุปกรณ์มือถือหรือไม่
-  const isMobileDevice = () => /Mobi|Android/i.test(navigator.userAgent);
-
-  // ฟังก์ชันสำหรับสร้างลิงก์ดาวน์โหลดภาพแผนที่
-  const captureAndSave = () => {
-    if (isMobileDevice() && position.latitude && position.longitude) {
-      const staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${position.latitude},${position.longitude}&zoom=15&size=600x400&markers=color:red%7C${position.latitude},${position.longitude}&key=${API_KEY_GOOGLE_MAP_STATIC}`;
-      // เปิด static map ในแท็บใหม่ให้ผู้ใช้ดาวน์โหลดเอง
-      window.open(staticMapUrl, '_blank');
-    } else {
-      alert('การบันทึกภาพทำงานได้เฉพาะบนอุปกรณ์มือถือ และตำแหน่งต้องถูกต้อง');
-    }
-  };
-
   // ดึงตำแหน่งเมื่อ Component โหลดครั้งแรก
   useEffect(() => {
     getCurrentLocation();
@@ -80,7 +82,7 @@ const LocationFinder: React.FC = () => {
       {error ? (
         <p style={{ color: 'red' }}>{error}</p>
       ) : position.latitude && position.longitude ? (
-        <GoogleMapComponent position={position} captureAndSave={captureAndSave} />
+        <GoogleMapComponent position={position} />
       ) : (
         <p>กำลังดึงตำแหน่ง...</p>
       )}
@@ -88,21 +90,108 @@ const LocationFinder: React.FC = () => {
   );
 };
 
-// กำหนด props type สำหรับ GoogleMapComponent
-interface GoogleMapComponentProps {
-  position: Position;
-  captureAndSave: () => void;
-}
-
 // Component สำหรับแสดง Google Map
-const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({ position, captureAndSave }) => {
+const GoogleMapComponent: React.FC<{ position: Position }> = ({ position }) => {
+  const { REFNO } = useUUIDStore();
+  const { auth } = useAuth();
+  const EmpId = auth?.data?.[0]?.EmpId || '';
+  const TeamSale = auth?.data?.[0]?.TeamSale || '';
+  const SaleCode = auth?.data?.[0]?.SaleCode || '';
+  const SupEmpId = auth?.data?.[0]?.SupEmp || '';
+  const SecEmpId = auth?.data?.[0]?.SecEmp || '';
+
+  const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
+  const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
+
+  const { imagesIdCard } = usePhotoIdCardStore();
+  const { imagesDrawingMap } = usePhotoDrawingMapStore();
+  const { imagesTurn } = usePhotoTurnStore();
+  const { imagesInstallation } = usePhotoInstallationStore();
+  const { imagesHomeCustomer } = usePhotoHomeCustomerStore();
+  const { imagesCustomer, addImage, removeImage, loadImages } = usePhotoCustomerStore();
+  const { imagesEquipment } = usePhotoEquipmentStore();
+
+  const [cleanedImagesGPS, setCleanedImagesGPS] = useState<string | null>(null);
+  console.log(`cleanedImagesGPS`, cleanedImagesGPS);
+
   const center = {
     lat: position.latitude ?? 0,
     lng: position.longitude ?? 0,
   };
 
-  const options = {
-    mapId: 'DEMO_MAP_ID',
+  const mapRef = useRef<HTMLDivElement>(null); // Reference to the map container
+
+  // ฟังก์ชันสำหรับแคปรูปแผนที่
+  const captureMap = async () => {
+    if (mapRef.current) {
+      toPng(mapRef.current)
+        .then((dataUrl) => {
+          // สร้างลิงก์ดาวน์โหลด
+          const cleanedDataUrl = dataUrl.replace(/^data:/, '');
+
+          setCleanedImagesGPS(cleanedDataUrl); // ตั้งค่า cleanedImagesGPS
+
+          // เรียกฟังก์ชันบันทึกข้อมูล
+          handleNextClick(cleanedDataUrl); // ส่ง cleanedDataUrl ไปยัง handleNextClick
+        })
+        .catch((err) => {
+          console.error('Error generating image:', err);
+        });
+    }
+  };
+
+  // ปรับให้ handleNextClick รับ cleanedDataUrl
+  const handleNextClick = async (cleanedDataUrl: string) => {
+    try {
+      // ตัดส่วน 'data:image/jpeg;base64,' หรือ 'data:image/png;base64,' ออก
+      const cleanedImagesIdCard = imagesIdCard.map(image => image.replace(/^data:/, ''));
+      const cleanedImagesDrawingMap = imagesDrawingMap.map(image => image.replace(/^data:/, ''));
+      const cleanedImagesTurn = imagesTurn.map(image => image.replace(/^data:/, ''));
+      const cleanedImagesInstallation = imagesInstallation.map(image => image.replace(/^data:/, ''));
+      const cleanedImagesHomeCustomer = imagesHomeCustomer.map(image => image.replace(/^data:/, ''));
+      const cleanedImagesCustomer = imagesCustomer.map(image => image.replace(/^data:/, ''));
+      const cleanedImagesEquipment = imagesEquipment.map(image => image.replace(/^data:/, ''));
+
+      const updateContract = await axios.post(UPDATECONTACT, {
+        REFNO,
+        EMPID: EmpId,
+        TEAMSALE: TeamSale,
+        SALECODE: SaleCode,
+        SUPEMPID: SupEmpId,
+        SECEMPID: SecEmpId,
+        FIELD: "IMAGE",
+        DATA: [{
+          "IMAGECARD": cleanedImagesIdCard,
+          "IMAGEGPS": cleanedDataUrl, // ใช้ cleanedDataUrl ที่ส่งมา
+          "IMAGEMAP": cleanedImagesDrawingMap,
+          "IMAGETRADEIN": cleanedImagesTurn,
+          "IMAGEINSTALLATION": cleanedImagesInstallation,
+          "IMAGECUSTOMERHOME": cleanedImagesHomeCustomer,
+          "IMAGECUSTOMER": cleanedImagesCustomer,
+          "IMAGETDS": cleanedImagesEquipment,
+        }]
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log(`updateContract IMAGE: `, updateContract.data);
+      // แสดง SweetAlert เมื่อบันทึกสำเร็จ
+      Swal.fire({
+        icon: 'success',
+        title: 'สำเร็จ!',
+        text: 'บันทึกรูปภาพลงระบบเรียบร้อยแล้ว',
+      });
+    } catch (error) {
+      console.error('Error fetching UPDATECONTACT IMAGE:', error);
+      // แสดง SweetAlert เมื่อเกิดข้อผิดพลาด
+      Swal.fire({
+        icon: 'error',
+        title: 'เกิดข้อผิดพลาด!',
+        text: 'ไม่สามารถบันทึกรูปภาพได้ กรุณาลองใหม่อีกครั้ง',
+      });
+    }
   };
 
   return (
@@ -111,26 +200,24 @@ const GoogleMapComponent: React.FC<GoogleMapComponentProps> = ({ position, captu
         <Link to='/sale/photo' className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
           ย้อนกลับ
         </Link>
-        <button onClick={captureAndSave} className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
-          บันทึกตำแหน่งลงระบบ
+        <button
+          onClick={captureMap}
+          className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
+        >
+          บันทึกรูปภาพแผนที่ลงระบบ
         </button>
       </div>
 
-      <LoadScript googleMapsApiKey={API_KEY_GOOGLE_MAP} libraries={['marker']}>
-        <GoogleMap
-          mapContainerStyle={containerStyle}
-          center={center}
-          zoom={15}
-          options={options}
-          onLoad={(map) => {
-            // ใช้ marker ปกติแทน AdvancedMarkerElement
-            new google.maps.Marker({
-              position: center,
-              map,
-              title: 'ตำแหน่งปัจจุบัน',
-            });
-          }}
-        />
+      <LoadScript googleMapsApiKey={API_KEY_GOOGLE_MAP}>
+        <div ref={mapRef} style={containerStyle}>
+          <GoogleMap
+            mapContainerStyle={containerStyle}
+            center={center}
+            zoom={15}
+          >
+            <Marker position={center} title="ตำแหน่งปัจจุบัน" />
+          </GoogleMap>
+        </div>
       </LoadScript>
     </>
   );
