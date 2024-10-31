@@ -125,7 +125,7 @@ const Step: React.FC = () => {
                   </div>
                 </div>
               {/* </Link> */}
-              <Link to=''>
+              <Link to='../sale/update/updateSaleDiscount' state={data?.[0]}>
                 <div className='d-flex align-items-center pb-8'>
                   <span className={`bullet bullet-vertical h-40px ${data?.[0]?.DISCOUNT.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
                   <div className='form-check form-check-custom form-check-solid mx-5'> </div>

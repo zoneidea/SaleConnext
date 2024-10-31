@@ -468,7 +468,7 @@ const SalesPackage: React.FC = () => {
                         </ul>
                     </div>
                 </div>
-                <p>เลขที่ขาย: {item?.REFNO}</p>
+                <p>REFNO: {item?.REFNO}</p>
 
                 <div className='accordion mb-10' id='kt_accordion_1'>
                     <div className='accordion-item mb-10'>

@@ -43,6 +43,7 @@ const PrivateRoutes = () => {
 
   // Update contract
   const UpdateContractPackage = lazy(() => import('../pages/sales/update/UpdateSalesPackage'))
+  const UpdateContractDiscount = lazy(() => import('../pages/sales/update/UpdateSaleDiscount'))
 
   return (
     <Routes>
@@ -253,6 +254,14 @@ const PrivateRoutes = () => {
           element={
             <SuspensedView>
               <UpdateContractPackage />
+            </SuspensedView>
+          }
+        />
+         <Route
+          path='sale/update/updateSaleDiscount'
+          element={
+            <SuspensedView>
+              <UpdateContractDiscount />
             </SuspensedView>
           }
         />
