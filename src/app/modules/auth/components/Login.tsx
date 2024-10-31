@@ -473,7 +473,7 @@ export function Login() {
     DepartGroup, setDepartGroup,
   } = useCategoryStore();
 
-   // สถานะเพื่อติดตามการโหลด fetchCategory
+  // สถานะเพื่อติดตามการโหลด fetchCategory
   const { fetchCategory, setFetchCategory } = useFetchCategoryStore();
 
   useEffect(() => {
@@ -492,7 +492,7 @@ export function Login() {
         },
       });
       const data = Array.isArray(response.data.data) ? response.data.data : [];
-      
+
       setFetchCategory(data);
       localStorage.setItem('fetchCategory', JSON.stringify(data));
       console.log('fetchCategory set with data:', data);
@@ -503,7 +503,7 @@ export function Login() {
       console.error('Error fetching data:', error);
       setIsFetchCategoryLoaded(false); // ในกรณีเกิดข้อผิดพลาด
     }
-  };  
+  };
 
   const { auth, saveAuth, setCurrentUser } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -597,11 +597,11 @@ export function Login() {
       noValidate
       id='kt_login_signin_form'
     >
-      <div className='text-center mb-11'>
+      <div className='text-center'>
         <img
           alt='Logo'
-          src={toAbsoluteUrl('media/logos/logo-sabuyconnext.svg')}
-          className='h-50px'
+          src={toAbsoluteUrl('media/logos/logo-tsr-old.png')}
+          className='h-150px'
         />
       </div>
       {formik.status ? (
@@ -676,7 +676,7 @@ export function Login() {
           {!loading && <span className='indicator-label'>เข้าสู่ระบบ</span>}
           {loading && (
             <span className='indicator-progress' style={{ display: 'block' }}>
-              Please wait...
+              โปรดรอสักครู่...
               <span className='spinner-border spinner-border-sm align-middle ms-2'></span>
             </span>
           )}

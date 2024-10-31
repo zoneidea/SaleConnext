@@ -77,7 +77,7 @@ const SalesPackage: React.FC = () => {
     } = useCategoryStore();
     // console.log(`EmpId`, EmpId);
     // console.log(`EmpId`, EmpId);
-    
+
     const { fetchCategory } = useFetchCategoryStore();
     // console.log(`fetchCategory: `, fetchCategory);
 
@@ -410,12 +410,11 @@ const SalesPackage: React.FC = () => {
 
                     await MySwal.fire({
                         text: message,
-                        icon: Customerstatus ? 'success' : 'error',
+                        icon: Customerstatus ? 'success' : 'success',
                         confirmButtonText: 'ตกลง'
                     });
 
                     updateData = [idCard, conditionCheckResponse.data.checktype, message];
-
                     navigate(destination); // นำทางไปยังหน้าที่ต้องการ
                 }
             } else {
@@ -599,7 +598,7 @@ const SalesPackage: React.FC = () => {
                     </div>
                 </div>
 
-                <div className='fixed-bottom d-flex flex-column flex-md-row justify-content-between align-items-center p-3'>
+                {/* <div className='fixed-bottom d-flex flex-column flex-md-row justify-content-between align-items-center p-3'>
                     <button
                         className='btn btn-secondary w-100 w-md-auto align-self-center h-50px'
                         onClick={() => navigate('/sale/overview')}
@@ -614,7 +613,26 @@ const SalesPackage: React.FC = () => {
                     >
                         บันทึก
                     </button>
+                </div> */}
+
+                <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10'>
+                    <button
+                        className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0 me-md-2'
+                        onClick={() => navigate('/sale/overview')}
+                    >
+                        ย้อนกลับ
+                    </button>
+                    <button
+                        className={`btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0 h-50px 
+                ${product.length === 0 || selectedProductIndex === null ? 'disabled' : ''}`}
+                        disabled={product.length === 0 || selectedProductIndex === null}
+                        onClick={handleNextClick}
+                    >
+                        บันทึก
+                    </button>
                 </div>
+
+
             </Content>
         </>
     );

@@ -7,6 +7,13 @@ import { Content } from '../../../_metronic/layout/components/content';
 import { useUUIDStore, useSaveCustomerStore } from '../../modules/stores/stepsStore';
 import { useAuth } from '../../modules/auth/core/Auth';
 
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+
+interface ContractState {
+  contNo: string;
+}
+
 const SalesPDPA: React.FC = () => {
   const navigate = useNavigate()
 
@@ -18,6 +25,11 @@ const SalesPDPA: React.FC = () => {
   const SecEmpId = auth?.data?.[0]?.SecEmp || '';
 
   const { REFNO } = useUUIDStore();
+  // console.log(`REFNO`, REFNO);
+
+  const API_URL_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
+  const SEND_SMS_API = `${API_URL_SALECONNEXT}/sendSMS/PDPA`;
+  const CHECK_OTP_API = `${API_URL_SALECONNEXT}/CheckOTP/PDPA`;
 
   const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
   const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
@@ -25,12 +37,23 @@ const SalesPDPA: React.FC = () => {
   const { saveCustomerTypes } = useSaveCustomerStore()
   // console.log(`saveCustomerTypes`, saveCustomerTypes);
 
-  const [consentGiven, setConsentGiven] = useState(false); // ให้ความยินยอม
-  const [consentNotGiven, setConsentNotGiven] = useState(false); // ไม่ให้ความยินยอม
+  const [consentGiven, setConsentGiven] = useState<boolean>(false); // ให้ความยินยอม
+  const [consentNotGiven, setConsentNotGiven] = useState<boolean>(false); // ไม่ให้ความยินยอม
+  const [Alllow_Contract, setAlllow_Contract] = useState<number | undefined>();
+  const [PDPA_Code, setPDPA_Code] = useState<string | null>();
+  // console.log(`PDPA_Code`, PDPA_Code);
 
   const signaturePadRef = useRef<any>(null);
   const [signatureDataURL, setSignatureDataURL] = useState<string | null>(null);
   // console.log(`signatureDataURL`, signatureDataURL);
+
+  const [isSignatureSaved, setIsSignatureSaved] = useState<boolean>(false); // สถานะการเซ็นชื่อ
+  const [inputOTP, setInputOTP] = useState<string>('');
+  const [showSaveButton, setShowSaveButton] = useState<boolean>(false);
+  // console.log(`inputOTP`, inputOTP);
+
+  const [contNo, setContNo] = useState<string>('');
+  // console.log(`contNo`, contNo);
 
   // ตรวจสอบว่า `signaturePadRef` พร้อมใช้งานแล้ว
   useEffect(() => {
@@ -43,60 +66,126 @@ const SalesPDPA: React.FC = () => {
 
   // Function to save the signature
   const saveSignature = () => {
-    if (signaturePadRef.current && !signaturePadRef.current.isEmpty()) {  // ตรวจสอบว่ามีข้อมูลใน pad
-      const signatureData = signaturePadRef.current.toDataURL('image/png'); // สร้าง Data URL
-      const base64Data = signatureData.replace(/^data:image\/png;base64,/, ''); // ตัด data:image/png;base64, ออก
-      setSignatureDataURL(base64Data); // เก็บเฉพาะข้อมูล base64 ใน state
-      signaturePadRef.current.clear()
+    if (signaturePadRef.current && !signaturePadRef.current.isEmpty()) {
+      const signatureData = signaturePadRef.current.toDataURL('image/png');
+      const base64Data = signatureData.replace(/^data:image\/png;base64,/, '');
+      setSignatureDataURL(base64Data);
+      signaturePadRef.current.clear();
 
-      handleNextClick()
+      setIsSignatureSaved(true);
+      setShowSaveButton(true); // แสดงปุ่ม "จัดเก็บข้อมูล"
     } else {
-      console.log("Signature pad is empty or not ready."); // แจ้งเตือนหากไม่มีการเซ็น
+      console.log("Signature pad is empty or not ready.");
     }
   };
+
+  useEffect(() => {
+    if (signatureDataURL) {
+      sendSMS(); // เรียกใช้ sendSMS เมื่อ signatureDataURL เปลี่ยนแปลง
+    }
+  }, [signatureDataURL]); // ใช้ useEffect เพื่อรอให้ signatureDataURL มีค่า  
 
   // ให้ความยินยอมหรือไม่
   const handleConsentChange = (isGiven: boolean) => {
-    if (isGiven) {
-      setConsentGiven(true);
-      setConsentNotGiven(false);
-    } else {
-      setConsentGiven(false);
-      setConsentNotGiven(true);
-    }
+    setConsentGiven(isGiven);
+    setConsentNotGiven(!isGiven);
   };
+
+  useEffect(() => {
+    setAlllow_Contract(consentGiven ? 1 : 0);
+  }, [consentGiven]);
+
+  useEffect(() => {
+    setPDPA_Code(consentGiven ? '0001' : '0000');
+  }, [consentGiven]);
 
   const currentDate = new Date();
   const formattedDate = `${currentDate.getDate()}/${currentDate.getMonth() + 1}/${currentDate.getFullYear()}`;
 
-  const handleNextClick = async () => {
+  const sendSMS = async () => {
+    try {
+      const responseSendSMS = await axios.post(SEND_SMS_API, {
+        RefNo: REFNO,
+        ContNo: "",
+        Alllow_Contract,
+        PDPA_Code,
+        TelMobile: saveCustomerTypes[0].CUSTOMERMOBILE,
+        IDCard: saveCustomerTypes[0].CUSTOMERID,
+        SignPath: signatureDataURL,
+      }, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      console.log(`responseSendSMS: `, responseSendSMS.data);
+      setContNo(responseSendSMS.data.ContNo || '');
+    } catch (error) {
+      console.error('Error responseSendSMS:', error);
+    }
+  };
+
+  const checkOTP = async () => {
+    try {
+      const responseCheckOTP = await axios.post(CHECK_OTP_API, {
+        EmpID: EmpId,
+        RefNo: REFNO,
+        OTP: inputOTP,
+      }, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      // console.log(`responseCheckOTP: `, responseCheckOTP.data);
+
+      if (responseCheckOTP.data.status === 400) {
+        Swal.fire({
+          icon: 'error',
+          title: 'ข้อผิดพลาด!',
+          text: 'รหัส OTP ไม่ถูกต้อง!',
+          confirmButtonText: 'ตกลง',
+        });
+      } else if (responseCheckOTP.data.status === 200) {
+        Swal.fire({
+          icon: 'success',
+          title: 'สำเร็จ!',
+          text: 'การตรวจสอบ OTP สำเร็จ!',
+          confirmButtonText: 'ตกลง',
+        }).then(() => {
+          handleUpdateContract();
+        });
+      }
+    } catch (error) {
+      console.error('Error responseCheckOTP:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'ข้อผิดพลาด!',
+        text: 'ไม่สามารถตรวจสอบ OTP ได้!',
+        confirmButtonText: 'ตกลง',
+      });
+    }
+  };
+
+  const handleUpdateContract = async () => {
     try {
       const updateContract = await axios.post(UPDATECONTACT, {
         REFNO,
         EMPID: EmpId,
         TEAMSALE: TeamSale,
-        SALECODE: SaleCode,
-        SUPEMPID: SupEmpId,
-        SECEMPID: SecEmpId,
         FIELD: "PDPA",
-        DATA: [consentGiven, signatureDataURL]
+        CONTNO: contNo,
+        DATA: [consentGiven, signatureDataURL, inputOTP]
       }, {
         headers: {
           'Content-Type': 'application/json',
         },
       });
       console.log(`updateContract PDPA: `, updateContract.data);
-      navigate('/sale/contract');
+      navigate("/sale/contract", { state: { contNo } });
     } catch (error) {
       console.error('Error fetching PDPA:', error);
     }
   };
-
-  useEffect(() => {
-    if (signatureDataURL) {
-      handleNextClick();
-    }
-  }, [signatureDataURL]);
 
   return (
     <>
@@ -220,7 +309,11 @@ const SalesPDPA: React.FC = () => {
               />
 
               <div className='mt-5 mb-5'>
-                <button onClick={clear}>Clear</button>
+                <button
+                  className='btn btn-danger w-100 w-md-auto align-self-center mb-2 mb-md-0'
+                  onClick={clear}
+                >ลบลายเซ็น
+                </button>
               </div>
 
               <span className="fs-1">&nbsp;</span>
@@ -240,18 +333,45 @@ const SalesPDPA: React.FC = () => {
               <span className="fs-6" >วันที่ {formattedDate} </span>
               <span className="fs-1">&nbsp;</span>
             </div>
+
+            {isSignatureSaved && (
+              <div className='col-lg-12 mb-3'>
+                <label className='form-label required fw-bold fs-6'>OTP ที่ได้รับจากลูกค้า</label>
+                <input
+                  value={inputOTP}
+                  onChange={(e) => setInputOTP(e.target.value)}
+                  type='text'
+                  className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+                  placeholder='OTP ที่ได้รับจากลูกค้า'
+                />
+              </div>
+            )}
+
           </div>
         </div>
+
         <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10'>
-          <Link to='/sale/discount' className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
+          <Link to='/sale/createcust' className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
             ย้อนกลับ
           </Link>
-          <button className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
-            type='button'
-            onClick={saveSignature}
-          >
-            จัดเก็บข้อมูล
-          </button>
+
+          {!showSaveButton && (
+            <button className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
+              type='button'
+              onClick={saveSignature}
+            >
+              ดำเนินการต่อ
+            </button>
+          )}
+
+          {showSaveButton && (
+            <button className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
+              type='button'
+              onClick={checkOTP}
+            >
+              จัดเก็บข้อมูล
+            </button>
+          )}
         </div>
       </Content>
     </>

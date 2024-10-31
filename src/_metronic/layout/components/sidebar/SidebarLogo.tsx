@@ -48,31 +48,31 @@ const SidebarLogo = (props: PropsType) => {
   }, [toggleRef, props.sidebarRef])
 
   return (
-    <div className='app-sidebar-logo px-10' id='kt_app_sidebar_logo'>
+    <div className='app-sidebar-logo px-10 justify-content-center' id='kt_app_sidebar_logo'>
       <Link to='/dashboard'>
         {config.layoutType === 'dark-sidebar' ? (
           <img
             alt='Logo'
-            src={toAbsoluteUrl('media/logos/logo-sabuyconnext.svg')}
-            className='h-40px app-sidebar-logo-default'
+            src={toAbsoluteUrl('media/logos/logo-tsr-white.png')}
+            className='h-80px app-sidebar-logo-default'
           />
         ) : (
           <>
             <img
               alt='Logo'
-              src={toAbsoluteUrl('media/logos/logo-sabuyconnext.svg')}
+              src={toAbsoluteUrl('media/logos/logo-tsr-white.png')}
               className='h-40px app-sidebar-logo-default theme-light-show'
             />
             <img
               alt='Logo'
-              src={toAbsoluteUrl('media/logos/logo-sabuyconnext.svg')}
+              src={toAbsoluteUrl('media/logos/logo-tsr-white.png')}
               className='h-40px app-sidebar-logo-default theme-dark-show'
             />
           </>
         )}
         <img
           alt='Logo'
-          src={toAbsoluteUrl('media/logos/logo-sabuyconnext.svg')}
+          src={toAbsoluteUrl('media/logos/logo-tsr-white.png')}
           className='h-40px app-sidebar-logo-minimize'
           style={{ display: 'none' }}
         />

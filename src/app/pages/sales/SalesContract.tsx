@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import axios from 'axios';
 import clsx from 'clsx'
 import { useState } from 'react'
@@ -16,8 +16,16 @@ import {
   useSaveAddressStore
 } from '../../modules/stores/stepsStore';
 
+interface ContractState {
+  contNo: string;
+}
+
 const SalesContract: React.FC = () => {
   const navigate = useNavigate()
+
+  const location = useLocation();
+  const contNo = (location.state as ContractState)?.contNo;
+  // console.log(`contNo`, contNo);
 
   const { auth } = useAuth();
   const EmpId = auth?.data?.[0]?.EmpId || '';
@@ -137,7 +145,14 @@ const SalesContract: React.FC = () => {
             </div>
 
             <div className='row mb-7'>
-              <label className='col-lg-4 fw-bold text-muted'>เลขที่ขาย</label>
+              <label className='col-lg-4 fw-bold text-muted'>เลขที่สัญญา</label>
+              <div className='col-lg-8 fv-row'>
+                <span className='fw-bold fs-6'>{contNo}</span>
+              </div>
+            </div>
+
+            <div className='row mb-7'>
+              <label className='col-lg-4 fw-bold text-muted'>REFNO</label>
               <div className='col-lg-8 fv-row'>
                 <span className='fw-bold fs-6'>{REFNO}</span>
               </div>
@@ -301,11 +316,21 @@ const SalesContract: React.FC = () => {
         </div>
         {/* End Card Body */}
 
-        <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10'>
+        {/* <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10'>
           <Link to='/sale/createcust' className='btn btn-secondary w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'>
             ย้อนกลับ
           </Link>
           <button className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
+            type='button'
+            onClick={handleNextClick}
+          >
+            บันทึกสัญญา
+          </button>
+        </div> */}
+
+        <div className='d-flex justify-content-end mb-5 mt-10'>
+          <button
+            className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
             type='button'
             onClick={handleNextClick}
           >
