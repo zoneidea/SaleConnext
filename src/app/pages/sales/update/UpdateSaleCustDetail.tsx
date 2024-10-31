@@ -48,7 +48,7 @@ const UpdateSaleCustDetail: React.FC = () => {
 
     const refno = item?.REFNO
     const customerDetail = item?.CUSTOMERDETAIL
-    const customerStatus = item?.CUSTOMERSTATUS
+    let customerStatus = item?.CUSTOMERSTATUS
     const product = item?.PRODUCT
 
     const { auth } = useAuth();
@@ -277,6 +277,36 @@ const UpdateSaleCustDetail: React.FC = () => {
                         navigate('/sale/step', { state: item })
                     } else {
                         setIdCard(result.value)
+
+                        let updateData = [result.value, conditionCheckResponse.data.checktype, message];
+                        try {
+                            const updateContract = await axios.post(UPDATECONTACT, {
+                                REFNO: refno,
+                                EMPID: EmpId,
+                                TEAMSALE: TeamSale,
+                                FIELD: "CUSTOMERSTATUS",
+                                DATA: updateData,
+                            }, {
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                            });
+                            console.log(`updateContract CUSTOMERSTATUS: `, updateContract.data);
+
+                            if (updateContract.status === 200) {
+                                if (!updateContract.data.data) {
+                                    MySwal.fire('เกิดข้อผิดพลาด', 'ปรับปรุงข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
+                                } else {
+                                    customerStatus = updateContract.data.data
+                                    MySwal.fire('สำเร็จ', 'ปรับปรุงข้อมูลการตรวจสอบสถานะแล้ว', 'success');
+                                }
+                            } else {
+                                MySwal.fire('เกิดข้อผิดพลาด', updateContract.data.message, 'error');
+                            }
+                        } catch (error) {
+                            console.error('Error updating contract:', error);
+                            MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถอัปเดตข้อมูลได้', 'error');
+                        }
                     }
                 }
             });
@@ -368,6 +398,10 @@ const UpdateSaleCustDetail: React.FC = () => {
             console.error('Error fetching UPDATECONTACT:', error);
         }
     };
+
+    const handleCheckerClick = () => {
+        
+    }
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -480,7 +514,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                         <div className='col-lg-4'>
                                                             <label className='form-label required fw-bold fs-6'>บัตรประชาชน</label>
                                                             <input
-                                                                disabled
+                                                                disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.CUSTOMERID !== "" ? true : false : false}
                                                                 value={idCard}
                                                                 onChange={handleIdCardChange}
                                                                 type='text'
@@ -759,7 +793,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                         </button>
                         <button
                             className='btn btn-primary w-100 w-md-auto align-self-center h-50px'
-                        // onClick={handleCheckerClick}
+                            onClick={handleCheckerClick}
                         >
                             ส่งตรวจสอบ
                         </button>

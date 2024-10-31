@@ -1505,7 +1505,7 @@ const SalesCreateCust: React.FC = () => {
                                             {/* End กรณีประเภทลูกค้าเป็น นิติบุคคล */}
 
                                             {
-                                                selectedCustomerType == "0" || selectedCustomerType == "2" && (
+                                                selectedCustomerType == "0" || selectedCustomerType == "2" ? (
                                                     <>
                                                         <button
                                                             className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
@@ -1517,11 +1517,7 @@ const SalesCreateCust: React.FC = () => {
                                                             เพิ่มที่อยู่ลูกค้า
                                                         </button>
                                                     </>
-                                                )
-                                            }
-
-                                            {
-                                                selectedCustomerType == "1" && (
+                                                ) : (
                                                     <>
                                                         <button
                                                             className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
@@ -1534,6 +1530,21 @@ const SalesCreateCust: React.FC = () => {
                                                     </>
                                                 )
                                             }
+
+                                            {/* {
+                                                selectedCustomerType == "1" && (
+                                                    <>
+                                                        <button
+                                                            className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
+                                                            type='button'
+                                                            onClick={handleNextClick}
+                                                            disabled={!selectedCustomerType || !idCard ||
+                                                                !selectedPrefixId || !nameMD || !mobile} >
+                                                            เพิ่มที่อยู่นิติบุคคล
+                                                        </button>
+                                                    </>
+                                                )
+                                            } */}
                                         </div>
                                     </form>
                                     {/* end form */}
