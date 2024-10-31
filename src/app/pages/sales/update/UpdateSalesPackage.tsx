@@ -48,6 +48,7 @@ const SalesPackage: React.FC = () => {
     const location = useLocation();
     const item = location.state as ItemProps || [];
 
+    const refno = item?.REFNO
     const productContract = item?.PRODUCT
 
     const { auth } = useAuth();
@@ -85,9 +86,6 @@ const SalesPackage: React.FC = () => {
     const [checktype, setChecktype] = useState<number | null>(null);
     // console.log(`checktype`, checktype);
 
-    const [Search, setSearch] = useState<string>(''); // เก็บค่าของเลขบัตรประชาชน
-    // console.log(`Search: `, Search);
-
     const {
         EmpId, setEmpId,
         TeamSale, setTeamSale,
@@ -119,41 +117,42 @@ const SalesPackage: React.FC = () => {
 
     const { PRODUCT, SETPRODUCT } = useSaveProductStore();
 
-    // const SaveProductData = useMemo(() => [
-    //     {
-    //         EmpId: EmpId || '',
-    //         TeamSale: TeamSale || '',
-    //         SaleCode: "C000000000000",
-    //         ItemCode: selectedItemCode || '',
-    //         ItemDescription: selectedItemDescription || '',
-    //         CategoriesId: selectedCategoryId || '',
-    //         DescriptionEN: selectedDescriptionEN || '',
-    //         DescriptionTH: selectedDescriptionTH || '',
-    //         SerialNo: selectedSerialNo || '',
-    //         Status: selectedStatus || '',
-    //         Branch: selectedBranch || '',
-    //         TransDate: selectedTransDate || '',
-    //         Package: selectedPackageModel !== null ? [
-    //             {
-    //                 MODEL: packageList[selectedPackageModel].MODEL,
-    //                 PACKAGETYPEID: packageList[selectedPackageModel].PACKAGETYPEID,
-    //                 ORGANIZATIONCODE: packageList[selectedPackageModel].ORGANIZATIONCODE,
-    //                 ITEMID: packageList[selectedPackageModel].ITEMID,
-    //                 PRODUCTID: packageList[selectedPackageModel].PRODUCTID,
-    //                 PACKAGETITLE: packageList[selectedPackageModel].PACKAGETITLE,
-    //                 TOTALPRICE: packageList[selectedPackageModel].TOTALPRICE,
-    //                 HASTRADEIN: packageList[selectedPackageModel].HASTRADEIN,
-    //                 DISCOUNTPRICE: packageList[selectedPackageModel].DISCOUNTPRICE,
-    //                 SEQUENCE: packageList[selectedPackageModel].SEQUENCE,
-    //                 PERMITION_ACTIVE: packageList[selectedPackageModel].PERMITION_ACTIVE,
-    //                 FREEGIFT: packageList[selectedPackageModel].FREEGIFT,
-    //                 PERIODDETAILS: packageList[selectedPackageModel].PERIODDETAILS
-    //             }
-    //         ] : [], // ถ้าไม่มี package ที่เลือกให้เป็น array ว่าง
-    //     },
-    // ], [EmpId, TeamSale, SaleCode, SupEmpId, SecEmpId, selectedItemCode, selectedItemDescription, selectedCategoryId,
-    //     selectedDescriptionEN, selectedDescriptionTH, selectedSerialNo,
-    //     selectedStatus, selectedBranch, selectedTransDate, selectedPackageModel, packageList]);
+    const SaveProductData = useMemo(() => [
+        {
+            EmpId: EmpId || '',
+            TeamSale: TeamSale || '',
+            SaleCode: SaleCode,
+            ItemCode: selectedItemCode || '',
+            ItemDescription: selectedItemDescription || '',
+            CategoriesId: selectedCategoryId || '',
+            DescriptionEN: selectedDescriptionEN || '',
+            DescriptionTH: selectedDescriptionTH || '',
+            SerialNo: selectedSerialNo || '',
+            Status: selectedStatus || '',
+            Branch: selectedBranch || '',
+            TransDate: selectedTransDate || '',
+
+            Package: selectedPackageModel !== null ? [
+                {
+                    MODEL: packageList[selectedPackageModel].MODEL,
+                    PACKAGETYPEID: packageList[selectedPackageModel].PACKAGETYPEID,
+                    ORGANIZATIONCODE: packageList[selectedPackageModel].ORGANIZATIONCODE,
+                    ITEMID: packageList[selectedPackageModel].ITEMID,
+                    PRODUCTID: packageList[selectedPackageModel].PRODUCTID,
+                    PACKAGETITLE: packageList[selectedPackageModel].PACKAGETITLE,
+                    TOTALPRICE: packageList[selectedPackageModel].TOTALPRICE,
+                    HASTRADEIN: packageList[selectedPackageModel].HASTRADEIN,
+                    DISCOUNTPRICE: packageList[selectedPackageModel].DISCOUNTPRICE,
+                    SEQUENCE: packageList[selectedPackageModel].SEQUENCE,
+                    PERMITION_ACTIVE: packageList[selectedPackageModel].PERMITION_ACTIVE,
+                    FREEGIFT: packageList[selectedPackageModel].FREEGIFT,
+                    PERIODDETAILS: packageList[selectedPackageModel].PERIODDETAILS
+                }
+            ] : [], // ถ้าไม่มี package ที่เลือกให้เป็น array ว่าง
+        },
+    ], [EmpId, TeamSale, SaleCode, SupEmpId, SecEmpId, selectedItemCode, selectedItemDescription, selectedCategoryId,
+        selectedDescriptionEN, selectedDescriptionTH, selectedSerialNo,
+        selectedStatus, selectedBranch, selectedTransDate, selectedPackageModel, packageList]);
 
     const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
     const CATEGORIES_URL = `${API_SALECONNEXT}/GetProduct/Categories`;
@@ -173,9 +172,21 @@ const SalesPackage: React.FC = () => {
     const packageSectionRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        setSelectedPackageTypeId(productContract?.[0]?.Package?.[0].PACKAGETYPEID)
-        setPackageTypeID(productContract?.[0]?.Package?.[0].PACKAGETYPEID);
-        setModel(productContract?.[0]?.Package?.[0]?.MODEL);
+        if (productContract?.[0]?.Package.length !== 0) {
+            setSelectedPackageTypeId(productContract?.[0]?.Package?.[0].PACKAGETYPEID)
+            setPackageTypeID(productContract?.[0]?.Package?.[0].PACKAGETYPEID);
+            setModel(productContract?.[0]?.Package?.[0]?.MODEL);
+        }
+
+        setSelectedItemCode(productContract?.[0]?.ItemCode);
+        setItemID(productContract?.[0]?.ItemCode)
+        setSelectedItemDescription(productContract?.[0]?.ItemDescription);
+        setSelectedDescriptionEN(productContract?.[0]?.DescriptionEN);
+        setSelectedDescriptionTH(productContract?.[0]?.DescriptionTH);
+        setSelectedSerialNo(productContract?.[0]?.SerialNo);
+        setSelectedStatus(productContract?.[0]?.Status);
+        setSelectedBranch(productContract?.[0]?.Branch);
+        setSelectedTransDate(productContract?.[0]?.TransDate);
 
         getPackageType()
 
@@ -187,6 +198,8 @@ const SalesPackage: React.FC = () => {
         setDivisionId(auth.data[0].DivisionId);
         setDepartId(auth.data[0].DepartId);
         setDepartGroup(auth.data[0].DepartGroup);
+
+        getPackageList()
     }, [])
 
     // POST GetProduct/Categories
@@ -235,15 +248,6 @@ const SalesPackage: React.FC = () => {
         getData();
         let productIndex = product.findIndex(p => p.SerialNo == productContract?.[0]?.SerialNo)
         setSelectedProductIndex(productIndex)
-        setSelectedItemCode(product[productIndex].ItemCode);
-        setItemID(product[productIndex].ItemCode)
-        setSelectedItemDescription(product[productIndex].ItemDescription);
-        setSelectedDescriptionEN(product[productIndex].DescriptionEN);
-        setSelectedDescriptionTH(product[productIndex].DescriptionTH);
-        setSelectedSerialNo(product[productIndex].SerialNo);
-        setSelectedStatus(product[productIndex].Status);
-        setSelectedBranch(product[productIndex].Branch);
-        setSelectedTransDate(product[productIndex].TransDate);
     }, [categories, selectedCategoryId, setProduct]);
 
     const getPackageType = async () => {
@@ -255,10 +259,15 @@ const SalesPackage: React.FC = () => {
             });
             const data = Array.isArray(response.data.data) ? response.data.data : [];
             setPackageType(data);
-            await getPackageList()
-            let index = packageList.findIndex(pl => pl.MODEL == productContract?.[0]?.Package?.[0].MODEL)
-            setSelectedPackageModel(index)
-            console.log('Package index: ', index)
+
+            setEmpId(auth.data[0].EmpId);
+            setTeamSale(auth.data[0].TeamSale);
+            setSaleCode(auth.data[0].SaleCode);
+            setSupEmpId(auth.data[0].SupEmp);
+            setSecEmpId(auth.data[0].SecEmp);
+            setDivisionId(auth.data[0].DivisionId);
+            setDepartId(auth.data[0].DepartId);
+            setDepartGroup(auth.data[0].DepartGroup);
         } catch (error) {
             console.error('Error fetching PACKAGE_URL:', error);
         }
@@ -273,16 +282,25 @@ const SalesPackage: React.FC = () => {
                     'Content-Type': 'multipart/form-data',
                 },
             });
+
             const data = Array.isArray(response.data.data) ? response.data.data : [];
             setPackageList(data)
-            console.log(data)
+            let index = data.findIndex((pl: { MODEL: any; }) => pl.MODEL == productContract?.[0]?.Package?.[0].MODEL)
+            if (index !== -1) {
+                setSelectedPackageModel(index)
+            } else {
+                setSelectedPackageModel(null)
+            }
+
+            console.log('Package model: ', productContract?.[0]?.Package?.[0].MODEL)
+            console.log('Package index: ', index)
         } catch (error) {
             console.error('Error fetching POST_PACKAGE_URL:', error);
         }
     };
 
     useEffect(() => {
-        // getPackageList()
+        getPackageList()
     }, [EmpId, DivisionId, DepartId, DepartGroup, TeamSale, ItemID, PackageTypeID]);
 
     // useEffect(() => {
@@ -358,132 +376,77 @@ const SalesPackage: React.FC = () => {
         }
     };
 
-    // useEffect(() => {
-    //     if (selectedPackageModel !== null && packageList[selectedPackageModel]) {
-    //         const selectedModel = packageList[selectedPackageModel].MODEL;
-    //         setModel(selectedModel); // อัปเดตค่า Model จาก packageList[selectedPackageModel]
-    //     }
-    // }, [selectedPackageModel, packageList, setModel]);
+    useEffect(() => {
+        if (selectedPackageModel !== null && packageList[selectedPackageModel]) {
+            const selectedModel = packageList[selectedPackageModel].MODEL;
+            setModel(selectedModel); // อัปเดตค่า Model จาก packageList[selectedPackageModel]
+        }
+    }, [selectedPackageModel, packageList, setModel]);
 
     // ตรวจสอบ ConditionsCheckHistory ว่าต้องตรวจสอบประวัติไหม หากตรวจให้เช็ค CheckCustomer ต่อ
-    // const handleNextClick = async () => {
-    //     try {
-    //         // Save product package
-    //         const response = await axios.post(SAVEPRODUCTPACKAGE, {
-    //             REFNO,
-    //             EMPID: EmpId,
-    //             TEAMSALE: TeamSale,
-    //             SALECODE: SaleCode,
-    //             SUPEMPID: SupEmpId,
-    //             SECEMPID: SecEmpId,
-    //             STATUS: "DRAFT",
-    //             PRODUCT,
-    //         }, {
-    //             headers: {
-    //                 'Content-Type': 'application/json',
-    //             },
-    //         });
+    const handleNextClick = async () => {
+        try {
+            // Save product package
+            const response = await axios.post(UPDATECONTACT, {
+                REFNO: refno,
+                EMPID: EmpId,
+                TEAMSALE: TeamSale,
+                FIELD: "PRODUCT",
+                DATA: SaveProductData,
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
 
-    //         const result = response.data;
-    //         const newId = result.data._id; // ดึง _id จาก response
+            console.log("Pacakage data: ", SaveProductData)
 
-    //         // อัปเดต state ด้วย _id ที่ได้รับจาก API
-    //         setProductId(newId);
+            console.log('Update package: ', response)
+            if (response.status === 200) {
+                if (!response.data.data) {
+                    MySwal.fire('เกิดข้อผิดพลาด', 'ปรับปรุงข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
+                } else {
+                    MySwal.fire('สำเร็จ', 'ปรับปรุงข้อมูลแพ็คเกจแล้ว', 'success');
+                }
+            } else {
+                MySwal.fire('เกิดข้อผิดพลาด', response.data.message, 'error');
+            }
+        } catch (error) {
+            console.error('Error saving product package:', error);
+            MySwal.fire({
+                title: 'เกิดข้อผิดพลาด',
+                text: 'ไม่สามารถบันทึกข้อมูลได้',
+                icon: 'error',
+                confirmButtonText: 'ตกลง'
+            });
+        }
+    };
 
-    //         const conditionCheckResponse = await axios.post(API_URL_POST_CONDITIONSCHECKHISTORY, {
-    //             EmpId, DivisionId, DepartId, DepartGroup, TeamSale, Model
-    //         }, {
-    //             headers: {
-    //                 'Content-Type': 'multipart/form-data',
-    //             },
-    //         });
+    const handleCheckerClick = async () => {
+        const response = await axios.post(UPDATECONTACT, {
+            REFNO: refno,
+            EMPID: EmpId,
+            TEAMSALE: TeamSale,
+            FIELD: "STATUS",
+            DATA: "PENDING",
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
 
-    //         setChecktype(conditionCheckResponse.data.checktype); // อัปเดตค่า checktype ใน state
+        console.log(response)
 
-    //         let updateData;
-
-    //         if (conditionCheckResponse.data.checktype !== 0) {
-    //             const { value: idCard } = await MySwal.fire({
-    //                 title: 'ตรวจสอบประวัติลูกค้า',
-    //                 html: `
-    //                     <input 
-    //                         id="idCardInput" 
-    //                         type="text" 
-    //                         class="form-control" 
-    //                         placeholder="กรุณากรอกเลขบัตรประชาชน (13 หลัก)" 
-    //                         maxlength="13"
-    //                         oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,13);" 
-    //                     />
-    //                 `,
-    //                 showCancelButton: true,
-    //                 confirmButtonText: 'ตรวจสอบ',
-    //                 cancelButtonText: 'ยกเลิก',
-    //                 preConfirm: async () => {
-    //                     const input = (document.getElementById('idCardInput') as HTMLInputElement).value;
-    //                     if (input.length === 13) {
-    //                         return input;
-    //                     } else {
-    //                         MySwal.showValidationMessage('กรุณากรอกเลขบัตรประชาชนให้ครบ 13 หลัก');
-    //                         return null;
-    //                     }
-    //                 }
-    //             });
-
-    //             if (idCard) {
-    //                 setSearch(idCard);
-    //                 const apiResponse = await axios.post(CHECKCUSTOMER_URL, { Search: idCard }, {
-    //                     headers: {
-    //                         'Content-Type': 'multipart/form-data',
-    //                     },
-    //                 });
-
-    //                 const { Customerstatus, message } = apiResponse.data;
-    //                 const destination = Customerstatus ? '/sale/overview' : '/sale/discount';
-
-    //                 await MySwal.fire({
-    //                     text: message,
-    //                     icon: Customerstatus ? 'success' : 'error',
-    //                     confirmButtonText: 'ตกลง'
-    //                 });
-
-    //                 updateData = [idCard, conditionCheckResponse.data.checktype, message];
-
-    //                 navigate(destination); // นำทางไปยังหน้าที่ต้องการ
-    //             }
-    //         } else {
-    //             SETPRODUCT(result.data); // อัปเดต PRODUCT ใน Zustand store
-    //             updateData = ["", conditionCheckResponse.data.checktype, conditionCheckResponse.data.message];
-    //             navigate('/sale/discount'); // นำทางไปยังหน้า sale/discount
-    //         }
-
-    //         // เรียก API UPDATECONTACT หลังจากเสร็จสิ้นเงื่อนไขทั้งหมด
-    //         try {
-    //             const updateContract = await axios.post(UPDATECONTACT, {
-    //                 REFNO,
-    //                 EMPID: EmpId,
-    //                 TEAMSALE: TeamSale,
-    //                 FIELD: "CUSTOMERSTATUS",
-    //                 DATA: updateData,
-    //             }, {
-    //                 headers: {
-    //                     'Content-Type': 'application/json',
-    //                 },
-    //             });
-    //             console.log(`updateContract CUSTOMERSTATUS: `, updateContract.data);
-    //         } catch (error) {
-    //             console.error('Error updating contract:', error);
-    //             MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถอัปเดตข้อมูลได้', 'error');
-    //         }
-    //     } catch (error) {
-    //         console.error('Error saving product package:', error);
-    //         MySwal.fire({
-    //             title: 'เกิดข้อผิดพลาด',
-    //             text: 'ไม่สามารถบันทึกข้อมูลได้',
-    //             icon: 'error',
-    //             confirmButtonText: 'ตกลง'
-    //         });
-    //     }
-    // };
+        if (response.status === 200) {
+            if (!response.data.data) {
+                MySwal.fire('เกิดข้อผิดพลาด', 'ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
+            } else {
+                MySwal.fire('สำเร็จ', 'ส่งข้อมูลตรวจสอบแล้ว', 'success');
+            }
+        } else {
+            MySwal.fire('เกิดข้อผิดพลาด', response.data.message, 'error');
+        }
+    }
 
     return (
         <>
@@ -505,7 +468,7 @@ const SalesPackage: React.FC = () => {
                         </ul>
                     </div>
                 </div>
-                <p>เลขที่ขาย: {item?.REFNO}</p>
+                <p>REFNO: {item?.REFNO}</p>
 
                 <div className='accordion mb-10' id='kt_accordion_1'>
                     <div className='accordion-item mb-10'>
@@ -538,11 +501,6 @@ const SalesPackage: React.FC = () => {
                                                     onChange={handleCateOptionChange} >
                                                     <option value=''>เลือกหมวดหมู่สินค้า...</option>
                                                     {parsegetCategoryLocal.map((item: any, index: number) => (
-                                                        // item.CATEGORIES_ID == productContract?.[0].CategoriesId ?
-                                                        // <option key={index} selected={true} value={item.CATEGORIES_ID}>
-                                                        //     {item.CATEGORIES_NAME_TH}
-                                                        // </option>
-                                                        // :
                                                         <option key={index} value={item.CATEGORIES_ID}>
                                                             {item.CATEGORIES_NAME_TH}
                                                         </option>
@@ -611,14 +569,18 @@ const SalesPackage: React.FC = () => {
                                                             onClick={() => handlePackageModelClick(index)}
                                                             style={{ cursor: 'pointer' }} >
                                                             <CardPackage
-                                                                PackageTitle={item.PACKAGETITLE + (' (' + index + ')')}
+                                                                PackageTitle={item.PACKAGETITLE}
                                                                 isSelected={selectedPackageModel === index}
                                                             />
                                                         </div>
                                                     ))}
                                                 </div>
                                             </div>
-                                        ) : ('')}
+                                        ) : (
+                                            <div className='text-center my-7'>
+                                                <h5>ไม่มีข้อมูลแพ็คเกจ</h5>
+                                            </div>
+                                        )}
                                     </div>
                                 </form>
                             </div>
@@ -626,7 +588,7 @@ const SalesPackage: React.FC = () => {
                     </div>
                 </div>
 
-                <div className='fixed-bottom d-flex flex-column flex-md-row justify-content-between align-items-center p-3'>
+                <div className='d-flex flex-column flex-md-row justify-content-between align-items-center p-3'>
                     <button
                         className='btn btn-secondary w-100 w-md-auto align-self-center h-50px'
                         onClick={() => navigate('/sale/step', { state: item })}
@@ -634,12 +596,18 @@ const SalesPackage: React.FC = () => {
                         ย้อนกลับ
                     </button>
                     <button
-                        className={`btn btn-primary w-100 w-md-auto align-self-center h-50px 
+                        className={`btn btn-warning w-100 w-md-auto align-self-center h-50px m-5 
                                 ${product.length === 0 || selectedProductIndex === null ? 'disabled' : ''}`}
                         disabled={product.length === 0 || selectedProductIndex === null}
-                    // onClick={handleNextClick}
+                        onClick={handleNextClick}
                     >
-                        บันทึก
+                        อัพเดทข้อมูล
+                    </button>
+                    <button
+                        className='btn btn-primary w-100 w-md-auto align-self-center h-50px'
+                        onClick={handleCheckerClick}
+                    >
+                        ส่งตรวจสอบ
                     </button>
                 </div>
             </Content>
