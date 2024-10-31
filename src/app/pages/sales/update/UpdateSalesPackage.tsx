@@ -110,7 +110,8 @@ const SalesPackage: React.FC = () => {
     const { product, setProduct } = useProductStore();
     // console.log(`product: `, product);
 
-    const { ItemID, setItemID, PackageTypeID, setPackageTypeID } = usePackageStore();
+    const [PackageTypeID, setPackageTypeID] = useState<number | null>(null);
+    const { ItemID, setItemID } = usePackageStore();
     // console.log(`ItemID: `, ItemID);
     // console.log(`PackageTypeID: `, PackageTypeID);
 
@@ -171,10 +172,22 @@ const SalesPackage: React.FC = () => {
     // สร้าง ref สำหรับส่วนแพ็คเกจ
     const packageSectionRef = useRef<HTMLDivElement>(null);
 
-    // console.log('selectedCategoryId: ', selectedCategoryId);
-    // console.log('selectedProductIndex: ', selectedProductIndex);
-    // console.log('selectedPackageTypeId: ', selectedPackageTypeId);
-    // console.log('selectedPackageModel: ', selectedPackageModel);
+    useEffect(() => {
+        setSelectedPackageTypeId(productContract?.[0]?.Package?.[0].PACKAGETYPEID)
+        setPackageTypeID(productContract?.[0]?.Package?.[0].PACKAGETYPEID);
+        setModel(productContract?.[0]?.Package?.[0]?.MODEL);
+
+        getPackageType()
+
+        setEmpId(auth.data[0].EmpId);
+        setTeamSale(auth.data[0].TeamSale);
+        setSaleCode(auth.data[0].SaleCode);
+        setSupEmpId(auth.data[0].SupEmp);
+        setSecEmpId(auth.data[0].SecEmp);
+        setDivisionId(auth.data[0].DivisionId);
+        setDepartId(auth.data[0].DepartId);
+        setDepartGroup(auth.data[0].DepartGroup);
+    }, [])
 
     // POST GetProduct/Categories
     useEffect(() => {
@@ -193,15 +206,6 @@ const SalesPackage: React.FC = () => {
                 console.error('Error fetching CATEGORIES_URL:', error);
                 setLoadingCategories(false);
             }
-
-            setEmpId(auth.data[0].EmpId);
-            setTeamSale(auth.data[0].TeamSale);
-            setSaleCode(auth.data[0].SaleCode);
-            setSupEmpId(auth.data[0].SupEmp);
-            setSecEmpId(auth.data[0].SecEmp);
-            setDivisionId(auth.data[0].DivisionId);
-            setDepartId(auth.data[0].DepartId);
-            setDepartGroup(auth.data[0].DepartGroup);
         };
         postData();
         setSelectedCategoryId(productContract?.[0]?.CategoriesId)
@@ -240,8 +244,6 @@ const SalesPackage: React.FC = () => {
         setSelectedStatus(product[productIndex].Status);
         setSelectedBranch(product[productIndex].Branch);
         setSelectedTransDate(product[productIndex].TransDate);
-
-        getPackageType()
     }, [categories, selectedCategoryId, setProduct]);
 
     const getPackageType = async () => {
@@ -253,33 +255,14 @@ const SalesPackage: React.FC = () => {
             });
             const data = Array.isArray(response.data.data) ? response.data.data : [];
             setPackageType(data);
-            let index = packageType.findIndex(pt => pt.PACKAGETYPEID == productContract?.[0]?.Package?.[0]?.PACKAGETYPEID)
-            setSelectedPackageTypeId(packageType[index].PACKAGETYPEID)
-            setPackageTypeID(packageType[index].PACKAGETYPEID);
-            setModel(productContract?.[0]?.Package?.[0]?.MODEL);
-            getPackageList()
+            await getPackageList()
+            let index = packageList.findIndex(pl => pl.MODEL == productContract?.[0]?.Package?.[0].MODEL)
+            setSelectedPackageModel(index)
+            console.log('Package index: ', index)
         } catch (error) {
             console.error('Error fetching PACKAGE_URL:', error);
         }
     };
-
-    // GET GetPackage/PackageType
-    // useEffect(() => {
-    //     const getData = async () => {
-    //         try {
-    //             const response = await axios.get(PACKAGE_URL, {
-    //                 headers: {
-    //                     'Content-Type': 'application/json',
-    //                 }
-    //             });
-    //             const data = Array.isArray(response.data.data) ? response.data.data : [];
-    //             setPackageType(data);
-    //         } catch (error) {
-    //             console.error('Error fetching PACKAGE_URL:', error);
-    //         }
-    //     };
-    //     getData();
-    // }, []);
 
     // POST GetPackage/PackageList
     const getPackageList = async () => {
@@ -291,25 +274,15 @@ const SalesPackage: React.FC = () => {
                 },
             });
             const data = Array.isArray(response.data.data) ? response.data.data : [];
-            // console.log(`response data from GetPackage/PackageList: `, data);               
-            setPackageList(data);
-            setEmpId(EmpId);
-            setTeamSale(TeamSale);
-            setDivisionId(DivisionId);
-            setDepartId(DepartId);
-            setDepartGroup(DepartGroup);
-            setItemID(ItemID);
-            setPackageTypeID(PackageTypeID);
-
-            let index = packageList.findIndex(pl => pl.MODEL == productContract?.[0]?.Package?.[0]?.MODEL)
-            setSelectedPackageModel(index)
+            setPackageList(data)
+            console.log(data)
         } catch (error) {
             console.error('Error fetching POST_PACKAGE_URL:', error);
         }
     };
 
     useEffect(() => {
-        getPackageList()
+        // getPackageList()
     }, [EmpId, DivisionId, DepartId, DepartGroup, TeamSale, ItemID, PackageTypeID]);
 
     // useEffect(() => {
@@ -612,8 +585,7 @@ const SalesPackage: React.FC = () => {
                                                                             transition: 'background-color 0.2s ease, color 0.2s ease',
                                                                             cursor: 'pointer'
                                                                         }}
-                                                                        onClick={() => handlePackageTypeClick(item.PACKAGETYPEID)}
-                                                                    >
+                                                                        onClick={() => handlePackageTypeClick(item.PACKAGETYPEID)} >
                                                                         {item.PACKAGETYPENAME}
                                                                     </div>
                                                                 </div>
@@ -628,7 +600,7 @@ const SalesPackage: React.FC = () => {
                                             </div>
                                         )}
                                         {/* ส่วนของแพ็คเกจที่จะเลื่อนมาที่นี่ */}
-                                        {selectedPackageTypeId !== null && selectedCategoryId.length > 0 && product.length > 0 && packageList.length > 0 ? (
+                                        {selectedPackageTypeId !== null && selectedCategoryId && product.length > 0 && packageList.length > 0 ? (
                                             <div className='my-10 my-xl-10' ref={packageSectionRef}>
                                                 <div className='row d-flex'>
                                                     <label className='form-label required fw-bold fs-3'>แพ็คเกจ</label>
@@ -637,10 +609,9 @@ const SalesPackage: React.FC = () => {
                                                             className='col-12 col-md-auto col-sm-auto mb-2'
                                                             key={item.MODEL}
                                                             onClick={() => handlePackageModelClick(index)}
-                                                            style={{ cursor: 'pointer' }}
-                                                        >
+                                                            style={{ cursor: 'pointer' }} >
                                                             <CardPackage
-                                                                PackageTitle={item.PACKAGETITLE}
+                                                                PackageTitle={item.PACKAGETITLE + (' (' + index + ')')}
                                                                 isSelected={selectedPackageModel === index}
                                                             />
                                                         </div>
