@@ -1,10 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { toAbsoluteUrl } from '../../../../../_metronic/helpers';
-import { usePhotoInstallationStore } from '../../../../modules/stores/sales/photoStore/photoStore';
+import axios from 'axios';
+import { useAuth } from '../../../../modules/auth/core/Auth';
+import { useUUIDStore } from '../../../../modules/stores/stepsStore';
+import {
+    usePhotoIdCardStore,
+    usePhotoDrawingMapStore,
+    usePhotoTurnStore,
+    usePhotoInstallationStore,
+    usePhotoHomeCustomerStore,
+    usePhotoCustomerStore,
+    usePhotoEquipmentStore
+} from '../../../../modules/stores/sales/photoStore/photoStore';
+
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
 
 const InstallationPhoto: React.FC = () => {
-    const { images, addImage, removeImage, loadImages } = usePhotoInstallationStore();
+    const { REFNO } = useUUIDStore();
+    const { auth } = useAuth();
+    const EmpId = auth?.data?.[0]?.EmpId || '';
+    const TeamSale = auth?.data?.[0]?.TeamSale || '';
+    const SaleCode = auth?.data?.[0]?.SaleCode || '';
+    const SupEmpId = auth?.data?.[0]?.SupEmp || '';
+    const SecEmpId = auth?.data?.[0]?.SecEmp || '';
+
+    const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
+    const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
+
+    const { imagesIdCard } = usePhotoIdCardStore();
+    const { imagesDrawingMap } = usePhotoDrawingMapStore();
+    const { imagesTurn } = usePhotoTurnStore();
+    const { imagesInstallation, addImage, removeImage, loadImages } = usePhotoInstallationStore();
+    const { imagesHomeCustomer } = usePhotoHomeCustomerStore();
+    const { imagesCustomer } = usePhotoCustomerStore();
+    const { imagesEquipment } = usePhotoEquipmentStore();
+
     const [error, setError] = useState<string | null>(null);
 
     const isIOS: boolean = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -17,7 +49,7 @@ const InstallationPhoto: React.FC = () => {
     }, [loadImages]);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (images.length >= 3) {
+        if (imagesInstallation.length >= 3) {
             setError('คุณสามารถเลือกรูปได้สูงสุด 3 รูปเท่านั้น');
             return;
         }
@@ -50,7 +82,7 @@ const InstallationPhoto: React.FC = () => {
             img.onload = () => {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
-                
+
                 const maxSize = 1024;
                 let width = img.width;
                 let height = img.height;
@@ -71,7 +103,10 @@ const InstallationPhoto: React.FC = () => {
                 canvas.height = height;
                 ctx?.drawImage(img, 0, 0, width, height);
 
-                const resizedDataUrl = canvas.toDataURL('image/jpeg', 0.7); // ย่อขนาดและบีบอัดภาพ
+                // ตรวจสอบประเภทของไฟล์ก่อนบีบอัด
+                const fileType = file.type; // "image/jpeg" หรือ "image/png"
+                const resizedDataUrl = canvas.toDataURL(fileType === 'image/png' ? 'image/png' : 'image/jpeg', 0.7); // ใช้ type ของไฟล์ที่ถูกอัปโหลด
+
                 addImage(resizedDataUrl);
                 setError(null);
             };
@@ -82,6 +117,60 @@ const InstallationPhoto: React.FC = () => {
 
     const handleDeleteImage = (image: string) => {
         removeImage(image);
+    };
+
+    // POST Contract/updateContract
+    const handleNextClick = async () => {
+        try {
+            // ตัดส่วน 'data:image/jpeg;base64,' หรือ 'data:image/png;base64,' ออก
+            const cleanedImagesIdCard = imagesIdCard.map(image => image.replace(/^data:/, ''));
+            const cleanedImagesDrawingMap = imagesDrawingMap.map(image => image.replace(/^data:/, ''));
+            const cleanedImagesTurn = imagesTurn.map(image => image.replace(/^data:/, ''));
+            const cleanedImagesInstallation = imagesInstallation.map(image => image.replace(/^data:/, ''));
+            const cleanedImagesHomeCustomer = imagesHomeCustomer.map(image => image.replace(/^data:/, ''));
+            const cleanedImagesCustomer = imagesCustomer.map(image => image.replace(/^data:/, ''));
+            const cleanedImagesEquipment = imagesEquipment.map(image => image.replace(/^data:/, ''));
+
+            const updateContract = await axios.post(UPDATECONTACT, {
+                REFNO,
+                EMPID: EmpId,
+                TEAMSALE: TeamSale,
+                SALECODE: SaleCode,
+                SUPEMPID: SupEmpId,
+                SECEMPID: SecEmpId,
+                FIELD: "IMAGE",
+                DATA: [{
+                    "IMAGECARD": cleanedImagesIdCard,
+                    "IMAGEGPS": [],
+                    "IMAGEMAP": cleanedImagesDrawingMap,
+                    "IMAGETRADEIN": cleanedImagesTurn,
+                    "IMAGEINSTALLATION": cleanedImagesInstallation,
+                    "IMAGECUSTOMERHOME": cleanedImagesHomeCustomer,
+                    "IMAGECUSTOMER": cleanedImagesCustomer,
+                    "IMAGETDS": cleanedImagesEquipment,
+                }]
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            console.log(`updateContract IMAGE: `, updateContract.data);
+            // แสดง SweetAlert เมื่อบันทึกสำเร็จ
+            Swal.fire({
+                icon: 'success',
+                title: 'สำเร็จ!',
+                text: 'บันทึกรูปภาพลงระบบเรียบร้อยแล้ว',
+            });
+        } catch (error) {
+            console.error('Error fetching UPDATECONTACT IMAGE:', error);
+            // แสดง SweetAlert เมื่อเกิดข้อผิดพลาด
+            Swal.fire({
+                icon: 'error',
+                title: 'เกิดข้อผิดพลาด!',
+                text: 'ไม่สามารถบันทึกรูปภาพได้ กรุณาลองใหม่อีกครั้ง',
+            });
+        }
     };
 
     return (
@@ -117,25 +206,28 @@ const InstallationPhoto: React.FC = () => {
             <div>
                 {!isPC ? (
                     <div>
-                        {images.length > 0 && (
-                            <div className='d-flex flex-column flex-md-row justify-content-between mx-5'>
-                                {images.slice(0, 3).map((image, index) => (
-                                    <div className='border border-gray-500' key={index}>
-                                        <div className='d-flex justify-content-between align-items-center mb-3'>
+                        {imagesInstallation.length > 0 && (
+                            <div className='row mx-5'>
+                                {imagesInstallation.slice(0, 3).map((image, index) => (
+                                    <div className='col-6 mb-3' key={index}>
+                                        <div className='border border-gray-500'>
                                             <img
                                                 src={image}
                                                 alt={`Captured ${index + 1}`}
                                                 style={{
-                                                    width: '300px', height: 'auto',
+                                                    width: '100%', // ใช้ 100% เพื่อให้พอดีกับ column
+                                                    height: '150px',
                                                 }}
                                             />
-                                            <img
-                                                className='mx-2 h-30px theme-light-show'
-                                                src={toAbsoluteUrl('media/settings/trash-svgrepo-com.svg')}
-                                                alt='ลบรูป'
-                                                onClick={() => handleDeleteImage(image)}
-                                                style={{ cursor: 'pointer' }}
-                                            />
+                                            <div className='d-flex justify-content-center mt-3 mb-2'>
+                                                <img
+                                                    className='h-30px theme-light-show'
+                                                    src={toAbsoluteUrl('media/settings/trash-svgrepo-com.svg')}
+                                                    alt='ลบรูป'
+                                                    onClick={() => handleDeleteImage(image)}
+                                                    style={{ cursor: 'pointer' }}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -145,9 +237,13 @@ const InstallationPhoto: React.FC = () => {
                             <Link to='/sale/photo' className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
                                 ย้อนกลับ
                             </Link>
-                            <Link to='' className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
+                            <button
+                                className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
+                                type='button'
+                                onClick={handleNextClick}
+                            >
                                 บันทึกรูปภาพลงระบบ
-                            </Link>
+                            </button>
                         </div>
                     </div>
                 ) : (

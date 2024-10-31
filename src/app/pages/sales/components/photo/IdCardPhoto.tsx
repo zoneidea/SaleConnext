@@ -1,10 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
 import { toAbsoluteUrl } from '../../../../../_metronic/helpers';
-import { usePhotoIdCardStore } from '../../../../modules/stores/sales/photoStore/photoStore';
 import { useAuth } from '../../../../modules/auth/core/Auth';
 import { useUUIDStore } from '../../../../modules/stores/stepsStore';
+import axios from 'axios';
+import {
+    usePhotoIdCardStore,
+    usePhotoDrawingMapStore,
+    usePhotoTurnStore,
+    usePhotoInstallationStore,
+    usePhotoHomeCustomerStore,
+    usePhotoCustomerStore,
+    usePhotoEquipmentStore
+} from '../../../../modules/stores/sales/photoStore/photoStore';
 
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
@@ -21,7 +29,14 @@ const IdCardPhoto: React.FC = () => {
     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
     const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
 
-    const { images, addImage, removeImage, loadImages } = usePhotoIdCardStore();
+    const { imagesIdCard, addImage, removeImage, loadImages } = usePhotoIdCardStore();
+    const { imagesDrawingMap } = usePhotoDrawingMapStore();
+    const { imagesTurn } = usePhotoTurnStore();
+    const { imagesInstallation } = usePhotoInstallationStore();
+    const { imagesHomeCustomer } = usePhotoHomeCustomerStore();
+    const { imagesCustomer } = usePhotoCustomerStore();
+    const { imagesEquipment } = usePhotoEquipmentStore();
+
     const [error, setError] = useState<string | null>(null);
 
     const isIOS: boolean = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -34,7 +49,7 @@ const IdCardPhoto: React.FC = () => {
     }, [loadImages]);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (images.length >= 3) {
+        if (imagesIdCard.length >= 3) {
             setError('คุณสามารถเลือกรูปได้สูงสุด 3 รูปเท่านั้น');
             return;
         }
@@ -105,9 +120,17 @@ const IdCardPhoto: React.FC = () => {
     };
 
     // POST Contract/updateContract
-    // POST Contract/updateContract
     const handleNextClick = async () => {
         try {
+            // ตัดส่วน 'data:image/jpeg;base64,' หรือ 'data:image/png;base64,' ออก
+            const cleanedImagesIdCard = imagesIdCard.map(image => image.replace(/^data:/, ''));
+            const cleanedImagesDrawingMap = imagesDrawingMap.map(image => image.replace(/^data:/, ''));
+            const cleanedImagesTurn = imagesTurn.map(image => image.replace(/^data:/, ''));
+            const cleanedImagesInstallation = imagesInstallation.map(image => image.replace(/^data:/, ''));
+            const cleanedImagesHomeCustomer = imagesHomeCustomer.map(image => image.replace(/^data:/, ''));
+            const cleanedImagesCustomer = imagesCustomer.map(image => image.replace(/^data:/, ''));
+            const cleanedImagesEquipment = imagesEquipment.map(image => image.replace(/^data:/, ''));
+
             const updateContract = await axios.post(UPDATECONTACT, {
                 REFNO,
                 EMPID: EmpId,
@@ -116,7 +139,16 @@ const IdCardPhoto: React.FC = () => {
                 SUPEMPID: SupEmpId,
                 SECEMPID: SecEmpId,
                 FIELD: "IMAGE",
-                IMAGECARD: images // ลบ DATA: ออก
+                DATA: [{
+                    "IMAGECARD": cleanedImagesIdCard,
+                    "IMAGEGPS": [],
+                    "IMAGEMAP": cleanedImagesDrawingMap,
+                    "IMAGETRADEIN": cleanedImagesTurn,
+                    "IMAGEINSTALLATION": cleanedImagesInstallation,
+                    "IMAGECUSTOMERHOME": cleanedImagesHomeCustomer,
+                    "IMAGECUSTOMER": cleanedImagesCustomer,
+                    "IMAGETDS": cleanedImagesEquipment,
+                }]
             }, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -174,25 +206,28 @@ const IdCardPhoto: React.FC = () => {
             <div>
                 {!isPC ? (
                     <div>
-                        {images.length > 0 && (
-                            <div className='d-flex flex-column flex-md-row justify-content-between mx-5'>
-                                {images.slice(0, 3).map((image, index) => (
-                                    <div className='border border-gray-500' key={index}>
-                                        <div className='d-flex justify-content-between align-items-center mb-3'>
+                        {imagesIdCard.length > 0 && (
+                            <div className='row mx-5'>
+                                {imagesIdCard.slice(0, 3).map((image, index) => (
+                                    <div className='col-6 mb-3' key={index}>
+                                        <div className='border border-gray-500'>
                                             <img
                                                 src={image}
                                                 alt={`Captured ${index + 1}`}
                                                 style={{
-                                                    width: '300px', height: 'auto',
+                                                    width: '100%', // ใช้ 100% เพื่อให้พอดีกับ column
+                                                    height: '150px',
                                                 }}
                                             />
-                                            <img
-                                                className='mx-2 h-30px theme-light-show'
-                                                src={toAbsoluteUrl('media/settings/trash-svgrepo-com.svg')}
-                                                alt='ลบรูป'
-                                                onClick={() => handleDeleteImage(image)}
-                                                style={{ cursor: 'pointer' }}
-                                            />
+                                            <div className='d-flex justify-content-center mt-3 mb-2'>
+                                                <img
+                                                    className='h-30px theme-light-show'
+                                                    src={toAbsoluteUrl('media/settings/trash-svgrepo-com.svg')}
+                                                    alt='ลบรูป'
+                                                    onClick={() => handleDeleteImage(image)}
+                                                    style={{ cursor: 'pointer' }}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 ))}

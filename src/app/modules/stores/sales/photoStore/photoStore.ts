@@ -2,224 +2,224 @@ import { create } from 'zustand';
 
 // รูปบัตรปชช
 interface photoIdCardStore {
-  images: string[];
+  imagesIdCard: string[];
   addImage: (image: string) => void;
   removeImage: (image: string) => void;
   loadImages: () => void;
 }
 
 export const usePhotoIdCardStore = create<photoIdCardStore>((set) => ({
-  images: JSON.parse(localStorage.getItem('IdCardImages') || '[]'),
+  imagesIdCard: JSON.parse(localStorage.getItem('IdCardImages') || '[]'),
   addImage: (image) => {
     set((state) => {
-      const newImages = [...state.images, image];
+      const newImages = [...state.imagesIdCard, image];
       localStorage.setItem('IdCardImages', JSON.stringify(newImages));
       console.log('Images after add:', newImages); // เพิ่ม log เพื่อตรวจสอบข้อมูลใน state
-      return { images: newImages };
+      return { imagesIdCard: newImages };
     });
   },
   removeImage: (image) => {
     set((state) => {
-      const newImages = state.images.filter((img) => img !== image);
+      const newImages = state.imagesIdCard.filter((img) => img !== image);
       localStorage.setItem('IdCardImages', JSON.stringify(newImages));
       console.log('Images after remove:', newImages); // เพิ่ม log เพื่อตรวจสอบข้อมูลใน state
-      return { images: newImages };
+      return { imagesIdCard: newImages };
     });
   },
   loadImages: () => {
     const savedImages = localStorage.getItem('IdCardImages');
-    set({ images: savedImages ? JSON.parse(savedImages) : [] });
+    set({ imagesIdCard: savedImages ? JSON.parse(savedImages) : [] });
   },
 }));
 
 // รูปวาดแผนที่
 interface photoDrawingMapStore {
-  images: string[];
+  imagesDrawingMap: string[];
   addImage: (image: string) => void;
   removeImage: (image: string) => void;
   loadImages: () => void;
 }
 
 export const usePhotoDrawingMapStore = create<photoDrawingMapStore>((set) => ({
-  images: JSON.parse(localStorage.getItem('DrawingMapImages') || '[]'),
+  imagesDrawingMap: JSON.parse(localStorage.getItem('DrawingMapImages') || '[]'),
   addImage: (image) => {
     set((state) => {
-      const newImages = [...state.images, image];
+      const newImages = [...state.imagesDrawingMap, image];
       localStorage.setItem('DrawingMapImages', JSON.stringify(newImages));
       console.log('Images after add:', newImages); // เพิ่ม log เพื่อตรวจสอบข้อมูลใน state
-      return { images: newImages };
+      return { imagesDrawingMap: newImages };
     });
   },
   removeImage: (image) => {
     set((state) => {
-      const newImages = state.images.filter((img) => img !== image);
+      const newImages = state.imagesDrawingMap.filter((img) => img !== image);
       localStorage.setItem('DrawingMapImages', JSON.stringify(newImages));
       console.log('Images after remove:', newImages); // เพิ่ม log เพื่อตรวจสอบข้อมูลใน state
-      return { images: newImages };
+      return { imagesDrawingMap: newImages };
     });
   },
   loadImages: () => {
     const savedImages = localStorage.getItem('DrawingMapImages');
-    set({ images: savedImages ? JSON.parse(savedImages) : [] });
+    set({ imagesDrawingMap: savedImages ? JSON.parse(savedImages) : [] });
   },
 }));
 
 // รูปเครื่องเทิร์น
 interface photoTurnStore {
-  images: string[];
+  imagesTurn: string[];
   addImage: (image: string) => void;
   removeImage: (image: string) => void;
   loadImages: () => void;
 }
 
 export const usePhotoTurnStore = create<photoTurnStore>((set) => ({
-  images: JSON.parse(localStorage.getItem('turnImages') || '[]'),
+  imagesTurn: JSON.parse(localStorage.getItem('turnImages') || '[]'),
   addImage: (image) => {
     set((state) => {
-      const newImages = [...state.images, image];
+      const newImages = [...state.imagesTurn, image];
       localStorage.setItem('turnImages', JSON.stringify(newImages));
       console.log('Images after add:', newImages); // เพิ่ม log เพื่อตรวจสอบข้อมูลใน state
-      return { images: newImages };
+      return { imagesTurn: newImages };
     });
   },
   removeImage: (image) => {
     set((state) => {
-      const newImages = state.images.filter((img) => img !== image);
+      const newImages = state.imagesTurn.filter((img) => img !== image);
       localStorage.setItem('turnImages', JSON.stringify(newImages));
       console.log('Images after remove:', newImages); // เพิ่ม log เพื่อตรวจสอบข้อมูลใน state
-      return { images: newImages };
+      return { imagesTurn: newImages };
     });
   },
   loadImages: () => {
     const savedImages = localStorage.getItem('turnImages');
-    set({ images: savedImages ? JSON.parse(savedImages) : [] });
+    set({ imagesTurn: savedImages ? JSON.parse(savedImages) : [] });
   },
 }));
 
 // รูปติดตั้งเครื่อง
 interface photoInstallationStore {
-  images: string[];
+  imagesInstallation: string[];
   addImage: (image: string) => void;
   removeImage: (image: string) => void;
   loadImages: () => void;
 }
 
 export const usePhotoInstallationStore = create<photoInstallationStore>((set) => ({
-  images: JSON.parse(localStorage.getItem('InstallationImages') || '[]'),
+  imagesInstallation: JSON.parse(localStorage.getItem('InstallationImages') || '[]'),
   addImage: (image) => {
     set((state) => {
-      const newImages = [...state.images, image];
+      const newImages = [...state.imagesInstallation, image];
       localStorage.setItem('InstallationImages', JSON.stringify(newImages));
       console.log('Images after add:', newImages); // เพิ่ม log เพื่อตรวจสอบข้อมูลใน state
-      return { images: newImages };
+      return { imagesInstallation: newImages };
     });
   },
   removeImage: (image) => {
     set((state) => {
-      const newImages = state.images.filter((img) => img !== image);
+      const newImages = state.imagesInstallation.filter((img) => img !== image);
       localStorage.setItem('InstallationImages', JSON.stringify(newImages));
       console.log('Images after remove:', newImages); // เพิ่ม log เพื่อตรวจสอบข้อมูลใน state
-      return { images: newImages };
+      return { imagesInstallation: newImages };
     });
   },
   loadImages: () => {
     const savedImages = localStorage.getItem('InstallationImages');
-    set({ images: savedImages ? JSON.parse(savedImages) : [] });
+    set({ imagesInstallation: savedImages ? JSON.parse(savedImages) : [] });
   },
 }));
 
 // รูปบ้านลูกค้า
 interface photoHomeCustomerStore {
-  images: string[];
+  imagesHomeCustomer: string[];
   addImage: (image: string) => void;
   removeImage: (image: string) => void;
   loadImages: () => void;
 }
 
 export const usePhotoHomeCustomerStore = create<photoHomeCustomerStore>((set) => ({
-  images: JSON.parse(localStorage.getItem('HomeCustomerImages') || '[]'),
+  imagesHomeCustomer: JSON.parse(localStorage.getItem('HomeCustomerImages') || '[]'),
   addImage: (image) => {
     set((state) => {
-      const newImages = [...state.images, image];
+      const newImages = [...state.imagesHomeCustomer, image];
       localStorage.setItem('HomeCustomerImages', JSON.stringify(newImages));
       console.log('Images after add:', newImages); // เพิ่ม log เพื่อตรวจสอบข้อมูลใน state
-      return { images: newImages };
+      return { imagesHomeCustomer: newImages };
     });
   },
   removeImage: (image) => {
     set((state) => {
-      const newImages = state.images.filter((img) => img !== image);
+      const newImages = state.imagesHomeCustomer.filter((img) => img !== image);
       localStorage.setItem('HomeCustomerImages', JSON.stringify(newImages));
       console.log('Images after remove:', newImages); // เพิ่ม log เพื่อตรวจสอบข้อมูลใน state
-      return { images: newImages };
+      return { imagesHomeCustomer: newImages };
     });
   },
   loadImages: () => {
     const savedImages = localStorage.getItem('HomeCustomerImages');
-    set({ images: savedImages ? JSON.parse(savedImages) : [] });
+    set({ imagesHomeCustomer: savedImages ? JSON.parse(savedImages) : [] });
   },
 }));
 
 // รูปลูกค้า
 interface photoCustomerStore {
-  images: string[];
+  imagesCustomer: string[];
   addImage: (image: string) => void;
   removeImage: (image: string) => void;
   loadImages: () => void;
 }
 
 export const usePhotoCustomerStore = create<photoCustomerStore>((set) => ({
-  images: JSON.parse(localStorage.getItem('CustomerImages') || '[]'),
+  imagesCustomer: JSON.parse(localStorage.getItem('CustomerImages') || '[]'),
   addImage: (image) => {
     set((state) => {
-      const newImages = [...state.images, image];
+      const newImages = [...state.imagesCustomer, image];
       localStorage.setItem('CustomerImages', JSON.stringify(newImages));
       console.log('Images after add:', newImages); // เพิ่ม log เพื่อตรวจสอบข้อมูลใน state
-      return { images: newImages };
+      return { imagesCustomer: newImages };
     });
   },
   removeImage: (image) => {
     set((state) => {
-      const newImages = state.images.filter((img) => img !== image);
+      const newImages = state.imagesCustomer.filter((img) => img !== image);
       localStorage.setItem('CustomerImages', JSON.stringify(newImages));
       console.log('Images after remove:', newImages); // เพิ่ม log เพื่อตรวจสอบข้อมูลใน state
-      return { images: newImages };
+      return { imagesCustomer: newImages };
     });
   },
   loadImages: () => {
     const savedImages = localStorage.getItem('CustomerImages');
-    set({ images: savedImages ? JSON.parse(savedImages) : [] });
+    set({ imagesCustomer: savedImages ? JSON.parse(savedImages) : [] });
   },
 }));
 
 // รูปอุปกรณ์วัดค่าน้ำ
 interface photoEquipmentStore {
-  images: string[];
+  imagesEquipment: string[];
   addImage: (image: string) => void;
   removeImage: (image: string) => void;
   loadImages: () => void;
 }
 
 export const usePhotoEquipmentStore = create<photoEquipmentStore>((set) => ({
-  images: JSON.parse(localStorage.getItem('EquipmentImages') || '[]'),
+  imagesEquipment: JSON.parse(localStorage.getItem('EquipmentImages') || '[]'),
   addImage: (image) => {
     set((state) => {
-      const newImages = [...state.images, image];
+      const newImages = [...state.imagesEquipment, image];
       localStorage.setItem('EquipmentImages', JSON.stringify(newImages));
       console.log('Images after add:', newImages); // เพิ่ม log เพื่อตรวจสอบข้อมูลใน state
-      return { images: newImages };
+      return { imagesEquipment: newImages };
     });
   },
   removeImage: (image) => {
     set((state) => {
-      const newImages = state.images.filter((img) => img !== image);
+      const newImages = state.imagesEquipment.filter((img) => img !== image);
       localStorage.setItem('EquipmentImages', JSON.stringify(newImages));
       console.log('Images after remove:', newImages); // เพิ่ม log เพื่อตรวจสอบข้อมูลใน state
-      return { images: newImages };
+      return { imagesEquipment: newImages };
     });
   },
   loadImages: () => {
     const savedImages = localStorage.getItem('EquipmentImages');
-    set({ images: savedImages ? JSON.parse(savedImages) : [] });
+    set({ imagesEquipment: savedImages ? JSON.parse(savedImages) : [] });
   },
 }));

@@ -69,6 +69,7 @@
     "sweetalert2": "^11.14.4",
     "sweetalert2-react-content": "^5.0.7",
     "tesseract.js": "^5.1.1",
+    "use-react-screenshot": "^4.0.0",
     "uuid": "^10.0.0",
     "yup": "^1.0.0",
     "zustand": "^4.5.5"
