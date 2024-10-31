@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api'; // Include Marker here
+import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import { Link } from 'react-router-dom';
-import { toPng } from 'html-to-image'; // นำเข้า html-to-image
-
-import { useAuth } from '../../../../modules/auth/core/Auth';
-import { useUUIDStore } from '../../../../modules/stores/stepsStore';
+import { toPng } from 'html-to-image';
+import { useAuth } from '../../../../../modules/auth/core/Auth';
+import { useUUIDStore } from '../../../../../modules/stores/stepsStore';
 import axios from 'axios';
 import {
   usePhotoIdCardStore,
@@ -13,21 +12,18 @@ import {
   usePhotoInstallationStore,
   usePhotoHomeCustomerStore,
   usePhotoCustomerStore,
-  usePhotoEquipmentStore
-} from '../../../../modules/stores/sales/photoStore/photoStore';
-
+  usePhotoEquipmentStore,
+  usePhotoGPSStore
+} from '../../../../../modules/stores/sales/photoStore/photoStore';
 import Swal from 'sweetalert2';
-import withReactContent from 'sweetalert2-react-content';
 
 const API_KEY_GOOGLE_MAP = import.meta.env.VITE_APP_GOOGLE_MAP_KEY as string;
 
-// กำหนดขนาดของแผนที่
 const containerStyle: React.CSSProperties = {
   width: '100%',
   height: '100vh',
 };
 
-// สร้าง interface สำหรับตำแหน่ง
 interface Position {
   latitude: number | null;
   longitude: number | null;
@@ -40,7 +36,6 @@ const LocationFinder: React.FC = () => {
   });
   const [error, setError] = useState<string | null>(null);
 
-  // ฟังก์ชันสำหรับดึงตำแหน่ง
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -72,7 +67,6 @@ const LocationFinder: React.FC = () => {
     }
   };
 
-  // ดึงตำแหน่งเมื่อ Component โหลดครั้งแรก
   useEffect(() => {
     getCurrentLocation();
   }, []);
@@ -90,7 +84,6 @@ const LocationFinder: React.FC = () => {
   );
 };
 
-// Component สำหรับแสดง Google Map
 const GoogleMapComponent: React.FC<{ position: Position }> = ({ position }) => {
   const { REFNO } = useUUIDStore();
   const { auth } = useAuth();
@@ -110,9 +103,7 @@ const GoogleMapComponent: React.FC<{ position: Position }> = ({ position }) => {
   const { imagesHomeCustomer } = usePhotoHomeCustomerStore();
   const { imagesCustomer, addImage, removeImage, loadImages } = usePhotoCustomerStore();
   const { imagesEquipment } = usePhotoEquipmentStore();
-
-  const [cleanedImagesGPS, setCleanedImagesGPS] = useState<string | null>(null);
-  console.log(`cleanedImagesGPS`, cleanedImagesGPS);
+  const { setImagesGPS } = usePhotoGPSStore(); // ใช้ setImagesGPS จาก GPS Store
 
   const center = {
     lat: position.latitude ?? 0,
@@ -121,18 +112,13 @@ const GoogleMapComponent: React.FC<{ position: Position }> = ({ position }) => {
 
   const mapRef = useRef<HTMLDivElement>(null); // Reference to the map container
 
-  // ฟังก์ชันสำหรับแคปรูปแผนที่
   const captureMap = async () => {
     if (mapRef.current) {
       toPng(mapRef.current)
         .then((dataUrl) => {
-          // สร้างลิงก์ดาวน์โหลด
-          const cleanedDataUrl = dataUrl.replace(/^data:/, '');
-
-          setCleanedImagesGPS(cleanedDataUrl); // ตั้งค่า cleanedImagesGPS
-
-          // เรียกฟังก์ชันบันทึกข้อมูล
-          handleNextClick(cleanedDataUrl); // ส่ง cleanedDataUrl ไปยัง handleNextClick
+          const cleanedDataUrl = dataUrl.replace(/^data:image\/(?:jpeg|png);base64,/, '');
+          setImagesGPS(cleanedDataUrl); // บันทึกภาพ GPS ลงใน store
+          handleNextClick(cleanedDataUrl);
         })
         .catch((err) => {
           console.error('Error generating image:', err);
@@ -140,10 +126,8 @@ const GoogleMapComponent: React.FC<{ position: Position }> = ({ position }) => {
     }
   };
 
-  // ปรับให้ handleNextClick รับ cleanedDataUrl
   const handleNextClick = async (cleanedDataUrl: string) => {
     try {
-      // ตัดส่วน 'data:image/jpeg;base64,' หรือ 'data:image/png;base64,' ออก
       const cleanedImagesIdCard = imagesIdCard.map(image => image.replace(/^data:/, ''));
       const cleanedImagesDrawingMap = imagesDrawingMap.map(image => image.replace(/^data:/, ''));
       const cleanedImagesTurn = imagesTurn.map(image => image.replace(/^data:/, ''));
@@ -176,16 +160,14 @@ const GoogleMapComponent: React.FC<{ position: Position }> = ({ position }) => {
         },
       });
 
-      console.log(`updateContract IMAGE: `, updateContract.data);
-      // แสดง SweetAlert เมื่อบันทึกสำเร็จ
+      console.log(`updateContract IMAGE GPS: `, updateContract.data);
       Swal.fire({
         icon: 'success',
         title: 'สำเร็จ!',
         text: 'บันทึกรูปภาพลงระบบเรียบร้อยแล้ว',
       });
     } catch (error) {
-      console.error('Error fetching UPDATECONTACT IMAGE:', error);
-      // แสดง SweetAlert เมื่อเกิดข้อผิดพลาด
+      console.error('Error fetching UPDATECONTACT IMAGE GPS:', error);
       Swal.fire({
         icon: 'error',
         title: 'เกิดข้อผิดพลาด!',
@@ -197,7 +179,7 @@ const GoogleMapComponent: React.FC<{ position: Position }> = ({ position }) => {
   return (
     <>
       <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10 mx-lg-10 mx-5'>
-        <Link to='/sale/photo' className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
+        <Link to='/sale/photo/gallery-gps' className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
           ย้อนกลับ
         </Link>
         <button

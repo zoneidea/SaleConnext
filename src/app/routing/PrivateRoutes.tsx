@@ -26,7 +26,8 @@ const PrivateRoutes = () => {
   const DeviceScanBarcode = lazy(() => import('../pages/sales/components/accessCam/DeviceScanBarcode'))
   const SalesPhoto = lazy(() => import('../pages/sales/SalesPhoto'))
   const IdCardPhoto = lazy(() => import('../pages/sales/components/photo/IdCardPhoto'))
-  const GoogleMapGPS = lazy(() => import('../pages/sales/components/photo/GoogleMapGPS'))
+  const GalleryGoogleMapGPS = lazy(() => import('../pages/sales/components/photo/gps/GalleryGoogleMapGPS'))
+  const GoogleMapGPS = lazy(() => import('../pages/sales/components/photo/gps/GoogleMapGPS'))
   const DrawingMapPhoto = lazy(() => import('../pages/sales/components/photo/DrawingMapPhoto'))
   const TurnPhoto = lazy(() => import('../pages/sales/components/photo/TurnPhoto'))
   const InstallationPhoto = lazy(() => import('../pages/sales/components/photo/InstallationPhoto'))
@@ -174,6 +175,14 @@ const PrivateRoutes = () => {
           element={
             <SuspensedView>
               <IdCardPhoto />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path='sale/photo/gallery-gps'
+          element={
+            <SuspensedView>
+              <GalleryGoogleMapGPS />
             </SuspensedView>
           }
         />

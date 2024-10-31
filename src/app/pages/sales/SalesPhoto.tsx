@@ -51,7 +51,7 @@ const SalesPhoto: React.FC = () => {
                     <div className='card col-lg-3 col-6'>
                         <Link className='card-body d-flex flex-column justify-content-between 
                         bgi-no-repeat bgi-size-cover bgi-position-x-center pb-0'
-                            to='/sale/photo/gps'
+                            to='/sale/photo/gallery-gps'
                         >
                             <div className='mb-10'>
                                 <div className='fw-bold text-gray-800 text-center'>

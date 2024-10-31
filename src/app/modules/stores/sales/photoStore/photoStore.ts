@@ -223,3 +223,42 @@ export const usePhotoEquipmentStore = create<photoEquipmentStore>((set) => ({
     set({ imagesEquipment: savedImages ? JSON.parse(savedImages) : [] });
   },
 }));
+
+// รูป GPS
+interface photoGPSStore {
+  imagesGPS: string[];
+  setImagesGPS: (image: string) => void; // Change type to string to match a single image
+  addImage: (image: string) => void; // Optional: If you want to add images individually
+  removeImage: (image: string) => void; // Optional: If you want to remove images
+  loadImages: () => void; // Optional: Load images from localStorage
+}
+
+export const usePhotoGPSStore = create<photoGPSStore>((set) => ({
+  imagesGPS: JSON.parse(localStorage.getItem('GPSImages') || '[]'),
+  setImagesGPS: (image) => {
+    set((state) => {
+      const newImages = [...state.imagesGPS, image]; // Add new image
+      localStorage.setItem('GPSImages', JSON.stringify(newImages));
+      console.log('Images after setImagesGPS:', newImages);
+      return { imagesGPS: newImages };
+    });
+  },
+  addImage: (image) => {
+    set((state) => {
+      const newImages = [...state.imagesGPS, image];
+      localStorage.setItem('GPSImages', JSON.stringify(newImages));
+      return { imagesGPS: newImages };
+    });
+  },
+  removeImage: (image) => {
+    set((state) => {
+      const newImages = state.imagesGPS.filter((img) => img !== image);
+      localStorage.setItem('GPSImages', JSON.stringify(newImages));
+      return { imagesGPS: newImages };
+    });
+  },
+  loadImages: () => {
+    const savedImages = localStorage.getItem('GPSImages');
+    set({ imagesGPS: savedImages ? JSON.parse(savedImages) : [] });
+  },
+}));
