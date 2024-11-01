@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, } from 'react';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+
+import html2canvas from 'html2canvas';
 import { toPng } from 'html-to-image';
 import { useAuth } from '../../../../../modules/auth/core/Auth';
 import { useUUIDStore } from '../../../../../modules/stores/stepsStore';
@@ -13,11 +15,14 @@ import {
   usePhotoHomeCustomerStore,
   usePhotoCustomerStore,
   usePhotoEquipmentStore,
-  usePhotoGPSStore
 } from '../../../../../modules/stores/sales/photoStore/photoStore';
 import Swal from 'sweetalert2';
 
 const API_KEY_GOOGLE_MAP = import.meta.env.VITE_APP_GOOGLE_MAP_KEY as string;
+
+interface ItemProps {
+  IMAGEGPS: [any],
+}
 
 const containerStyle: React.CSSProperties = {
   width: '100%',
@@ -30,6 +35,7 @@ interface Position {
 }
 
 const LocationFinder: React.FC = () => {
+
   const [position, setPosition] = useState<Position>({
     latitude: null,
     longitude: null,
@@ -85,6 +91,9 @@ const LocationFinder: React.FC = () => {
 };
 
 const GoogleMapComponent: React.FC<{ position: Position }> = ({ position }) => {
+  const location = useLocation();
+  const item = location.state as ItemProps || [];
+
   const { REFNO } = useUUIDStore();
   const { auth } = useAuth();
   const EmpId = auth?.data?.[0]?.EmpId || '';
@@ -101,9 +110,8 @@ const GoogleMapComponent: React.FC<{ position: Position }> = ({ position }) => {
   const { imagesTurn } = usePhotoTurnStore();
   const { imagesInstallation } = usePhotoInstallationStore();
   const { imagesHomeCustomer } = usePhotoHomeCustomerStore();
-  const { imagesCustomer, addImage, removeImage, loadImages } = usePhotoCustomerStore();
+  const { imagesCustomer } = usePhotoCustomerStore();
   const { imagesEquipment } = usePhotoEquipmentStore();
-  const { setImagesGPS } = usePhotoGPSStore(); // ใช้ setImagesGPS จาก GPS Store
 
   const center = {
     lat: position.latitude ?? 0,
@@ -113,16 +121,20 @@ const GoogleMapComponent: React.FC<{ position: Position }> = ({ position }) => {
   const mapRef = useRef<HTMLDivElement>(null); // Reference to the map container
 
   const captureMap = async () => {
+
     if (mapRef.current) {
-      toPng(mapRef.current)
-        .then((dataUrl) => {
-          const cleanedDataUrl = dataUrl.replace(/^data:image\/(?:jpeg|png);base64,/, '');
-          setImagesGPS(cleanedDataUrl); // บันทึกภาพ GPS ลงใน store
-          handleNextClick(cleanedDataUrl);
-        })
-        .catch((err) => {
-          console.error('Error generating image:', err);
+      try {
+        const canvas = await html2canvas(mapRef.current, {
+          useCORS: true, // เปิดใช้งาน CORS สำหรับโหลดรูปภาพ
         });
+        const dataUrl = canvas.toDataURL('image/png');
+        const cleanedDataUrl = dataUrl.replace(/^data:image\/(?:jpeg|png);base64,/, '');
+
+        handleNextClick(cleanedDataUrl);
+
+      } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการสร้างภาพด้วย html2canvas:', error);
+      }
     }
   };
 
@@ -143,17 +155,8 @@ const GoogleMapComponent: React.FC<{ position: Position }> = ({ position }) => {
         SALECODE: SaleCode,
         SUPEMPID: SupEmpId,
         SECEMPID: SecEmpId,
-        FIELD: "IMAGE",
-        DATA: [{
-          "IMAGECARD": cleanedImagesIdCard,
-          "IMAGEGPS": cleanedDataUrl, // ใช้ cleanedDataUrl ที่ส่งมา
-          "IMAGEMAP": cleanedImagesDrawingMap,
-          "IMAGETRADEIN": cleanedImagesTurn,
-          "IMAGEINSTALLATION": cleanedImagesInstallation,
-          "IMAGECUSTOMERHOME": cleanedImagesHomeCustomer,
-          "IMAGECUSTOMER": cleanedImagesCustomer,
-          "IMAGETDS": cleanedImagesEquipment,
-        }]
+        FIELD: "IMAGEGPS",
+        DATA: cleanedDataUrl
       }, {
         headers: {
           'Content-Type': 'application/json',

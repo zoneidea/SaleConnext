@@ -12,7 +12,6 @@ import {
     usePhotoHomeCustomerStore,
     usePhotoCustomerStore,
     usePhotoEquipmentStore,
-    usePhotoGPSStore
 } from '../../../../../modules/stores/sales/photoStore/photoStore';
 
 import Swal from 'sweetalert2';
@@ -33,8 +32,9 @@ const GalleryGoogleMapGPS: React.FC = () => {
     const { imagesHomeCustomer } = usePhotoHomeCustomerStore();
     const { imagesCustomer } = usePhotoCustomerStore();
     const { imagesEquipment } = usePhotoEquipmentStore();
-    const { imagesGPS, loadImages, removeImage } = usePhotoGPSStore();
-    console.log(`imagesGPS`, imagesGPS);
+
+    const [ImagesGPS, setImagesGPS] = useState<string[]>([]);
+    console.log(`ImagesGPS`, ImagesGPS);
 
     const [error, setError] = useState<string | null>(null);
 
@@ -43,20 +43,53 @@ const GalleryGoogleMapGPS: React.FC = () => {
     const isTablet: boolean = /Tablet|iPad/.test(navigator.userAgent);
     const isPC: boolean = !isIOS && !isAndroid && !isTablet;
 
-    useEffect(() => {
-        loadImages();
-    }, [loadImages]);
+    const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
+    const GET_ALL_CONTRACT = () => `${API_URL_MONGO}/Contract/GetAllContract?status=DRAFT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`
 
-    const handleDeleteImage = (image: string) => {
-        removeImage(image);
-    };
+    useEffect(() => {
+        const getData = async () => {
+            try {
+                const response = await axios.get(GET_ALL_CONTRACT(), {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    }
+                });
+
+                const data = response.data.data;
+                // console.log('API Data:', data); // ดูข้อมูลที่ได้รับจาก API
+
+                // กรองข้อมูลตาม REFNO
+                const matchedData = data.filter((item: any) => item.REFNO === REFNO);
+                // console.log('matchedData:', matchedData); // ดูข้อมูลที่ได้รับจาก API
+
+                // ตรวจสอบว่ามีข้อมูลที่ตรงกันหรือไม่
+                if (matchedData.length > 0) {
+                    // เข้าถึง IMAGEGPS ที่อยู่ภายใน IMAGE
+                    const gpsImages = matchedData.flatMap((item: any) => item.IMAGE.map((img: any) => img.IMAGEGPS).filter(Boolean)); // กรองเฉพาะค่าที่มีอยู่
+                    console.log('gpsImages:', gpsImages); // ดูข้อมูลที่ได้รับจาก API
+
+                    setImagesGPS(gpsImages)
+                } else {
+                    setError('ไม่พบข้อมูล GPS ที่ตรงกับ REFNO');
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                setError('เกิดข้อผิดพลาดในการดึงข้อมูล');
+            }
+        };
+
+        getData();
+    }, [EmpId, REFNO]);
 
     return (
         <div>
             {!isPC ? (
                 <>
                     <div className='d-flex flex-column flex-md-row justify-content-between mt-10 mb-5 mx-5'>
-                        <Link to='/sale/photo/gps' className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0 mx-lg-10 mx-5'>
+                        <Link to='/sale/photo/gps'
+                            state={ImagesGPS}
+                            className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0 mx-lg-10 mx-5'>
                             ใช้งานแผนที่
                         </Link>
                     </div>
@@ -75,9 +108,9 @@ const GalleryGoogleMapGPS: React.FC = () => {
             <div>
                 {!isPC ? (
                     <div>
-                        {imagesGPS.length > 0 ? (
+                        {ImagesGPS.length > 0 ? ( // ใช้ length ของ ImagesGPS แทนการเช็ค null
                             <div className='row mx-5'>
-                                {imagesGPS.map((image, index) => (
+                                {ImagesGPS.map((image, index) => (
                                     <div className='col-6 mb-3' key={index}>
                                         <div className='border border-gray-500'>
                                             <img
@@ -93,7 +126,7 @@ const GalleryGoogleMapGPS: React.FC = () => {
                                                     className='h-30px theme-light-show'
                                                     src={toAbsoluteUrl('media/settings/trash-svgrepo-com.svg')}
                                                     alt='ลบรูป'
-                                                    onClick={() => handleDeleteImage(image)} // Call delete function
+                                                    // onClick={() => handleDeleteImage(image)} // Call delete function
                                                     style={{ cursor: 'pointer' }}
                                                 />
                                             </div>

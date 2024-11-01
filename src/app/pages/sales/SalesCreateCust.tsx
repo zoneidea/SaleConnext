@@ -1517,7 +1517,7 @@ const SalesCreateCust: React.FC = () => {
                                                             เพิ่มที่อยู่ลูกค้า
                                                         </button>
                                                     </>
-                                                ) : (
+                                                ) : selectedCustomerType == "1" && (
                                                     <>
                                                         <button
                                                             className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
