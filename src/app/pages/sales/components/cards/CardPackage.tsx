@@ -10,8 +10,9 @@ const CardPackage: FC<Props> = ({ PackageTitle, isSelected }) => {
         <>
             <div className="row">
                 <div className="col-12">
-                    <div className={`rounded border mb-3 px-7 py-7`}
+                    <div className={`rounded border mb-3 px-7 py-7 align-items-center`}
                         style={{
+                            height: '80px',
                             backgroundColor: isSelected ? '#ACE1AF' : '#dbdfe9',
                             transition: 'background-color 0.2s ease, color 0.2s ease'
                         }}>
@@ -29,7 +30,7 @@ const CardPackage: FC<Props> = ({ PackageTitle, isSelected }) => {
             <style>{`
                 @media (max-width: 900px) {
                     .card .h-390px {
-                        height: 90px; /* เพิ่มความสูงของการ์ดในหน้าจอขนาดเล็ก */
+                        height: 70px; /* เพิ่มความสูงของการ์ดในหน้าจอขนาดเล็ก */
                     }
                 }
             `}</style>

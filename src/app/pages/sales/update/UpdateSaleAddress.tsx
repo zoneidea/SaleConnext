@@ -432,6 +432,14 @@ const UpdateSaleAddress: React.FC = () => {
         setSelectedSubDistrictForBilling(custAddr?.[0]?.ADDRESSTAX.ADDRESSSUBDISTRICT)
         setSelectedZipcodeForBilling(custAddr?.[0]?.ADDRESSTAX.ADDRESSZIPCODE)
         setAddressPhoneForBilling(custAddr?.[0]?.ADDRESSTAX.ADDRESSPHONE)
+
+        setLikeAllAddr(false)
+        setInstallLikeCardAddr(false)
+        setPaymentLikeCardAddr(false)
+        setPaymentLikeInstallAddr(false)
+        setBillLikeCardAddr(false)
+        setBillLikeInstallAddr(false)
+        setBillLikePaymentAddr(false)
     }, []);
 
     // GET Province
@@ -1078,6 +1086,60 @@ const UpdateSaleAddress: React.FC = () => {
                 setAddressPhoneForPayment(addressPhoneForInstall);
             }
         }
+
+        if (name === 'billLikeAddressCard') {
+            setBillLikeCardAddr(checked)
+            setBillLikeInstallAddr(false)
+            setBillLikePaymentAddr(false)
+
+            if (checked) {
+                setAddressNumberForBilling(addressNumber);
+                setAddressMooForBilling(addressMoo);
+                setAddressSoiForBilling(addressSoi);
+                setAddressRoadForBilling(addressRoad);
+                setSelectedProvinceForBilling(selectedProvince);
+                setSelectedDistrictForBilling(selectedDistrict);
+                setSelectedSubDistrictForBilling(selectedSubDistrict);
+                setSelectedZipcodeForBilling(selectedZipcode);
+                setAddressPhoneForBilling(addressPhone);
+            }
+        }
+
+        if (name === 'billLikeAddressInstall') {
+            setBillLikeCardAddr(false)
+            setBillLikeInstallAddr(checked)
+            setBillLikePaymentAddr(false)
+
+            if (checked) {
+                setAddressNumberForBilling(addressNumberForInstall);
+                setAddressMooForBilling(addressMooForInstall);
+                setAddressSoiForBilling(addressSoiForInstall);
+                setAddressRoadForBilling(addressRoadForInstall);
+                setSelectedProvinceForBilling(selectedProvinceForInstall);
+                setSelectedDistrictForBilling(selectedDistrictForInstall);
+                setSelectedSubDistrictForBilling(selectedSubDistrictForInstall);
+                setSelectedZipcodeForBilling(selectedZipcodeForInstall);
+                setAddressPhoneForBilling(addressPhoneForInstall);
+            }
+        }
+
+        if (name === 'billLikeAddressPayment') {
+            setBillLikeCardAddr(false)
+            setBillLikeInstallAddr(false)
+            setBillLikePaymentAddr(checked)
+
+            if (checked) {
+                setAddressNumberForBilling(addressNumberForPayment);
+                setAddressMooForBilling(addressMooForPayment);
+                setAddressSoiForBilling(addressSoiForPayment);
+                setAddressRoadForBilling(addressRoadForPayment);
+                setSelectedProvinceForBilling(selectedProvinceForPayment);
+                setSelectedDistrictForBilling(selectedDistrictForPayment);
+                setSelectedSubDistrictForBilling(selectedSubDistrictForPayment);
+                setSelectedZipcodeForBilling(selectedZipcodeForPayment);
+                setAddressPhoneForBilling(addressPhoneForPayment);
+            }
+        }
     };
 
     // ฟังก์ชันเพื่อล้างการติ๊กใน  accordion ที่อยู่ลูกค้า (ตามบัตร) เมื่อมีการเปลี่ยนแปลงข้อมูลใน accordion ที่อยู่ลูกค้า (ติดตั้ง)
@@ -1216,28 +1278,62 @@ const UpdateSaleAddress: React.FC = () => {
     };
 
     const handleNextClick = async () => {
-        // try {
-        //     // POST Contract/updateContract
-        //     const updateContract = await axios.post(UPDATECONTACT, {
-        //         REFNO: refno,
-        //         EMPID: EmpId,
-        //         TEAMSALE: TeamSale,
-        //         SALECODE: SaleCode,
-        //         SUPEMPID: SupEmpId,
-        //         SECEMPID: SecEmpId,
-        //         FIELD: "CUSTOMERDETAIL",
-        //         DATA: SaveCustomertData
-        //     }, {
-        //         headers: {
-        //             'Content-Type': 'application/json',
-        //         },
-        //     });
-        //     console.log(`updateContract CUSTOMERDETAIL: `, updateContract.data);
-        // } catch (error) {
-        //     console.error('Error fetching UPDATECONTACT:', error);
-        // }
-        // setShowCustomerAddress(true);
+        try {
+            // POST Contract/updateContract
+            const updateContract = await axios.post(UPDATECONTACT, {
+                REFNO: refno,
+                EMPID: EmpId,
+                TEAMSALE: TeamSale,
+                SALECODE: SaleCode,
+                SUPEMPID: SupEmpId,
+                SECEMPID: SecEmpId,
+                FIELD: "ADDRESS",
+                DATA: SaveAddressData
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            console.log(`updateContract CUSTOMERDETAIL: `, updateContract.data);
+            if (updateContract.status === 200) {
+                if (!updateContract.data.data) {
+                    MySwal.fire('เกิดข้อผิดพลาด', 'ปรับปรุงข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
+                } else {
+                    MySwal.fire('สำเร็จ', 'ปรับปรุงข้อมูลที่อยู่แล้ว', 'success');
+                }
+            } else {
+                MySwal.fire('เกิดข้อผิดพลาด', updateContract.data.message, 'error');
+            }
+        } catch (error) {
+            console.error('Error fetching UPDATECONTACT:', error);
+        }
     };
+
+    const handleCheckerClick = async () => {
+        const response = await axios.post(UPDATECONTACT, {
+            REFNO: refno,
+            EMPID: EmpId,
+            TEAMSALE: TeamSale,
+            FIELD: "STATUS",
+            DATA: "PENDING",
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        console.log(response)
+
+        if (response.status === 200) {
+            if (!response.data.data) {
+                MySwal.fire('เกิดข้อผิดพลาด', 'ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
+            } else {
+                MySwal.fire('สำเร็จ', 'ส่งข้อมูลตรวจสอบแล้ว', 'success');
+            }
+        } else {
+            MySwal.fire('เกิดข้อผิดพลาด', response.data.message, 'error');
+        }
+    }
 
     const handleSubmit = (e: React.FormEvent) => {
         // e.preventDefault();
@@ -1283,7 +1379,7 @@ const UpdateSaleAddress: React.FC = () => {
                 <p>REFNO: {refno}</p>
 
                 {/* Card Body */}
-                <form onSubmit={handleSubmit}>
+                {/* <form onSubmit={handleSubmit}> */}
                     <div className='accordion mb-10' id='kt_accordion_1'>
 
                         {/* Start accordion ที่อยู่ลูกค้า (ตามบัตร)*/}
@@ -2051,37 +2147,36 @@ const UpdateSaleAddress: React.FC = () => {
                                                     <div className='col-lg-6 mb-3 mt-xl-5'>
                                                         <label className='form-check form-check-inline form-check-solid me-5'>
                                                             <input
+                                                                onChange={handleCheckboxChange}
                                                                 className='form-check-input'
-                                                                name='showBillingSameAsCard'
+                                                                name='billLikeAddressCard'
                                                                 type='checkbox'
-                                                                onChange={handleCheckboxTaxChange}
-                                                                checked={showBillingSameAsCard} // ตรวจสอบการเลือก
+                                                                checked={billLikeCardAddr}
                                                             />
-                                                            <span className='fw-bold ps-2 fs-6 mb-sm-5'>ใช้เหมือนที่อยู่ลูกค้า (ตามบัตร)</span>
+                                                            <span className='fw-bold ps-2 fs-6 mb-sm-5'>ใช้ที่อยู่เดียวกับที่อยู่ตามบัตรฯ</span>
                                                         </label>
-                                                        <label className='form-check form-check-inline form-check-solid my-5'>
+                                                        <label className='form-check form-check-inline form-check-solid me-5 mt-3 mt-sm-0'>
                                                             <input
+                                                                onChange={handleCheckboxChange}
                                                                 className='form-check-input'
-                                                                name='showBillingSameAsInstallAddress'
+                                                                name='billLikeAddressInstall'
                                                                 type='checkbox'
-                                                                onChange={handleCheckboxTaxChange}
-                                                                checked={showBillingSameAsInstallAddress} // ตรวจสอบการเลือก
+                                                                checked={billLikeInstallAddr}
                                                             />
-                                                            <span className='fw-bold ps-2 fs-6 mb-sm-5'>ใช้เหมือนที่อยู่ลูกค้า (ติดตั้ง)</span>
+                                                            <span className='fw-bold ps-2 fs-6'>ใช้ที่อยู่เดียวกับที่อยู่ติดตั้ง</span>
                                                         </label>
-                                                        <label className='form-check form-check-inline form-check-solid me-5'>
+                                                        <label className='form-check form-check-inline form-check-solid me-5 mt-3 mt-sm-0'>
                                                             <input
+                                                                onChange={handleCheckboxChange}
                                                                 className='form-check-input'
-                                                                name='showBillingSameAsPaymentAddress'
+                                                                name='billLikeAddressPayment'
                                                                 type='checkbox'
-                                                                onChange={handleCheckboxTaxChange}
-                                                                checked={showBillingSameAsPaymentAddress} // ตรวจสอบการเลือก
+                                                                checked={billLikePaymentAddr}
                                                             />
-                                                            <span className='fw-bold ps-2 fs-6 mb-sm-5'>ใช้เหมือนที่อยู่ลูกค้า (เก็บเงิน)</span>
+                                                            <span className='fw-bold ps-2 fs-6'>ใช้ที่อยู่เดียวกับที่อยู่เก็บเงิน</span>
                                                         </label>
                                                     </div>
                                                 </div>
-
                                             </div>
                                         </form>
                                         {/* end form */}
@@ -2105,12 +2200,12 @@ const UpdateSaleAddress: React.FC = () => {
                         </button>
                         <button
                             className='btn btn-primary w-100 w-md-auto align-self-center h-50px'
-                        // onClick={handleCheckerClick}
+                            onClick={handleCheckerClick}
                         >
                             ส่งตรวจสอบ
                         </button>
                     </div>
-                </form>
+                {/* </form> */}
             </Content >
         </>
     )

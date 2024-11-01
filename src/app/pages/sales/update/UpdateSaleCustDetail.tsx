@@ -222,6 +222,8 @@ const UpdateSaleCustDetail: React.FC = () => {
             },
         });
 
+        let updateData;
+
         setChecktype(conditionCheckResponse.data.checktype);
         if (conditionCheckResponse.data.checktype !== 0) {
             MySwal.fire({
@@ -278,38 +280,42 @@ const UpdateSaleCustDetail: React.FC = () => {
                     } else {
                         setIdCard(result.value)
 
-                        let updateData = [result.value, conditionCheckResponse.data.checktype, message];
-                        try {
-                            const updateContract = await axios.post(UPDATECONTACT, {
-                                REFNO: refno,
-                                EMPID: EmpId,
-                                TEAMSALE: TeamSale,
-                                FIELD: "CUSTOMERSTATUS",
-                                DATA: updateData,
-                            }, {
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                            });
-                            console.log(`updateContract CUSTOMERSTATUS: `, updateContract.data);
-
-                            if (updateContract.status === 200) {
-                                if (!updateContract.data.data) {
-                                    MySwal.fire('เกิดข้อผิดพลาด', 'ปรับปรุงข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
-                                } else {
-                                    customerStatus = updateContract.data.data
-                                    MySwal.fire('สำเร็จ', 'ปรับปรุงข้อมูลการตรวจสอบสถานะแล้ว', 'success');
-                                }
-                            } else {
-                                MySwal.fire('เกิดข้อผิดพลาด', updateContract.data.message, 'error');
-                            }
-                        } catch (error) {
-                            console.error('Error updating contract:', error);
-                            MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถอัปเดตข้อมูลได้', 'error');
-                        }
+                        updateData = [result.value, conditionCheckResponse.data.checktype, message];
                     }
                 }
             });
+        } else {
+            updateData = ["", conditionCheckResponse.data.checktype, conditionCheckResponse.data.message];
+        }
+
+        try {
+            const updateContract = await axios.post(UPDATECONTACT, {
+                REFNO: refno,
+                EMPID: EmpId,
+                TEAMSALE: TeamSale,
+                FIELD: "CUSTOMERSTATUS",
+                DATA: updateData,
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (conditionCheckResponse.data.checktype !== 0) {
+                if (updateContract.status === 200) {
+                    if (!updateContract.data.data) {
+                        MySwal.fire('เกิดข้อผิดพลาด', 'ปรับปรุงข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
+                    } else {
+                        customerStatus = updateContract.data.data
+                        MySwal.fire('สำเร็จ', 'ปรับปรุงข้อมูลการตรวจสอบสถานะแล้ว', 'success');
+                    }
+                } else {
+                    MySwal.fire('เกิดข้อผิดพลาด', updateContract.data.message, 'error');
+                }
+            }
+        } catch (error) {
+            console.error('Error updating contract:', error);
+            MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถอัปเดตข้อมูลได้', 'error');
         }
     }
 
@@ -399,8 +405,30 @@ const UpdateSaleCustDetail: React.FC = () => {
         }
     };
 
-    const handleCheckerClick = () => {
-        
+    const handleCheckerClick = async () => {
+        const response = await axios.post(UPDATECONTACT, {
+            REFNO: refno,
+            EMPID: EmpId,
+            TEAMSALE: TeamSale,
+            FIELD: "STATUS",
+            DATA: "PENDING",
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        console.log(response)
+
+        if (response.status === 200) {
+            if (!response.data.data) {
+                MySwal.fire('เกิดข้อผิดพลาด', 'ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
+            } else {
+                MySwal.fire('สำเร็จ', 'ส่งข้อมูลตรวจสอบแล้ว', 'success');
+            }
+        } else {
+            MySwal.fire('เกิดข้อผิดพลาด', response.data.message, 'error');
+        }
     }
 
     const handleSubmit = (e: React.FormEvent) => {

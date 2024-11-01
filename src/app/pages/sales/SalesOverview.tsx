@@ -30,42 +30,48 @@ const SalesOverview: React.FC = () => {
 
   const [draft, setDraft] = useState<any[]>([]); // กำหนดให้ state เป็น array เพื่อรองรับ map()
   const [finish, setFinish] = useState<any[]>([]); // กำหนดให้ state เป็น array เพื่อรองรับ map()
-  
+
   useEffect(() => {
-    const getDataDraft = async () => {
-      try {
-        const response = await axios.get(DRAFT_ALLCONTRACT_URL, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-        const data = Array.isArray(response.data.data) ? response.data.data : [];
-        setDraft(data); // บันทึกข้อมูล draft
-        console.log('Draft: ', data)
-      } catch (error) {
-        console.error('Error fetching DRAFT_ALLCONTRACT_URL:', error);
-      }
-    };
     getDataDraft();
   }, []);
 
-  useEffect(() => {
-    const getDataFinish = async () => {
-      try {
-        const response = await axios.get(FINISH_ALLCONTRACT_URL, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-        const data = Array.isArray(response.data.data) ? response.data.data : [];
-        setFinish(data); // บันทึกข้อมูล finish
-        console.log('Finish: ', data)
-      } catch (error) {
-        console.error('Error fetching FINISH_ALLCONTRACT_URL:', error);
-      }
-    };
-    getDataFinish();
-  }, []);
+  const getDataDraft = async () => {
+    try {
+      const response = await axios.get(DRAFT_ALLCONTRACT_URL, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = Array.isArray(response.data.data) ? response.data.data : [];
+      setDraft(data); // บันทึกข้อมูล draft
+      console.log('Draft: ', data)
+    } catch (error) {
+      console.error('Error fetching DRAFT_ALLCONTRACT_URL:', error);
+    }
+  };
+
+  const getDataFinish = async () => {
+    try {
+      const response = await axios.get(FINISH_ALLCONTRACT_URL, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = Array.isArray(response.data.data) ? response.data.data : [];
+      setFinish(data); // บันทึกข้อมูล finish
+      console.log('Finish: ', data)
+    } catch (error) {
+      console.error('Error fetching FINISH_ALLCONTRACT_URL:', error);
+    }
+  };
+
+  const handleDragtTab = () => {
+    getDataDraft()
+  }
+
+  const handleFinishTab = () => {
+    getDataFinish()
+  }
 
   const handleAddItemClick = () => {
     SETREFNO(); // Generate a new REFNO before navigating
@@ -109,6 +115,7 @@ const SalesOverview: React.FC = () => {
                     className="nav-link active"
                     data-bs-toggle="tab"
                     href="#kt_tab_pane_1"
+                    onClick={handleDragtTab}
                   >
                     รายการขายคงค้าง
                   </a>
@@ -118,6 +125,7 @@ const SalesOverview: React.FC = () => {
                     className="nav-link"
                     data-bs-toggle="tab"
                     href="#kt_tab_pane_2"
+                    onClick={handleFinishTab}
                   >
                     รายการขายเสร็จสมบูรณ์
                   </a>
