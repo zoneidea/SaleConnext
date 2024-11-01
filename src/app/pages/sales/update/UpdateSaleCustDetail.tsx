@@ -182,12 +182,6 @@ const UpdateSaleCustDetail: React.FC = () => {
             }
         };
 
-        if (customerStatus.length > 0) {
-
-        } else {
-            customerValidation()
-        }
-
         getData();
 
         setsSelectedCustomerType(customerDetail?.[0]?.CUSTOMERTYPE)
@@ -210,7 +204,11 @@ const UpdateSaleCustDetail: React.FC = () => {
             }
         }
 
-        console.log(customerTypes)
+        if (customerStatus.length > 0) {
+
+        } else {
+            customerValidation()
+        }
     }, []);
 
     const customerValidation = async () => {
@@ -224,11 +222,14 @@ const UpdateSaleCustDetail: React.FC = () => {
 
         let updateData;
 
+        console.log(conditionCheckResponse)
+
         setChecktype(conditionCheckResponse.data.checktype);
-        if (conditionCheckResponse.data.checktype !== 0) {
-            MySwal.fire({
-                title: 'กรุณาตรวจสอบประวัติลูกค้า',
-                html: `
+        if (conditionCheckResponse.data.status == 200) {
+            if (conditionCheckResponse.data.checktype !== 0) {
+                MySwal.fire({
+                    title: 'กรุณาตรวจสอบประวัติลูกค้า',
+                    html: `
                     <input 
                         id="idCardInput" 
                         type="text" 
@@ -238,54 +239,55 @@ const UpdateSaleCustDetail: React.FC = () => {
                         oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,13);" 
                     />
                 `,
-                showDenyButton: true,
-                showCancelButton: true,
-                showCloseButton: false,
-                confirmButtonText: 'ตรวจสอบ',
-                cancelButtonText: 'กลับ',
-                denyButtonText: 'ยกลเลิก',
-                preConfirm: async () => {
-                    const input = (document.getElementById('idCardInput') as HTMLInputElement).value;
-                    if (input.length === 13) {
-                        return input;
-                    } else {
-                        MySwal.showValidationMessage('กรุณากรอกเลขบัตรประชาชนให้ครบ 13 หลัก');
-                        return null;
+                    showDenyButton: true,
+                    showCancelButton: true,
+                    showCloseButton: false,
+                    confirmButtonText: 'ตรวจสอบ',
+                    cancelButtonText: 'กลับ',
+                    denyButtonText: 'ยกลเลิก',
+                    preConfirm: async () => {
+                        const input = (document.getElementById('idCardInput') as HTMLInputElement).value;
+                        if (input.length === 13) {
+                            return input;
+                        } else {
+                            MySwal.showValidationMessage('กรุณากรอกเลขบัตรประชาชนให้ครบ 13 หลัก');
+                            return null;
+                        }
                     }
-                }
-            }).then(async (result) => {
-                console.log(result)
-                if (result.isDismissed) {
-                    navigate('/sale/step', { state: item })
-                } else if (result.isDenied) {
-                    customerValidation()
-                } else {
-                    const apiResponse = await axios.post(CHECKCUSTOMER_URL, { Search: result.value }, {
-                        headers: {
-                            'Content-Type': 'multipart/form-data',
-                        },
-                    });
-
-                    const { Customerstatus, message } = apiResponse.data;
-                    await MySwal.fire({
-                        text: message,
-                        icon: Customerstatus ? 'error' : 'success',
-                        confirmButtonText: 'ตกลง'
-                    });
-
-                    console.log(apiResponse)
-
-                    if (Customerstatus) {
+                }).then(async (result) => {
+                    console.log(result)
+                    if (result.isDismissed) {
                         navigate('/sale/step', { state: item })
+                    } else if (result.isDenied) {
+                        customerValidation()
                     } else {
-                        setIdCard(result.value)
+                        const apiResponse = await axios.post(CHECKCUSTOMER_URL, { Search: result.value }, {
+                            headers: {
+                                'Content-Type': 'multipart/form-data',
+                            },
+                        });
 
-                        updateData = [result.value, conditionCheckResponse.data.checktype, message];
+                        const { Customerstatus, message } = apiResponse.data;
+                        await MySwal.fire({
+                            text: message,
+                            icon: Customerstatus ? 'error' : 'success',
+                            confirmButtonText: 'ตกลง'
+                        });
+
+                        console.log(apiResponse)
+
+                        if (Customerstatus) {
+                            navigate('/sale/step', { state: item })
+                        } else {
+                            setIdCard(result.value)
+
+                            updateData = [result.value, conditionCheckResponse.data.checktype, message];
+                        }
                     }
-                }
-            });
-        } else {
-            updateData = ["", conditionCheckResponse.data.checktype, conditionCheckResponse.data.message];
+                });
+            } else {
+                updateData = ["", conditionCheckResponse.data.checktype, conditionCheckResponse.data.message];
+            }
         }
 
         try {
@@ -307,7 +309,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                         MySwal.fire('เกิดข้อผิดพลาด', 'ปรับปรุงข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
                     } else {
                         customerStatus = updateContract.data.data
-                        MySwal.fire('สำเร็จ', 'ปรับปรุงข้อมูลการตรวจสอบสถานะแล้ว', 'success');
+                        MySwal.fire('สำเร็จ', 'ปรับปรุงข้อมูลการตรวจสอบสถานะแล้ว' + checktype, 'success');
                     }
                 } else {
                     MySwal.fire('เกิดข้อผิดพลาด', updateContract.data.message, 'error');
