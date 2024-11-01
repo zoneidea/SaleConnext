@@ -9,7 +9,11 @@ interface StatusLabelProps {
 const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item }) => {
   let customer, product, productPackage, createdAt, statusTxt;
   if (item.CUSTOMERDETAIL.length > 0) {
-    customer = <span className='text-gray-700 fw-semibold d-block'>{`ชื่อลูกค้า: ${item.CUSTOMERDETAIL[0].CUSTOMERNAME}`}</span>
+    if (item.CUSTOMERDETAIL[0].CUSTOMERTYPE == 1) {
+      customer = <span className='text-gray-700 fw-semibold d-block'>{`ชื่อบริษัท: ${item.CUSTOMERDETAIL[0].CUSTOMERMD}`}</span>
+    } else {
+      customer = <span className='text-gray-700 fw-semibold d-block'>{`ชื่อลูกค้า: ${item.CUSTOMERDETAIL[0].CUSTOMERNAME}`}</span>
+    }
   }
 
   if (item.PRODUCT.length > 0) {

@@ -182,12 +182,6 @@ const UpdateSaleCustDetail: React.FC = () => {
             }
         };
 
-        if (customerStatus.length > 0) {
-
-        } else {
-            customerValidation()
-        }
-
         getData();
 
         setsSelectedCustomerType(customerDetail?.[0]?.CUSTOMERTYPE)
@@ -210,7 +204,11 @@ const UpdateSaleCustDetail: React.FC = () => {
             }
         }
 
-        console.log(customerTypes)
+        if (customerStatus.length > 0) {
+
+        } else {
+            customerValidation()
+        }
     }, []);
 
     const customerValidation = async () => {
@@ -224,11 +222,14 @@ const UpdateSaleCustDetail: React.FC = () => {
 
         let updateData;
 
+        console.log(conditionCheckResponse)
+
         setChecktype(conditionCheckResponse.data.checktype);
-        if (conditionCheckResponse.data.checktype !== 0) {
-            MySwal.fire({
-                title: 'กรุณาตรวจสอบประวัติลูกค้า',
-                html: `
+        if (conditionCheckResponse.data.status == 200) {
+            if (conditionCheckResponse.data.checktype !== 0) {
+                MySwal.fire({
+                    title: 'กรุณาตรวจสอบประวัติลูกค้า',
+                    html: `
                     <input 
                         id="idCardInput" 
                         type="text" 
@@ -238,54 +239,55 @@ const UpdateSaleCustDetail: React.FC = () => {
                         oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,13);" 
                     />
                 `,
-                showDenyButton: true,
-                showCancelButton: true,
-                showCloseButton: false,
-                confirmButtonText: 'ตรวจสอบ',
-                cancelButtonText: 'กลับ',
-                denyButtonText: 'ยกลเลิก',
-                preConfirm: async () => {
-                    const input = (document.getElementById('idCardInput') as HTMLInputElement).value;
-                    if (input.length === 13) {
-                        return input;
-                    } else {
-                        MySwal.showValidationMessage('กรุณากรอกเลขบัตรประชาชนให้ครบ 13 หลัก');
-                        return null;
+                    showDenyButton: true,
+                    showCancelButton: true,
+                    showCloseButton: false,
+                    confirmButtonText: 'ตรวจสอบ',
+                    cancelButtonText: 'กลับ',
+                    denyButtonText: 'ยกลเลิก',
+                    preConfirm: async () => {
+                        const input = (document.getElementById('idCardInput') as HTMLInputElement).value;
+                        if (input.length === 13) {
+                            return input;
+                        } else {
+                            MySwal.showValidationMessage('กรุณากรอกเลขบัตรประชาชนให้ครบ 13 หลัก');
+                            return null;
+                        }
                     }
-                }
-            }).then(async (result) => {
-                console.log(result)
-                if (result.isDismissed) {
-                    navigate('/sale/step', { state: item })
-                } else if (result.isDenied) {
-                    customerValidation()
-                } else {
-                    const apiResponse = await axios.post(CHECKCUSTOMER_URL, { Search: result.value }, {
-                        headers: {
-                            'Content-Type': 'multipart/form-data',
-                        },
-                    });
-
-                    const { Customerstatus, message } = apiResponse.data;
-                    await MySwal.fire({
-                        text: message,
-                        icon: Customerstatus ? 'error' : 'success',
-                        confirmButtonText: 'ตกลง'
-                    });
-
-                    console.log(apiResponse)
-
-                    if (Customerstatus) {
+                }).then(async (result) => {
+                    console.log(result)
+                    if (result.isDismissed) {
                         navigate('/sale/step', { state: item })
+                    } else if (result.isDenied) {
+                        customerValidation()
                     } else {
-                        setIdCard(result.value)
+                        const apiResponse = await axios.post(CHECKCUSTOMER_URL, { Search: result.value }, {
+                            headers: {
+                                'Content-Type': 'multipart/form-data',
+                            },
+                        });
 
-                        updateData = [result.value, conditionCheckResponse.data.checktype, message];
+                        const { Customerstatus, message } = apiResponse.data;
+                        await MySwal.fire({
+                            text: message,
+                            icon: Customerstatus ? 'error' : 'success',
+                            confirmButtonText: 'ตกลง'
+                        });
+
+                        console.log(apiResponse)
+
+                        if (Customerstatus) {
+                            navigate('/sale/step', { state: item })
+                        } else {
+                            setIdCard(result.value)
+
+                            updateData = [result.value, conditionCheckResponse.data.checktype, message];
+                        }
                     }
-                }
-            });
-        } else {
-            updateData = ["", conditionCheckResponse.data.checktype, conditionCheckResponse.data.message];
+                });
+            } else {
+                updateData = ["", conditionCheckResponse.data.checktype, conditionCheckResponse.data.message];
+            }
         }
 
         try {
@@ -699,7 +701,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                             <label className='form-label required fw-bold fs-6'>ชื่อบริษัท</label>
                                                             <input
                                                                 value={fullName}
-                                                                // onChange={handleTextChange('idCard')}
+                                                                onChange={(e) => setFullName(e.target.value)}
                                                                 type='text'
                                                                 className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                                                                 placeholder='ชื่อบริษัท'
@@ -714,7 +716,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                             <label className='form-label required fw-bold fs-6'>เลขประจำตัวผู้เสียภาษี</label>
                                                             <input
                                                                 value={idCard}
-                                                                // onChange={handleTextChange('idCard')}
+                                                                onChange={(e) => setIdCard(e.target.value)}
                                                                 type='text'
                                                                 className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                                                                 placeholder='เลขประจำตัวผู้เสียภาษี'
