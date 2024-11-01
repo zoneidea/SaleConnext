@@ -242,15 +242,15 @@ const SalesContract: React.FC = () => {
               </div>
             )}
 
-            {PRODUCT[0]?.Package?.[0]?.TOTALPRICE && (
-              <div className='row align-items-center mb-10'>
-                <label className='col-lg-4 fw-bold text-muted mb-0'>ราคา</label>
-                <div className='col-lg-8 d-flex justify-content-between'>
+            <div className='row align-items-center mb-10'>
+              <label className='col-lg-4 fw-bold text-muted mb-0'>ราคา</label>
+              <div className='col-lg-8 d-flex justify-content-between'>
+                {PRODUCT[0]?.Package?.[0]?.TOTALPRICE && (
                   <span className='fw-bold fs-6'>{PRODUCT[0]?.Package[0]?.TOTALPRICE}</span>
-                  <span className='badge badge-light-success'>บาท</span>
-                </div>
+                )}
+                <span className='badge badge-light-success'>บาท</span>
               </div>
-            )}
+            </div>
 
             {DISCOUNT[0]?.TRADEIN?.TRADEINBRANDNAME && (
               <div className='row align-items-center mb-10'>
@@ -261,15 +261,15 @@ const SalesContract: React.FC = () => {
               </div>
             )}
 
-            {DISCOUNT[0]?.DISCOUNTAMOUNT && (
-              <div className='row align-items-center mb-10'>
-                <label className='col-lg-4 fw-bold text-muted mb-0'>ส่วนลด</label>
-                <div className='col-lg-8 d-flex justify-content-between'>
+            <div className='row align-items-center mb-10'>
+              <label className='col-lg-4 fw-bold text-muted mb-0'>ส่วนลด</label>
+              <div className='col-lg-8 d-flex justify-content-between'>
+                {DISCOUNT[0]?.DISCOUNTAMOUNT && (
                   <span className='fw-bold fs-6'>{DISCOUNT[0]?.DISCOUNTAMOUNT}</span>
-                  <span className='badge badge-light-success'>บาท</span>
-                </div>
+                )}
+                <span className='badge badge-light-success'>บาท</span>
               </div>
-            )}
+            </div>
 
             {DISCOUNT[0]?.GIFT?.GIFTNAME && (
               <div className='row align-items-center mb-10'>

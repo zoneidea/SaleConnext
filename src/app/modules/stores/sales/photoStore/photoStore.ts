@@ -223,3 +223,38 @@ export const usePhotoEquipmentStore = create<photoEquipmentStore>((set) => ({
     set({ imagesEquipment: savedImages ? JSON.parse(savedImages) : [] });
   },
 }));
+
+//gps
+interface PhotoGPSStore {
+  imagesGPS: string[]; // Array of GPS images
+  addImage: (image: string) => void; // Function to add a new image
+  setImagesGPS: (image: string) => void; // Function to set the GPS images
+  removeImage: (image: string) => void; // Function to remove an image
+  loadImages: () => void; // Function to load images from local storage
+}
+
+export const usePhotoGPSStore = create<PhotoGPSStore>((set) => ({
+  imagesGPS: JSON.parse(localStorage.getItem('GPSImages') || '[]'),
+  addImage: (image) => {
+    set((state) => {
+      const newImages = [...state.imagesGPS, image]; // เพิ่มภาพใหม่เข้าไปในอาเรย์
+      localStorage.setItem('GPSImages', JSON.stringify(newImages));
+      return { imagesGPS: newImages };
+    })
+  },
+  setImagesGPS: (image) => {
+    set({ imagesGPS: [image] }); // Override the current images with the new one
+    localStorage.setItem('GPSImages', JSON.stringify([image])); // Store the image in local storage
+  },
+  removeImage: (image) => {
+    set((state) => {
+      const newImages = state.imagesGPS.filter((img) => img !== image);
+      localStorage.setItem('GPSImages', JSON.stringify(newImages));
+      return { imagesGPS: newImages };
+    });
+  },
+  loadImages: () => {
+    const savedImages = localStorage.getItem('GPSImages');
+    set({ imagesGPS: savedImages ? JSON.parse(savedImages) : [] });
+  },
+}));
