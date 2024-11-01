@@ -309,7 +309,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                         MySwal.fire('เกิดข้อผิดพลาด', 'ปรับปรุงข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
                     } else {
                         customerStatus = updateContract.data.data
-                        MySwal.fire('สำเร็จ', 'ปรับปรุงข้อมูลการตรวจสอบสถานะแล้ว' + checktype, 'success');
+                        MySwal.fire('สำเร็จ', 'ปรับปรุงข้อมูลการตรวจสอบสถานะแล้ว', 'success');
                     }
                 } else {
                     MySwal.fire('เกิดข้อผิดพลาด', updateContract.data.message, 'error');
@@ -701,7 +701,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                             <label className='form-label required fw-bold fs-6'>ชื่อบริษัท</label>
                                                             <input
                                                                 value={fullName}
-                                                                // onChange={handleTextChange('idCard')}
+                                                                onChange={(e) => setFullName(e.target.value)}
                                                                 type='text'
                                                                 className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                                                                 placeholder='ชื่อบริษัท'
@@ -716,7 +716,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                             <label className='form-label required fw-bold fs-6'>เลขประจำตัวผู้เสียภาษี</label>
                                                             <input
                                                                 value={idCard}
-                                                                // onChange={handleTextChange('idCard')}
+                                                                onChange={(e) => setIdCard(e.target.value)}
                                                                 type='text'
                                                                 className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                                                                 placeholder='เลขประจำตัวผู้เสียภาษี'
