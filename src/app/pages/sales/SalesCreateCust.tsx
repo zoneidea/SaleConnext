@@ -49,7 +49,21 @@ const SalesCreateCust: React.FC = () => {
 
     const [customerTypes, setCustomerTypes] = useState<any[]>([]);
 
-    // เพิ่ม state สำหรับจัดการค่าการติ้กใน "ที่อยู่ลูกค้า (ตามบัตร)"
+    // [ที่อยู่ลูกค้า (ตามบัตร)]
+    const [likeAllAddr, setLikeAllAddr] = useState(false)
+
+    // [ที่อยู่ลูกค้า (ติดตั้ง)] 
+    const [installLikeCardAddr, setInstallLikeCardAddr] = useState(false)
+
+    // [ที่อยู่ลูกค้า (เก็บเงิน)] 
+    const [paymentLikeCardAddr, setPaymentLikeCardAddr] = useState(false)
+    const [paymentLikeInstallAddr, setPaymentLikeInstallAddr] = useState(false)
+
+    // [ที่อยู่ลูกค้า (ออกใบกำกับ)] 
+    const [billLikeCardAddr, setBillLikeCardAddr] = useState(false)
+    const [billLikeInstallAddr, setBillLikeInstallAddr] = useState(false)
+    const [billLikePaymentAddr, setBillLikePaymentAddr] = useState(false)
+
     const [showCustomerAddress, setShowCustomerAddress] = useState(false);
     const [showInstallAddress, setShowInstallAddress] = useState(false);
     const [showPaymentAddress, setShowPaymentAddress] = useState(false);
@@ -149,14 +163,6 @@ const SalesCreateCust: React.FC = () => {
     const [selectedSubDistrictForBilling, setSelectedSubDistrictForBilling] = useState<number | undefined>();
     const [selectedZipcodeForBilling, setSelectedZipcodeForBilling] = useState<string>('');
     const [addressPhoneForBilling, setAddressPhoneForBilling] = useState<string>('');
-
-    // สร้าง state สำหรับควบคุมการติ๊ก
-    const [useSameAsCardAddress, setUseSameAsCardAddress] = useState(false);
-
-    // จัดการ accordion ที่อยู่ลูกค้า (ออกใบกำกับภาษี) ให้ติ้กแค่อันใดอันหนึ่ง
-    const [showBillingSameAsCard, setShowBillingSameAsCard] = useState(false);
-    const [showBillingSameAsInstallAddress, setShowBillingSameAsInstallAddress] = useState(false);
-    const [showBillingSameAsPaymentAddress, setShowBillingSameAsPaymentAddress] = useState(false);
 
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -355,6 +361,16 @@ const SalesCreateCust: React.FC = () => {
         addressTax,
         setAddressTax,
     ]);
+
+    useEffect(() => {
+        setLikeAllAddr(false)
+        setInstallLikeCardAddr(false)
+        setPaymentLikeCardAddr(false)
+        setPaymentLikeInstallAddr(false)
+        setBillLikeCardAddr(false)
+        setBillLikeInstallAddr(false)
+        setBillLikePaymentAddr(false)
+    }, []);
 
     // GET Customertype
     useEffect(() => {
@@ -725,7 +741,7 @@ const SalesCreateCust: React.FC = () => {
         addressPhoneForBilling
     ]);
 
-    // ยิง UPDATECONTACT 
+    // ยิง UPDATECONTACT เมื่อมีการเปลี่ยนค่า value ของทุก Address อัตโนมัติ
     useEffect(() => {
         if (
             // ที่อยู่ลูกค้า ตามบัตร
@@ -927,6 +943,97 @@ const SalesCreateCust: React.FC = () => {
     const handleCheckboxChange = (event: ChangeEvent<HTMLInputElement>) => {
         const { name, checked } = event.target;
 
+        if (name === 'allAddress') {
+            setLikeAllAddr(checked)
+
+            if (checked) {
+                setAddressNumberForInstall(addressNumber);
+                setAddressMooForInstall(addressMoo);
+                setAddressSoiForInstall(addressSoi);
+                setAddressRoadForInstall(addressRoad);
+                setSelectedProvinceForInstall(selectedProvince);
+                setSelectedDistrictForInstall(selectedDistrict);
+                setSelectedSubDistrictForInstall(selectedSubDistrict);
+                setSelectedZipcodeForInstall(selectedZipcode);
+                setAddressPhoneForInstall(addressPhone);
+
+                setAddressNumberForPayment(addressNumber);
+                setAddressMooForPayment(addressMoo);
+                setAddressSoiForPayment(addressSoi);
+                setAddressRoadForPayment(addressRoad);
+                setSelectedProvinceForPayment(selectedProvince);
+                setSelectedDistrictForPayment(selectedDistrict);
+                setSelectedSubDistrictForPayment(selectedSubDistrict);
+                setSelectedZipcodeForPayment(selectedZipcode);
+                setAddressPhoneForPayment(addressPhone);
+
+                setAddressNumberForBilling(addressNumber);
+                setAddressMooForBilling(addressMoo);
+                setAddressSoiForBilling(addressSoi);
+                setAddressRoadForBilling(addressRoad);
+                setSelectedProvinceForBilling(selectedProvince);
+                setSelectedDistrictForBilling(selectedDistrict);
+                setSelectedSubDistrictForBilling(selectedSubDistrict);
+                setSelectedZipcodeForBilling(selectedZipcode);
+                setAddressPhoneForBilling(addressPhone);
+            }
+        }
+
+        if (name === 'likeAddressCard') {
+            setInstallLikeCardAddr(checked)
+
+            if (checked) {
+                // คัดลอกข้อมูลจากที่อยู่ตามบัตร ไปยังที่อยู่ติดตั้ง
+                setAddressNumberForInstall(addressNumber);
+                setAddressMooForInstall(addressMoo);
+                setAddressSoiForInstall(addressSoi);
+                setAddressRoadForInstall(addressRoad);
+                setSelectedProvinceForInstall(selectedProvince);
+                setSelectedDistrictForInstall(selectedDistrict);
+                setSelectedSubDistrictForInstall(selectedSubDistrict);
+                setSelectedZipcodeForInstall(selectedZipcode);
+                setAddressPhoneForInstall(addressPhone);
+            }
+        }
+
+        if (name === 'paymentLikeAddressCard') {
+            // setShowPaymentAddress(checked);
+            setPaymentLikeCardAddr(checked)
+            setPaymentLikeInstallAddr(false)
+
+            if (checked) {
+                // คัดลอกข้อมูลจากที่อยู่ตามบัตร ไปยังที่อยู่เก็บเงิน
+                setAddressNumberForPayment(addressNumber);
+                setAddressMooForPayment(addressMoo);
+                setAddressSoiForPayment(addressSoi);
+                setAddressRoadForPayment(addressRoad);
+                setSelectedProvinceForPayment(selectedProvince);
+                setSelectedDistrictForPayment(selectedDistrict);
+                setSelectedSubDistrictForPayment(selectedSubDistrict);
+                setSelectedZipcodeForPayment(selectedZipcode);
+                setAddressPhoneForPayment(addressPhone);
+            }
+        }
+
+        if (name === 'paymentLikeAddressInstall') {
+            // setShowPaymentAddress(checked);
+            setPaymentLikeCardAddr(false)
+            setPaymentLikeInstallAddr(checked)
+
+            if (checked) {
+                // คัดลอกข้อมูลจากที่อยู่ตามบัตร ไปยังที่อยู่เก็บเงิน
+                setAddressNumberForPayment(addressNumberForInstall);
+                setAddressMooForPayment(addressMooForInstall);
+                setAddressSoiForPayment(addressSoiForInstall);
+                setAddressRoadForPayment(addressRoadForInstall);
+                setSelectedProvinceForPayment(selectedProvinceForInstall);
+                setSelectedDistrictForPayment(selectedDistrictForInstall);
+                setSelectedSubDistrictForPayment(selectedSubDistrictForInstall);
+                setSelectedZipcodeForPayment(selectedZipcodeForInstall);
+                setAddressPhoneForPayment(addressPhoneForInstall);
+            }
+        }
+
         if (name === 'showInstallAddress') {
             setShowInstallAddress(checked);
 
@@ -960,6 +1067,61 @@ const SalesCreateCust: React.FC = () => {
                 setAddressPhoneForPayment(addressPhone);
             }
         }
+
+        if (name === 'billLikeAddressCard') {
+            setBillLikeCardAddr(checked)
+            setBillLikeInstallAddr(false)
+            setBillLikePaymentAddr(false)
+
+            if (checked) {
+                setAddressNumberForBilling(addressNumber);
+                setAddressMooForBilling(addressMoo);
+                setAddressSoiForBilling(addressSoi);
+                setAddressRoadForBilling(addressRoad);
+                setSelectedProvinceForBilling(selectedProvince);
+                setSelectedDistrictForBilling(selectedDistrict);
+                setSelectedSubDistrictForBilling(selectedSubDistrict);
+                setSelectedZipcodeForBilling(selectedZipcode);
+                setAddressPhoneForBilling(addressPhone);
+            }
+        }
+
+        if (name === 'billLikeAddressInstall') {
+            setBillLikeCardAddr(false)
+            setBillLikeInstallAddr(checked)
+            setBillLikePaymentAddr(false)
+
+            if (checked) {
+                setAddressNumberForBilling(addressNumberForInstall);
+                setAddressMooForBilling(addressMooForInstall);
+                setAddressSoiForBilling(addressSoiForInstall);
+                setAddressRoadForBilling(addressRoadForInstall);
+                setSelectedProvinceForBilling(selectedProvinceForInstall);
+                setSelectedDistrictForBilling(selectedDistrictForInstall);
+                setSelectedSubDistrictForBilling(selectedSubDistrictForInstall);
+                setSelectedZipcodeForBilling(selectedZipcodeForInstall);
+                setAddressPhoneForBilling(addressPhoneForInstall);
+            }
+        }
+
+        if (name === 'billLikeAddressPayment') {
+            setBillLikeCardAddr(false)
+            setBillLikeInstallAddr(false)
+            setBillLikePaymentAddr(checked)
+
+            if (checked) {
+                setAddressNumberForBilling(addressNumberForPayment);
+                setAddressMooForBilling(addressMooForPayment);
+                setAddressSoiForBilling(addressSoiForPayment);
+                setAddressRoadForBilling(addressRoadForPayment);
+                setSelectedProvinceForBilling(selectedProvinceForPayment);
+                setSelectedDistrictForBilling(selectedDistrictForPayment);
+                setSelectedSubDistrictForBilling(selectedSubDistrictForPayment);
+                setSelectedZipcodeForBilling(selectedZipcodeForPayment);
+                setAddressPhoneForBilling(addressPhoneForPayment);
+            }
+        }
+
     };
 
     // ฟังก์ชันเพื่อล้างการติ๊กใน  accordion ที่อยู่ลูกค้า (ตามบัตร) เมื่อมีการเปลี่ยนแปลงข้อมูลใน accordion ที่อยู่ลูกค้า (ติดตั้ง)
@@ -970,131 +1132,6 @@ const SalesCreateCust: React.FC = () => {
     // ฟังก์ชันเพื่อล้างการติ๊กใน  accordion ที่อยู่ลูกค้า (ตามบัตร) เมื่อมีการเปลี่ยนแปลงข้อมูลใน accordion ที่อยู่ลูกค้า (เก็บเงิน)
     const resetShowPaymentAddress = () => {
         setShowPaymentAddress(false);
-    };
-
-    // จัดการติ้กใน accordion ที่อยู่ลูกค้า (ออกใบกำกับภาษี) ให้ติ้กได้แค่อันใดอันหนึ่ง
-    const handleCheckboxTaxChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const { name, checked } = event.target;
-
-        if (name === 'showBillingSameAsCard') {
-            if (checked) {
-                handleBillingAddressCopy(true); // คัดลอกที่อยู่จาก "ตามบัตร"
-                setShowBillingSameAsInstallAddress(false); // ยกเลิกการเลือกที่อยู่ติดตั้ง
-                setShowBillingSameAsPaymentAddress(false); // ยกเลิกการเลือกที่อยู่เก็บเงิน
-            } else {
-                handleBillingAddressCopy(false); // ล้างข้อมูลที่อยู่การออกใบกำกับภาษี
-                setSelectedProvinceForBilling(0); // ล้างฟิลด์ จังหวัด
-                setSelectedDistrictForBilling(0); // ล้างฟิลด์ อำเภอ/เขต
-                setSelectedSubDistrictForBilling(0); // ล้างฟิลด์ ตำบล/แขวง
-            }
-            setShowBillingSameAsCard(checked); // ตั้งค่าให้เลือก/ไม่เลือกตัวเลือกนี้
-        }
-
-        if (name === 'showBillingSameAsInstallAddress') {
-            if (checked) {
-                handleBillingAddressFromInstallAddressCopy(true); // คัดลอกที่อยู่จาก "ติดตั้ง"
-                setShowBillingSameAsCard(false); // ยกเลิกการเลือกที่อยู่ตามบัตร
-                setShowBillingSameAsPaymentAddress(false); // ยกเลิกการเลือกที่อยู่เก็บเงิน
-            } else {
-                handleBillingAddressFromInstallAddressCopy(false); // ล้างข้อมูลที่อยู่การออกใบกำกับภาษี
-                setSelectedProvinceForBilling(0); // ล้างฟิลด์ จังหวัด
-                setSelectedDistrictForBilling(0); // ล้างฟิลด์ อำเภอ/เขต
-                setSelectedSubDistrictForBilling(0); // ล้างฟิลด์ ตำบล/แขวง
-            }
-            setShowBillingSameAsInstallAddress(checked); // ตั้งค่าให้เลือก/ไม่เลือกตัวเลือกนี้
-        }
-
-        if (name === 'showBillingSameAsPaymentAddress') {
-            if (checked) {
-                handleBillingAddressFromPaymentAddressCopy(true); // คัดลอกที่อยู่จาก "เก็บเงิน"
-                setShowBillingSameAsCard(false); // ยกเลิกการเลือกที่อยู่ตามบัตร
-                setShowBillingSameAsInstallAddress(false); // ยกเลิกการเลือกที่อยู่ติดตั้ง
-            } else {
-                handleBillingAddressFromPaymentAddressCopy(false); // ล้างข้อมูลที่อยู่การออกใบกำกับภาษี
-                setSelectedProvinceForBilling(0); // ล้างฟิลด์ จังหวัด
-                setSelectedDistrictForBilling(0); // ล้างฟิลด์ อำเภอ/เขต
-                setSelectedSubDistrictForBilling(0); // ล้างฟิลด์ ตำบล/แขวง
-            }
-            setShowBillingSameAsPaymentAddress(checked); // ตั้งค่าให้เลือก/ไม่เลือกตัวเลือกนี้
-        }
-    };
-
-    const handleBillingAddressCopy = (checked: boolean) => {
-        if (checked) {
-            // คัดลอกข้อมูลจาก "ที่อยู่ลูกค้า (ตามบัตร)" ไปยัง "ที่อยู่ลูกค้า (ออกใบกำกับภาษี)"
-            setAddressNumberForBilling(addressNumber);
-            setAddressMooForBilling(addressMoo);
-            setAddressSoiForBilling(addressSoi);
-            setAddressRoadForBilling(addressRoad);
-            setSelectedProvinceForBilling(selectedProvince);
-            setSelectedDistrictForBilling(selectedDistrict);
-            setSelectedSubDistrictForBilling(selectedSubDistrict);
-            setSelectedZipcodeForBilling(selectedZipcode);
-            setAddressPhoneForBilling(addressPhone);
-        } else {
-            // ล้างข้อมูลทั้งหมดเมื่อยกเลิกการติ๊กเช็คบ็อกซ์
-            setAddressNumberForBilling('');
-            setAddressMooForBilling('');
-            setAddressSoiForBilling('');
-            setAddressRoadForBilling('');
-            setSelectedProvinceForBilling(undefined);
-            setSelectedDistrictForBilling(undefined);
-            setSelectedSubDistrictForBilling(undefined);
-            setSelectedZipcodeForBilling('');
-            setAddressPhoneForBilling('');
-        }
-    };
-
-    const handleBillingAddressFromInstallAddressCopy = (checked: boolean) => {
-        if (checked) {
-            // คัดลอกข้อมูลจาก "ที่อยู่ลูกค้า (ติดตั้ง)" ไปยัง "ที่อยู่ลูกค้า (ออกใบกำกับภาษี)"
-            setAddressNumberForBilling(addressNumberForInstall);
-            setAddressMooForBilling(addressMooForInstall);
-            setAddressSoiForBilling(addressSoiForInstall);
-            setAddressRoadForBilling(addressRoadForInstall);
-            setSelectedProvinceForBilling(selectedProvinceForInstall); // คัดลอกจังหวัด
-            setSelectedDistrictForBilling(selectedDistrictForInstall); // คัดลอกอำเภอ / เขต
-            setSelectedSubDistrictForBilling(selectedSubDistrictForInstall); // คัดลอกตำบล / แขวง
-            setSelectedZipcodeForBilling(selectedZipcodeForInstall); // คัดลอกรหัสไปรษณีย์
-            setAddressPhoneForBilling(addressPhoneForInstall); // คัดลอกเบอร์โทร
-        } else {
-            // Clear billing address fields
-            setAddressNumberForBilling('');
-            setAddressMooForBilling('');
-            setAddressSoiForBilling('');
-            setAddressRoadForBilling('');
-            setSelectedProvinceForBilling(undefined);
-            setSelectedDistrictForBilling(undefined);
-            setSelectedSubDistrictForBilling(undefined);
-            setSelectedZipcodeForBilling('');
-            setAddressPhoneForBilling('');
-        }
-    };
-
-    const handleBillingAddressFromPaymentAddressCopy = (checked: boolean) => {
-        if (checked) {
-            // คัดลอกข้อมูลจาก "ที่อยู่ลูกค้า (เก็บเงิน)" ไปยัง "ที่อยู่ลูกค้า (ออกใบกำกับภาษี)"
-            setAddressNumberForBilling(addressNumberForPayment);
-            setAddressMooForBilling(addressMooForPayment);
-            setAddressSoiForBilling(addressSoiForPayment);
-            setAddressRoadForBilling(addressRoadForPayment);
-            setSelectedProvinceForBilling(selectedProvinceForPayment); // คัดลอกจังหวัด
-            setSelectedDistrictForBilling(selectedDistrictForPayment); // คัดลอกอำเภอ / เขต
-            setSelectedSubDistrictForBilling(selectedSubDistrictForPayment); // คัดลอกตำบล / แขวง
-            setSelectedZipcodeForBilling(selectedZipcodeForPayment); // คัดลอกรหัสไปรษณีย์
-            setAddressPhoneForBilling(addressPhoneForPayment); // คัดลอกเบอร์โทร
-        } else {
-            // Clear billing address fields
-            setAddressNumberForBilling('');
-            setAddressMooForBilling('');
-            setAddressSoiForBilling('');
-            setAddressRoadForBilling('');
-            setSelectedProvinceForBilling(undefined);
-            setSelectedDistrictForBilling(undefined);
-            setSelectedSubDistrictForBilling(undefined);
-            setSelectedZipcodeForBilling('');
-            setAddressPhoneForBilling('');
-        }
     };
 
     const handleNextClick = async () => {
@@ -1154,9 +1191,9 @@ const SalesCreateCust: React.FC = () => {
                         </h1>
                         <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
                             <li className="breadcrumb-item text-muted">
-                                <a className="text-muted text-hover-primary" href="/metronic8/react/demo1/sales/overview">
+                                <span className="text-muted text-hover-primary">
                                     ระบบขาย
-                                </a></li>
+                                </span></li>
                             <li className="breadcrumb-item"><span className="bullet bg-gray-500 w-5px h-2px"></span></li>
                             <li className="breadcrumb-item text-gray-900">ข้อมูลลูกค้า</li>
                         </ul>
@@ -1211,169 +1248,171 @@ const SalesCreateCust: React.FC = () => {
 
                                             {selectedCustomerType !== "1" && (
                                                 <>
-                                                    <div className='row mb-6'>
-                                                        <div className='col-lg-6 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>ประเภทลูกค้า</label>
-                                                            <select
-                                                                className='form-select form-select-solid form-select-lg'
-                                                                onChange={handleCustTypeOptionChange}
-                                                                value={selectedCustomerType}
-                                                            >
-                                                                <option value=''>เลือกประเภทลูกค้า...</option>
-                                                                {customerTypes.map((item: any) => (
-                                                                    <option key={item.CUSTOMERTYPE} value={item.CUSTOMERTYPE}>
-                                                                        {item.CUSTOMERTYPENAME}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                        </div>
-
-                                                        <div className='col-lg-6 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>ประเภทบัตร</label>
-                                                            <select
-                                                                className='form-select form-select-solid form-select-lg'
-                                                                value={selectedCardType}
-                                                                onChange={(e) => setSelectedCardType(e.target.value)}
-                                                                disabled={!selectedCustomerType}
-                                                            >
-                                                                <option value=''>เลือกประเภทบัตร...</option>
-                                                                {selectedCustomer.CARDTYPE.map((cardType: any) => (
-                                                                    <option key={cardType.CARDTYPE} value={cardType.CARDTYPE}>
-                                                                        {cardType.CARDTYPENAME}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className='row mb-6'>
-                                                        <div className='col-lg-4'>
-                                                            <label className='form-label required fw-bold fs-6'>บัตรประชาชน</label>
-                                                            <input
-                                                                value={idCard}
-                                                                onChange={handleIdCardChange}
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='บัตรประชาชน'
-                                                            />
-                                                            {/* {errors.idCard && <p className='text-danger'>{errors.idCard.message}</p>} */}
-                                                        </div>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>คำนำหน้าชื่อ</label>
-                                                            <select
-                                                                className='form-select form-select-solid form-select-lg'
-                                                                onChange={(e) => setSelectedPrefixId(Number(e.target.value))}
-                                                                disabled={!selectedCustomerType}
-                                                            >
-                                                                <option value=''>เลือกคำนำหน้าชื่อ...</option>
-                                                                {selectedCustomer.PREFIX.map((prefix: any) => (
-                                                                    <option key={prefix.PREFIXID} value={prefix.PREFIXID}>{prefix.PREFIXNAME}</option>
-                                                                ))}
-                                                            </select>
-                                                        </div>
-                                                        <div className='col-lg-4'>
-                                                            <label className='form-label required fw-bold fs-6'>ชื่อสกุล</label>
-                                                            <input
-                                                                value={fullName}
-                                                                onChange={(e) => setFullName(e.target.value)}
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='ชื่อ-สกุล'
-                                                            />
-                                                            {errors.fullName && <p className='text-danger'>{errors.fullName}</p>}
-                                                        </div>
-                                                    </div>
-
-                                                    <div className='row mb-6'>
-                                                        <div className="col-lg-4 mb-3">
-                                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                                <label className="form-label required fw-bold fs-6">วันเดือนปีเกิด</label>
-                                                                <DatePicker
-                                                                    selected={valueCalendar}
-                                                                    onChange={handleDateChange}
-                                                                    className="form-control form-control-lg form-control-solid mb-3 mb-lg-0"
-                                                                    placeholderText="วันเดือนปีเกิด"
-                                                                    showYearDropdown
-                                                                    showMonthDropdown
-                                                                    dropdownMode="select"
-                                                                    isClearable
-                                                                    dateFormat="yyyy/MM/dd"
-                                                                />
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="col-lg-4 mb-3">
-                                                            <label className="form-label required fw-bold fs-6">อายุ</label>
-                                                            <input
-                                                                value={valueAge !== null ? valueAge.toString() : ''}
-                                                                type="text"
-                                                                className="form-control form-control-lg form-control-solid mb-3 mb-lg-0"
-                                                                placeholder="อายุ"
-                                                                readOnly
-                                                            />
-
-                                                        </div>
-                                                        {selectedCustomerType !== "1" && (
-                                                            <div className='col-lg-4 mb-3'>
-                                                                <label className='form-label required fw-bold fs-6'>เพศ</label>
+                                                    <div className="container">
+                                                        <div className='row mb-6'>
+                                                            <div className='col-lg-6 mb-3'>
+                                                                <label className='form-label required fw-bold fs-6'>ประเภทลูกค้า</label>
                                                                 <select
-                                                                    className='form-select form-select-solid form-select-lg mb-3 mb-lg-0'
-                                                                    onChange={(e) => setSelectedSexId(Number(e.target.value))}
-                                                                    disabled={!selectedCustomerType}
+                                                                    className='form-select'
+                                                                    onChange={handleCustTypeOptionChange}
+                                                                    value={selectedCustomerType}
                                                                 >
-                                                                    <option value=''>เลือกเพศ...</option>
-                                                                    {selectedCustomer.SEX.map((sex: any) => (
-                                                                        <option key={sex.SEXID} value={sex.SEXID}>{sex.SEXNAME}</option>
+                                                                    <option value=''>เลือกประเภทลูกค้า...</option>
+                                                                    {customerTypes.map((item: any) => (
+                                                                        <option key={item.CUSTOMERTYPE} value={item.CUSTOMERTYPE}>
+                                                                            {item.CUSTOMERTYPENAME}
+                                                                        </option>
                                                                     ))}
                                                                 </select>
                                                             </div>
-                                                        )}
 
-                                                        <div className='row mb-6 mt-6'>
                                                             <div className='col-lg-6 mb-3'>
-                                                                <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
-                                                                <input
-                                                                    value={mobile}
-                                                                    onChange={(e) => setMobile(e.target.value)}
-                                                                    type='text'
-                                                                    className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                    placeholder='เบอร์ที่ติดต่อได้'
-                                                                />
-                                                                {errors.mobile && <p className='text-danger'>{errors.mobile}</p>}
+                                                                <label className='form-label required fw-bold fs-6'>ประเภทบัตร</label>
+                                                                <select
+                                                                    className='form-select'
+                                                                    value={selectedCardType}
+                                                                    onChange={(e) => setSelectedCardType(e.target.value)}
+                                                                    disabled={!selectedCustomerType}
+                                                                >
+                                                                    <option value=''>เลือกประเภทบัตร...</option>
+                                                                    {selectedCustomer.CARDTYPE.map((cardType: any) => (
+                                                                        <option key={cardType.CARDTYPE} value={cardType.CARDTYPE}>
+                                                                            {cardType.CARDTYPENAME}
+                                                                        </option>
+                                                                    ))}
+                                                                </select>
                                                             </div>
-                                                            <div className='col-lg-6 mb-3'>
-                                                                <label className='form-label fw-bold fs-6'>เบอร์บ้าน</label>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="container">
+                                                        <div className='row mb-6'>
+                                                            <div className='col-lg-4'>
+                                                                <label className='form-label required fw-bold fs-6'>บัตรประชาชน</label>
                                                                 <input
-                                                                    value={phone}
-                                                                    onChange={(e) => setPhone(e.target.value)}
+                                                                    value={idCard}
+                                                                    onChange={handleIdCardChange}
                                                                     type='text'
-                                                                    className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                    placeholder='เบอร์บ้าน'
+                                                                    className='form-control mb-3 mb-lg-0'
                                                                 />
+                                                                {/* {errors.idCard && <p className='text-danger'>{errors.idCard.message}</p>} */}
+                                                            </div>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label required fw-bold fs-6'>คำนำหน้าชื่อ</label>
+                                                                <select
+                                                                    className='form-select'
+                                                                    onChange={(e) => setSelectedPrefixId(Number(e.target.value))}
+                                                                    disabled={!selectedCustomerType}
+                                                                >
+                                                                    <option value=''>เลือกคำนำหน้าชื่อ...</option>
+                                                                    {selectedCustomer.PREFIX.map((prefix: any) => (
+                                                                        <option key={prefix.PREFIXID} value={prefix.PREFIXID}>{prefix.PREFIXNAME}</option>
+                                                                    ))}
+                                                                </select>
+                                                            </div>
+                                                            <div className='col-lg-4'>
+                                                                <label className='form-label required fw-bold fs-6'>ชื่อสกุล</label>
+                                                                <input
+                                                                    value={fullName}
+                                                                    onChange={(e) => setFullName(e.target.value)}
+                                                                    type='text'
+                                                                    className='form-control mb-3 mb-lg-0'
+                                                                />
+                                                                {errors.fullName && <p className='text-danger'>{errors.fullName}</p>}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="container">
+                                                        <div className='row mb-6'>
+                                                            <div className="col-lg-4 mb-3">
+                                                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                                    <label className="form-label required fw-bold fs-6">วันเดือนปีเกิด</label>
+                                                                    <DatePicker
+                                                                        selected={valueCalendar}
+                                                                        onChange={handleDateChange}
+                                                                        className="form-control mb-3 mb-lg-0"
+                                                                        showYearDropdown
+                                                                        showMonthDropdown
+                                                                        dropdownMode="select"
+                                                                        isClearable
+                                                                        dateFormat="yyyy/MM/dd"
+                                                                    />
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="col-lg-4 mb-3">
+                                                                <label className="form-label required fw-bold fs-6">อายุ</label>
+                                                                <input
+                                                                    value={valueAge !== null ? valueAge.toString() : ''}
+                                                                    type="text"
+                                                                    className="form-control mb-3 mb-lg-0"
+                                                                    readOnly
+                                                                />
+
+                                                            </div>
+                                                            {selectedCustomerType !== "1" && (
+                                                                <div className='col-lg-4 mb-3'>
+                                                                    <label className='form-label required fw-bold fs-6'>เพศ</label>
+                                                                    <select
+                                                                        className='form-select mb-3 mb-lg-0'
+                                                                        onChange={(e) => setSelectedSexId(Number(e.target.value))}
+                                                                        disabled={!selectedCustomerType}
+                                                                    >
+                                                                        <option value=''>เลือกเพศ...</option>
+                                                                        {selectedCustomer.SEX.map((sex: any) => (
+                                                                            <option key={sex.SEXID} value={sex.SEXID}>{sex.SEXNAME}</option>
+                                                                        ))}
+                                                                    </select>
+                                                                </div>
+                                                            )}
+                                                        </div>
+
+                                                        <div className="container">
+                                                            <div className='row mb-6 mt-6'>
+                                                                <div className='col-lg-6 mb-3'>
+                                                                    <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
+                                                                    <input
+                                                                        value={mobile}
+                                                                        onChange={(e) => setMobile(e.target.value)}
+                                                                        type='text'
+                                                                        className='form-control mb-3 mb-lg-0'
+                                                                    />
+                                                                    {errors.mobile && <p className='text-danger'>{errors.mobile}</p>}
+                                                                </div>
+                                                                <div className='col-lg-6 mb-3'>
+                                                                    <label className='form-label fw-bold fs-6'>เบอร์บ้าน</label>
+                                                                    <input
+                                                                        value={phone}
+                                                                        onChange={(e) => setPhone(e.target.value)}
+                                                                        type='text'
+                                                                        className='form-control mb-3 mb-lg-0'
+                                                                    />
+                                                                </div>
                                                             </div>
                                                         </div>
 
-                                                        <div className='row mb-6'>
-                                                            <div className='col-lg-6 mb-3'>
-                                                                <label className='form-label fw-bold fs-6'>เบอร์ที่ทำงาน</label>
-                                                                <input
-                                                                    value={workPhone}
-                                                                    onChange={(e) => setWorkPhone(e.target.value)}
-                                                                    type='text'
-                                                                    className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                    placeholder='เบอร์ที่ทำงาน'
-                                                                />
-                                                            </div>
-                                                            <div className='col-lg-6 mb-3'>
-                                                                <label className='form-label fw-bold fs-6'>อีเมล์</label>
-                                                                <input
-                                                                    value={email}
-                                                                    onChange={(e) => setEmail(e.target.value)}
-                                                                    type='text'
-                                                                    className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                    placeholder='อีเมล์'
-                                                                />
-                                                                {errors.email && <p className='text-danger'>{errors.email}</p>}
+                                                        <div className="container">
+                                                            <div className='row mb-6'>
+                                                                <div className='col-lg-6 mb-3'>
+                                                                    <label className='form-label fw-bold fs-6'>เบอร์ที่ทำงาน</label>
+                                                                    <input
+                                                                        value={workPhone}
+                                                                        onChange={(e) => setWorkPhone(e.target.value)}
+                                                                        type='text'
+                                                                        className='form-control mb-3 mb-lg-0'
+                                                                    />
+                                                                </div>
+                                                                <div className='col-lg-6 mb-3'>
+                                                                    <label className='form-label fw-bold fs-6'>อีเมล์</label>
+                                                                    <input
+                                                                        value={email}
+                                                                        onChange={(e) => setEmail(e.target.value)}
+                                                                        type='text'
+                                                                        className='form-control mb-3 mb-lg-0'
+                                                                    />
+                                                                    {errors.email && <p className='text-danger'>{errors.email}</p>}
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1383,120 +1422,121 @@ const SalesCreateCust: React.FC = () => {
                                             {/* Start กรณีประเภทลูกค้าเป็น นิติบุคคล */}
                                             {selectedCustomerType == "1" && (
                                                 <>
-                                                    <div className='row mb-6'>
-                                                        <div className='col-lg-6 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>ประเภทลูกค้า</label>
-                                                            <select
-                                                                className='form-select form-select-solid form-select-lg'
-                                                                onChange={handleCustTypeOptionChange}
-                                                                value={selectedCustomerType}
-                                                            >
-                                                                <option value=''>เลือกประเภทลูกค้า...</option>
-                                                                {customerTypes.map((item: any) => (
-                                                                    <option key={item.CUSTOMERTYPE} value={item.CUSTOMERTYPE}>
-                                                                        {item.CUSTOMERTYPENAME}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                        </div>
-
-                                                        <div className='col-lg-6'>
-                                                            <label className='form-label required fw-bold fs-6'>ชื่อบริษัท</label>
-                                                            <input
-                                                                // value={fields.idCard}
-                                                                // onChange={handleTextChange('idCard')}
-                                                                onChange={(e) => setFullName(e.target.value)}
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='ชื่อบริษัท'
-                                                            />
-                                                            {/* {errors.idCard && <p className='text-danger'>{errors.idCard.message}</p>} */}
-                                                        </div>
-
-                                                    </div>
-
-                                                    <div className='row mb-6'>
-                                                        <div className='col-lg-4'>
-                                                            <label className='form-label required fw-bold fs-6'>เลขประจำตัวผู้เสียภาษี</label>
-                                                            <input
-                                                                // value={fields.idCard}
-                                                                // onChange={handleTextChange('idCard')}
-                                                                onChange={handleIdCardChange}
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='เลขประจำตัวผู้เสียภาษี'
-                                                            />
-                                                            {/* {errors.idCard && <p className='text-danger'>{errors.idCard.message}</p>} */}
-                                                        </div>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>คำนำหน้า</label>
-                                                            <select
-                                                                className='form-select form-select-solid form-select-lg'
-                                                                onChange={(e) => setSelectedPrefixId(Number(e.target.value))}
-                                                                disabled={!selectedCustomerType}
-                                                            >
-                                                                <option value=''>เลือกคำนำหน้า...</option>
-                                                                {selectedCustomer.PREFIX.map((prefix: any) => (
-                                                                    <option key={prefix.PREFIXID} value={prefix.PREFIXID}>{prefix.PREFIXNAME}</option>
-                                                                ))}
-                                                            </select>
-                                                        </div>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>กรรมการผู้มีอำนาจ</label>
-                                                            <input
-                                                                value={nameMD}
-                                                                onChange={(e) => setNameMD(e.target.value)}
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='กรรมการผู้มีอำนาจ'
-                                                            />
-                                                            {/* {errors.fullname && <p className='text-danger'>{errors.fullname.message}</p>} */}
-                                                        </div>
-
-                                                        <div className='row mb-6 mt-6'>
-                                                            <div className='col-lg-6 mb-3'>
-                                                                <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
-                                                                <input
-                                                                    value={mobile}
-                                                                    type='text'
-                                                                    className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                    placeholder='เบอร์ที่ติดต่อได้'
-                                                                    onChange={(e) => setMobile(e.target.value)}
-                                                                />
-                                                            </div>
-                                                            <div className='col-lg-6 mb-3'>
-                                                                <label className='form-label fw-bold fs-6'>เบอร์บ้าน</label>
-                                                                <input
-                                                                    value={phone}
-                                                                    type='text'
-                                                                    className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                    placeholder='เบอร์บ้าน'
-                                                                    onChange={(e) => setPhone(e.target.value)}
-                                                                />
-                                                            </div>
-                                                        </div>
-
+                                                    <div className="container">
                                                         <div className='row mb-6'>
                                                             <div className='col-lg-6 mb-3'>
-                                                                <label className='form-label fw-bold fs-6'>เบอร์ที่ทำงาน</label>
-                                                                <input
-                                                                    value={workPhone}
-                                                                    type='text'
-                                                                    className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                    placeholder='เบอร์ที่ทำงาน'
-                                                                    onChange={(e) => setWorkPhone(e.target.value)}
-                                                                />
+                                                                <label className='form-label required fw-bold fs-6'>ประเภทลูกค้า</label>
+                                                                <select
+                                                                    className='form-select'
+                                                                    onChange={handleCustTypeOptionChange}
+                                                                    value={selectedCustomerType}
+                                                                >
+                                                                    <option value=''>เลือกประเภทลูกค้า...</option>
+                                                                    {customerTypes.map((item: any) => (
+                                                                        <option key={item.CUSTOMERTYPE} value={item.CUSTOMERTYPE}>
+                                                                            {item.CUSTOMERTYPENAME}
+                                                                        </option>
+                                                                    ))}
+                                                                </select>
                                                             </div>
-                                                            <div className='col-lg-6 mb-3'>
-                                                                <label className='form-label fw-bold fs-6'>อีเมล์</label>
+
+                                                            <div className='col-lg-6'>
+                                                                <label className='form-label required fw-bold fs-6'>ชื่อบริษัท</label>
                                                                 <input
-                                                                    value={email}
-                                                                    onChange={(e) => setEmail(e.target.value)}
+                                                                    // value={fields.idCard}
+                                                                    // onChange={handleTextChange('idCard')}
+                                                                    onChange={(e) => setFullName(e.target.value)}
                                                                     type='text'
-                                                                    className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                    placeholder='อีเมล์'
+                                                                    className='form-control mb-3 mb-lg-0'
                                                                 />
-                                                                {/* {errors.email && <p className='text-danger'>{errors.email.message}</p>} */}
+                                                                {/* {errors.idCard && <p className='text-danger'>{errors.idCard.message}</p>} */}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="container">
+                                                        <div className='row mb-6'>
+                                                            <div className='col-lg-4'>
+                                                                <label className='form-label required fw-bold fs-6'>เลขประจำตัวผู้เสียภาษี</label>
+                                                                <input
+                                                                    // value={fields.idCard}
+                                                                    // onChange={handleTextChange('idCard')}
+                                                                    onChange={handleIdCardChange}
+                                                                    type='text'
+                                                                    className='form-control mb-3 mb-lg-0'
+                                                                />
+                                                                {/* {errors.idCard && <p className='text-danger'>{errors.idCard.message}</p>} */}
+                                                            </div>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label required fw-bold fs-6'>คำนำหน้า</label>
+                                                                <select
+                                                                    className='form-select'
+                                                                    onChange={(e) => setSelectedPrefixId(Number(e.target.value))}
+                                                                    value={selectedPrefixId}
+                                                                    disabled={!selectedCustomerType}
+                                                                >
+                                                                    <option value=''>เลือกคำนำหน้า...</option>
+                                                                    {selectedCustomer.PREFIX.map((prefix: any) => (
+                                                                        <option key={prefix.PREFIXID} value={prefix.PREFIXID}>{prefix.PREFIXNAME}</option>
+                                                                    ))}
+                                                                </select>
+                                                            </div>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label required fw-bold fs-6'>กรรมการผู้มีอำนาจ</label>
+                                                                <input
+                                                                    value={nameMD}
+                                                                    onChange={(e) => setNameMD(e.target.value)}
+                                                                    type='text'
+                                                                    className='form-control mb-3 mb-lg-0'
+                                                                />
+                                                                {/* {errors.fullname && <p className='text-danger'>{errors.fullname.message}</p>} */}
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="container">
+                                                            <div className='row mb-6 mt-6'>
+                                                                <div className='col-lg-6 mb-3'>
+                                                                    <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
+                                                                    <input
+                                                                        value={mobile}
+                                                                        type='text'
+                                                                        className='form-control mb-3 mb-lg-0'
+                                                                        onChange={(e) => setMobile(e.target.value)}
+                                                                    />
+                                                                </div>
+                                                                <div className='col-lg-6 mb-3'>
+                                                                    <label className='form-label fw-bold fs-6'>เบอร์บ้าน</label>
+                                                                    <input
+                                                                        value={phone}
+                                                                        type='text'
+                                                                        className='form-control mb-3 mb-lg-0'
+                                                                        onChange={(e) => setPhone(e.target.value)}
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="container">
+                                                            <div className='row mb-6'>
+                                                                <div className='col-lg-6 mb-3'>
+                                                                    <label className='form-label fw-bold fs-6'>เบอร์ที่ทำงาน</label>
+                                                                    <input
+                                                                        value={workPhone}
+                                                                        type='text'
+                                                                        className='form-control mb-3 mb-lg-0'
+                                                                        onChange={(e) => setWorkPhone(e.target.value)}
+                                                                    />
+                                                                </div>
+                                                                <div className='col-lg-6 mb-3'>
+                                                                    <label className='form-label fw-bold fs-6'>อีเมล์</label>
+                                                                    <input
+                                                                        value={email}
+                                                                        onChange={(e) => setEmail(e.target.value)}
+                                                                        type='text'
+                                                                        className='form-control mb-3 mb-lg-0'
+                                                                    />
+                                                                    {/* {errors.email && <p className='text-danger'>{errors.email.message}</p>} */}
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1507,44 +1547,33 @@ const SalesCreateCust: React.FC = () => {
                                             {
                                                 selectedCustomerType == "0" || selectedCustomerType == "2" ? (
                                                     <>
-                                                        <button
-                                                            className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
-                                                            type='button'
-                                                            onClick={handleNextClick}
-                                                            disabled={!selectedCustomerType || !selectedCardType || !idCard ||
-                                                                !selectedPrefixId || !fullName || !valueCalendar || !valueAge ||
-                                                                !selectedSexId || !mobile} >
-                                                            เพิ่มที่อยู่ลูกค้า
-                                                        </button>
+                                                        <div className="container">
+                                                            <button
+                                                                className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
+                                                                type='button'
+                                                                onClick={handleNextClick}
+                                                                disabled={!selectedCustomerType || !selectedCardType || !idCard ||
+                                                                    !selectedPrefixId || !fullName || !valueCalendar || !valueAge ||
+                                                                    !selectedSexId || !mobile} >
+                                                                เพิ่มที่อยู่ลูกค้า
+                                                            </button>
+                                                        </div>
                                                     </>
                                                 ) : selectedCustomerType == "1" && (
                                                     <>
-                                                        <button
-                                                            className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
-                                                            type='button'
-                                                            onClick={handleNextClick}
-                                                            disabled={!selectedCustomerType || !idCard ||
-                                                                !selectedPrefixId || !nameMD || !mobile} >
-                                                            เพิ่มที่อยู่นิติบุคคล
-                                                        </button>
+                                                        <div className="container">
+                                                            <button
+                                                                className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
+                                                                type='button'
+                                                                onClick={handleNextClick}
+                                                                disabled={!selectedCustomerType || !idCard ||
+                                                                    !selectedPrefixId || !nameMD || !mobile} >
+                                                                เพิ่มที่อยู่นิติบุคคล
+                                                            </button>
+                                                        </div>
                                                     </>
                                                 )
                                             }
-
-                                            {/* {
-                                                selectedCustomerType == "1" && (
-                                                    <>
-                                                        <button
-                                                            className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
-                                                            type='button'
-                                                            onClick={handleNextClick}
-                                                            disabled={!selectedCustomerType || !idCard ||
-                                                                !selectedPrefixId || !nameMD || !mobile} >
-                                                            เพิ่มที่อยู่นิติบุคคล
-                                                        </button>
-                                                    </>
-                                                )
-                                            } */}
                                         </div>
                                     </form>
                                     {/* end form */}
@@ -1581,138 +1610,134 @@ const SalesCreateCust: React.FC = () => {
                                             <form noValidate className='form'>
                                                 <div className='card-body px-lg-9 px-1'>
 
-                                                    <div className='row mb-6'>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>บ้านเลขที่</label>
-                                                            <input
-                                                                value={addressNumber}
-                                                                onChange={(e) => setAddressNumber(e.target.value)}
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='บ้านเลขที่'
-                                                            />
-                                                        </div>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label fw-bold fs-6'>หมู่ที่</label>
-                                                            <input
-                                                                value={addressMoo}
-                                                                onChange={(e) => setAddressMoo(e.target.value)}
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='หมู่ที่'
-                                                            />
-                                                        </div>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label fw-bold fs-6'>ตรอก / ซอย</label>
-                                                            <input
-                                                                value={addressSoi}
-                                                                onChange={(e) => setAddressSoi(e.target.value)}
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='ตรอก / ซอย'
-                                                            />
-                                                        </div>
-                                                    </div>
-
-                                                    <div className='row mb-6'>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label fw-bold fs-6'>ถนน</label>
-                                                            <input
-                                                                value={addressRoad}
-                                                                onChange={(e) => setAddressRoad(e.target.value)}
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='ถนน'
-                                                            />
-                                                        </div>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>จังหวัด</label>
-                                                            <select
-                                                                className='form-select form-select-solid form-select-lg'
-                                                                onChange={handleProvinceChange}
-                                                            >
-                                                                <option value=''>เลือกจังหวัด...</option>
-                                                                {getProvince.map((item: any) => (
-                                                                    <option key={item.PROVINCECODE} value={item.PROVINCECODE}>
-                                                                        {item.PROVINCENAME}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                        </div>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>อำเภอ / เขต</label>
-                                                            <select
-                                                                className='form-select form-select-solid form-select-lg'
-                                                                onChange={handleDistrictChange}
-                                                            >
-                                                                <option value=''>เลือกอำเภอ / เขต...</option>
-                                                                {Array.isArray(getDistrict) && getDistrict.map((item: any) => (
-                                                                    <option key={item.DISTRICTCODE} value={item.DISTRICTCODE}>
-                                                                        {item.DISTRICTNAME}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className='row mb-6'>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>ตำบล / แขวง</label>
-                                                            <select
-                                                                className='form-select form-select-solid form-select-lg'
-                                                                onChange={handleSubDistrictChange}
-                                                            >
-                                                                <option value=''>เลือกตำบล / แขวง...</option>
-                                                                {Array.isArray(getSubDistrict) && getSubDistrict.map((item: any) => (
-                                                                    <option key={item.SUBDISTRICTCODE} value={item.SUBDISTRICTCODE}>
-                                                                        {item.SUBDISTRICTNAME}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                        </div>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>รหัสไปรษณีย์</label>
-                                                            <input
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                value={selectedZipcode}
-                                                                readOnly
-                                                            />
-                                                        </div>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
-                                                            <input
-                                                                value={addressPhone}
-                                                                onChange={(e) => setAddressPhone(e.target.value)}
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='เบอร์ที่ติดต่อได้'
-                                                            />
-                                                        </div>
-                                                    </div>
-
-                                                    <div className='row mb-6'>
-                                                        <div className='col-lg-6 mb-3 mt-xl-5'>
-                                                            <label className='form-check form-check-inline form-check-solid me-5'>
+                                                    <div className="container">
+                                                        <div className='row mb-6'>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label required fw-bold fs-6'>บ้านเลขที่</label>
                                                                 <input
-                                                                    onChange={handleCheckboxChange}
-                                                                    className='form-check-input'
-                                                                    name='showInstallAddress'
-                                                                    type='checkbox'
-                                                                    checked={showInstallAddress}
+                                                                    value={addressNumber}
+                                                                    onChange={(e) => setAddressNumber(e.target.value)}
+                                                                    type='text'
+                                                                    className='form-control mb-3 mb-lg-0'
                                                                 />
-                                                                <span className='fw-bold ps-2 fs-6 mb-sm-5'>ใช้เหมือนที่อยู่ลูกค้า (ติดตั้ง)</span>
-                                                            </label>
-                                                            <label className='form-check form-check-inline form-check-solid me-5 mt-3 mt-sm-0'>
+                                                            </div>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label fw-bold fs-6'>หมู่ที่</label>
                                                                 <input
-                                                                    onChange={handleCheckboxChange}
-                                                                    className='form-check-input'
-                                                                    name='showPaymentAddress'
-                                                                    type='checkbox'
-                                                                    checked={showPaymentAddress}
+                                                                    value={addressMoo}
+                                                                    onChange={(e) => setAddressMoo(e.target.value)}
+                                                                    type='text'
+                                                                    className='form-control mb-3 mb-lg-0'
                                                                 />
-                                                                <span className='fw-bold ps-2 fs-6'>ใช้เหมือนที่อยู่ลูกค้า (เก็บเงิน)</span>
-                                                            </label>
+                                                            </div>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label fw-bold fs-6'>ตรอก / ซอย</label>
+                                                                <input
+                                                                    value={addressSoi}
+                                                                    onChange={(e) => setAddressSoi(e.target.value)}
+                                                                    type='text'
+                                                                    className='form-control mb-3 mb-lg-0'
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="container">
+                                                        <div className='row mb-6'>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label fw-bold fs-6'>ถนน</label>
+                                                                <input
+                                                                    value={addressRoad}
+                                                                    onChange={(e) => setAddressRoad(e.target.value)}
+                                                                    type='text'
+                                                                    className='form-control mb-3 mb-lg-0'
+                                                                />
+                                                            </div>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label required fw-bold fs-6'>จังหวัด</label>
+                                                                <select
+                                                                    className='form-select'
+                                                                    onChange={handleProvinceChange}
+                                                                >
+                                                                    <option value=''>เลือกจังหวัด...</option>
+                                                                    {getProvince.map((item: any) => (
+                                                                        <option key={item.PROVINCECODE} value={item.PROVINCECODE}>
+                                                                            {item.PROVINCENAME}
+                                                                        </option>
+                                                                    ))}
+                                                                </select>
+                                                            </div>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label required fw-bold fs-6'>อำเภอ / เขต</label>
+                                                                <select
+                                                                    className='form-select'
+                                                                    onChange={handleDistrictChange}
+                                                                >
+                                                                    <option value=''>เลือกอำเภอ / เขต...</option>
+                                                                    {Array.isArray(getDistrict) && getDistrict.map((item: any) => (
+                                                                        <option key={item.DISTRICTCODE} value={item.DISTRICTCODE}>
+                                                                            {item.DISTRICTNAME}
+                                                                        </option>
+                                                                    ))}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="container">
+                                                        <div className='row mb-6'>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label required fw-bold fs-6'>ตำบล / แขวง</label>
+                                                                <select
+                                                                    className='form-select'
+                                                                    onChange={handleSubDistrictChange}
+                                                                >
+                                                                    <option value=''>เลือกตำบล / แขวง...</option>
+                                                                    {Array.isArray(getSubDistrict) && getSubDistrict.map((item: any) => (
+                                                                        <option key={item.SUBDISTRICTCODE} value={item.SUBDISTRICTCODE}>
+                                                                            {item.SUBDISTRICTNAME}
+                                                                        </option>
+                                                                    ))}
+                                                                </select>
+                                                            </div>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label required fw-bold fs-6'>รหัสไปรษณีย์</label>
+                                                                <input
+                                                                    type='text'
+                                                                    className='form-control mb-3 mb-lg-0'
+                                                                    value={selectedZipcode}
+                                                                    readOnly
+                                                                    style={{
+                                                                        backgroundColor: '#d7dbde',
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
+                                                                <input
+                                                                    value={addressPhone}
+                                                                    onChange={(e) => setAddressPhone(e.target.value)}
+                                                                    type='text'
+                                                                    className='form-control mb-3 mb-lg-0'
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="container">
+                                                        <div className='row mb-6'>
+                                                            <div className='col-lg-6 mb-3 mt-xl-5'>
+                                                                <label className='form-check form-check-inline form-check-solid me-5'>
+                                                                    <input
+                                                                        onChange={handleCheckboxChange}
+                                                                        className='form-check-input'
+                                                                        name='allAddress'
+                                                                        type='checkbox'
+                                                                        checked={likeAllAddr}
+                                                                    />
+                                                                    <span className='fw-bold ps-2 fs-6 mb-sm-5'>ใช้ที่อยู่เดียวกันทั้งหมด</span>
+                                                                </label>
+                                                            </div>
                                                         </div>
                                                     </div>
 
@@ -1751,143 +1776,166 @@ const SalesCreateCust: React.FC = () => {
                                         <div className='accordion-body'>
                                             <form noValidate className='form'>
                                                 <div className='card-body px-lg-9 px-1'>
-                                                    <div className='row mb-6'>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>บ้านเลขที่</label>
-                                                            <input
-                                                                value={addressNumberForInstall}
-                                                                onChange={(e) => {
-                                                                    setAddressNumberForInstall(e.target.value);
-                                                                    resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                                                }}
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='บ้านเลขที่'
-                                                            />
-                                                        </div>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label fw-bold fs-6'>หมู่ที่</label>
-                                                            <input
-                                                                value={addressMooForInstall}
-                                                                onChange={(e) => {
-                                                                    setAddressMooForInstall(e.target.value);
-                                                                    resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                                                }}
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='หมู่ที่'
-                                                            />
-                                                        </div>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label fw-bold fs-6'>ตรอก / ซอย</label>
-                                                            <input
-                                                                value={addressSoiForInstall}
-                                                                onChange={(e) => {
-                                                                    setAddressSoiForInstall(e.target.value);
-                                                                    resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                                                }}
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='ตรอก / ซอย'
-                                                            />
+
+                                                    <div className="container">
+                                                        <div className='row mb-6'>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label required fw-bold fs-6'>บ้านเลขที่</label>
+                                                                <input
+                                                                    value={addressNumberForInstall}
+                                                                    onChange={(e) => {
+                                                                        setAddressNumberForInstall(e.target.value);
+                                                                        resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                                    }}
+                                                                    type='text'
+                                                                    className='form-control mb-3 mb-lg-0'
+                                                                />
+                                                            </div>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label fw-bold fs-6'>หมู่ที่</label>
+                                                                <input
+                                                                    value={addressMooForInstall}
+                                                                    onChange={(e) => {
+                                                                        setAddressMooForInstall(e.target.value);
+                                                                        resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                                    }}
+                                                                    type='text'
+                                                                    className='form-control mb-3 mb-lg-0'
+                                                                />
+                                                            </div>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label fw-bold fs-6'>ตรอก / ซอย</label>
+                                                                <input
+                                                                    value={addressSoiForInstall}
+                                                                    onChange={(e) => {
+                                                                        setAddressSoiForInstall(e.target.value);
+                                                                        resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                                    }}
+                                                                    type='text'
+                                                                    className='form-control mb-3 mb-lg-0'
+                                                                />
+                                                            </div>
                                                         </div>
                                                     </div>
 
-                                                    <div className='row mb-6'>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label fw-bold fs-6'>ถนน</label>
-                                                            <input
-                                                                value={addressRoadForInstall}
-                                                                onChange={(e) => {
-                                                                    setAddressRoadForInstall(e.target.value);
-                                                                    resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                                                }}
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='ถนน'
-                                                            />
-                                                        </div>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>จังหวัด</label>
-                                                            <select
-                                                                className='form-select form-select-solid form-select-lg'
-                                                                value={selectedProvinceForInstall}
-                                                                onChange={(e) => {
-                                                                    setSelectedProvinceForInstall(Number(e.target.value))
-                                                                    resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                                                }}
-                                                            >
-                                                                <option value=''>เลือกจังหวัด...</option>
-                                                                {getProvinceForInstall.map((item: any) => (
-                                                                    <option key={item.PROVINCECODE} value={item.PROVINCECODE}>
-                                                                        {item.PROVINCENAME}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                        </div>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>อำเภอ / เขต</label>
-                                                            <select
-                                                                className='form-select form-select-solid form-select-lg'
-                                                                value={selectedDistrictForInstall}
-                                                                onChange={(e) => {
-                                                                    setSelectedDistrictForInstall(Number(e.target.value))
-                                                                    resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                                                }}
-                                                            >
-                                                                <option value=''>เลือกอำเภอ / เขต...</option>
-                                                                {getDistrictForInstall.map((item: any) => (
-                                                                    <option key={item.DISTRICTCODE} value={item.DISTRICTCODE}>
-                                                                        {item.DISTRICTNAME}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
+                                                    <div className="container">
+                                                        <div className='row mb-6'>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label fw-bold fs-6'>ถนน</label>
+                                                                <input
+                                                                    value={addressRoadForInstall}
+                                                                    onChange={(e) => {
+                                                                        setAddressRoadForInstall(e.target.value);
+                                                                        resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                                    }}
+                                                                    type='text'
+                                                                    className='form-control mb-3 mb-lg-0'
+                                                                />
+                                                            </div>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label required fw-bold fs-6'>จังหวัด</label>
+                                                                <select
+                                                                    className='form-select'
+                                                                    value={selectedProvinceForInstall}
+                                                                    onChange={(e) => {
+                                                                        setSelectedProvinceForInstall(Number(e.target.value))
+                                                                        resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                                    }}
+                                                                >
+                                                                    <option value=''>เลือกจังหวัด...</option>
+                                                                    {getProvinceForInstall.map((item: any) => (
+                                                                        <option key={item.PROVINCECODE} value={item.PROVINCECODE}>
+                                                                            {item.PROVINCENAME}
+                                                                        </option>
+                                                                    ))}
+                                                                </select>
+                                                            </div>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label required fw-bold fs-6'>อำเภอ / เขต</label>
+                                                                <select
+                                                                    className='form-select'
+                                                                    value={selectedDistrictForInstall}
+                                                                    onChange={(e) => {
+                                                                        setSelectedDistrictForInstall(Number(e.target.value))
+                                                                        resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                                    }}
+                                                                >
+                                                                    <option value=''>เลือกอำเภอ / เขต...</option>
+                                                                    {getDistrictForInstall.map((item: any) => (
+                                                                        <option key={item.DISTRICTCODE} value={item.DISTRICTCODE}>
+                                                                            {item.DISTRICTNAME}
+                                                                        </option>
+                                                                    ))}
+                                                                </select>
+                                                            </div>
                                                         </div>
                                                     </div>
 
-                                                    <div className='row mb-6'>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>ตำบล / แขวง</label>
-                                                            <select
-                                                                className='form-select form-select-solid form-select-lg'
-                                                                value={selectedSubDistrictForInstall}
-                                                                onChange={(e) => {
-                                                                    setSelectedSubDistrictForInstall(Number(e.target.value))
-                                                                    resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                                                }}
-                                                            >
-                                                                <option value=''>เลือกตำบล / แขวง...</option>
-                                                                {getSubDistrictForInstall.map((item: any) => (
-                                                                    <option key={item.SUBDISTRICTCODE} value={item.SUBDISTRICTCODE}>
-                                                                        {item.SUBDISTRICTNAME}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                        </div>
+                                                    <div className="container">
+                                                        <div className='row mb-6'>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label required fw-bold fs-6'>ตำบล / แขวง</label>
+                                                                <select
+                                                                    className='form-select'
+                                                                    value={selectedSubDistrictForInstall}
+                                                                    onChange={(e) => {
+                                                                        setSelectedSubDistrictForInstall(Number(e.target.value))
+                                                                        resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                                    }}
+                                                                >
+                                                                    <option value=''>เลือกตำบล / แขวง...</option>
+                                                                    {getSubDistrictForInstall.map((item: any) => (
+                                                                        <option key={item.SUBDISTRICTCODE} value={item.SUBDISTRICTCODE}>
+                                                                            {item.SUBDISTRICTNAME}
+                                                                        </option>
+                                                                    ))}
+                                                                </select>
+                                                            </div>
 
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>รหัสไปรษณีย์</label>
-                                                            <input
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                value={selectedZipcodeForInstall}
-                                                                readOnly
-                                                            />
-                                                        </div>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
-                                                            <input
-                                                                value={addressPhoneForInstall}
-                                                                onChange={(e) => {
-                                                                    setAddressPhoneForInstall(e.target.value)
-                                                                    resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                                                }}
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='เบอร์ที่ติดต่อได้'
-                                                            />
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label required fw-bold fs-6'>รหัสไปรษณีย์</label>
+                                                                <input
+                                                                    type='text'
+                                                                    className='form-control mb-3 mb-lg-0'
+                                                                    value={selectedZipcodeForInstall}
+                                                                    readOnly
+                                                                    style={{
+                                                                        backgroundColor: '#d7dbde',
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
+                                                                <input
+                                                                    value={addressPhoneForInstall}
+                                                                    onChange={(e) => {
+                                                                        setAddressPhoneForInstall(e.target.value)
+                                                                        resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                                    }}
+                                                                    type='text'
+                                                                    className='form-control mb-3 mb-lg-0'
+                                                                />
+                                                            </div>
                                                         </div>
                                                     </div>
+
+                                                    <div className="container">
+                                                        <div className='row mb-6'>
+                                                            <div className='col-lg-6 mb-3 mt-xl-5'>
+                                                                <label className='form-check form-check-inline form-check-solid me-5'>
+                                                                    <input
+                                                                        onChange={handleCheckboxChange}
+                                                                        className='form-check-input'
+                                                                        name='likeAddressCard'
+                                                                        type='checkbox'
+                                                                    // checked={installLikeCardAddr}
+                                                                    />
+                                                                    <span className='fw-bold ps-2 fs-6 mb-sm-5'>ใช้ที่อยู่เดียวกับที่อยู่ตามบัตรฯ</span>
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
                                                 </div>
                                             </form>
                                             {/* end form */}
@@ -1926,140 +1974,170 @@ const SalesCreateCust: React.FC = () => {
                                             <form noValidate className='form'>
                                                 <div className='card-body px-lg-9 px-1'>
 
-                                                    <div className='row mb-6'>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>บ้านเลขที่</label>
-                                                            <input
-                                                                value={addressNumberForPayment}
-                                                                onChange={(e) => {
-                                                                    setAddressNumberForPayment(e.target.value)
-                                                                    resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                                                }}
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='บ้านเลขที่'
-                                                            />
-                                                        </div>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label fw-bold fs-6'>หมู่ที่</label>
-                                                            <input
-                                                                value={addressMooForPayment}
-                                                                onChange={(e) => {
-                                                                    setAddressMooForPayment(e.target.value)
-                                                                    resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                                                }}
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='หมู่ที่'
-                                                            />
-                                                        </div>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label fw-bold fs-6'>ตรอก / ซอย</label>
-                                                            <input
-                                                                value={addressSoiForPayment}
-                                                                onChange={(e) => {
-                                                                    setAddressSoiForPayment(e.target.value)
-                                                                    resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                                                }}
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='ตรอก / ซอย'
-                                                            />
+                                                    <div className="container">
+                                                        <div className='row mb-6'>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label required fw-bold fs-6'>บ้านเลขที่</label>
+                                                                <input
+                                                                    value={addressNumberForPayment}
+                                                                    onChange={(e) => {
+                                                                        setAddressNumberForPayment(e.target.value)
+                                                                        resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                                    }}
+                                                                    type='text'
+                                                                    className='form-control mb-3 mb-lg-0'
+                                                                />
+                                                            </div>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label fw-bold fs-6'>หมู่ที่</label>
+                                                                <input
+                                                                    value={addressMooForPayment}
+                                                                    onChange={(e) => {
+                                                                        setAddressMooForPayment(e.target.value)
+                                                                        resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                                    }}
+                                                                    type='text'
+                                                                    className='form-control mb-3 mb-lg-0'
+                                                                />
+                                                            </div>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label fw-bold fs-6'>ตรอก / ซอย</label>
+                                                                <input
+                                                                    value={addressSoiForPayment}
+                                                                    onChange={(e) => {
+                                                                        setAddressSoiForPayment(e.target.value)
+                                                                        resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                                    }}
+                                                                    type='text'
+                                                                    className='form-control mb-3 mb-lg-0' />
+                                                            </div>
                                                         </div>
                                                     </div>
 
-                                                    <div className='row mb-6'>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label fw-bold fs-6'>ถนน</label>
-                                                            <input
-                                                                value={addressRoadForPayment}
-                                                                onChange={(e) => {
-                                                                    setAddressRoadForPayment(e.target.value)
-                                                                    resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                                                }}
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='ถนน'
-                                                            />
-                                                        </div>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>จังหวัด</label>
-                                                            <select
-                                                                className='form-select form-select-solid form-select-lg'
-                                                                value={selectedProvinceForPayment}
-                                                                onChange={(e) => {
-                                                                    setSelectedProvinceForPayment(Number(e.target.value))
-                                                                    resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                                                }}
-                                                            >
-                                                                <option value=''>เลือกจังหวัด...</option>
-                                                                {getProvinceForPayment.map((item: any) => (
-                                                                    <option key={item.PROVINCECODE} value={item.PROVINCECODE}>
-                                                                        {item.PROVINCENAME}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                        </div>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>อำเภอ / เขต</label>
-                                                            <select
-                                                                className='form-select form-select-solid form-select-lg'
-                                                                value={selectedDistrictForPayment}
-                                                                onChange={(e) => {
-                                                                    setSelectedDistrictForPayment(Number(e.target.value))
-                                                                    resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                                                }}
-                                                            >
-                                                                <option value=''>เลือกอำเภอ / เขต...</option>
-                                                                {Array.isArray(getDistrictForPayment) && getDistrictForPayment.map((item: any) => (
-                                                                    <option key={item.DISTRICTCODE} value={item.DISTRICTCODE}>
-                                                                        {item.DISTRICTNAME}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
+                                                    <div className="container">
+                                                        <div className='row mb-6'>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label fw-bold fs-6'>ถนน</label>
+                                                                <input
+                                                                    value={addressRoadForPayment}
+                                                                    onChange={(e) => {
+                                                                        setAddressRoadForPayment(e.target.value)
+                                                                        resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                                    }}
+                                                                    type='text'
+                                                                    className='form-control mb-3 mb-lg-0'
+                                                                />
+                                                            </div>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label required fw-bold fs-6'>จังหวัด</label>
+                                                                <select
+                                                                    className='form-select'
+                                                                    value={selectedProvinceForPayment}
+                                                                    onChange={(e) => {
+                                                                        setSelectedProvinceForPayment(Number(e.target.value))
+                                                                        resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                                    }}
+                                                                >
+                                                                    <option value=''>เลือกจังหวัด...</option>
+                                                                    {getProvinceForPayment.map((item: any) => (
+                                                                        <option key={item.PROVINCECODE} value={item.PROVINCECODE}>
+                                                                            {item.PROVINCENAME}
+                                                                        </option>
+                                                                    ))}
+                                                                </select>
+                                                            </div>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label required fw-bold fs-6'>อำเภอ / เขต</label>
+                                                                <select
+                                                                    className='form-select'
+                                                                    value={selectedDistrictForPayment}
+                                                                    onChange={(e) => {
+                                                                        setSelectedDistrictForPayment(Number(e.target.value))
+                                                                        resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                                    }}
+                                                                >
+                                                                    <option value=''>เลือกอำเภอ / เขต...</option>
+                                                                    {Array.isArray(getDistrictForPayment) && getDistrictForPayment.map((item: any) => (
+                                                                        <option key={item.DISTRICTCODE} value={item.DISTRICTCODE}>
+                                                                            {item.DISTRICTNAME}
+                                                                        </option>
+                                                                    ))}
+                                                                </select>
+                                                            </div>
                                                         </div>
                                                     </div>
 
-                                                    <div className='row mb-6'>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>ตำบล / แขวง</label>
-                                                            <select
-                                                                className='form-select form-select-solid form-select-lg'
-                                                                value={selectedSubDistrictForPayment}
-                                                                onChange={(e) => {
-                                                                    setSelectedSubDistrictForPayment(Number(e.target.value))
-                                                                    resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                                                }}
-                                                            >
-                                                                <option value=''>เลือกตำบล / แขวง...</option>
-                                                                {Array.isArray(getSubDistrictForPayment) && getSubDistrictForPayment.map((item: any) => (
-                                                                    <option key={item.SUBDISTRICTCODE} value={item.SUBDISTRICTCODE}>
-                                                                        {item.SUBDISTRICTNAME}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
+                                                    <div className="container">
+                                                        <div className='row mb-6'>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label required fw-bold fs-6'>ตำบล / แขวง</label>
+                                                                <select
+                                                                    className='form-select'
+                                                                    value={selectedSubDistrictForPayment}
+                                                                    onChange={(e) => {
+                                                                        setSelectedSubDistrictForPayment(Number(e.target.value))
+                                                                        resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                                    }}
+                                                                >
+                                                                    <option value=''>เลือกตำบล / แขวง...</option>
+                                                                    {Array.isArray(getSubDistrictForPayment) && getSubDistrictForPayment.map((item: any) => (
+                                                                        <option key={item.SUBDISTRICTCODE} value={item.SUBDISTRICTCODE}>
+                                                                            {item.SUBDISTRICTNAME}
+                                                                        </option>
+                                                                    ))}
+                                                                </select>
+                                                            </div>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label required fw-bold fs-6'>รหัสไปรษณีย์</label>
+                                                                <input
+                                                                    type='text'
+                                                                    className='form-control mb-3 mb-lg-0'
+                                                                    value={selectedZipcodeForPayment}
+                                                                    readOnly
+                                                                    style={{
+                                                                        backgroundColor: '#d7dbde',
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
+                                                                <input
+                                                                    value={addressPhoneForPayment}
+                                                                    onChange={(e) => {
+                                                                        setAddressPhoneForPayment(e.target.value)
+                                                                        resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                                    }}
+                                                                    type='text'
+                                                                    className='form-control mb-3 mb-lg-0'
+                                                                />
+                                                            </div>
                                                         </div>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>รหัสไปรษณีย์</label>
-                                                            <input
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                value={selectedZipcodeForPayment}
-                                                                readOnly
-                                                            />
-                                                        </div>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
-                                                            <input
-                                                                value={addressPhoneForPayment}
-                                                                onChange={(e) => {
-                                                                    setAddressPhoneForPayment(e.target.value)
-                                                                    resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                                                }}
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='เบอร์ที่ติดต่อได้'
-                                                            />
+                                                    </div>
+
+                                                    <div className="container">
+                                                        <div className='row mb-6'>
+                                                            <div className='col-lg-6 mb-3 mt-xl-5'>
+                                                                <label className='form-check form-check-inline form-check-solid me-5'>
+                                                                    <input
+                                                                        onChange={handleCheckboxChange}
+                                                                        className='form-check-input'
+                                                                        name='paymentLikeAddressCard'
+                                                                        type='checkbox'
+                                                                        checked={paymentLikeCardAddr}
+                                                                    />
+                                                                    <span className='fw-bold ps-2 fs-6 mb-sm-5'>ใช้ที่อยู่เดียวกับที่อยู่ตามบัตรฯ</span>
+                                                                </label>
+                                                                <label className='form-check form-check-inline form-check-solid me-5 mt-3 mt-sm-0'>
+                                                                    <input
+                                                                        onChange={handleCheckboxChange}
+                                                                        className='form-check-input'
+                                                                        name='paymentLikeAddressInstall'
+                                                                        type='checkbox'
+                                                                        checked={paymentLikeInstallAddr}
+                                                                    />
+                                                                    <span className='fw-bold ps-2 fs-6'>ใช้ที่อยู่เดียวกับที่อยู่ติดตั้ง</span>
+                                                                </label>
+                                                            </div>
                                                         </div>
                                                     </div>
 
@@ -2074,32 +2152,32 @@ const SalesCreateCust: React.FC = () => {
                         {/* End accordion ที่อยู่ลูกค้า (เก็บเงิน)*/}
 
                         {/* Start accordion ที่อยู่ลูกค้า (ใบกำกับภาษี)*/}
-                        {showCustomerAddress && (
-                            <div className='accordion mb-10' id='kt_accordion_5'>
-                                <div className='accordion-item mb-10'>
-                                    <h2 className='accordion-header' id='kt_accordion_5_header_5'>
-                                        <h3
-                                            className='accordion-button fs-4 fw-bold collapsed border-0 h-50px pt-5 rounded-top px-lg-15 px-7'
-                                            data-bs-toggle='collapse'
-                                            data-bs-target='#kt_accordion_5_body_5'
-                                            aria-expanded='true'
-                                            aria-controls='kt_accordion_5_body_5'
-                                            style={{ color: 'white', cursor: 'pointer', backgroundColor: '#3777bc' }}
-                                        >
-                                            ที่อยู่ลูกค้า (ออกใบกำกับภาษี)
-                                        </h3>
-                                    </h2>
-                                    <div
-                                        id='kt_accordion_5_body_5'
-                                        className='accordion-collapse collapse show'
-                                        aria-labelledby='kt_accordion_5_header_5'
-                                        data-bs-parent='#kt_accordion_5'
+                        <div className='accordion mb-10' id='kt_accordion_5'>
+                            <div className='accordion-item mb-10'>
+                                <h2 className='accordion-header' id='kt_accordion_5_header_5'>
+                                    <h3
+                                        className='accordion-button fs-4 fw-bold collapsed border-0 h-50px pt-5 rounded-top px-lg-15 px-7'
+                                        data-bs-toggle='collapse'
+                                        data-bs-target='#kt_accordion_5_body_5'
+                                        aria-expanded='true'
+                                        aria-controls='kt_accordion_5_body_5'
+                                        style={{ color: 'white', cursor: 'pointer', backgroundColor: '#3777bc' }}
                                     >
-                                        <div className='accordion-body'>
-                                            {/* start form */}
-                                            <form noValidate className='form'>
-                                                <div className='card-body px-lg-9 px-1'>
+                                        ที่อยู่ลูกค้า (ออกใบกำกับภาษี)
+                                    </h3>
+                                </h2>
+                                <div
+                                    id='kt_accordion_5_body_5'
+                                    className='accordion-collapse collapse show'
+                                    aria-labelledby='kt_accordion_5_header_5'
+                                    data-bs-parent='#kt_accordion_5'
+                                >
+                                    <div className='accordion-body'>
+                                        {/* start form */}
+                                        <form noValidate className='form'>
+                                            <div className='card-body px-lg-9 px-1'>
 
+                                                <div className="container">
                                                     <div className='row mb-6'>
                                                         <div className='col-lg-4 mb-3'>
                                                             <label className='form-label required fw-bold fs-6'>บ้านเลขที่</label>
@@ -2107,8 +2185,7 @@ const SalesCreateCust: React.FC = () => {
                                                                 value={addressNumberForBilling}
                                                                 onChange={(e) => setAddressNumberForBilling(e.target.value)}
                                                                 type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='บ้านเลขที่'
+                                                                className='form-control mb-3 mb-lg-0'
                                                             />
                                                         </div>
                                                         <div className='col-lg-4 mb-3'>
@@ -2117,8 +2194,7 @@ const SalesCreateCust: React.FC = () => {
                                                                 value={addressMooForBilling}
                                                                 onChange={(e) => setAddressMooForBilling(e.target.value)}
                                                                 type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='หมู่ที่'
+                                                                className='form-control mb-3 mb-lg-0'
                                                             />
                                                         </div>
                                                         <div className='col-lg-4 mb-3'>
@@ -2127,12 +2203,13 @@ const SalesCreateCust: React.FC = () => {
                                                                 value={addressSoiForBilling}
                                                                 onChange={(e) => setAddressSoiForBilling(e.target.value)}
                                                                 type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='ตรอก / ซอย'
+                                                                className='form-control mb-3 mb-lg-0'
                                                             />
                                                         </div>
                                                     </div>
+                                                </div>
 
+                                                <div className="container">
                                                     <div className='row mb-6'>
                                                         <div className='col-lg-4 mb-3'>
                                                             <label className='form-label fw-bold fs-6'>ถนน</label>
@@ -2140,201 +2217,200 @@ const SalesCreateCust: React.FC = () => {
                                                                 value={addressRoadForBilling}
                                                                 onChange={(e) => setAddressRoadForBilling(e.target.value)}
                                                                 type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='ถนน'
+                                                                className='form-control mb-3 mb-lg-0'
                                                             />
                                                         </div>
+
+                                                        {/* จังหวัด */}
                                                         <div className='col-lg-4 mb-3'>
                                                             <label className='form-label required fw-bold fs-6'>จังหวัด</label>
                                                             <select
-                                                                className='form-select form-select-solid form-select-lg'
+                                                                className='form-select'
                                                                 value={
-                                                                    showBillingSameAsInstallAddress // ตรวจสอบว่าติ๊กใช้ที่อยู่ติดตั้งหรือไม่
-                                                                        ? selectedProvinceForInstall
-                                                                        : showBillingSameAsPaymentAddress // ถ้าไม่ติ๊กที่อยู่ติดตั้ง แต่ติ๊กที่อยู่ชำระเงิน
-                                                                            ? selectedProvinceForPayment
-                                                                            : selectedProvinceForBilling // ถ้าไม่ติ๊กทั้งสอง ให้ใช้ค่าที่อยู่ใบกำกับภาษี
+                                                                    billLikeCardAddr ? selectedProvince :
+                                                                        billLikeInstallAddr ? selectedProvinceForInstall :
+                                                                            billLikePaymentAddr ? selectedProvinceForPayment :
+                                                                                selectedProvinceForBilling
                                                                 }
                                                                 onChange={(e) => {
-                                                                    if (showBillingSameAsInstallAddress) {
-                                                                        setSelectedProvinceForInstall(Number(e.target.value)); // ถ้าติ๊กที่อยู่ติดตั้ง อัปเดตค่าที่อยู่ติดตั้ง
-                                                                    } else if (showBillingSameAsPaymentAddress) {
-                                                                        setSelectedProvinceForPayment(Number(e.target.value)); // ถ้าติ๊กที่อยู่ชำระเงิน อัปเดตค่าที่อยู่ชำระเงิน
+                                                                    const selectedValue = Number(e.target.value);
+                                                                    if (billLikeCardAddr) {
+                                                                        setSelectedProvince(selectedValue);
+                                                                    } else if (billLikeInstallAddr) {
+                                                                        setSelectedProvinceForInstall(selectedValue);
+                                                                    } else if (billLikePaymentAddr) {
+                                                                        setSelectedProvinceForPayment(selectedValue);
                                                                     } else {
-                                                                        setSelectedProvinceForBilling(Number(e.target.value)); // ถ้าไม่ติ๊กทั้งสอง อัปเดตค่าที่อยู่ใบกำกับภาษี
+                                                                        setSelectedProvinceForBilling(selectedValue);
                                                                     }
                                                                 }}
                                                             >
                                                                 <option value=''>เลือกจังหวัด...</option>
-                                                                {showBillingSameAsInstallAddress
-                                                                    ? getProvinceForInstall.map((item: any) => ( // แสดงตัวเลือกจากที่อยู่ติดตั้งถ้าติ๊ก
-                                                                        <option key={item.PROVINCECODE} value={item.PROVINCECODE}>
-                                                                            {item.PROVINCENAME}
-                                                                        </option>
-                                                                    ))
-                                                                    : showBillingSameAsPaymentAddress
-                                                                        ? getProvinceForPayment.map((item: any) => ( // แสดงตัวเลือกจากที่อยู่ชำระเงินถ้าติ๊ก
-                                                                            <option key={item.PROVINCECODE} value={item.PROVINCECODE}>
-                                                                                {item.PROVINCENAME}
-                                                                            </option>
-                                                                        ))
-                                                                        : getProvince.map((item: any) => ( // แสดงตัวเลือกจากที่อยู่ใบกำกับภาษีถ้าไม่ติ๊กทั้งสอง
-                                                                            <option key={item.PROVINCECODE} value={item.PROVINCECODE}>
-                                                                                {item.PROVINCENAME}
-                                                                            </option>
-                                                                        ))}
+                                                                {(billLikeCardAddr ? getProvince :
+                                                                    billLikeInstallAddr ? getProvinceForInstall :
+                                                                        billLikePaymentAddr ? getProvinceForPayment :
+                                                                            getProvinceForBilling).map((item) => (
+                                                                                <option key={item.PROVINCECODE} value={item.PROVINCECODE}>
+                                                                                    {item.PROVINCENAME}
+                                                                                </option>
+                                                                            ))}
                                                             </select>
                                                         </div>
+
+                                                        {/* อำเภอ / เขต */}
                                                         <div className='col-lg-4 mb-3'>
                                                             <label className='form-label required fw-bold fs-6'>อำเภอ / เขต</label>
                                                             <select
-                                                                className='form-select form-select-solid form-select-lg'
+                                                                className='form-select'
                                                                 value={
-                                                                    showBillingSameAsInstallAddress // ตรวจสอบว่าติ๊กใช้ที่อยู่ติดตั้งหรือไม่
-                                                                        ? selectedDistrictForInstall
-                                                                        : showBillingSameAsPaymentAddress // ถ้าไม่ติ๊กที่อยู่ติดตั้ง แต่ติ๊กที่อยู่ชำระเงิน
-                                                                            ? selectedDistrictForPayment
-                                                                            : selectedDistrictForBilling // ถ้าไม่ติ๊กทั้งสอง ให้ใช้ค่าที่อยู่ใบกำกับภาษี
+                                                                    billLikeCardAddr ? selectedDistrict :
+                                                                        billLikeInstallAddr ? selectedDistrictForInstall :
+                                                                            billLikePaymentAddr ? selectedDistrictForPayment :
+                                                                                selectedDistrictForBilling
                                                                 }
                                                                 onChange={(e) => {
-                                                                    if (showBillingSameAsInstallAddress) {
-                                                                        setSelectedDistrictForInstall(Number(e.target.value)); // ถ้าติ๊กที่อยู่ติดตั้ง อัปเดตค่าที่อยู่ติดตั้ง
-                                                                    } else if (showBillingSameAsPaymentAddress) {
-                                                                        setSelectedDistrictForPayment(Number(e.target.value)); // ถ้าติ๊กที่อยู่ชำระเงิน อัปเดตค่าที่อยู่ชำระเงิน
+                                                                    const selectedValue = Number(e.target.value);
+                                                                    if (billLikeCardAddr) {
+                                                                        setSelectedDistrict(selectedValue);
+                                                                    } else if (billLikeInstallAddr) {
+                                                                        setSelectedDistrictForInstall(selectedValue);
+                                                                    } else if (billLikePaymentAddr) {
+                                                                        setSelectedDistrictForPayment(selectedValue);
                                                                     } else {
-                                                                        setSelectedDistrictForBilling(Number(e.target.value)); // ถ้าไม่ติ๊กทั้งสอง อัปเดตค่าที่อยู่ใบกำกับภาษี
+                                                                        setSelectedDistrictForBilling(selectedValue);
                                                                     }
                                                                 }}
                                                             >
                                                                 <option value=''>เลือกอำเภอ / เขต...</option>
-                                                                {showBillingSameAsInstallAddress
-                                                                    ? getDistrictForInstall.map((item: any) => ( // แสดงตัวเลือกจากที่อยู่ติดตั้งถ้าติ๊ก
-                                                                        <option key={item.DISTRICTCODE} value={item.DISTRICTCODE}>
-                                                                            {item.DISTRICTNAME}
-                                                                        </option>
-                                                                    ))
-                                                                    : showBillingSameAsPaymentAddress
-                                                                        ? getDistrictForPayment.map((item: any) => ( // แสดงตัวเลือกจากที่อยู่ชำระเงินถ้าติ๊ก
-                                                                            <option key={item.DISTRICTCODE} value={item.DISTRICTCODE}>
-                                                                                {item.DISTRICTNAME}
-                                                                            </option>
-                                                                        ))
-                                                                        : getDistrict.map((item: any) => ( // แสดงตัวเลือกจากที่อยู่ใบกำกับภาษีถ้าไม่ติ๊กทั้งสอง
-                                                                            <option key={item.DISTRICTCODE} value={item.DISTRICTCODE}>
-                                                                                {item.DISTRICTNAME}
-                                                                            </option>
-                                                                        ))}
+                                                                {(billLikeCardAddr ? getDistrict :
+                                                                    billLikeInstallAddr ? getDistrictForInstall :
+                                                                        billLikePaymentAddr ? getDistrictForPayment :
+                                                                            getDistrictForBilling).map((item) => (
+                                                                                <option key={item.DISTRICTCODE} value={item.DISTRICTCODE}>
+                                                                                    {item.DISTRICTNAME}
+                                                                                </option>
+                                                                            ))}
                                                             </select>
                                                         </div>
                                                     </div>
+                                                </div>
 
+                                                <div className="container">
                                                     <div className='row mb-6'>
+                                                        {/* ตำบล / แขวง */}
                                                         <div className='col-lg-4 mb-3'>
                                                             <label className='form-label required fw-bold fs-6'>ตำบล / แขวง</label>
                                                             <select
-                                                                className='form-select form-select-solid form-select-lg'
+                                                                className='form-select'
                                                                 value={
-                                                                    showBillingSameAsInstallAddress
-                                                                        ? selectedSubDistrictForInstall
-                                                                        : showBillingSameAsPaymentAddress
-                                                                            ? selectedSubDistrictForPayment
-                                                                            : selectedSubDistrictForBilling
+                                                                    billLikeCardAddr ? selectedSubDistrict :
+                                                                        billLikeInstallAddr ? selectedSubDistrictForInstall :
+                                                                            billLikePaymentAddr ? selectedSubDistrictForPayment :
+                                                                                selectedSubDistrictForBilling
                                                                 }
                                                                 onChange={(e) => {
-                                                                    if (showBillingSameAsInstallAddress) {
-                                                                        setSelectedSubDistrictForInstall(Number(e.target.value));
-                                                                    } else if (showBillingSameAsPaymentAddress) {
-                                                                        setSelectedSubDistrictForPayment(Number(e.target.value));
+                                                                    const selectedValue = Number(e.target.value);
+                                                                    if (billLikeCardAddr) {
+                                                                        setSelectedSubDistrict(selectedValue);
+                                                                    } else if (billLikeInstallAddr) {
+                                                                        setSelectedSubDistrictForInstall(selectedValue);
+                                                                    } else if (billLikePaymentAddr) {
+                                                                        setSelectedSubDistrictForPayment(selectedValue);
                                                                     } else {
-                                                                        setSelectedSubDistrictForBilling(Number(e.target.value));
+                                                                        setSelectedSubDistrictForBilling(selectedValue);
                                                                     }
                                                                 }}
                                                             >
                                                                 <option value=''>เลือกตำบล / แขวง...</option>
-                                                                {showBillingSameAsInstallAddress
-                                                                    ? getSubDistrictForInstall.map((item: any) => (
-                                                                        <option key={item.SUBDISTRICTCODE} value={item.SUBDISTRICTCODE}>
-                                                                            {item.SUBDISTRICTNAME}
-                                                                        </option>
-                                                                    ))
-                                                                    : showBillingSameAsPaymentAddress
-                                                                        ? getSubDistrictForPayment.map((item: any) => (
-                                                                            <option key={item.SUBDISTRICTCODE} value={item.SUBDISTRICTCODE}>
-                                                                                {item.SUBDISTRICTNAME}
-                                                                            </option>
-                                                                        ))
-                                                                        : getSubDistrict.map((item: any) => (
-                                                                            <option key={item.SUBDISTRICTCODE} value={item.SUBDISTRICTCODE}>
-                                                                                {item.SUBDISTRICTNAME}
-                                                                            </option>
-                                                                        ))}
+                                                                {(billLikeCardAddr ? getSubDistrict :
+                                                                    billLikeInstallAddr ? getSubDistrictForInstall :
+                                                                        billLikePaymentAddr ? getSubDistrictForPayment :
+                                                                            getSubDistrictForBilling).map((item) => (
+                                                                                <option key={item.SUBDISTRICTCODE} value={item.SUBDISTRICTCODE}>
+                                                                                    {item.SUBDISTRICTNAME}
+                                                                                </option>
+                                                                            ))}
                                                             </select>
                                                         </div>
 
+                                                        {/* รหัสไปรษณีย์ */}
                                                         <div className='col-lg-4 mb-3'>
                                                             <label className='form-label required fw-bold fs-6'>รหัสไปรษณีย์</label>
                                                             <input
                                                                 type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                value={selectedZipcodeForBilling}
+                                                                className='form-control mb-3 mb-lg-0'
+                                                                value={
+                                                                    billLikeCardAddr ? selectedZipcode :
+                                                                        billLikeInstallAddr ? selectedZipcodeForInstall :
+                                                                            billLikePaymentAddr ? selectedZipcodeForPayment :
+                                                                                selectedZipcodeForBilling
+                                                                }
                                                                 readOnly
+                                                                style={{
+                                                                    backgroundColor: '#d7dbde',
+                                                                }}
                                                             />
                                                         </div>
+
                                                         <div className='col-lg-4 mb-3'>
                                                             <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
                                                             <input
                                                                 value={addressPhoneForBilling}
-                                                                onChange={(e) => setAddressPhoneForBilling(e.target.value)}
+                                                                onChange={(e) => {
+                                                                    setAddressPhoneForBilling(e.target.value)
+                                                                }}
                                                                 type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='เบอร์ที่ติดต่อได้'
+                                                                className='form-control mb-3 mb-lg-0'
                                                             />
                                                         </div>
-                                                    </div>
 
+                                                    </div>
+                                                </div>
+
+                                                <div className="container">
                                                     <div className='row mb-6'>
                                                         <div className='col-lg-6 mb-3 mt-xl-5'>
                                                             <label className='form-check form-check-inline form-check-solid me-5'>
                                                                 <input
+                                                                    onChange={handleCheckboxChange}
                                                                     className='form-check-input'
-                                                                    name='showBillingSameAsCard'
+                                                                    name='billLikeAddressCard'
                                                                     type='checkbox'
-                                                                    onChange={handleCheckboxTaxChange}
-                                                                    checked={showBillingSameAsCard} // ตรวจสอบการเลือก
+                                                                    checked={billLikeCardAddr}
                                                                 />
-                                                                <span className='fw-bold ps-2 fs-6 mb-sm-5'>ใช้เหมือนที่อยู่ลูกค้า (ตามบัตร)</span>
+                                                                <span className='fw-bold ps-2 fs-6 mb-sm-5'>ใช้ที่อยู่เดียวกับที่อยู่ตามบัตรฯ</span>
                                                             </label>
-                                                            <label className='form-check form-check-inline form-check-solid my-5'>
+                                                            <label className='form-check form-check-inline form-check-solid me-5 mt-3 mt-sm-0'>
                                                                 <input
+                                                                    onChange={handleCheckboxChange}
                                                                     className='form-check-input'
-                                                                    name='showBillingSameAsInstallAddress'
+                                                                    name='billLikeAddressInstall'
                                                                     type='checkbox'
-                                                                    onChange={handleCheckboxTaxChange}
-                                                                    checked={showBillingSameAsInstallAddress} // ตรวจสอบการเลือก
+                                                                    checked={billLikeInstallAddr}
                                                                 />
-                                                                <span className='fw-bold ps-2 fs-6 mb-sm-5'>ใช้เหมือนที่อยู่ลูกค้า (ติดตั้ง)</span>
+                                                                <span className='fw-bold ps-2 fs-6'>ใช้ที่อยู่เดียวกับที่อยู่ติดตั้ง</span>
                                                             </label>
-                                                            <label className='form-check form-check-inline form-check-solid me-5'>
+                                                            <label className='form-check form-check-inline form-check-solid me-5 mt-3 mt-sm-0'>
                                                                 <input
+                                                                    onChange={handleCheckboxChange}
                                                                     className='form-check-input'
-                                                                    name='showBillingSameAsPaymentAddress'
+                                                                    name='billLikeAddressPayment'
                                                                     type='checkbox'
-                                                                    onChange={handleCheckboxTaxChange}
-                                                                    checked={showBillingSameAsPaymentAddress} // ตรวจสอบการเลือก
+                                                                    checked={billLikePaymentAddr}
                                                                 />
-                                                                <span className='fw-bold ps-2 fs-6 mb-sm-5'>ใช้เหมือนที่อยู่ลูกค้า (เก็บเงิน)</span>
+                                                                <span className='fw-bold ps-2 fs-6'>ใช้ที่อยู่เดียวกับที่อยู่เก็บเงิน</span>
                                                             </label>
                                                         </div>
                                                     </div>
-
                                                 </div>
-                                            </form>
-                                            {/* end form */}
-                                        </div>
+
+                                            </div>
+                                        </form>
+                                        {/* end form */}
                                     </div>
                                 </div>
                             </div>
-                        )}
+                        </div>
                         {/* End accordion ที่อยู่ลูกค้า (ใบกำกับภาษี)*/}
                     </div>
                     {/* End Card */}

@@ -36,6 +36,7 @@ const UpdateSalesDiscount: React.FC = () => {
 
     const location = useLocation();
     const item = location.state as ItemProps || [];
+    console.log(`item`, item);
 
     const refno = item?.REFNO
     const productContract = item?.PRODUCT
@@ -272,9 +273,9 @@ const UpdateSalesDiscount: React.FC = () => {
                         </h1>
                         <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
                             <li className="breadcrumb-item text-muted">
-                                <Link className="text-muted text-hover-primary" to="/metronic8/react/demo1/sales/overview">
+                                <span className="text-muted text-hover-primary">
                                     ระบบขาย
-                                </Link></li>
+                                </span></li>
                             <li className="breadcrumb-item"><span className="bullet bg-gray-500 w-5px h-2px"></span></li>
                             <li className="breadcrumb-item text-gray-900">แก้ไขเครื่องเทิร์น / ส่วนลด / ของแถม</li>
                         </ul>

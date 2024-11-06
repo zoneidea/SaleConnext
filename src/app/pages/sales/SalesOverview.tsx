@@ -90,9 +90,9 @@ const SalesOverview: React.FC = () => {
             </h1>
             <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
               <li className="breadcrumb-item text-muted">
-                <a className="text-muted text-hover-primary" href="/metronic8/react/demo1/sales/overview">
+                <span className="text-muted text-hover-primary">
                   ระบบขาย
-                </a></li>
+                </span></li>
               <li className="breadcrumb-item"><span className="bullet bg-gray-500 w-5px h-2px"></span></li>
               <li className="breadcrumb-item text-gray-900">ภาพรวม</li>
             </ul>

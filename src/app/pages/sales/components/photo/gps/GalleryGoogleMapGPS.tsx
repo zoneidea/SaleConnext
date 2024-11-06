@@ -184,6 +184,7 @@ import {
     usePhotoEquipmentStore,
     usePhotoGPSStore // Import your GPS store here
 } from '../../../../../modules/stores/sales/photoStore/photoStore';
+
 import Swal from 'sweetalert2';
 
 const GalleryGoogleMapGPS: React.FC = () => {
@@ -195,13 +196,6 @@ const GalleryGoogleMapGPS: React.FC = () => {
     const SupEmpId = auth?.data?.[0]?.SupEmp || '';
     const SecEmpId = auth?.data?.[0]?.SecEmp || '';
 
-    const { imagesIdCard } = usePhotoIdCardStore();
-    const { imagesDrawingMap } = usePhotoDrawingMapStore();
-    const { imagesTurn } = usePhotoTurnStore();
-    const { imagesInstallation } = usePhotoInstallationStore();
-    const { imagesHomeCustomer } = usePhotoHomeCustomerStore();
-    const { imagesCustomer } = usePhotoCustomerStore();
-    const { imagesEquipment } = usePhotoEquipmentStore();
     const { imagesGPS, loadImages, removeImage } = usePhotoGPSStore(); // Load images from GPS store
     console.log(`imagesGPS`, imagesGPS);
     

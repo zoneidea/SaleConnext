@@ -34,7 +34,7 @@ const SalesPackage: React.FC = () => {
     const [loadingCategories, setLoadingCategories] = useState(true);
     const [loadingProducts, setLoadingProducts] = useState(true)
 
-    const [categories, setCategories] = useState<any[]>([]);
+    // const [categories, setCategories] = useState<any[]>([]);
     const [packageType, setPackageType] = useState<any[]>([]);
     // console.log(`packageType: `, packageType);
 
@@ -81,10 +81,10 @@ const SalesPackage: React.FC = () => {
     // console.log(`EmpId`, EmpId);
 
     const { fetchCategory } = useFetchCategoryStore();
-    // console.log(`fetchCategory: `, fetchCategory);
+    console.log(`fetchCategory: `, fetchCategory);
 
-    const getCategoryLocal = localStorage.getItem("fetchCategory");
-    const parsegetCategoryLocal = getCategoryLocal ? JSON.parse(getCategoryLocal) : null;
+    // const getCategoryLocal = localStorage.getItem("fetchCategory");
+    // const parseGetCategoryLocal = getCategoryLocal ? JSON.parse(getCategoryLocal) : null;
 
     const { product, setProduct } = useProductStore();
     // console.log(`product: `, product);
@@ -156,25 +156,25 @@ const SalesPackage: React.FC = () => {
     // console.log('selectedPackageModel: ', selectedPackageModel);
 
     // POST GetProduct/Categories
-    useEffect(() => {
-        const postData = async () => {
-            try {
-                const response = await axios.post(CATEGORIES_URL,
-                    { EmpId, DivisionId, DepartId, DepartGroup, TeamSale }, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                    },
-                });
-                const data = Array.isArray(response.data.data) ? response.data.data : [];
-                setCategories(data);
-            } catch (error) {
-                console.error('Error fetching CATEGORIES_URL:', error);
-            } finally {
-                setLoadingCategories(false); // เปลี่ยนสถานะการโหลดเมื่อข้อมูลเสร็จ
-            }
-        };
-        postData();
-    }, [EmpId, TeamSale, SaleCode, SupEmpId, SecEmpId, DivisionId, DepartId, DepartGroup, auth]);
+    // useEffect(() => {
+    //     const postData = async () => {
+    //         try {
+    //             const response = await axios.post(CATEGORIES_URL,
+    //                 { EmpId, DivisionId, DepartId, DepartGroup, TeamSale }, {
+    //                 headers: {
+    //                     'Content-Type': 'multipart/form-data',
+    //                 },
+    //             });
+    //             const data = Array.isArray(response.data.data) ? response.data.data : [];
+    //             setCategories(data);
+    //         } catch (error) {
+    //             console.error('Error fetching CATEGORIES_URL:', error);
+    //         } finally {
+    //             setLoadingCategories(false); // เปลี่ยนสถานะการโหลดเมื่อข้อมูลเสร็จ
+    //         }
+    //     };
+    //     postData();
+    // }, [EmpId, TeamSale, SaleCode, SupEmpId, SecEmpId, DivisionId, DepartId, DepartGroup, auth]);
 
     // GET Product/GetStock?
     useEffect(() => {
@@ -198,7 +198,7 @@ const SalesPackage: React.FC = () => {
             }
         };
         getData();
-    }, [categories, selectedCategoryId, setProduct]);
+    }, [selectedCategoryId, setProduct]);
 
     // GET GetPackage/PackageType
     useEffect(() => {
@@ -238,7 +238,7 @@ const SalesPackage: React.FC = () => {
                     },
                 });
                 const data = Array.isArray(response.data.data) ? response.data.data : [];
-                console.log(`response data from GetPackage/PackageList: `, data);
+                // console.log(`response data from GetPackage/PackageList: `, data);
                 setPackageList(data);
             } catch (error) {
                 console.error('Error fetching POST_PACKAGE_URL:', error);
@@ -465,9 +465,9 @@ const SalesPackage: React.FC = () => {
                         </h1>
                         <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
                             <li className="breadcrumb-item text-muted">
-                                <a className="text-muted text-hover-primary" href="/metronic8/react/demo1/sales/overview">
+                                <span className="text-muted text-hover-primary">
                                     ระบบขาย
-                                </a></li>
+                                </span></li>
                             <li className="breadcrumb-item"><span className="bullet bg-gray-500 w-5px h-2px"></span></li>
                             <li className="breadcrumb-item text-gray-900">เลือกแพ็คเกจ</li>
                         </ul>
@@ -501,11 +501,11 @@ const SalesPackage: React.FC = () => {
                                             <div className='col-lg-6 my-7 my-xl-10'>
                                                 <label className='form-label required fw-bold fs-3'>หมวดหมู่สินค้า</label>
                                                 <select
-                                                    className='form-select form-select-solid form-select-lg'
+                                                    className='form-select'
                                                     onChange={handleCateOptionChange}
                                                 >
                                                     <option value=''>เลือกหมวดหมู่สินค้า...</option>
-                                                    {parsegetCategoryLocal.map((item: any, index: number) => (
+                                                    {fetchCategory.map((item: any, index: number) => (
                                                         <option key={index} value={item.CATEGORIES_ID}>
                                                             {item.CATEGORIES_NAME_TH}
                                                         </option>

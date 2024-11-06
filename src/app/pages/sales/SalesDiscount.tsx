@@ -47,11 +47,11 @@ const SalesDiscount: React.FC = () => {
     const totalPrice = PRODUCT?.[0]?.Package?.[0]?.TOTALPRICE ?? 0;
     const discountPrice = PRODUCT?.[0]?.Package?.[0]?.DISCOUNTPRICE ?? 0;
     console.log(`discountPrice`, discountPrice);
-    
+
     const sequence = PRODUCT?.[0]?.Package?.[0]?.SEQUENCE ?? 0;
     const freeGift = PRODUCT?.[0]?.Package?.[0]?.FREEGIFT ?? [];
     console.log(`freeGift`, freeGift);
-    
+
     // console.log(`selectedGift`, freeGift[selectedGiftId-1]?.GIFTCODE);
 
     const [step, setStep] = useState<number>(100);
@@ -205,9 +205,9 @@ const SalesDiscount: React.FC = () => {
                         </h1>
                         <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
                             <li className="breadcrumb-item text-muted">
-                                <Link className="text-muted text-hover-primary" to="/metronic8/react/demo1/sales/overview">
+                                <span className="text-muted text-hover-primary">
                                     ระบบขาย
-                                </Link></li>
+                                </span></li>
                             <li className="breadcrumb-item"><span className="bullet bg-gray-500 w-5px h-2px"></span></li>
                             <li className="breadcrumb-item text-gray-900">เครื่องเทิร์น / ส่วนลด / ของแถม</li>
                         </ul>
@@ -243,7 +243,7 @@ const SalesDiscount: React.FC = () => {
                                                 <div className='col-lg-4 mb-3'>
                                                     <label className='form-label fw-bold fs-6'>เครื่องเทิร์น</label>
                                                     <select
-                                                        className='form-select form-select-solid form-select-lg'
+                                                        className='form-select'
                                                         onChange={handleTurnOptionChange}
                                                     >
                                                         <option value=''>เลือกเครื่องเทิร์น...</option>
@@ -258,8 +258,7 @@ const SalesDiscount: React.FC = () => {
                                                     <label className='form-label fw-bold fs-6'>รุ่น</label>
                                                     <input
                                                         type='text'
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                        placeholder='รุ่น'
+                                                        className='form-control mb-3 mb-lg-0'
                                                         onChange={handleTradeInModelChange}
                                                     />
                                                 </div>
@@ -267,8 +266,7 @@ const SalesDiscount: React.FC = () => {
                                                     <label className='form-label fw-bold fs-6'>หมายเลขเครื่อง</label>
                                                     <input
                                                         type='text'
-                                                        className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                        placeholder='หมายเลขเครื่อง'
+                                                        className='form-control mb-3 mb-lg-0'
                                                         onChange={handleTradeInSerialChange}
                                                     />
                                                 </div>
@@ -306,7 +304,7 @@ const SalesDiscount: React.FC = () => {
                                             <div className='row mb-6'>
                                                 <div className='col-lg-6 mb-3'>
                                                     <label className='form-label fw-bold fs-6'>ราคา</label>
-                                                    <p className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'>
+                                                    <p className='form-control mb-3 mb-lg-0'>
                                                         {finalPrice}
                                                     </p>
                                                 </div>
@@ -316,7 +314,7 @@ const SalesDiscount: React.FC = () => {
                                                         <button className='btn btn-light-primary' type='button' onClick={handleDecrement}>
                                                             -
                                                         </button>
-                                                        <div className='form-control form-control-lg form-control-solid mx-2 mb-0 text-center flex-grow-1'>
+                                                        <div className='form-control mx-2 mb-0 text-center flex-grow-1'>
                                                             {currentSequence}
                                                         </div>
                                                         <button className='btn btn-light-primary' type='button' onClick={handleIncrement}>
@@ -359,7 +357,7 @@ const SalesDiscount: React.FC = () => {
                                                 <div className='col-lg-12 mb-3'>
                                                     <label className='form-label fw-bold fs-6'>ของแถม</label>
                                                     <select
-                                                        className='form-select form-select-solid form-select-lg'
+                                                        className='form-select'
                                                         onChange={handleGiftOptionChange}
                                                     >
                                                         <option value=''>เลือกของแถม...</option>

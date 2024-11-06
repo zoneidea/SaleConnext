@@ -5,6 +5,14 @@ interface FetchCategoryStore {
     setFetchCategory: (fetchCategory: any[]) => void;
 }
 
+export const useFetchCategoryStore = create<FetchCategoryStore>((set) => ({
+    fetchCategory: JSON.parse(localStorage.getItem('fetchCategory') || '[]'), // โหลดค่าเริ่มต้นจาก localStorage
+    setFetchCategory: (fetchCategory: any[]) => {
+        localStorage.setItem('fetchCategory', JSON.stringify(fetchCategory)); // บันทึกค่าใน localStorage ทุกครั้งที่อัปเดต
+        set({ fetchCategory });
+    },
+}));
+
 interface CategoryStore {
     EmpId: string;
     TeamSale: string;
@@ -14,7 +22,7 @@ interface CategoryStore {
     DivisionId: string;
     DepartId: string;
     DepartGroup: string;
-
+    
     setEmpId: (id: string) => void;
     setTeamSale: (team: string) => void;
     setSaleCode: (id: string) => void;
@@ -25,10 +33,35 @@ interface CategoryStore {
     setDepartGroup: (group: string) => void;
 }
 
+export const useCategoryStore = create<CategoryStore>((set) => ({
+    EmpId: '',
+    TeamSale: '',
+    SaleCode: '',
+    SupEmpId: '',
+    SecEmpId: '',
+    DivisionId: '',
+    DepartId: '',
+    DepartGroup: '',
+    
+    setEmpId: (id) => set({ EmpId: id }),
+    setTeamSale: (team) => set({ TeamSale: team }),
+    setSaleCode: (id) => set({ SaleCode: id }),
+    setSupEmpId: (id) => set({ SupEmpId: id }),
+    setSecEmpId: (id) => set({ SecEmpId: id }),
+    setDivisionId: (id) => set({ DivisionId: id }),
+    setDepartId: (id) => set({ DepartId: id }),
+    setDepartGroup: (group) => set({ DepartGroup: group }),
+}));
+
 interface ProductStore {
     product: any[];
     setProduct: (product: any[]) => void;
 }
+
+export const useProductStore = create<ProductStore>((set) => ({
+    product: [],
+    setProduct: (product: any[]) => set({ product }),
+}));
 
 interface PackageStore {
     EmpId: string;
@@ -56,53 +89,6 @@ interface PackageStore {
     setSEQUENCE: (price: number | null) => void;
 }
 
-interface ConditionsCheckHistoryStore {
-    EmpId: string;
-    DivisionId: string;
-    DepartId: string;
-    DepartGroup: string;
-    TeamSale: string;
-    Model: string;
-
-    setEmpId: (id: string) => void;
-    setDivisionId: (id: string) => void;
-    setDepartId: (id: string) => void;
-    setDepartGroup: (group: string) => void;
-    setTeamSale: (team: string) => void;
-    setModel: (id: string) => void;
-}
-
-export const useFetchCategoryStore = create<FetchCategoryStore>((set) => ({
-    fetchCategory: [],
-    setFetchCategory: (fetchCategory: any[]) => set({ fetchCategory }),
-}));
-
-export const useCategoryStore = create<CategoryStore>((set) => ({
-    EmpId: '',
-    TeamSale: '',
-    SaleCode: '',
-    SupEmpId: '',
-    SecEmpId: '',
-    DivisionId: '',
-    DepartId: '',
-    DepartGroup: '',
-
-    setEmpId: (id) => set({ EmpId: id }),
-    setTeamSale: (team) => set({ TeamSale: team }),
-    setSaleCode: (id) => set({ SaleCode: id }),
-    setSupEmpId: (id) => set({ SupEmpId: id }),
-    setSecEmpId: (id) => set({ SecEmpId: id }),
-    setDivisionId: (id) => set({ DivisionId: id }),
-    setDepartId: (id) => set({ DepartId: id }),
-    setDepartGroup: (group) => set({ DepartGroup: group }),
-}));
-
-export const useProductStore = create<ProductStore>((set) => ({
-    product: [],
-    setProduct: (product: any[]) => set({ product }),
-}));
-
-
 export const usePackageStore = create<PackageStore>((set) => ({
     EmpId: '',
     DivisionId: '',
@@ -129,6 +115,22 @@ export const usePackageStore = create<PackageStore>((set) => ({
     setSEQUENCE: (price: number | null) => set({ SEQUENCE: price }),
 }));
 
+interface ConditionsCheckHistoryStore {
+    EmpId: string;
+    DivisionId: string;
+    DepartId: string;
+    DepartGroup: string;
+    TeamSale: string;
+    Model: string;
+
+    setEmpId: (id: string) => void;
+    setDivisionId: (id: string) => void;
+    setDepartId: (id: string) => void;
+    setDepartGroup: (group: string) => void;
+    setTeamSale: (team: string) => void;
+    setModel: (id: string) => void;
+}
+
 export const useConditionsCheckHistoryStore = create<ConditionsCheckHistoryStore>((set) => ({
     EmpId: '',
     DivisionId: '',
@@ -144,5 +146,3 @@ export const useConditionsCheckHistoryStore = create<ConditionsCheckHistoryStore
     setTeamSale: (team) => set({ TeamSale: team }),
     setModel: (id) => set({ Model: id }),
 }));
-
-

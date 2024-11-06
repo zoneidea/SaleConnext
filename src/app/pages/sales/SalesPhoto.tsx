@@ -1,8 +1,40 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { KTIcon, toAbsoluteUrl } from '../../../_metronic/helpers'
 import { Content } from '../../../_metronic/layout/components/content'
 
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+
 const SalesPhoto: React.FC = () => {
+    const navigate = useNavigate()
+
+    
+    interface ItemProps {
+        REFNO: String,
+        CONTNO: String,
+        EMPID: String,
+        TEAMSALE: String,
+        SALECODE: String,
+        SUPEMPID: String,
+        SECEMPID: String,
+        STATUS: String,
+        PRODUCT: [any],
+        CUSTOMERSTATUS: [any],
+        DISCOUNT: [any], 
+        CUSTOMERDETAIL: [any],
+        ADDRESS: [any],
+        PDPA: [any],
+        CONTRACT: [any],
+        IMAGE: [any],
+        CHECKERCOMMENT: [any]
+    }
+    const location = useLocation() as any;
+    const fromStep = location.state?.fromStep || false;
+    const item = location.state?.data as ItemProps || [];
+    console.log(`item`, item);
+
+    const refno = item?.REFNO
+
     return (
         <>
             <Content>
@@ -15,9 +47,9 @@ const SalesPhoto: React.FC = () => {
                         </h1>
                         <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
                             <li className="breadcrumb-item text-muted">
-                                <a className="text-muted text-hover-primary" href="/metronic8/react/demo1/sales/overview">
+                                <span className="text-muted text-hover-primary">
                                     ระบบขาย
-                                </a></li>
+                                </span></li>
                             <li className="breadcrumb-item"><span className="bullet bg-gray-500 w-5px h-2px"></span></li>
                             <li className="breadcrumb-item text-gray-900">ถ่ายรูป</li>
                         </ul>
@@ -204,14 +236,35 @@ const SalesPhoto: React.FC = () => {
                     {/* End Card Body */}
                 </div>
 
-                <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10'>
-                    <Link to='/sale/contract' className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
-                        ย้อนกลับ
-                    </Link>
-                    {/* <Link to='/sale/gallery' className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
-                        ตรวจสอบรูปถ่าย
-                    </Link> */}
-                </div>
+                {/* แสดงปุ่มเมื่อมาจาก Step */}
+                {fromStep ? (
+                    <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10'>
+                        <button
+                            className='btn btn-secondary w-100 w-md-auto align-self-center h-50px'
+                            // onClick={() => navigate('/sale/step', { state: item })}
+                            onClick={() => navigate('/sale/step')}
+                        >
+                            ย้อนกลับ
+                        </button>
+                        <button
+                            className='btn btn-primary w-100 w-md-auto align-self-center h-50px'
+                        // onClick={handleCheckerClick}
+                        >
+                            ส่งตรวจสอบ
+                        </button>
+                    </div>
+                ) : (
+                    <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10'>
+                        <button
+                            className='btn btn-secondary w-100 w-md-auto align-self-center h-50px'
+                            // onClick={() => navigate('/sale/step', { state: item })}
+                            onClick={() => navigate('/sale/contract')}
+                        >
+                            ย้อนกลับ
+                        </button>
+                    </div>
+                )}
+
             </Content>
         </>
     )

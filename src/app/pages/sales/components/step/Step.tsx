@@ -196,7 +196,7 @@ const Step: React.FC = () => {
                   </div>
                 </div>
               </Link>
-              <Link to=''>
+              <Link to='../sale/update/UpdateSalesPDPA' state={data?.[0]}>
                 <div className='d-flex align-items-center pb-8'>
                   <span className={`bullet bullet-vertical h-40px ${data?.[0]?.PDPA.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
                   <div className='form-check form-check-custom form-check-solid mx-5'></div>
@@ -206,13 +206,13 @@ const Step: React.FC = () => {
                     </div>
                     {
                       data?.[0]?.PDPA?.length !== 0 && (
-                        <span className='text-gray-700 fw-semibold d-block'>{`การยืนยอมให้ใช้ข้อมูล: ${data?.[0]?.PDPA?.[0] ? 'ยินยอม' : 'ไม่ยินยอม'}`}</span>
+                        <span className='text-gray-700 fw-semibold d-block'>{`การยืนยอมให้ใช้ข้อมูล: ${data?.[0]?.PDPA?.[0].CONSENTGIVEN ? 'ยินยอม' : 'ไม่ยินยอม'}`}</span>
                       )
                     }
                   </div>
                 </div>
               </Link>
-              <Link to=''>
+              <Link to='../sale/update/UpdateSalesContract' state={data?.[0]}>
                 <div className='d-flex align-items-center pb-8'>
                   <span className={`bullet bullet-vertical h-40px ${data?.[0]?.CONTRACT.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
                   <div className='form-check form-check-custom form-check-solid mx-5'></div>
@@ -228,7 +228,18 @@ const Step: React.FC = () => {
                   </div>
                 </div>
               </Link>
-              <Link to=''>
+              {/* <Link to='../sale/photo' state={data?.[0]}>
+                <div className='d-flex align-items-center pb-8'>
+                  <span className={`bullet bullet-vertical h-40px ${data?.[0]?.IMAGE.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
+                  <div className='form-check form-check-custom form-check-solid mx-5'></div>
+                  <div className='flex-grow-1'>
+                    <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
+                      {`8. ถ่ายรูป`}
+                    </div>
+                  </div>
+                </div>
+              </Link> */}
+              <Link to='../sale/photo' state={{ fromStep: true, data: data?.[0] }}>
                 <div className='d-flex align-items-center pb-8'>
                   <span className={`bullet bullet-vertical h-40px ${data?.[0]?.IMAGE.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
                   <div className='form-check form-check-custom form-check-solid mx-5'></div>

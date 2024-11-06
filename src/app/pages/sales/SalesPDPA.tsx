@@ -16,6 +16,7 @@ interface ContractState {
 
 const SalesPDPA: React.FC = () => {
   const navigate = useNavigate()
+  const MySwal = withReactContent(Swal);
 
   const { auth } = useAuth();
   const EmpId = auth?.data?.[0]?.EmpId || '';
@@ -35,7 +36,7 @@ const SalesPDPA: React.FC = () => {
   const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
 
   const { saveCustomerTypes } = useSaveCustomerStore()
-  // console.log(`saveCustomerTypes`, saveCustomerTypes);
+  console.log(`saveCustomerTypes`, saveCustomerTypes);
 
   const [consentGiven, setConsentGiven] = useState<boolean>(false); // ให้ความยินยอม
   const [consentNotGiven, setConsentNotGiven] = useState<boolean>(false); // ไม่ให้ความยินยอม
@@ -199,9 +200,9 @@ const SalesPDPA: React.FC = () => {
             </h1>
             <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
               <li className="breadcrumb-item text-muted">
-                <a className="text-muted text-hover-primary" href="/metronic8/react/demo1/sales/overview">
+                <span className="text-muted text-hover-primary">
                   ระบบขาย
-                </a></li>
+                </span></li>
               <li className="breadcrumb-item"><span className="bullet bg-gray-500 w-5px h-2px"></span></li>
               <li className="breadcrumb-item text-gray-900">PDPA</li>
             </ul>
@@ -317,17 +318,23 @@ const SalesPDPA: React.FC = () => {
               </div>
 
               <span className="fs-1">&nbsp;</span>
-              <span className="fs-6" >ลงชื่อ {signatureDataURL ? (
-                <img src={signatureDataURL} alt="ลายเซ็น" style={{ maxWidth: '100px', marginTop: '10px' }} />
-              ) : (
+              <span className="fs-6" >ลงชื่อ
+                {signatureDataURL && (
+                  <img src={`data:image/png;base64,${signatureDataURL}`} alt="ลายเซ็น"
+                    style={{ maxWidth: '100px' }} />
+                )}
                 <span>เจ้าของข้อมูล</span>
-              )}</span>
+              </span>
               <br />
               <br />
-              <span className="fs-6" >( {saveCustomerTypes[0].CUSTOMERNAME} )</span>
+              <span className="fs-6" >( {saveCustomerTypes[0]?.CUSTOMERNAME} )</span>
               <br />
               <br />
-              <span className="fs-6" >เลขประจำตัวประชาชน {saveCustomerTypes[0].CUSTOMERID} </span>
+              {saveCustomerTypes[0]?.CUSTOMERTYPE === "1" ? (
+                <span className="fs-6" >เลขประจำตัวผู้เสียภาษี {saveCustomerTypes[0]?.CUSTOMERID} </span>
+              ) : (
+                <span className="fs-6" >เลขประจำตัวประชาชน {saveCustomerTypes[0]?.CUSTOMERID} </span>
+              )}
               <br />
               <br />
               <span className="fs-6" >วันที่ {formattedDate} </span>

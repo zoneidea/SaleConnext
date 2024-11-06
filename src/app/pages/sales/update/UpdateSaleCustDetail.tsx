@@ -48,7 +48,11 @@ const UpdateSaleCustDetail: React.FC = () => {
 
     const refno = item?.REFNO
     const customerDetail = item?.CUSTOMERDETAIL
+    console.log(`customerDetail`, customerDetail);
+
     let customerStatus = item?.CUSTOMERSTATUS
+    // console.log(`customerStatus`, customerStatus);
+
     const product = item?.PRODUCT
 
     const { auth } = useAuth();
@@ -80,7 +84,8 @@ const UpdateSaleCustDetail: React.FC = () => {
     const [customerTypes, setCustomerTypes] = useState<any[]>([]);
 
     const [valueCalendar, setValueCalendar] = useState<Date | null>(null);
-    const [valueAge, setValueAge] = useState<number | null>(null);
+    const [valueAge, setValueAge] = useState<number | null>(customerDetail[0]?.CUSTOMERRAGE ?? null);
+    // console.log(`valueAge`, valueAge);
 
     const [selectedCustomerType, setsSelectedCustomerType] = useState<string>('');
     const [selectedCardType, setSelectedCardType] = useState<string>('');
@@ -466,9 +471,9 @@ const UpdateSaleCustDetail: React.FC = () => {
                         </h1>
                         <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
                             <li className="breadcrumb-item text-muted">
-                                <a className="text-muted text-hover-primary" href="/metronic8/react/demo1/sales/overview">
+                                <span className="text-muted text-hover-primary">
                                     ระบบขาย
-                                </a></li>
+                                </span></li>
                             <li className="breadcrumb-item"><span className="bullet bg-gray-500 w-5px h-2px"></span></li>
                             <li className="breadcrumb-item text-gray-900">แก้ไขข้อมูลลูกค้า</li>
                         </ul>
@@ -505,172 +510,177 @@ const UpdateSaleCustDetail: React.FC = () => {
                                         <div className='card-body px-lg-9 px-1'>
                                             {selectedCustomerType !== "1" && (
                                                 <>
-                                                    <div className='row mb-6'>
-                                                        <div className='col-lg-6 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>ประเภทลูกค้า</label>
-                                                            <select
-                                                                disabled={customerDetail?.length > 0 ? true : false}
-                                                                className='form-select form-select-solid form-select-lg'
-                                                                onChange={handleCustTypeOptionChange}
-                                                                value={selectedCustomerType} >
-                                                                <option value=''>เลือกประเภทลูกค้า...</option>
-                                                                {customerTypes.map((item: any) => (
-                                                                    <option key={item.CUSTOMERTYPE} value={item.CUSTOMERTYPE}>
-                                                                        {item.CUSTOMERTYPENAME}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                        </div>
-
-                                                        <div className='col-lg-6 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>ประเภทบัตร</label>
-                                                            <select
-                                                                className='form-select form-select-solid form-select-lg'
-                                                                value={selectedCardType}
-                                                                disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.CARDTYPE.length > 0 ? true : false : false}
-                                                                onChange={(e) => setSelectedCardType(e.target.value)}
-                                                            >
-                                                                <option value=''>เลือกประเภทบัตร...</option>
-                                                                {selectedCustomer.CARDTYPE.map((cardType: any) => (
-                                                                    <option key={cardType.CARDTYPE} value={cardType.CARDTYPE}>
-                                                                        {cardType.CARDTYPENAME}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className='row mb-6'>
-                                                        <div className='col-lg-4'>
-                                                            <label className='form-label required fw-bold fs-6'>บัตรประชาชน</label>
-                                                            <input
-                                                                disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.CUSTOMERID !== "" ? true : false : false}
-                                                                value={idCard}
-                                                                onChange={handleIdCardChange}
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='บัตรประชาชน'
-                                                            />
-                                                            {/* {errors.idCard && <p className='text-danger'>{errors.idCard.message}</p>} */}
-                                                        </div>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>คำนำหน้าชื่อ</label>
-                                                            <select
-                                                                value={selectedPrefixId}
-                                                                className='form-select form-select-solid form-select-lg'
-                                                                onChange={(e) => setSelectedPrefixId(Number(e.target.value))}
-                                                                disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.PREFIX.length > 0 ? true : false : false}
-                                                            >
-                                                                <option value=''>เลือกคำนำหน้าชื่อ...</option>
-                                                                {selectedCustomer.PREFIX.map((prefix: any) => (
-                                                                    <option key={prefix.PREFIXID} value={prefix.PREFIXID}>{prefix.PREFIXNAME}</option>
-                                                                ))}
-                                                            </select>
-                                                        </div>
-                                                        <div className='col-lg-4'>
-                                                            <label className='form-label required fw-bold fs-6'>ชื่อสกุล</label>
-                                                            <input
-                                                                value={fullName}
-                                                                onChange={(e) => setFullName(e.target.value)}
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='ชื่อ-สกุล'
-                                                            />
-                                                            {errors.fullName && <p className='text-danger'>{errors.fullName}</p>}
-                                                        </div>
-                                                    </div>
-
-                                                    <div className='row mb-6'>
-                                                        <div className="col-lg-4 mb-3">
-                                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                                <label className="form-label required fw-bold fs-6">วันเดือนปีเกิด</label>
-                                                                <DatePicker
-                                                                    selected={valueCalendar}
-                                                                    onChange={handleDateChange}
-                                                                    className="form-control form-control-lg form-control-solid mb-3 mb-lg-0"
-                                                                    placeholderText="วันเดือนปีเกิด"
-                                                                    showYearDropdown
-                                                                    showMonthDropdown
-                                                                    dropdownMode="select"
-                                                                    isClearable
-                                                                    dateFormat="yyyy/MM/dd"
-                                                                />
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="col-lg-4 mb-3">
-                                                            <label className="form-label required fw-bold fs-6">อายุ</label>
-                                                            <input
-                                                                value={valueAge !== null ? valueAge.toString() : ''}
-                                                                type="text"
-                                                                className="form-control form-control-lg form-control-solid mb-3 mb-lg-0"
-                                                                placeholder="อายุ"
-                                                                readOnly
-                                                            />
-
-                                                        </div>
-                                                        {selectedCustomerType !== "1" && (
-                                                            <div className='col-lg-4 mb-3'>
-                                                                <label className='form-label required fw-bold fs-6'>เพศ</label>
+                                                    <div className="container">
+                                                        <div className='row mb-6'>
+                                                            <div className='col-lg-6 mb-3'>
+                                                                <label className='form-label required fw-bold fs-6'>ประเภทลูกค้า</label>
                                                                 <select
-                                                                    value={selectedSexId}
-                                                                    className='form-select form-select-solid form-select-lg mb-3 mb-lg-0'
-                                                                    onChange={(e) => setSelectedSexId(Number(e.target.value))}
-                                                                    disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.SEX.length > 0 ? true : false : false}
-                                                                >
-                                                                    <option value=''>เลือกเพศ...</option>
-                                                                    {selectedCustomer.SEX.map((sex: any) => (
-                                                                        <option key={sex.SEXID} value={sex.SEXID}>{sex.SEXNAME}</option>
+                                                                    // disabled={customerDetail?.length > 0 ? true : false}
+                                                                    className='form-select'
+                                                                    onChange={handleCustTypeOptionChange}
+                                                                    value={selectedCustomerType} >
+                                                                    <option value=''>เลือกประเภทลูกค้า...</option>
+                                                                    {customerTypes.map((item: any) => (
+                                                                        <option key={item.CUSTOMERTYPE} value={item.CUSTOMERTYPE}>
+                                                                            {item.CUSTOMERTYPENAME}
+                                                                        </option>
                                                                     ))}
                                                                 </select>
                                                             </div>
-                                                        )}
 
-                                                        <div className='row mb-6 mt-6'>
                                                             <div className='col-lg-6 mb-3'>
-                                                                <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
-                                                                <input
-                                                                    value={mobile}
-                                                                    onChange={(e) => setMobile(e.target.value)}
-                                                                    type='text'
-                                                                    className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                    placeholder='เบอร์ที่ติดต่อได้'
-                                                                />
-                                                                {errors.mobile && <p className='text-danger'>{errors.mobile}</p>}
+                                                                <label className='form-label required fw-bold fs-6'>ประเภทบัตร</label>
+                                                                <select
+                                                                    className='form-select'
+                                                                    value={selectedCardType}
+                                                                    // disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.CARDTYPE.length > 0 ? true : false : false}
+                                                                    onChange={(e) => setSelectedCardType(e.target.value)}
+                                                                >
+                                                                    <option value=''>เลือกประเภทบัตร...</option>
+                                                                    {selectedCustomer.CARDTYPE.map((cardType: any) => (
+                                                                        <option key={cardType.CARDTYPE} value={cardType.CARDTYPE}>
+                                                                            {cardType.CARDTYPENAME}
+                                                                        </option>
+                                                                    ))}
+                                                                </select>
                                                             </div>
-                                                            <div className='col-lg-6 mb-3'>
-                                                                <label className='form-label fw-bold fs-6'>เบอร์บ้าน</label>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="container">
+                                                        <div className='row mb-6'>
+                                                            <div className='col-lg-4'>
+                                                                <label className='form-label required fw-bold fs-6'>บัตรประชาชน</label>
                                                                 <input
-                                                                    value={phone}
-                                                                    onChange={(e) => setPhone(e.target.value)}
+                                                                    // disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.CUSTOMERID !== "" ? true : false : false}
+                                                                    value={idCard}
+                                                                    onChange={handleIdCardChange}
                                                                     type='text'
-                                                                    className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                    placeholder='เบอร์บ้าน'
+                                                                    className='form-control mb-3 mb-lg-0'
+                                                                    placeholder='บัตรประชาชน'
                                                                 />
+                                                                {/* {errors.idCard && <p className='text-danger'>{errors.idCard.message}</p>} */}
+                                                            </div>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label required fw-bold fs-6'>คำนำหน้าชื่อ</label>
+                                                                <select
+                                                                    value={selectedPrefixId}
+                                                                    className='form-select'
+                                                                    onChange={(e) => setSelectedPrefixId(Number(e.target.value))}
+                                                                // disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.PREFIX.length > 0 ? true : false : false}
+                                                                >
+                                                                    <option value=''>เลือกคำนำหน้าชื่อ...</option>
+                                                                    {selectedCustomer.PREFIX.map((prefix: any) => (
+                                                                        <option key={prefix.PREFIXID} value={prefix.PREFIXID}>{prefix.PREFIXNAME}</option>
+                                                                    ))}
+                                                                </select>
+                                                            </div>
+                                                            <div className='col-lg-4'>
+                                                                <label className='form-label required fw-bold fs-6'>ชื่อสกุล</label>
+                                                                <input
+                                                                    value={fullName}
+                                                                    onChange={(e) => setFullName(e.target.value)}
+                                                                    type='text'
+                                                                    className='form-control mb-3 mb-lg-0'
+                                                                    placeholder='ชื่อ-สกุล'
+                                                                />
+                                                                {errors.fullName && <p className='text-danger'>{errors.fullName}</p>}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="container">
+                                                        <div className='row mb-6'>
+                                                            <div className="col-lg-4 mb-3">
+                                                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                                    <label className="form-label required fw-bold fs-6">วันเดือนปีเกิด</label>
+                                                                    <DatePicker
+                                                                        selected={valueCalendar}
+                                                                        onChange={handleDateChange}
+                                                                        className="form-control mb-3 mb-lg-0"
+                                                                        placeholderText="วันเดือนปีเกิด"
+                                                                        showYearDropdown
+                                                                        showMonthDropdown
+                                                                        dropdownMode="select"
+                                                                        isClearable
+                                                                        dateFormat="yyyy/MM/dd"
+                                                                    />
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="col-lg-4 mb-3">
+                                                                <label className="form-label required fw-bold fs-6">อายุ</label>
+                                                                <input
+                                                                    value={valueAge !== null ? valueAge.toString() : ''}
+                                                                    type="text"
+                                                                    className="form-control mb-3 mb-lg-0"
+                                                                    readOnly
+                                                                />
+
+                                                            </div>
+                                                            {selectedCustomerType !== "1" && (
+                                                                <div className='col-lg-4 mb-3'>
+                                                                    <label className='form-label required fw-bold fs-6'>เพศ</label>
+                                                                    <select
+                                                                        value={selectedSexId}
+                                                                        className='form-select mb-3 mb-lg-0'
+                                                                        onChange={(e) => setSelectedSexId(Number(e.target.value))}
+                                                                    // disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.SEX.length > 0 ? true : false : false}
+                                                                    >
+                                                                        <option value=''>เลือกเพศ...</option>
+                                                                        {selectedCustomer.SEX.map((sex: any) => (
+                                                                            <option key={sex.SEXID} value={sex.SEXID}>{sex.SEXNAME}</option>
+                                                                        ))}
+                                                                    </select>
+                                                                </div>
+                                                            )}
+
+                                                            <div className="container">
+                                                                <div className='row mt-6'>
+                                                                    <div className='col-lg-6 mb-3'>
+                                                                        <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
+                                                                        <input
+                                                                            value={mobile}
+                                                                            onChange={(e) => setMobile(e.target.value)}
+                                                                            type='text'
+                                                                            className='form-control mb-3 mb-lg-0'
+                                                                        />
+                                                                        {errors.mobile && <p className='text-danger'>{errors.mobile}</p>}
+                                                                    </div>
+                                                                    <div className='col-lg-6 mb-3'>
+                                                                        <label className='form-label fw-bold fs-6'>เบอร์บ้าน</label>
+                                                                        <input
+                                                                            value={phone}
+                                                                            onChange={(e) => setPhone(e.target.value)}
+                                                                            type='text'
+                                                                            className='form-control mb-3 mb-lg-0'
+                                                                        />
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         </div>
 
-                                                        <div className='row mb-6'>
-                                                            <div className='col-lg-6 mb-3'>
-                                                                <label className='form-label fw-bold fs-6'>เบอร์ที่ทำงาน</label>
-                                                                <input
-                                                                    value={workPhone}
-                                                                    onChange={(e) => setWorkPhone(e.target.value)}
-                                                                    type='text'
-                                                                    className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                    placeholder='เบอร์ที่ทำงาน'
-                                                                />
-                                                            </div>
-                                                            <div className='col-lg-6 mb-3'>
-                                                                <label className='form-label fw-bold fs-6'>อีเมล์</label>
-                                                                <input
-                                                                    value={email}
-                                                                    onChange={(e) => setEmail(e.target.value)}
-                                                                    type='text'
-                                                                    className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                    placeholder='อีเมล์'
-                                                                />
-                                                                {errors.email && <p className='text-danger'>{errors.email}</p>}
+                                                        <div className="container">
+                                                            <div className='row mb-6'>
+                                                                <div className='col-lg-6 mb-3'>
+                                                                    <label className='form-label fw-bold fs-6'>เบอร์ที่ทำงาน</label>
+                                                                    <input
+                                                                        value={workPhone}
+                                                                        onChange={(e) => setWorkPhone(e.target.value)}
+                                                                        type='text'
+                                                                        className='form-control mb-3 mb-lg-0'
+                                                                    />
+                                                                </div>
+                                                                <div className='col-lg-6 mb-3'>
+                                                                    <label className='form-label fw-bold fs-6'>อีเมล์</label>
+                                                                    <input
+                                                                        value={email}
+                                                                        onChange={(e) => setEmail(e.target.value)}
+                                                                        type='text'
+                                                                        className='form-control mb-3 mb-lg-0'
+                                                                    />
+                                                                    {errors.email && <p className='text-danger'>{errors.email}</p>}
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -680,120 +690,121 @@ const UpdateSaleCustDetail: React.FC = () => {
                                             {/* Start กรณีประเภทลูกค้าเป็น นิติบุคคล */}
                                             {selectedCustomerType == "1" && (
                                                 <>
-                                                    <div className='row mb-6'>
-                                                        <div className='col-lg-6 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>ประเภทลูกค้า</label>
-                                                            <select
-                                                                className='form-select form-select-solid form-select-lg'
-                                                                onChange={handleCustTypeOptionChange}
-                                                                value={selectedCustomerType}
-                                                            >
-                                                                <option value=''>เลือกประเภทลูกค้า...</option>
-                                                                {customerTypes.map((item: any) => (
-                                                                    <option key={item.CUSTOMERTYPE} value={item.CUSTOMERTYPE}>
-                                                                        {item.CUSTOMERTYPENAME}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                        </div>
-
-                                                        <div className='col-lg-6'>
-                                                            <label className='form-label required fw-bold fs-6'>ชื่อบริษัท</label>
-                                                            <input
-                                                                value={fullName}
-                                                                onChange={(e) => setFullName(e.target.value)}
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='ชื่อบริษัท'
-                                                            />
-                                                            {/* {errors.idCard && <p className='text-danger'>{errors.idCard.message}</p>} */}
-                                                        </div>
-
-                                                    </div>
-
-                                                    <div className='row mb-6'>
-                                                        <div className='col-lg-4'>
-                                                            <label className='form-label required fw-bold fs-6'>เลขประจำตัวผู้เสียภาษี</label>
-                                                            <input
-                                                                value={idCard}
-                                                                onChange={(e) => setIdCard(e.target.value)}
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='เลขประจำตัวผู้เสียภาษี'
-                                                                disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.CUSTOMERID !== "" ? true : false : false}
-                                                            />
-                                                            {/* {errors.idCard && <p className='text-danger'>{errors.idCard.message}</p>} */}
-                                                        </div>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>คำนำหน้า</label>
-                                                            <select
-                                                                className='form-select form-select-solid form-select-lg'
-                                                                onChange={(e) => setSelectedPrefixId(Number(e.target.value))}
-                                                                disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.PREFIX.length > 0 ? true : false : false}
-                                                            >
-                                                                <option value=''>เลือกคำนำหน้า...</option>
-                                                                {selectedCustomer.PREFIX.map((prefix: any) => (
-                                                                    <option key={prefix.PREFIXID} value={prefix.PREFIXID}>{prefix.PREFIXNAME}</option>
-                                                                ))}
-                                                            </select>
-                                                        </div>
-                                                        <div className='col-lg-4 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>กรรมการผู้มีอำนาจ</label>
-                                                            <input
-                                                                value={nameMD}
-                                                                onChange={(e) => setNameMD(e.target.value)}
-                                                                type='text'
-                                                                className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                placeholder='กรรมการผู้มีอำนาจ'
-                                                                disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.CUSTOMERMD !== "" ? true : false : false}
-                                                            />
-                                                            {/* {errors.fullname && <p className='text-danger'>{errors.fullname.message}</p>} */}
-                                                        </div>
-
-                                                        <div className='row mb-6 mt-6'>
-                                                            <div className='col-lg-6 mb-3'>
-                                                                <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
-                                                                <input
-                                                                    value={mobile}
-                                                                    type='text'
-                                                                    className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                    placeholder='เบอร์ที่ติดต่อได้'
-                                                                    onChange={(e) => setMobile(e.target.value)}
-                                                                />
-                                                            </div>
-                                                            <div className='col-lg-6 mb-3'>
-                                                                <label className='form-label fw-bold fs-6'>เบอร์บ้าน</label>
-                                                                <input
-                                                                    value={phone}
-                                                                    type='text'
-                                                                    className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                    placeholder='เบอร์บ้าน'
-                                                                    onChange={(e) => setPhone(e.target.value)}
-                                                                />
-                                                            </div>
-                                                        </div>
-
+                                                    <div className="container">
                                                         <div className='row mb-6'>
                                                             <div className='col-lg-6 mb-3'>
-                                                                <label className='form-label fw-bold fs-6'>เบอร์ที่ทำงาน</label>
-                                                                <input
-                                                                    value={workPhone}
-                                                                    type='text'
-                                                                    className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                    placeholder='เบอร์ที่ทำงาน'
-                                                                    onChange={(e) => setWorkPhone(e.target.value)}
-                                                                />
+                                                                <label className='form-label required fw-bold fs-6'>ประเภทลูกค้า</label>
+                                                                <select
+                                                                    className='form-select'
+                                                                    onChange={handleCustTypeOptionChange}
+                                                                    value={selectedCustomerType}
+                                                                >
+                                                                    <option value=''>เลือกประเภทลูกค้า...</option>
+                                                                    {customerTypes.map((item: any) => (
+                                                                        <option key={item.CUSTOMERTYPE} value={item.CUSTOMERTYPE}>
+                                                                            {item.CUSTOMERTYPENAME}
+                                                                        </option>
+                                                                    ))}
+                                                                </select>
                                                             </div>
-                                                            <div className='col-lg-6 mb-3'>
-                                                                <label className='form-label fw-bold fs-6'>อีเมล์</label>
+
+                                                            <div className='col-lg-6'>
+                                                                <label className='form-label required fw-bold fs-6'>ชื่อบริษัท</label>
                                                                 <input
-                                                                    value={email}
-                                                                    onChange={(e) => setEmail(e.target.value)}
+                                                                    value={fullName}
+                                                                    onChange={(e) => setFullName(e.target.value)}
                                                                     type='text'
-                                                                    className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                                                    placeholder='อีเมล์'
+                                                                    className='form-control mb-3 mb-lg-0'
                                                                 />
-                                                                {/* {errors.email && <p className='text-danger'>{errors.email.message}</p>} */}
+                                                                {/* {errors.idCard && <p className='text-danger'>{errors.idCard.message}</p>} */}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="container">
+                                                        <div className='row mb-6'>
+                                                            <div className='col-lg-4'>
+                                                                <label className='form-label required fw-bold fs-6'>เลขประจำตัวผู้เสียภาษี</label>
+                                                                <input
+                                                                    value={idCard}
+                                                                    onChange={(e) => setIdCard(e.target.value)}
+                                                                    type='text'
+                                                                    className='form-control mb-3 mb-lg-0'
+                                                                // disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.CUSTOMERID !== "" ? true : false : false}
+                                                                />
+                                                                {/* {errors.idCard && <p className='text-danger'>{errors.idCard.message}</p>} */}
+                                                            </div>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label required fw-bold fs-6'>คำนำหน้า</label>
+                                                                <select
+                                                                    className='form-select'
+                                                                    onChange={(e) => setSelectedPrefixId(Number(e.target.value))}
+                                                                    value={selectedPrefixId}
+                                                                // disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.PREFIX.length > 0 ? true : false : false}
+                                                                >
+                                                                    <option value=''>เลือกคำนำหน้า...</option>
+                                                                    {selectedCustomer.PREFIX.map((prefix: any) => (
+                                                                        <option key={prefix.PREFIXID} value={prefix.PREFIXID}>{prefix.PREFIXNAME}</option>
+                                                                    ))}
+                                                                </select>
+                                                            </div>
+                                                            <div className='col-lg-4 mb-3'>
+                                                                <label className='form-label required fw-bold fs-6'>กรรมการผู้มีอำนาจ</label>
+                                                                <input
+                                                                    value={nameMD}
+                                                                    onChange={(e) => setNameMD(e.target.value)}
+                                                                    type='text'
+                                                                    className='form-control mb-3 mb-lg-0'
+                                                                // disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.CUSTOMERMD !== "" ? true : false : false}
+                                                                />
+                                                                {/* {errors.fullname && <p className='text-danger'>{errors.fullname.message}</p>} */}
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="container">
+                                                            <div className='row mb-6 mt-6'>
+                                                                <div className='col-lg-6 mb-3'>
+                                                                    <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
+                                                                    <input
+                                                                        value={mobile}
+                                                                        type='text'
+                                                                        className='form-control mb-3 mb-lg-0'
+                                                                        onChange={(e) => setMobile(e.target.value)}
+                                                                    />
+                                                                </div>
+                                                                <div className='col-lg-6 mb-3'>
+                                                                    <label className='form-label fw-bold fs-6'>เบอร์บ้าน</label>
+                                                                    <input
+                                                                        value={phone}
+                                                                        type='text'
+                                                                        className='form-control mb-3 mb-lg-0'
+                                                                        onChange={(e) => setPhone(e.target.value)}
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="container">
+                                                            <div className='row mb-6'>
+                                                                <div className='col-lg-6 mb-3'>
+                                                                    <label className='form-label fw-bold fs-6'>เบอร์ที่ทำงาน</label>
+                                                                    <input
+                                                                        value={workPhone}
+                                                                        type='text'
+                                                                        className='form-control mb-3 mb-lg-0'
+                                                                        onChange={(e) => setWorkPhone(e.target.value)}
+                                                                    />
+                                                                </div>
+                                                                <div className='col-lg-6 mb-3'>
+                                                                    <label className='form-label fw-bold fs-6'>อีเมล์</label>
+                                                                    <input
+                                                                        value={email}
+                                                                        onChange={(e) => setEmail(e.target.value)}
+                                                                        type='text'
+                                                                        className='form-control mb-3 mb-lg-0'
+                                                                    />
+                                                                    {/* {errors.email && <p className='text-danger'>{errors.email.message}</p>} */}
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>

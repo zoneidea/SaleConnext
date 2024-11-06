@@ -16,6 +16,9 @@ import {
   useSaveAddressStore
 } from '../../modules/stores/stepsStore';
 
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+
 interface ContractState {
   contNo: string;
 }
@@ -76,10 +79,29 @@ const SalesContract: React.FC = () => {
           'Content-Type': 'application/json',
         },
       });
+
       console.log(`updateContract CONTRACT: `, updateContract.data);
-      navigate('/sale/photo');
+
+      // แสดง SweetAlert2 หลังจากบันทึกสำเร็จ
+      Swal.fire({
+        icon: 'success',
+        title: 'สำเร็จ!',
+        text: 'บันทึกสัญญาเรียบร้อยแล้ว',
+        confirmButtonText: 'ตกลง'
+      }).then(() => {
+        navigate('/sale/photo'); // นำทางไปยังหน้าอื่นถ้าต้องการ
+      });
+
     } catch (error) {
       console.error('Error fetching CONTRACT:', error);
+
+      // แสดง SweetAlert2 เมื่อเกิดข้อผิดพลาด
+      Swal.fire({
+        icon: 'error',
+        title: 'เกิดข้อผิดพลาด!',
+        text: 'ไม่สามารถบันทึกสัญญาได้ กรุณาลองใหม่อีกครั้ง',
+        confirmButtonText: 'ตกลง'
+      });
     }
   };
 
@@ -100,9 +122,9 @@ const SalesContract: React.FC = () => {
             </h1>
             <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
               <li className="breadcrumb-item text-muted">
-                <a className="text-muted text-hover-primary" href="/metronic8/react/demo1/sales/overview">
+                <span className="text-muted text-hover-primary">
                   ระบบขาย
-                </a></li>
+                </span></li>
               <li className="breadcrumb-item"><span className="bullet bg-gray-500 w-5px h-2px"></span></li>
               {PRODUCT[0]?.Package[0]?.PACKAGETYPEID === 1 ? (
                 <li className="breadcrumb-item text-gray-900">ใบสัญญา</li>
@@ -165,7 +187,11 @@ const SalesContract: React.FC = () => {
             </div>
 
             <div className='row mb-7'>
-              <label className='col-lg-4 fw-bold text-muted'>เลขที่บัตรประชาชน</label>
+              {saveCustomerTypes[0]?.CUSTOMERTYPE === "1" ? (
+                <label className='col-lg-4 fw-bold text-muted'>เลขประจำตัวผู้เสียภาษี</label>
+              ) : (
+                <label className='col-lg-4 fw-bold text-muted'>เลขที่บัตรประชาชน</label>
+              )}
               <div className='col-lg-8'>
                 <span className='fw-bolder fs-6 text-gray-900'>{saveCustomerTypes[0]?.CUSTOMERID}</span>
               </div>
@@ -222,7 +248,7 @@ const SalesContract: React.FC = () => {
             <div className='row mb-10'>
               <label className='col-lg-4 fw-bold text-muted'>เบอร์โทรติดต่อ</label>
               <div className='col-lg-8'>
-                <span className='fw-bold fs-6'>{addressCard.ADDRESSPHONE}</span>
+                <span className='fw-bold fs-6'>{saveCustomerTypes[0]?.CUSTOMERMOBILE}</span>
               </div>
             </div>
 
@@ -242,15 +268,24 @@ const SalesContract: React.FC = () => {
               </div>
             )}
 
-            <div className='row align-items-center mb-10'>
-              <label className='col-lg-4 fw-bold text-muted mb-0'>ราคา</label>
-              <div className='col-lg-8 d-flex justify-content-between'>
-                {PRODUCT[0]?.Package?.[0]?.TOTALPRICE && (
-                  <span className='fw-bold fs-6'>{PRODUCT[0]?.Package[0]?.TOTALPRICE}</span>
-                )}
-                <span className='badge badge-light-success'>บาท</span>
+            {DISCOUNT[0]?.GIFT?.GIFTNAME && (
+              <div className='row align-items-center mb-10'>
+                <label className='col-lg-4 fw-bold text-muted mb-0'>ของแถม</label>
+                <div className='col-lg-8 d-flex justify-content-between'>
+                  <span className='fw-bold fs-6'>{DISCOUNT[0]?.GIFT?.GIFTNAME}</span>
+                </div>
               </div>
-            </div>
+            )}
+
+            {PRODUCT[0]?.Package?.[0]?.TOTALPRICE && (
+              <div className='row align-items-center mb-10'>
+                <label className='col-lg-4 fw-bold text-muted mb-0'>ราคาสินค้า</label>
+                <div className='col-lg-8 d-flex justify-content-between'>
+                  <span className='fw-bold fs-6'>{PRODUCT[0]?.Package[0]?.TOTALPRICE}</span>
+                  <span className='badge badge-light-success'>บาท</span>
+                </div>
+              </div>
+            )}
 
             {DISCOUNT[0]?.TRADEIN?.TRADEINBRANDNAME && (
               <div className='row align-items-center mb-10'>
@@ -271,22 +306,13 @@ const SalesContract: React.FC = () => {
               </div>
             </div>
 
-            {DISCOUNT[0]?.GIFT?.GIFTNAME && (
-              <div className='row align-items-center mb-10'>
-                <label className='col-lg-4 fw-bold text-muted mb-0'>ของแถม</label>
-                <div className='col-lg-8 d-flex justify-content-between'>
-                  <span className='fw-bold fs-6'>{DISCOUNT[0]?.GIFT?.GIFTNAME}</span>
-                </div>
-              </div>
-            )}
-
-            {/* <div className='row align-items-center mb-10'>
+            <div className='row align-items-center mb-10'>
               <label className='col-lg-4 fw-bold text-muted mb-0'>ราคาสุทธิ</label>
               <div className='col-lg-8 d-flex justify-content-between'>
                 <span className='fw-bold fs-6'>{netPrice}</span>
                 <span className='badge badge-light-success'>บาท</span>
               </div>
-            </div> */}
+            </div>
 
             {/* ถ้าเป็นเงินสดไม่ต้องแสดง */}
             {PRODUCT[0]?.Package[0]?.PACKAGETYPEID !== 1 && (
@@ -294,36 +320,26 @@ const SalesContract: React.FC = () => {
                 <div className='row align-items-center mb-10'>
                   <label className='col-lg-4 fw-bold text-muted mb-0'>งวดที่ 1 ที่ต้องชำระ</label>
                   <div className='col-lg-8 d-flex justify-content-between'>
-                    <span className='fw-bold fs-6'>{PRODUCT[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTAMOUNT}</span>
+                    <span className='fw-bold fs-6'>{PRODUCT[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTAMOUNT - discountAmount}</span>
                     <span className='badge badge-light-success'>บาท</span>
                   </div>
                 </div>
 
-                <div className='row align-items-center mb-10'>
-                  <label className='col-lg-4 fw-bold text-muted mb-0'>งวดที่ 2 ถึง {PRODUCT[0]?.Package[0]?.PERIODDETAILS.length} ต้องชำระงวดละ</label>
-                  <div className='col-lg-8 d-flex justify-content-between'>
-                    <span className='fw-bold fs-6'>{PRODUCT[0]?.Package[0]?.PERIODDETAILS[1]?.PAYMENTAMOUNT}</span>
-                    <span className='badge badge-light-success'>บาท</span>
+                {PRODUCT[0]?.Package[0]?.PERIODDETAILS.length > 1 && (
+                  <div className='row align-items-center mb-10'>
+                    <label className='col-lg-4 fw-bold text-muted mb-0'>งวดที่ 2 ถึง {PRODUCT[0]?.Package[0]?.PERIODDETAILS.length} ต้องชำระงวดละ</label>
+                    <div className='col-lg-8 d-flex justify-content-between'>
+                      <span className='fw-bold fs-6'>{PRODUCT[0]?.Package[0]?.PERIODDETAILS[1]?.PAYMENTAMOUNT}</span>
+                      <span className='badge badge-light-success'>บาท</span>
+                    </div>
                   </div>
-                </div>
+                )}
               </>
             )}
 
           </div>
         </div>
         {/* End Card Body */}
-
-        {/* <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10'>
-          <Link to='/sale/createcust' className='btn btn-secondary w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'>
-            ย้อนกลับ
-          </Link>
-          <button className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
-            type='button'
-            onClick={handleNextClick}
-          >
-            บันทึกสัญญา
-          </button>
-        </div> */}
 
         <div className='d-flex justify-content-end mb-5 mt-10'>
           <button

@@ -7,6 +7,7 @@ import { WithChildren } from '../../_metronic/helpers'
 
 import { DashboardWrapper } from '../pages/dashboard/DashboardWrapper'
 import { SalesWrapper } from '../pages/sales/SalesWrapper'
+import { OrderWrapper } from '../pages/order/OrderWrapper'
 
 const PrivateRoutes = () => {
   //หัวข้อ ระบบขาย
@@ -48,6 +49,11 @@ const PrivateRoutes = () => {
   const UpdateContractDiscount = lazy(() => import('../pages/sales/update/UpdateSaleDiscount'))
   const UpdateContractCustDetail = lazy(() => import('../pages/sales/update/UpdateSaleCustDetail'))
   const UpdateSaleAddress = lazy(() => import('../pages/sales/update/UpdateSaleAddress'))
+  const UpdateSalesPDPA = lazy(() => import('../pages/sales/update/UpdateSalesPDPA'))
+  const UpdateSalesContract = lazy(() => import('../pages/sales/update/UpdateSalesContract'))
+
+  //หัวข้อ ระบบจอง
+  const OrderCreateBooking = lazy(() => import('../pages/order/OrderCreateBooking'))
 
   return (
     <Routes>
@@ -57,7 +63,10 @@ const PrivateRoutes = () => {
         {/* Pages */}
         <Route path='dashboard' element={<DashboardWrapper />} />
         <Route path='sale/overview' element={<SalesWrapper />} />
-        {/* Lazy Modules */}
+        <Route path='order/overview' element={<OrderWrapper />} />
+
+
+        {/* ระบบขาย */}
         <Route
           path='sale/statuscust'
           element={
@@ -285,7 +294,6 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
-
         <Route
           path='sale/update/updateCustDetail'
           element={
@@ -294,7 +302,6 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
-
         <Route
           path='sale/update/updateAddress'
           element={
@@ -303,8 +310,33 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
+        <Route
+          path='sale/update/UpdateSalesPDPA'
+          element={
+            <SuspensedView>
+              <UpdateSalesPDPA />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path='sale/update/UpdateSalesContract'
+          element={
+            <SuspensedView>
+              <UpdateSalesContract />
+            </SuspensedView>
+          }
+        />
 
-        {/* จบ รูปและแกลอรี่ */}
+        {/* ระบบจอง */}
+        <Route
+          path='order/OrderCreateBooking'
+          element={
+            <SuspensedView>
+              <OrderCreateBooking />
+            </SuspensedView>
+          }
+        />
+
         {/* Page Not Found */}
         <Route path='*' element={<Navigate to='/error/404' />} />
       </Route>

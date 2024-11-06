@@ -460,9 +460,9 @@ const UpdateSalesPackage: React.FC = () => {
                         </h1>
                         <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
                             <li className="breadcrumb-item text-muted">
-                                <a className="text-muted text-hover-primary" href="/metronic8/react/demo1/sales/overview">
+                                <span className="text-muted text-hover-primary">
                                     ระบบขาย
-                                </a></li>
+                                </span></li>
                             <li className="breadcrumb-item"><span className="bullet bg-gray-500 w-5px h-2px"></span></li>
                             <li className="breadcrumb-item text-gray-900">แก้ไขแพ็คเกจ</li>
                         </ul>
@@ -500,7 +500,7 @@ const UpdateSalesPackage: React.FC = () => {
                                                     className='form-select form-select-solid form-select-lg'
                                                     onChange={handleCateOptionChange} >
                                                     <option value=''>เลือกหมวดหมู่สินค้า...</option>
-                                                    {parsegetCategoryLocal.map((item: any, index: number) => (
+                                                    {fetchCategory.map((item: any, index: number) => (
                                                         <option key={index} value={item.CATEGORIES_ID}>
                                                             {item.CATEGORIES_NAME_TH}
                                                         </option>

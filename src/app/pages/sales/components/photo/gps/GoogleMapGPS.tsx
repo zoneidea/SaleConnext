@@ -244,6 +244,7 @@ import {
   usePhotoEquipmentStore,
   usePhotoGPSStore // Import your GPS store here
 } from '../../../../../modules/stores/sales/photoStore/photoStore';
+
 import Swal from 'sweetalert2';
 
 const API_KEY_GOOGLE_MAP = import.meta.env.VITE_APP_GOOGLE_MAP_KEY as string;
