@@ -8,6 +8,7 @@ import { useAuth } from '../../modules/auth/core/Auth';
 
 //useStore
 import {
+    useFetchCategoryStore,
     useCategoryStore,
     useProductStore,
 } from '../../modules/stores/sales/packageStore/packageStore';
@@ -22,8 +23,12 @@ const SalesProductStock: React.FC = () => {
     const [loadingCategories, setLoadingCategories] = useState(true); // เพิ่ม state สำหรับการโหลดหมวดหมู่
     const [loadingProducts, setLoadingProducts] = useState(false); // เพิ่ม state สำหรับการโหลดสินค้า
 
+    const { fetchCategory } = useFetchCategoryStore();
+    // console.log(`fetchCategory: `, fetchCategory);
+
     const [categories, setCategories] = useState<any[]>([]);
-    const {product, setProduct } = useProductStore();
+
+    const { product, setProduct } = useProductStore();
     const [selectedCategoryId, setSelectedCategoryId] = useState<any>('');
     const [selectedProductIndex, setSelectedProductIndex] = useState<number | null>(null);
 
@@ -171,7 +176,7 @@ const SalesProductStock: React.FC = () => {
                                                     onChange={handleCateOptionChange}
                                                 >
                                                     <option value=''>เลือกหมวดหมู่สินค้า...</option>
-                                                    {categories.map((item: any, index: number) => (
+                                                    {(fetchCategory.length > 0 ? fetchCategory : categories).map((item: any, index: number) => (
                                                         <option key={index} value={item.CATEGORIES_ID}>
                                                             {item.CATEGORIES_NAME_TH}
                                                         </option>

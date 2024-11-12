@@ -11,21 +11,29 @@ export function login(username: string, password: string) {
   console.log('username', username);
   console.log('password', password);
 
-  // สร้าง FormData
-  const formData = new FormData(); 
+  const formData = new FormData();
   formData.append('username', username);
   formData.append('password', password);
 
-  // ส่งข้อมูลด้วย FormData
-  return axios.post(
-    LOGIN_URL,
-    formData,
-    {
-      headers: {
-        'Content-Type': 'multipart/form-data', // ระบุว่าเป็น multipart/form-data
-      },
+  return axios.post(LOGIN_URL, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+  .then((response) => {
+    // ตรวจสอบการตอบกลับจาก API
+    if (response.status === 200 && response.data) {
+      console.log('Login successful:', response.data);
+      return response;
+    } else {
+      console.error('Unexpected response:', response);
+      throw new Error('Unexpected response from login API');
     }
-  );
+  })
+  .catch((error) => {
+    console.error('Login error:', error);
+    throw error;
+  });
 }
 
 // export function getUserByToken(token: string) {

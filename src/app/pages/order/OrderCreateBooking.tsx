@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useState, useEffect } from 'react';
+import { ChangeEvent, useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { Content } from '../../../_metronic/layout/components/content';
@@ -17,51 +17,140 @@ import {
 
 import dayjs, { Dayjs } from 'dayjs';
 import DatePicker from 'react-datepicker';
+import DateTimePicker from 'react-datetime-picker';
 import 'react-datepicker/dist/react-datepicker.css';
+import 'react-datetime-picker/dist/DateTimePicker.css';
+import 'react-calendar/dist/Calendar.css';
+import 'react-clock/dist/Clock.css';
 
 const OrderCreateBooking: React.FC = () => {
     const navigate = useNavigate();
     const { SETREFNO } = useUUIDStore();
 
     const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
+    const API_THIENSURAT = import.meta.env.VITE_APP_API_THIENSURAT
+    const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
+
     const CATEGORIES_URL = `${API_SALECONNEXT}/GetProduct/Categories`;
     const PACKAGE_URL = `${API_SALECONNEXT}/GetPackage/PackageType`;
     const POST_PACKAGE_URL = `${API_SALECONNEXT}/GetPackage/PackageList`;
 
-    const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
-    const getProductUrl = () => `${API_URL_MONGO}/Product/GetStock?empid=${EmpId}&teamSale=${TeamSale}&categoryId=${selectedCategoryId}`;
+    const CUSTOMER_TYPE_URL = `${API_SALECONNEXT}/GetCustomertype`;
+    const PROVINCE_URL = `${API_SALECONNEXT}/GetAddress/Province`;
+    const DISTRICT_URL = `${API_SALECONNEXT}/GetAddress/District`;
+    const SUBDISTRICT_URL = `${API_SALECONNEXT}/GetAddress/SubDistrict`;
+    const ZIPCODE_URL = `${API_SALECONNEXT}/GetAddress/Zipcode`;
+
+    const EMPLOYEE_URL = `${API_THIENSURAT}/Employee_Structure`;
+    const CHANNEL_SALE_URL = `${API_SALECONNEXT}/GetChannelSale`;
+    const ADVISER_URL = `${API_THIENSURAT}/Employee_Structure/Emp_All`;
+    const SHIPPING_URL = `${API_SALECONNEXT}/GetShipping`;
+
+    const getProductUrl = () => `${API_URL_MONGO}/Product/GetStock?empid=${auth.data[0].EmpId}&teamSale=${auth.data[0].TeamSale}&categoryId=${selectedCategoryId}`;
 
     const { auth } = useAuth();
+    // console.log(`auth`, auth);
 
+    {/*-------------------- Start ข้อมูลพนักงานขาย --------------------*/ }
+    // POST พนักงานขาย
+    const [employee, setEmployee] = useState<any[]>([]);
+    const [selectedEmployee, setSelectedEmployee] = useState<any>('');
+
+    const [channelSale, setChannelSale] = useState<any[]>([]);
+    const [selectedChannelSale, setSelectedChannelSale] = useState<any>('');
+
+    const [adviser, setAdviser] = useState<any[]>([]);
+    const [selectedAdviser, setSelectedAdviser] = useState<any>('');
+
+    const [subChannelSale, setSubChannelSale] = useState<string>('');
+
+    // พนักงานขาย
+    useEffect(() => {
+        const postData = async () => {
+            try {
+                const response = await axios.post(EMPLOYEE_URL,
+                    {
+                        EmpId: auth.data[0].EmpId,
+                    }, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
+                const data = Array.isArray(response.data.data) ? response.data.data : [];
+                setEmployee(data);
+            } catch (error) {
+                console.error('Error fetching EMPLOYEE_URL:', error);
+                setEmployee([]); // กำหนดค่าเป็น array ว่าง หากเกิดข้อผิดพลาด
+            }
+        };
+        postData();
+    }, [auth]);
+
+    // ช่องทาง
+    useEffect(() => {
+        const postData = async () => {
+            try {
+                const response = await axios.post(CHANNEL_SALE_URL,
+                    {
+                        EmpId: auth.data[0].EmpId,
+                        DivisionId: auth.data[0].DivisionId,
+                        DepartId: auth.data[0].DepartId,
+                        DepartGroup: auth.data[0].DepartGroup,
+                        TeamSale: auth.data[0].TeamSale,
+                    }, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
+                const data = Array.isArray(response.data.data) ? response.data.data : [];
+                setChannelSale(data);
+            } catch (error) {
+                console.error('Error fetching CHANNEL_SALE_URL:', error);
+                setChannelSale([]); // กำหนดค่าเป็น array ว่าง หากเกิดข้อผิดพลาด
+            }
+        };
+        postData();
+    }, [auth]);
+
+    // ผู้แนะนำ (ถ้ามี)
+    useEffect(() => {
+        const postData = async () => {
+            try {
+                const response = await axios.post(ADVISER_URL,
+                    {
+                        EmpId: auth.data[0].EmpId,
+                    }, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
+                const data = Array.isArray(response.data.data) ? response.data.data : [];
+                setAdviser(data);
+            } catch (error) {
+                console.error('Error fetching ADVISER_URL:', error);
+                setAdviser([]); // กำหนดค่าเป็น array ว่าง หากเกิดข้อผิดพลาด
+            }
+        };
+        postData();
+    }, [auth]);
+    {/*-------------------- End ข้อมูลพนักงานขาย --------------------*/ }
+
+    {/*-------------------- Start ข้อมูลสินค้า --------------------*/ }
     const { fetchCategory } = useFetchCategoryStore();
-    console.log(`fetchCategory: `, fetchCategory);
+    // console.log(`fetchCategory: `, fetchCategory);
 
-    const {
-        EmpId, setEmpId,
-        TeamSale, setTeamSale,
-        SaleCode, setSaleCode,
-        SupEmpId, setSupEmpId,
-        SecEmpId, setSecEmpId,
-        DivisionId, setDivisionId,
-        DepartId, setDepartId,
-        DepartGroup, setDepartGroup,
-    } = useCategoryStore();
+    const [categories, setCategories] = useState<any[]>([]);
 
-    const { product, setProduct } = useProductStore();
-    console.log(`product: `, product);
-
-    const { ItemID, setItemID, PackageTypeID, setPackageTypeID } = usePackageStore();
+    const [product, setProduct] = useState<any>('');
+    // console.log(`product: `, product);
 
     const [selectedCategoryId, setSelectedCategoryId] = useState<any>('');
-    console.log(`selectedCategoryId: `, selectedCategoryId);
 
     const [selectedProductIndex, setSelectedProductIndex] = useState<number | null>(null);
-    console.log(`selectedProductIndex: `, selectedProductIndex);
+    // console.log(`selectedProductIndex: `, selectedProductIndex);
 
-    const [packageList, setPackageList] = useState<any[]>([]);
-
-    const [selectedPackageTypeId, setSelectedPackageTypeId] = useState<number | null>(null);
-    const [selectedPackageModel, setSelectedPackageModel] = useState<number | null>(null);
+    const [selectedItemID, setSelectedItemID] = useState<any>('');
+    // console.log(`selectedItemID: `, selectedItemID);
 
     const packageType = [
         {
@@ -82,6 +171,48 @@ const OrderCreateBooking: React.FC = () => {
         }
     ]
 
+    const [selectedPackageTypeId, setSelectedPackageTypeId] = useState<number | null>(null);
+    // console.log(`selectedPackageTypeId`, selectedPackageTypeId);
+
+    const [packageList, setPackageList] = useState<any[]>([]);
+    console.log(`packageList`, packageList);
+
+    const [selectedPackageIndex, setSelectedPackageIndex] = useState<number | null>(null);
+
+    const [totalPrice, setTotalPrice] = useState<any>('');
+    // console.log(`totalPrice`, totalPrice);
+
+    const [discountAmount, setDiscountAmount] = useState<any>('');
+    // console.log(`discountAmount`, discountAmount);
+
+    const netPrice = totalPrice - discountAmount;
+
+    // POST GetProduct/Categories
+    useEffect(() => {
+        const postData = async () => {
+            try {
+                const response = await axios.post(CATEGORIES_URL,
+                    {
+                        EmpId: auth.data[0].EmpId,
+                        DivisionId: auth.data[0].DivisionId,
+                        DepartId: auth.data[0].DepartId,
+                        DepartGroup: auth.data[0].DepartGroup,
+                        TeamSale: auth.data[0].TeamSale,
+                        ItemID: selectedItemID, PackageTypeID: selectedPackageTypeId
+                    }, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
+                const data = Array.isArray(response.data.data) ? response.data.data : [];
+                setCategories(data);
+            } catch (error) {
+                console.error('Error fetching CATEGORIES_URL:', error);
+            }
+        };
+        postData();
+    }, [auth]);
+
     // GET Product/GetStock?
     useEffect(() => {
         const getData = async () => {
@@ -94,6 +225,8 @@ const OrderCreateBooking: React.FC = () => {
                     }
                 });
                 const data = Array.isArray(response.data.data) ? response.data.data : [];
+                console.log(response);
+
                 setProduct(data);
             } catch (error) {
                 console.error('Error fetching getProductUrl:', error);
@@ -105,22 +238,47 @@ const OrderCreateBooking: React.FC = () => {
     // POST GetPackage/PackageList
     useEffect(() => {
         const postData = async () => {
+            if (!selectedPackageTypeId) return;
             try {
                 const response = await axios.post(POST_PACKAGE_URL,
-                    { EmpId, DivisionId, DepartId, DepartGroup, TeamSale, ItemID, PackageTypeID }, {
+                    {
+                        EmpId: auth.data[0].EmpId,
+                        DivisionId: auth.data[0].DivisionId,
+                        DepartId: auth.data[0].DepartId,
+                        DepartGroup: auth.data[0].DepartGroup,
+                        TeamSale: auth.data[0].TeamSale,
+                        ItemID: selectedItemID, PackageTypeID: selectedPackageTypeId
+                    }, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     },
                 });
                 const data = Array.isArray(response.data.data) ? response.data.data : [];
-                // console.log(`response data from GetPackage/PackageList: `, data);
                 setPackageList(data);
             } catch (error) {
                 console.error('Error fetching POST_PACKAGE_URL:', error);
             }
         };
         postData();
-    }, [EmpId, DivisionId, DepartId, DepartGroup, TeamSale, ItemID, PackageTypeID]);
+    }, [selectedPackageTypeId, auth]);
+
+    // set ค่า totalprice เมื่อมีการเลือก selectedPackageIndex
+    useEffect(() => {
+        if (selectedPackageIndex !== null && packageList[selectedPackageIndex]) {
+            setTotalPrice(packageList[selectedPackageIndex].TOTALPRICE);
+        } else {
+            setTotalPrice("N/A");
+        }
+    }, [selectedPackageIndex, packageList]);
+
+    // set ค่า discountAmount เมื่อมีการเลือก selectedPackageIndex
+    useEffect(() => {
+        if (selectedPackageIndex !== null && packageList[selectedPackageIndex]) {
+            setDiscountAmount(packageList[selectedPackageIndex].DISCOUNTPRICE);
+        } else {
+            setDiscountAmount("N/A"); // หรือค่าเริ่มต้นที่คุณต้องการเมื่อไม่ได้เลือก
+        }
+    }, [selectedPackageIndex, packageList]);
 
     const handleCateOptionChange = (event: any) => {
         const value = event.target.value;
@@ -132,22 +290,349 @@ const OrderCreateBooking: React.FC = () => {
         // ล้างค่าที่เลือกสำหรับ product, packageType, และ packageModel
         setSelectedProductIndex(null);
         setSelectedPackageTypeId(null);
-        setSelectedPackageModel(null);
+        setSelectedPackageIndex(null);
     };
 
-    const handleCardProductClick = (event: any) => {
-        const index = event.target.value; // รับค่า index ของสินค้าที่เลือก
-        setSelectedProductIndex(Number(index));
+    const handleCardProductClick = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedIndex = e.target.value;
+        setSelectedProductIndex(Number(selectedIndex));
 
-        if (index !== null && product[Number(index)]) {
-            // setSelectedItemCode(product[Number(index)].ItemCode);
-            // setSelectedItemDescription(product[Number(index)].ItemDescription);
-            // setSelectedSerialNo(product[Number(index)].SerialNo);
-            // setSelectedStatus(product[Number(index)].Status);
-            // setSelectedBranch(product[Number(index)].Branch);
-            // setSelectedTransDate(product[Number(index)].TransDate);
+        if (selectedIndex !== "") {
+            const selectedProduct = product[Number(selectedIndex)];
+            setSelectedItemID(selectedProduct.ItemCode);
+        } else {
+            setSelectedItemID('');
         }
     };
+
+    const handlePackageClick = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedIndex = e.target.value;
+        setSelectedPackageIndex(Number(selectedIndex));
+    };
+    {/*-------------------- End ข้อมูลสินค้า --------------------*/ }
+
+    {/* Start ข้อมูลลูกค้า */ }
+    const [customerTypes, setCustomerTypes] = useState<any[]>([]);
+    const [selectedCustomerType, setsSelectedCustomerType] = useState<string>('');
+    // console.log(`selectedCustomerType`, selectedCustomerType);
+
+    const [selectedCardType, setSelectedCardType] = useState<string>('');
+    const [selectedPrefixId, setSelectedPrefixId] = useState<number>();
+    const [selectedSexId, setSelectedSexId] = useState<number>();
+
+    const [valueCalendar, setValueCalendar] = useState<Date | null>(null);
+    const [valueAge, setValueAge] = useState<number | null>(null);
+
+    const [idCard, setIdCard] = useState<string>('');
+    const [fullName, setFullName] = useState<string>('');
+    const [nameMD, setNameMD] = useState<string>('');
+    const [age, setAge] = useState<string>('');
+    const [email, setEmail] = useState<string>('');
+    const [mobile, setMobile] = useState<string>('');
+    const [phone, setPhone] = useState<string>('');
+    const [workPhone, setWorkPhone] = useState<string>('');
+
+    const selectedCustomer = customerTypes.find((type) => type.CUSTOMERTYPE === selectedCustomerType) || { CARDTYPE: [], PREFIX: [], SEX: [] };
+
+    // GET Customertype
+    useEffect(() => {
+        const getData = async () => {
+            try {
+                const response = await axios.get(CUSTOMER_TYPE_URL, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                setCustomerTypes(response.data);
+            } catch (error) {
+                console.error('Error fetching CUSTOMER_TYPE_URL:', error);
+            }
+        };
+        getData();
+    }, []);
+
+    // Handle Customer Type Change
+    const handleCustTypeOptionChange = (event: ChangeEvent<HTMLSelectElement>) => {
+        const value = event.target.value;
+        setsSelectedCustomerType(value);
+        setSelectedCardType('');
+    }
+
+    // Handle IdCard Change
+    const handleIdCardChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const value = event.target.value.replace(/\D/g, ''); // ลบตัวอักษรที่ไม่ใช่ตัวเลขออก
+        if (value.length <= 13) {
+            setIdCard(value);
+        }
+    };
+
+    const handleDateChange = (date: Date | null) => {
+        setValueCalendar(date);
+        if (date) {
+            const calculatedAge = dayjs().diff(dayjs(date), 'year');
+            setValueAge(calculatedAge);
+        } else {
+            setValueAge(null); // ตั้งค่าเป็น null หากผู้ใช้ล้างฟิลด์วันเดือนปีเกิด
+        }
+    };
+    {/*-------------------- End ข้อมูลลูกค้า --------------------*/ }
+
+    {/*-------------------- Start ที่อยู่ติดตั้ง --------------------*/ }
+    // สร้าง state สำหรับ "ที่อยู่ลูกค้า (ติดตั้ง)
+    const [getProvinceForInstall, setGetProvinceForInstall] = useState<any[]>([]);
+    const [getDistrictForInstall, setGetDistrictForInstall] = useState<any[]>([]);
+    const [getSubDistrictForInstall, setGetSubDistrictForInstall] = useState<any[]>([]);
+    const [getZipcodeForInstall, setGetZipcodeForInstall] = useState<any[]>([]);
+
+    const [addressNumberForInstall, setAddressNumberForInstall] = useState<string>('');
+    const [addressMooForInstall, setAddressMooForInstall] = useState<string>('');
+    const [addressSoiForInstall, setAddressSoiForInstall] = useState<string>('');
+    const [addressRoadForInstall, setAddressRoadForInstall] = useState<string>('');
+    const [selectedProvinceForInstall, setSelectedProvinceForInstall] = useState<number | undefined>();
+    const [selectedDistrictForInstall, setSelectedDistrictForInstall] = useState<number | undefined>();
+    const [selectedSubDistrictForInstall, setSelectedSubDistrictForInstall] = useState<number | undefined>();
+    const [selectedZipcodeForInstall, setSelectedZipcodeForInstall] = useState<string>('');
+    const [addressMobileForInstall, setAddressMobileForInstall] = useState<string>('');
+    const [addressPhoneForInstall, setAddressPhoneForInstall] = useState<string>('');
+    const [addressPhoneReserveForInstall, setAddressPhoneReserveForInstall] = useState<string>('');
+    const [addressEmailForInstall, setAddressEmailForInstall] = useState<string>('');
+
+    // GET Province For Install
+    useEffect(() => {
+        const getData = async () => {
+            try {
+                const response = await axios.get(PROVINCE_URL, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    }
+                });
+                setGetProvinceForInstall(response.data);
+            } catch (error) {
+                console.error('Error fetching CUSTOMER_TYPE_URL:', error);
+            }
+        };
+        getData();
+    }, []);
+
+    // POST District For Install
+    useEffect(() => {
+        const getData = async () => {
+            if (selectedProvinceForInstall) { // ตรวจสอบว่ามี selectedProvince ก่อนการเรียก API
+                try {
+                    const response = await axios.post(DISTRICT_URL, { ProvinceCode: selectedProvinceForInstall }, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        }
+                    });
+                    setGetDistrictForInstall(response.data); // อัปเดต district เมื่อได้รับข้อมูลใหม่
+                } catch (error) {
+                    console.error('Error fetching DISTRICT_URL:', error);
+                }
+            } else {
+                setGetDistrictForInstall([]); // ล้างข้อมูล district เมื่อไม่ได้เลือก province
+            }
+        };
+        getData();
+    }, [selectedProvinceForInstall]);
+
+    // POST SubDistrict For Install
+    useEffect(() => {
+        const fetchSubDistricts = async () => {
+            if (selectedDistrictForInstall) {
+                try {
+                    const response = await axios.post(SUBDISTRICT_URL, { DistrictCode: selectedDistrictForInstall }, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        }
+                    });
+                    setGetSubDistrictForInstall(response.data);
+                } catch (error) {
+                    console.error('Error fetching SUBDISTRICT_URL:', error);
+                }
+            } else {
+                setGetSubDistrictForInstall([]);
+            }
+        };
+        fetchSubDistricts();
+    }, [selectedDistrictForInstall]);
+
+    // POST Zipcode For Install
+    useEffect(() => {
+        const getZipcode = async () => {
+            if (selectedSubDistrictForInstall) {
+                try {
+                    const response = await axios.post(ZIPCODE_URL, { SubDistrictCode: selectedSubDistrictForInstall }, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        }
+                    });
+                    if (response.data.length > 0) {
+                        setSelectedZipcodeForInstall(response.data[0].POSTCODE); // อัปเดตรหัสไปรษณีย์ใน state
+                    }
+                } catch (error) {
+                    console.error('Error fetching ZIPCODE_URL:', error);
+                }
+            } else {
+                setSelectedZipcodeForInstall(''); // เคลียร์ข้อมูลรหัสไปรษณีย์เมื่อไม่เลือกตำบล
+            }
+        };
+        getZipcode();
+    }, [selectedSubDistrictForInstall]);
+
+    {/*-------------------- End ที่อยู่ติดตั้ง --------------------*/ }
+
+    {/*-------------------- Start สลิป --------------------*/ }
+    interface FileWithPreview extends File {
+        preview?: string;
+    }
+
+    interface FileState {
+        transferSlip: FileWithPreview | null;
+        certificate: FileWithPreview | null;
+        idCard: FileWithPreview | null;
+        other: FileWithPreview | null;
+    }
+
+    const [files, setFiles] = useState<FileState>({
+        transferSlip: null,
+        certificate: null,
+        idCard: null,
+        other: null,
+    });
+
+    const fileInputRefs = {
+        transferSlip: useRef<HTMLInputElement>(null),
+        certificate: useRef<HTMLInputElement>(null),
+        idCard: useRef<HTMLInputElement>(null),
+        other: useRef<HTMLInputElement>(null),
+    };
+
+    const handleFileChange = (event: ChangeEvent<HTMLInputElement>, type: keyof FileState) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            const fileWithPreview: FileWithPreview = Object.assign(file, {
+                preview: URL.createObjectURL(file),
+            });
+            setFiles(prevFiles => ({
+                ...prevFiles,
+                [type]: fileWithPreview,
+            }));
+        }
+    };
+
+    const removeFile = (type: keyof FileState) => {
+        setFiles(prevFiles => ({
+            ...prevFiles,
+            [type]: null,
+        }));
+        // รีเซ็ต input file
+        if (fileInputRefs[type].current) {
+            fileInputRefs[type].current!.value = '';
+        }
+    };
+
+    const openFile = (file: FileWithPreview) => {
+        if (file.preview) {
+            window.open(file.preview, '_blank');
+        }
+    };
+
+    const renderFilePreview = (file: FileWithPreview, type: keyof FileState) => (
+        <div className="file-preview mt-2">
+            {file.preview && (
+                <img
+                    src={file.preview}
+                    alt="Preview"
+                    width="80"
+                    height="80"
+                    onClick={() => openFile(file)}
+                    style={{ cursor: 'pointer' }}
+                />
+            )}
+            <div className="file-info">
+                <span>{file.name}</span> ({(file.size / 1024).toFixed(2)} KB)
+            </div>
+            <button
+                type="button"
+                className="btn btn-danger btn-sm"
+                onClick={() => removeFile(type)}
+            >
+                ลบ
+            </button>
+        </div>
+    );
+    {/*-------------------- End สลิป --------------------*/ }
+
+    {/* Start ของแถม */ }
+    const [selectedGiftId, setSelectedGiftId] = useState<any>('');
+    // console.log(`selectedGiftId`, selectedGiftId);
+
+    const handleGiftOptionChange = (event: any) => {
+        const value = event.target.value
+        setSelectedGiftId(value);
+    };
+    {/*-------------------- End ของแถม --------------------*/ }
+
+    {/*-------------------- Start ข้อมูลเพิ่มเติม --------------------*/ }
+    const [valueCalendarInstall, setValueCalendarInstall] = useState<Date | null>(null);
+    const [selectedValueTimeInstall, setSelectedValueTimeInstall] = useState<string>('');
+
+    const [getShipping, setGetShipping] = useState<any[]>([]);
+    const [selectedShipping, setSelectedShipping] = useState<any>('');
+    console.log(`selectedShipping`, selectedShipping);
+
+
+    const valueTimeInstallation = [
+        {
+            "VALUETIMEID": 1,
+            "VALUETIME": "สะดวกทุกช่วงเวลา"
+        },
+        {
+            "VALUETIMEID": 2,
+            "VALUETIME": "08.00 - 12.00 (ช่วงเช้า)"
+        },
+        {
+            "VALUETIMEID": 3,
+            "VALUETIME": "12.01 - 15.00 (ช่วงบ่าย)"
+        },
+        {
+            "VALUETIMEID": 4,
+            "VALUETIME": "15.01 - 19.00 (ช่วงเย็น)"
+        },
+        {
+            "VALUETIMEID": 5,
+            "VALUETIME": "19.01 - 21.00 (ช่วงดึก)"
+        },
+    ]
+
+    // GET GetShipping
+    useEffect(() => {
+        const getData = async () => {
+            try {
+                const response = await axios.post(SHIPPING_URL, {
+                    EmpId: auth.data[0].EmpId,
+                    DivisionId: auth.data[0].DivisionId,
+                    DepartId: auth.data[0].DepartId,
+                    DepartGroup: auth.data[0].DepartGroup,
+                    TeamSale: auth.data[0].TeamSale,
+                }, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
+                const data = Array.isArray(response.data.data) ? response.data.data : [];
+                setGetShipping(data);
+            } catch (error) {
+                console.error('Error fetching SHIPPING_URL:', error);
+            }
+        };
+        getData();
+    }, [selectedCategoryId, setProduct]);
+
+    const handleDateChangeInstall = (date: Date | null) => {
+        setValueCalendarInstall(date);
+    };
+    {/*-------------------- End ข้อมูลเพิ่มเติม --------------------*/ }
 
     return (
         <>
@@ -192,15 +677,15 @@ const OrderCreateBooking: React.FC = () => {
                                         <label className='form-label required fw-bold fs-6'>พนักงานขาย</label>
                                         <select
                                             className='form-select'
-                                        // onChange={handleCustTypeOptionChange}
-                                        // value={selectedCustomerType}
+                                            onChange={(e) => setSelectedEmployee(e.target.value)}
+                                            value={selectedEmployee}
                                         >
-                                            <option value=''>เลือกประเภทลูกค้า...</option>
-                                            {/* {customerTypes.map((item: any) => (
-                                        <option key={item.CUSTOMERTYPE} value={item.CUSTOMERTYPE}>
-                                            {item.CUSTOMERTYPENAME}
-                                        </option>
-                                    ))} */}
+                                            <option value=''>เลือกพนักงานขาย...</option>
+                                            {Array.isArray(employee) && employee.map((item: any) => (
+                                                <option key={item.id} value={item.id}>
+                                                    {item.SaleCode} - {item.FName} {item.LName}&nbsp;&nbsp;(ทีม {item.TeamName})
+                                                </option>
+                                            ))}
                                         </select>
                                     </div>
 
@@ -208,16 +693,15 @@ const OrderCreateBooking: React.FC = () => {
                                         <label className='form-label required fw-bold fs-6'>ช่องทาง</label>
                                         <select
                                             className='form-select'
-                                        // value={selectedCardType}
-                                        // onChange={(e) => setSelectedCardType(e.target.value)}
-                                        // disabled={!selectedCustomerType}
+                                            value={selectedChannelSale}
+                                            onChange={(e) => setSelectedChannelSale(e.target.value)}
                                         >
-                                            <option value=''>เลือกประเภทบัตร...</option>
-                                            {/* {selectedCustomer.CARDTYPE.map((cardType: any) => (
-                                        <option key={cardType.CARDTYPE} value={cardType.CARDTYPE}>
-                                            {cardType.CARDTYPENAME}
-                                        </option>
-                                    ))} */}
+                                            <option value=''>เลือกช่องทาง...</option>
+                                            {Array.isArray(channelSale) && channelSale.map((item: any) => (
+                                                <option key={item.CHANNEL_ID} value={item.CHANNEL_ID}>
+                                                    {item.CHANNEL_NAME}
+                                                </option>
+                                            ))}
                                         </select>
                                     </div>
                                 </div>
@@ -226,26 +710,26 @@ const OrderCreateBooking: React.FC = () => {
                             <div className="container">
                                 <div className='row mb-6'>
                                     <div className='col-lg-6 mb-3'>
-                                        <label className='form-label required fw-bold fs-6'>ผู้แนะนำ (ถ้ามี)</label>
+                                        <label className='form-label fw-bold fs-6'>ผู้แนะนำ (ถ้ามี)</label>
                                         <select
                                             className='form-select'
-                                        // onChange={handleCustTypeOptionChange}
-                                        // value={selectedCustomerType}
+                                            onChange={(e) => setSelectedAdviser(e.target.value)}
+                                            value={selectedAdviser}
                                         >
-                                            <option value=''>เลือกประเภทลูกค้า...</option>
-                                            {/* {customerTypes.map((item: any) => (
-                                        <option key={item.CUSTOMERTYPE} value={item.CUSTOMERTYPE}>
-                                            {item.CUSTOMERTYPENAME}
-                                        </option>
-                                    ))} */}
+                                            <option value=''>เลือกผู้แนะนำ (ถ้ามี)...</option>
+                                            {Array.isArray(adviser) && adviser.map((item: any) => (
+                                                <option key={item.CHANNEL_ID} value={item.CHANNEL_ID}>
+                                                    {item.CHANNEL_NAME}
+                                                </option>
+                                            ))}
                                         </select>
                                     </div>
 
                                     <div className='col-lg-6 mb-3'>
-                                        <label className='form-label required fw-bold fs-6'>ช่องทางย่อย</label>
+                                        <label className='form-label fw-bold fs-6'>ช่องทางย่อย</label>
                                         <input
-                                            // value={fullName}
-                                            // onChange={(e) => setFullName(e.target.value)}
+                                            value={subChannelSale}
+                                            onChange={(e) => setSubChannelSale(e.target.value)}
                                             type='text'
                                             className='form-control form-control-lg  mb-3 mb-lg-0'
                                         />
@@ -268,7 +752,7 @@ const OrderCreateBooking: React.FC = () => {
                                                 onChange={handleCateOptionChange}
                                             >
                                                 <option value=''>เลือกหมวดหมู่สินค้า...</option>
-                                                {fetchCategory.map((item: any, index: number) => (
+                                                {(fetchCategory.length > 0 ? fetchCategory : categories).map((item: any, index: number) => (
                                                     <option key={index} value={item.CATEGORIES_ID}>
                                                         {item.CATEGORIES_NAME_TH}
                                                     </option>
@@ -284,9 +768,9 @@ const OrderCreateBooking: React.FC = () => {
                                                 value={selectedProductIndex !== null ? selectedProductIndex : ''}
                                             >
                                                 <option value="">เลือกสินค้า...</option>
-                                                {product.map((item: any, index: number) => (
+                                                {Array.isArray(product) && product.map((item: any, index: number) => (
                                                     <option key={index} value={index}>
-                                                        {item.ItemDescription} [ SerialNo: {item.SerialNo} ]
+                                                        {item.ItemCode} - {item.ItemDescription}
                                                     </option>
                                                 ))}
                                             </select>
@@ -295,30 +779,34 @@ const OrderCreateBooking: React.FC = () => {
                                         <div className="mb-6">
                                             <label className="form-label required fw-bold fs-6">การชำระ</label>
                                             <div className="d-flex">
-                                                <div className="form-check form-check-inline me-3">
-                                                    <input className="form-check-input" type="radio" name="payment" value="cash" />
-                                                    <label className='form-label fw-bold fs-6'>{packageType[0].PACKAGETYPENAME}</label>
-                                                </div>
-                                                <div className="form-check form-check-inline me-3">
-                                                    <input className="form-check-input" type="radio" name="payment" value="installment" />
-                                                    <label className='form-label fw-bold fs-6'>{packageType[1].PACKAGETYPENAME}</label>
-                                                </div>
-                                                <div className="form-check form-check-inline me-3">
-                                                    <input className="form-check-input" type="radio" name="payment" value="credit" />
-                                                    <label className='form-label fw-bold fs-6'>{packageType[2].PACKAGETYPENAME}</label>
-                                                </div>
-                                                <div className="form-check form-check-inline me-3">
-                                                    <input className="form-check-input" type="radio" name="payment" value="credit" />
-                                                    <label className='form-label fw-bold fs-6'>{packageType[3].PACKAGETYPENAME}</label>
-                                                </div>
+                                                {packageType.map((pkg, index) => (
+                                                    <div className="form-check form-check-inline me-3" key={index}>
+                                                        <input
+                                                            className="form-check-input"
+                                                            type="radio"
+                                                            name="payment"
+                                                            value={pkg.PACKAGETYPEID}
+                                                            onChange={() => setSelectedPackageTypeId(pkg.PACKAGETYPEID)}
+                                                        />
+                                                        <label className="form-label fw-bold fs-6">{pkg.PACKAGETYPENAME}</label>
+                                                    </div>
+                                                ))}
                                             </div>
                                         </div>
 
                                         <div className="mb-6">
                                             <label className="form-label required fw-bold fs-6">แพ็คเกจ</label>
-                                            <select className="form-select">
-                                                <option>เลือกแพ็คเกจ...</option>
-                                                {/* Options here */}
+                                            <select
+                                                className="form-select"
+                                                onChange={handlePackageClick}
+                                                value={selectedPackageIndex !== null ? selectedPackageIndex : ''}
+                                            >
+                                                <option value="">เลือกแพ็คเกจ...</option>
+                                                {packageList.map((item: any, index: number) => (
+                                                    <option key={index} value={index}>
+                                                        {item.PACKAGETITLE}
+                                                    </option>
+                                                ))}
                                             </select>
                                         </div>
 
@@ -326,9 +814,20 @@ const OrderCreateBooking: React.FC = () => {
                                             <label className="form-label required fw-bold fs-6">ส่วนลด</label>
                                             <select className="form-select">
                                                 <option>เลือกส่วนลด...</option>
-                                                {/* Options here */}
+                                                <option
+                                                    value={
+                                                        selectedPackageIndex !== null && packageList[selectedPackageIndex] && packageList[selectedPackageIndex].DISCOUNTPRICE
+                                                            ? packageList[selectedPackageIndex].DISCOUNTPRICE
+                                                            : 0
+                                                    }
+                                                >
+                                                    {selectedPackageIndex !== null && packageList[selectedPackageIndex] && packageList[selectedPackageIndex].DISCOUNTPRICE
+                                                        ? packageList[selectedPackageIndex].DISCOUNTPRICE
+                                                        : ""}
+                                                </option>
                                             </select>
                                         </div>
+
                                     </div>
 
                                     {/* Right Side */}
@@ -342,6 +841,9 @@ const OrderCreateBooking: React.FC = () => {
                                                 style={{
                                                     backgroundColor: '#d7dbde',
                                                 }}
+                                                value={selectedPackageIndex !== null && packageList[selectedPackageIndex]
+                                                    ? totalPrice
+                                                    : ""}
                                             />
                                         </div>
 
@@ -354,6 +856,9 @@ const OrderCreateBooking: React.FC = () => {
                                                 style={{
                                                     backgroundColor: '#d7dbde',
                                                 }}
+                                                value={selectedPackageIndex !== null && packageList[selectedPackageIndex]
+                                                    ? discountAmount
+                                                    : ""}
                                             />
                                         </div>
 
@@ -366,56 +871,349 @@ const OrderCreateBooking: React.FC = () => {
                                                 style={{
                                                     backgroundColor: '#d7dbde',
                                                 }}
+                                                value={netPrice ? netPrice : ""}
                                             />
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Summary Table */}
-                                <div className="mt-4">
-                                    <table className="table table-bordered">
-                                        <thead>
-                                            <tr>
-                                                <th>งวดที่</th>
-                                                <th>ราคา</th>
-                                                <th>หน่วย</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>1</td>
-                                                <td>1000</td>
-                                                <td>บาท</td>
-                                            </tr>
-                                            {/* Additional rows as needed */}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                {selectedPackageIndex !== null && selectedPackageIndex !== 1 && selectedPackageTypeId !== 1 && (
+                                    <div className="mt-4">
+                                        <table className="table table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th>งวดที่</th>
+                                                    <th>ราคา</th>
+                                                    <th>หน่วย</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {/* งวดที่ 1 */}
+                                                <tr>
+                                                    <td>1</td>
+                                                    <td>
+                                                        {packageList[selectedPackageIndex] && packageList[selectedPackageIndex].PERIODDETAILS[0]
+                                                            ? packageList[selectedPackageIndex].PERIODDETAILS[0].PAYMENTAMOUNT - (packageList[selectedPackageIndex].DISCOUNTPRICE || 0)
+                                                            : ""}
+                                                    </td>
+                                                    <td>บาท</td>
+                                                </tr>
+
+                                                {/* งวดที่ 2 ถึงงวดสุดท้าย */}
+                                                {packageList[selectedPackageIndex] && packageList[selectedPackageIndex].PERIODDETAILS.length > 1 && (
+                                                    <tr>
+                                                        <td>2-{packageList[selectedPackageIndex].PERIODDETAILS.length}</td>
+                                                        <td>{packageList[selectedPackageIndex].PERIODDETAILS[1].PAYMENTAMOUNT}</td>
+                                                        <td>บาท</td>
+                                                    </tr>
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+
                             </div>
 
                             <hr className='my-10' style={{ borderTop: '1px dotted black' }} />
 
                             <label className='form-label fw-bold fs-3 mb-10'>ข้อมูลลูกค้า</label>
 
-                            <div className="container">
-                                <div className='row mb-6'>
-                                    <div className='col-lg-6 mb-3'>
-                                        <label className='form-label required fw-bold fs-6'>ประเภทลูกค้า</label>
-                                        <select
-                                            className='form-select'
-                                        // onChange={handleCustTypeOptionChange}
-                                        // value={selectedCustomerType}
-                                        >
-                                            <option value=''>เลือกประเภทลูกค้า...</option>
-                                            {/* {customerTypes.map((item: any) => (
-                                        <option key={item.CUSTOMERTYPE} value={item.CUSTOMERTYPE}>
-                                            {item.CUSTOMERTYPENAME}
-                                        </option>
-                                    ))} */}
-                                        </select>
+                            {selectedCustomerType !== "1" && (
+                                <>
+                                    <div className="container">
+                                        <div className='row mb-6'>
+                                            <div className='col-lg-6 mb-3'>
+                                                <label className='form-label required fw-bold fs-6'>ประเภทลูกค้า</label>
+                                                <select
+                                                    className='form-select'
+                                                    onChange={handleCustTypeOptionChange}
+                                                    value={selectedCustomerType} >
+                                                    <option value=''>เลือกประเภทลูกค้า...</option>
+                                                    {customerTypes.map((item: any) => (
+                                                        <option key={item.CUSTOMERTYPE} value={item.CUSTOMERTYPE}>
+                                                            {item.CUSTOMERTYPENAME}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            <div className='col-lg-6 mb-3'>
+                                                <label className='form-label required fw-bold fs-6'>ประเภทบัตร</label>
+                                                <select
+                                                    className='form-select'
+                                                    value={selectedCardType}
+                                                    onChange={(e) => setSelectedCardType(e.target.value)}
+                                                >
+                                                    <option value=''>เลือกประเภทบัตร...</option>
+                                                    {selectedCustomer.CARDTYPE.map((cardType: any) => (
+                                                        <option key={cardType.CARDTYPE} value={cardType.CARDTYPE}>
+                                                            {cardType.CARDTYPENAME}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
+
+                                    <div className="container">
+                                        <div className='row mb-6'>
+                                            <div className='col-lg-4'>
+                                                <label className='form-label required fw-bold fs-6'>บัตรประชาชน</label>
+                                                <input
+                                                    value={idCard}
+                                                    onChange={handleIdCardChange}
+                                                    type='text'
+                                                    className='form-control mb-3 mb-lg-0'
+                                                    placeholder='บัตรประชาชน'
+                                                />
+                                                {/* {errors.idCard && <p className='text-danger'>{errors.idCard.message}</p>} */}
+                                            </div>
+                                            <div className='col-lg-4 mb-3'>
+                                                <label className='form-label required fw-bold fs-6'>คำนำหน้าชื่อ</label>
+                                                <select
+                                                    value={selectedPrefixId}
+                                                    className='form-select'
+                                                    onChange={(e) => setSelectedPrefixId(Number(e.target.value))}
+                                                >
+                                                    <option value=''>เลือกคำนำหน้าชื่อ...</option>
+                                                    {selectedCustomer.PREFIX.map((prefix: any) => (
+                                                        <option key={prefix.PREFIXID} value={prefix.PREFIXID}>{prefix.PREFIXNAME}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div className='col-lg-4'>
+                                                <label className='form-label required fw-bold fs-6'>ชื่อสกุล</label>
+                                                <input
+                                                    value={fullName}
+                                                    onChange={(e) => setFullName(e.target.value)}
+                                                    type='text'
+                                                    className='form-control mb-3 mb-lg-0'
+                                                    placeholder='ชื่อ-สกุล'
+                                                />
+                                                {/* {errors.fullName && <p className='text-danger'>{errors.fullName}</p>} */}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="container">
+                                        <div className='row mb-6'>
+                                            <div className="col-lg-4 mb-3">
+                                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                    <label className="form-label required fw-bold fs-6">วันเดือนปีเกิด</label>
+                                                    <DatePicker
+                                                        selected={valueCalendar}
+                                                        onChange={handleDateChange}
+                                                        className="form-control mb-3 mb-lg-0"
+                                                        placeholderText="วันเดือนปีเกิด"
+                                                        showYearDropdown
+                                                        showMonthDropdown
+                                                        dropdownMode="select"
+                                                        isClearable
+                                                        dateFormat="yyyy/MM/dd"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="col-lg-4 mb-3">
+                                                <label className="form-label required fw-bold fs-6">อายุ</label>
+                                                <input
+                                                    value={valueAge !== null ? valueAge.toString() : ''}
+                                                    type="text"
+                                                    className="form-control mb-3 mb-lg-0"
+                                                    readOnly
+                                                />
+
+                                            </div>
+                                            {selectedCustomerType !== "1" && (
+                                                <div className='col-lg-4 mb-3'>
+                                                    <label className='form-label required fw-bold fs-6'>เพศ</label>
+                                                    <select
+                                                        value={selectedSexId}
+                                                        className='form-select mb-3 mb-lg-0'
+                                                        onChange={(e) => setSelectedSexId(Number(e.target.value))}
+                                                    >
+                                                        <option value=''>เลือกเพศ...</option>
+                                                        {selectedCustomer.SEX.map((sex: any) => (
+                                                            <option key={sex.SEXID} value={sex.SEXID}>{sex.SEXNAME}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            )}
+
+                                            <div className="container">
+                                                <div className='row mt-6'>
+                                                    <div className='col-lg-6 mb-3'>
+                                                        <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
+                                                        <input
+                                                            value={mobile}
+                                                            onChange={(e) => setMobile(e.target.value)}
+                                                            type='text'
+                                                            className='form-control mb-3 mb-lg-0'
+                                                        />
+                                                        {/* {errors.mobile && <p className='text-danger'>{errors.mobile}</p>} */}
+                                                    </div>
+                                                    <div className='col-lg-6 mb-3'>
+                                                        <label className='form-label fw-bold fs-6'>เบอร์บ้าน</label>
+                                                        <input
+                                                            value={phone}
+                                                            onChange={(e) => setPhone(e.target.value)}
+                                                            type='text'
+                                                            className='form-control mb-3 mb-lg-0'
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="container">
+                                            <div className='row mb-6'>
+                                                <div className='col-lg-6 mb-3'>
+                                                    <label className='form-label fw-bold fs-6'>เบอร์ที่ทำงาน</label>
+                                                    <input
+                                                        value={workPhone}
+                                                        onChange={(e) => setWorkPhone(e.target.value)}
+                                                        type='text'
+                                                        className='form-control mb-3 mb-lg-0'
+                                                    />
+                                                </div>
+                                                <div className='col-lg-6 mb-3'>
+                                                    <label className='form-label fw-bold fs-6'>อีเมล์</label>
+                                                    <input
+                                                        value={email}
+                                                        onChange={(e) => setEmail(e.target.value)}
+                                                        type='text'
+                                                        className='form-control mb-3 mb-lg-0'
+                                                    />
+                                                    {/* {errors.email && <p className='text-danger'>{errors.email}</p>} */}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+
+                            {/* Start กรณีประเภทลูกค้าเป็น นิติบุคคล */}
+                            {selectedCustomerType == "1" && (
+                                <>
+                                    <div className="container">
+                                        <div className='row mb-6'>
+                                            <div className='col-lg-6 mb-3'>
+                                                <label className='form-label required fw-bold fs-6'>ประเภทลูกค้า</label>
+                                                <select
+                                                    className='form-select'
+                                                    onChange={handleCustTypeOptionChange}
+                                                    value={selectedCustomerType}
+                                                >
+                                                    <option value=''>เลือกประเภทลูกค้า...</option>
+                                                    {customerTypes.map((item: any) => (
+                                                        <option key={item.CUSTOMERTYPE} value={item.CUSTOMERTYPE}>
+                                                            {item.CUSTOMERTYPENAME}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            <div className='col-lg-6'>
+                                                <label className='form-label required fw-bold fs-6'>ชื่อบริษัท</label>
+                                                <input
+                                                    value={fullName}
+                                                    onChange={(e) => setFullName(e.target.value)}
+                                                    type='text'
+                                                    className='form-control mb-3 mb-lg-0'
+                                                />
+                                                {/* {errors.idCard && <p className='text-danger'>{errors.idCard.message}</p>} */}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="container">
+                                        <div className='row mb-6'>
+                                            <div className='col-lg-4'>
+                                                <label className='form-label required fw-bold fs-6'>เลขประจำตัวผู้เสียภาษี</label>
+                                                <input
+                                                    value={idCard}
+                                                    onChange={(e) => setIdCard(e.target.value)}
+                                                    type='text'
+                                                    className='form-control mb-3 mb-lg-0'
+                                                />
+                                                {/* {errors.idCard && <p className='text-danger'>{errors.idCard.message}</p>} */}
+                                            </div>
+                                            <div className='col-lg-4 mb-3'>
+                                                <label className='form-label required fw-bold fs-6'>คำนำหน้า</label>
+                                                <select
+                                                    className='form-select'
+                                                    onChange={(e) => setSelectedPrefixId(Number(e.target.value))}
+                                                    value={selectedPrefixId}
+                                                >
+                                                    <option value=''>เลือกคำนำหน้า...</option>
+                                                    {selectedCustomer.PREFIX.map((prefix: any) => (
+                                                        <option key={prefix.PREFIXID} value={prefix.PREFIXID}>{prefix.PREFIXNAME}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div className='col-lg-4 mb-3'>
+                                                <label className='form-label required fw-bold fs-6'>กรรมการผู้มีอำนาจ</label>
+                                                <input
+                                                    value={nameMD}
+                                                    onChange={(e) => setNameMD(e.target.value)}
+                                                    type='text'
+                                                    className='form-control mb-3 mb-lg-0'
+                                                />
+                                                {/* {errors.fullname && <p className='text-danger'>{errors.fullname.message}</p>} */}
+                                            </div>
+                                        </div>
+
+                                        <div className="container">
+                                            <div className='row mb-6 mt-6'>
+                                                <div className='col-lg-6 mb-3'>
+                                                    <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
+                                                    <input
+                                                        value={mobile}
+                                                        type='text'
+                                                        className='form-control mb-3 mb-lg-0'
+                                                        onChange={(e) => setMobile(e.target.value)}
+                                                    />
+                                                </div>
+                                                <div className='col-lg-6 mb-3'>
+                                                    <label className='form-label fw-bold fs-6'>เบอร์บ้าน</label>
+                                                    <input
+                                                        value={phone}
+                                                        type='text'
+                                                        className='form-control mb-3 mb-lg-0'
+                                                        onChange={(e) => setPhone(e.target.value)}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="container">
+                                            <div className='row mb-6'>
+                                                <div className='col-lg-6 mb-3'>
+                                                    <label className='form-label fw-bold fs-6'>เบอร์ที่ทำงาน</label>
+                                                    <input
+                                                        value={workPhone}
+                                                        type='text'
+                                                        className='form-control mb-3 mb-lg-0'
+                                                        onChange={(e) => setWorkPhone(e.target.value)}
+                                                    />
+                                                </div>
+                                                <div className='col-lg-6 mb-3'>
+                                                    <label className='form-label fw-bold fs-6'>อีเมล์</label>
+                                                    <input
+                                                        value={email}
+                                                        onChange={(e) => setEmail(e.target.value)}
+                                                        type='text'
+                                                        className='form-control mb-3 mb-lg-0'
+                                                    />
+                                                    {/* {errors.email && <p className='text-danger'>{errors.email.message}</p>} */}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                            {/* End กรณีประเภทลูกค้าเป็น นิติบุคคล */}
 
                             <hr className='my-10' style={{ borderTop: '1px dotted black' }} />
 
@@ -426,11 +1224,10 @@ const OrderCreateBooking: React.FC = () => {
                                     <div className='col-lg-4 mb-3'>
                                         <label className='form-label required fw-bold fs-6'>บ้านเลขที่</label>
                                         <input
-                                            // value={addressNumberForInstall}
-                                            // onChange={(e) => {
-                                            //     setAddressNumberForInstall(e.target.value);
-                                            //     resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                            // }}
+                                            value={addressNumberForInstall}
+                                            onChange={(e) => {
+                                                setAddressNumberForInstall(e.target.value);
+                                            }}
                                             type='text'
                                             className='form-control mb-3 mb-lg-0'
                                         />
@@ -438,11 +1235,10 @@ const OrderCreateBooking: React.FC = () => {
                                     <div className='col-lg-4 mb-3'>
                                         <label className='form-label fw-bold fs-6'>หมู่ที่</label>
                                         <input
-                                            // value={addressMooForInstall}
-                                            // onChange={(e) => {
-                                            //     setAddressMooForInstall(e.target.value);
-                                            //     resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                            // }}
+                                            value={addressMooForInstall}
+                                            onChange={(e) => {
+                                                setAddressMooForInstall(e.target.value);
+                                            }}
                                             type='text'
                                             className='form-control mb-3 mb-lg-0'
                                         />
@@ -450,11 +1246,10 @@ const OrderCreateBooking: React.FC = () => {
                                     <div className='col-lg-4 mb-3'>
                                         <label className='form-label fw-bold fs-6'>ตรอก / ซอย</label>
                                         <input
-                                            // value={addressSoiForInstall}
-                                            // onChange={(e) => {
-                                            //     setAddressSoiForInstall(e.target.value);
-                                            //     resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                            // }}
+                                            value={addressSoiForInstall}
+                                            onChange={(e) => {
+                                                setAddressSoiForInstall(e.target.value);
+                                            }}
                                             type='text'
                                             className='form-control mb-3 mb-lg-0'
                                         />
@@ -467,11 +1262,10 @@ const OrderCreateBooking: React.FC = () => {
                                     <div className='col-lg-4 mb-3'>
                                         <label className='form-label fw-bold fs-6'>ถนน</label>
                                         <input
-                                            // value={addressRoadForInstall}
-                                            // onChange={(e) => {
-                                            //     setAddressRoadForInstall(e.target.value);
-                                            //     resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                            // }}
+                                            value={addressRoadForInstall}
+                                            onChange={(e) => {
+                                                setAddressRoadForInstall(e.target.value);
+                                            }}
                                             type='text'
                                             className='form-control mb-3 mb-lg-0'
                                         />
@@ -480,36 +1274,34 @@ const OrderCreateBooking: React.FC = () => {
                                         <label className='form-label required fw-bold fs-6'>จังหวัด</label>
                                         <select
                                             className='form-select'
-                                        // value={selectedProvinceForInstall}
-                                        // onChange={(e) => {
-                                        //     setSelectedProvinceForInstall(Number(e.target.value))
-                                        //     resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                        // }}
+                                            value={selectedProvinceForInstall}
+                                            onChange={(e) => {
+                                                setSelectedProvinceForInstall(Number(e.target.value))
+                                            }}
                                         >
                                             <option value=''>เลือกจังหวัด...</option>
-                                            {/* {getProvinceForInstall.map((item: any) => (
-                                            <option key={item.PROVINCECODE} value={item.PROVINCECODE}>
-                                                {item.PROVINCENAME}
-                                            </option>
-                                        ))} */}
+                                            {getProvinceForInstall.map((item: any) => (
+                                                <option key={item.PROVINCECODE} value={item.PROVINCECODE}>
+                                                    {item.PROVINCENAME}
+                                                </option>
+                                            ))}
                                         </select>
                                     </div>
                                     <div className='col-lg-4 mb-3'>
                                         <label className='form-label required fw-bold fs-6'>อำเภอ / เขต</label>
                                         <select
                                             className='form-select'
-                                        // value={selectedDistrictForInstall}
-                                        // onChange={(e) => {
-                                        //     setSelectedDistrictForInstall(Number(e.target.value))
-                                        //     resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                        // }}
+                                            value={selectedDistrictForInstall}
+                                            onChange={(e) => {
+                                                setSelectedDistrictForInstall(Number(e.target.value))
+                                            }}
                                         >
-                                            {/* <option value=''>เลือกอำเภอ / เขต...</option>
-                                        {getDistrictForInstall.map((item: any) => (
-                                            <option key={item.DISTRICTCODE} value={item.DISTRICTCODE}>
-                                                {item.DISTRICTNAME}
-                                            </option>
-                                        ))} */}
+                                            <option value=''>เลือกอำเภอ / เขต...</option>
+                                            {getDistrictForInstall.map((item: any) => (
+                                                <option key={item.DISTRICTCODE} value={item.DISTRICTCODE}>
+                                                    {item.DISTRICTNAME}
+                                                </option>
+                                            ))}
                                         </select>
                                     </div>
                                 </div>
@@ -521,26 +1313,26 @@ const OrderCreateBooking: React.FC = () => {
                                         <label className='form-label required fw-bold fs-6'>ตำบล / แขวง</label>
                                         <select
                                             className='form-select'
-                                        // value={selectedSubDistrictForInstall}
-                                        // onChange={(e) => {
-                                        //     setSelectedSubDistrictForInstall(Number(e.target.value))
-                                        //     resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                        // }}
+                                            value={selectedSubDistrictForInstall}
+                                            onChange={(e) => {
+                                                setSelectedSubDistrictForInstall(Number(e.target.value))
+                                            }}
                                         >
-                                            {/* <option value=''>เลือกตำบล / แขวง...</option>
-                                        {getSubDistrictForInstall.map((item: any) => (
-                                            <option key={item.SUBDISTRICTCODE} value={item.SUBDISTRICTCODE}>
-                                                {item.SUBDISTRICTNAME}
-                                            </option>
-                                        ))} */}
+                                            <option value=''>เลือกตำบล / แขวง...</option>
+                                            {getSubDistrictForInstall.map((item: any) => (
+                                                <option key={item.SUBDISTRICTCODE} value={item.SUBDISTRICTCODE}>
+                                                    {item.SUBDISTRICTNAME}
+                                                </option>
+                                            ))}
                                         </select>
                                     </div>
 
                                     <div className='col-lg-4 mb-3'>
                                         <label className='form-label required fw-bold fs-6'>รหัสไปรษณีย์</label>
                                         <input
-                                            type="text"
-                                            className="form-control"
+                                            type='text'
+                                            className='form-control mb-3 mb-lg-0'
+                                            value={selectedZipcodeForInstall}
                                             readOnly
                                             style={{
                                                 backgroundColor: '#d7dbde',
@@ -550,11 +1342,10 @@ const OrderCreateBooking: React.FC = () => {
                                     <div className='col-lg-4 mb-3'>
                                         <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
                                         <input
-                                            // value={addressPhoneForInstall}
-                                            // onChange={(e) => {
-                                            //     setAddressPhoneForInstall(e.target.value)
-                                            //     resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                            // }}
+                                            value={addressMobileForInstall}
+                                            onChange={(e) => {
+                                                setAddressMobileForInstall(e.target.value)
+                                            }}
                                             type='text'
                                             className='form-control mb-3 mb-lg-0'
                                         />
@@ -567,11 +1358,10 @@ const OrderCreateBooking: React.FC = () => {
                                     <div className='col-lg-4 mb-3'>
                                         <label className='form-label fw-bold fs-6'>เบอร์โทรศัพท์สำรอง</label>
                                         <input
-                                            // value={addressPhoneForInstall}
-                                            // onChange={(e) => {
-                                            //     setAddressPhoneForInstall(e.target.value)
-                                            //     resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                            // }}
+                                            value={addressPhoneReserveForInstall}
+                                            onChange={(e) => {
+                                                setAddressPhoneReserveForInstall(e.target.value)
+                                            }}
                                             type='text'
                                             className='form-control mb-3 mb-lg-0'
                                         />
@@ -580,11 +1370,10 @@ const OrderCreateBooking: React.FC = () => {
                                     <div className='col-lg-4 mb-3'>
                                         <label className='form-label fw-bold fs-6'>เบอร์บ้าน</label>
                                         <input
-                                            // value={addressPhoneForInstall}
-                                            // onChange={(e) => {
-                                            //     setAddressPhoneForInstall(e.target.value)
-                                            //     resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                            // }}
+                                            value={addressPhoneForInstall}
+                                            onChange={(e) => {
+                                                setAddressPhoneForInstall(e.target.value)
+                                            }}
                                             type='text'
                                             className='form-control mb-3 mb-lg-0'
                                         />
@@ -592,11 +1381,10 @@ const OrderCreateBooking: React.FC = () => {
                                     <div className='col-lg-4 mb-3'>
                                         <label className='form-label fw-bold fs-6'>E-Mail</label>
                                         <input
-                                            // value={addressPhoneForInstall}
-                                            // onChange={(e) => {
-                                            //     setAddressPhoneForInstall(e.target.value)
-                                            //     resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                            // }}
+                                            value={addressEmailForInstall}
+                                            onChange={(e) => {
+                                                setAddressEmailForInstall(e.target.value)
+                                            }}
                                             type='text'
                                             className='form-control mb-3 mb-lg-0'
                                         />
@@ -629,22 +1417,24 @@ const OrderCreateBooking: React.FC = () => {
                                     <div className="col-7">
                                         <select
                                             className='form-select'
-                                        // onChange={handleCustTypeOptionChange}
-                                        // value={selectedCustomerType}
+                                            onChange={handleGiftOptionChange}
+                                            value={selectedGiftId}
                                         >
-                                            <option value=''>เลือกของแถม...</option>
-                                            {/* {customerTypes.map((item: any) => (
-                                        <option key={item.CUSTOMERTYPE} value={item.CUSTOMERTYPE}>
-                                            {item.CUSTOMERTYPENAME}
-                                        </option>
-                                    ))} */}
+                                            <option value="">เลือกของแถม...</option>
+                                            {selectedPackageIndex !== null && packageList[selectedPackageIndex] && packageList[selectedPackageIndex].FREEGIFT
+                                                ? packageList[selectedPackageIndex].FREEGIFT.map((item: any, index: number) => (
+                                                    <option key={index} value={item.GIFTID}>
+                                                        {item.GIFTNAME}
+                                                    </option>
+                                                ))
+                                                : <option value="">ไม่มีของแถม</option>}
                                         </select>
                                     </div>
                                     <div className="col-2 text-center">
                                         <span>จำนวน</span>
                                     </div>
                                     <div className="col-2 d-flex align-items-center">
-                                        <input type="text" className="form-control me-2" placeholder="หน่วย" />
+                                        <input type="text" className="form-control me-2" />
                                         <span>หน่วย</span>
                                     </div>
                                 </div>
@@ -726,38 +1516,27 @@ const OrderCreateBooking: React.FC = () => {
                                 ))}
                             </div>
 
-                            <hr className='mt-10' style={{ borderTop: '1px dotted black' }} />
-
-                            <label className='form-label fw-bold fs-3 mb-10 mt-10'>ค่าใช้จ่าย อื่นๆ</label>
+                            <hr className='mt-10 mb-10' style={{ borderTop: '1px dotted black' }} />
 
                             <div className="container">
-                                <div className="row mb-3">
-                                    <div className="col-lg-3 col-form-label fw-bold">สลิปโอนเงิน</div>
-                                    <div className="col-lg-9">
-                                        <input type="file" className="form-control" />
+                                {(['transferSlip', 'certificate', 'idCard', 'other'] as Array<keyof FileState>).map((type) => (
+                                    <div className="row mb-3" key={type}>
+                                        <div className="col-lg-3 col-form-label fw-bold">
+                                            {type === 'transferSlip' ? 'สลิปโอนเงิน' :
+                                                type === 'certificate' ? 'หนังสือรับรอง' :
+                                                    type === 'idCard' ? 'บัตรประชาชน' : 'อื่นๆ'}
+                                        </div>
+                                        <div className="col-lg-9">
+                                            <input
+                                                type="file"
+                                                className="form-control"
+                                                ref={fileInputRefs[type]}
+                                                onChange={(e) => handleFileChange(e, type)}
+                                            />
+                                            {files[type] && renderFilePreview(files[type] as FileWithPreview, type)}
+                                        </div>
                                     </div>
-                                </div>
-
-                                <div className="row mb-3">
-                                    <div className="col-lg-3 col-form-label fw-bold">หนังสือรับรอง</div>
-                                    <div className="col-lg-9">
-                                        <input type="file" className="form-control" />
-                                    </div>
-                                </div>
-
-                                <div className="row mb-3">
-                                    <div className="col-lg-3 col-form-label fw-bold">บัตรประชาชน</div>
-                                    <div className="col-lg-9">
-                                        <input type="file" className="form-control" />
-                                    </div>
-                                </div>
-
-                                <div className="row mb-3">
-                                    <div className="col-lg-3 col-form-label fw-bold">อื่นๆ</div>
-                                    <div className="col-lg-9">
-                                        <input type="file" className="form-control" />
-                                    </div>
-                                </div>
+                                ))}
                             </div>
 
                             <hr className='mt-10' style={{ borderTop: '1px dotted black' }} />
@@ -772,9 +1551,10 @@ const OrderCreateBooking: React.FC = () => {
                                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                                             <label className="form-label required fw-bold fs-6">วันที่สะดวกติดตั้ง</label>
                                             <DatePicker
-                                                // selected={valueCalendar}
-                                                // onChange={handleDateChange}
+                                                selected={valueCalendarInstall}
+                                                onChange={handleDateChangeInstall}
                                                 className="form-control mb-3 mb-lg-0"
+                                                placeholderText="วันที่สะดวกติดตั้ง"
                                                 showYearDropdown
                                                 showMonthDropdown
                                                 dropdownMode="select"
@@ -788,16 +1568,15 @@ const OrderCreateBooking: React.FC = () => {
                                         <label className='form-label required fw-bold fs-6'>ช่วงเวลา</label>
                                         <select
                                             className='form-select'
-                                        // value={selectedCardType}
-                                        // onChange={(e) => setSelectedCardType(e.target.value)}
-                                        // disabled={!selectedCustomerType}
+                                            value={selectedValueTimeInstall}
+                                            onChange={(e) => setSelectedValueTimeInstall(e.target.value)}
                                         >
                                             <option value=''>เลือกช่วงเวลา...</option>
-                                            {/* {selectedCustomer.CARDTYPE.map((cardType: any) => (
-                                        <option key={cardType.CARDTYPE} value={cardType.CARDTYPE}>
-                                            {cardType.CARDTYPENAME}
-                                        </option>
-                                    ))} */}
+                                            {valueTimeInstallation.map((item: any) => (
+                                                <option key={item.VALUETIMEID} value={item.VALUETIMEID}>
+                                                    {item.VALUETIME}
+                                                </option>
+                                            ))}
                                         </select>
                                     </div>
 
@@ -806,16 +1585,15 @@ const OrderCreateBooking: React.FC = () => {
                                             <label className='form-label required fw-bold fs-6'>รูปแบบการจัดส่ง</label>
                                             <select
                                                 className='form-select'
-                                            // value={selectedCardType}
-                                            // onChange={(e) => setSelectedCardType(e.target.value)}
-                                            // disabled={!selectedCustomerType}
+                                                value={selectedShipping}
+                                                onChange={(e) => setSelectedShipping(e.target.value)}
                                             >
                                                 <option value=''>เลือกรูปแบบการจัดส่ง...</option>
-                                                {/* {selectedCustomer.CARDTYPE.map((cardType: any) => (
-                                        <option key={cardType.CARDTYPE} value={cardType.CARDTYPE}>
-                                            {cardType.CARDTYPENAME}
-                                        </option>
-                                    ))} */}
+                                                {getShipping.map((item: any) => (
+                                                    <option key={item.SHIPPING_ID} value={item.SHIPPING_ID}>
+                                                        {item.SHIPPING_NAME}
+                                                    </option>
+                                                ))}
                                             </select>
                                         </div>
 

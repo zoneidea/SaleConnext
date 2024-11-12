@@ -44,19 +44,23 @@ interface ItemProps {
 const UpdateSalesPackage: React.FC = () => {
     const navigate = useNavigate(); // ใช้ useNavigate สำหรับการเปลี่ยนเส้นทาง
     const MySwal = withReactContent(Swal);
-
+    
     const location = useLocation();
     const item = location.state as ItemProps || [];
-
+    
     const refno = item?.REFNO
     const productContract = item?.PRODUCT
-
+    
     const { auth } = useAuth();
-
+    
     const [loadingCategories, setLoadingCategories] = useState(true); // เพิ่ม state สำหรับการโหลดหมวดหมู่
     const [loadingProducts, setLoadingProducts] = useState(false); // เพิ่ม state สำหรับการโหลดสินค้า
+    
+    const { fetchCategory } = useFetchCategoryStore();
+    // console.log(`fetchCategory: `, fetchCategory);
 
     const [categories, setCategories] = useState<any[]>([]);
+
     const [packageType, setPackageType] = useState<any[]>([]);
     // console.log(`packageType: `, packageType);
 
@@ -98,9 +102,6 @@ const UpdateSalesPackage: React.FC = () => {
     } = useCategoryStore();
     // console.log(`EmpId`, EmpId);
     // console.log(`EmpId`, EmpId);
-
-    const { fetchCategory } = useFetchCategoryStore();
-    // console.log(`fetchCategory: `, fetchCategory);
 
     const getCategoryLocal = localStorage.getItem("fetchCategory");
     const parsegetCategoryLocal = getCategoryLocal ? JSON.parse(getCategoryLocal) : null;
@@ -500,7 +501,7 @@ const UpdateSalesPackage: React.FC = () => {
                                                     className='form-select form-select-solid form-select-lg'
                                                     onChange={handleCateOptionChange} >
                                                     <option value=''>เลือกหมวดหมู่สินค้า...</option>
-                                                    {fetchCategory.map((item: any, index: number) => (
+                                                    {(fetchCategory.length > 0 ? fetchCategory : categories).map((item: any, index: number) => (
                                                         <option key={index} value={item.CATEGORIES_ID}>
                                                             {item.CATEGORIES_NAME_TH}
                                                         </option>

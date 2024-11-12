@@ -33,8 +33,13 @@ const SalesPackage: React.FC = () => {
     // State สำหรับตรวจสอบสถานะการโหลด
     const [loadingCategories, setLoadingCategories] = useState(true);
     const [loadingProducts, setLoadingProducts] = useState(true)
+    
+    const { fetchCategory } = useFetchCategoryStore();
+    console.log(`fetchCategory: `, fetchCategory);
 
-    // const [categories, setCategories] = useState<any[]>([]);
+    const [categories, setCategories] = useState<any[]>([]);
+    console.log(`categories`, categories);
+
     const [packageType, setPackageType] = useState<any[]>([]);
     // console.log(`packageType: `, packageType);
 
@@ -79,9 +84,6 @@ const SalesPackage: React.FC = () => {
     } = useCategoryStore();
     // console.log(`EmpId`, EmpId);
     // console.log(`EmpId`, EmpId);
-
-    const { fetchCategory } = useFetchCategoryStore();
-    console.log(`fetchCategory: `, fetchCategory);
 
     // const getCategoryLocal = localStorage.getItem("fetchCategory");
     // const parseGetCategoryLocal = getCategoryLocal ? JSON.parse(getCategoryLocal) : null;
@@ -156,25 +158,23 @@ const SalesPackage: React.FC = () => {
     // console.log('selectedPackageModel: ', selectedPackageModel);
 
     // POST GetProduct/Categories
-    // useEffect(() => {
-    //     const postData = async () => {
-    //         try {
-    //             const response = await axios.post(CATEGORIES_URL,
-    //                 { EmpId, DivisionId, DepartId, DepartGroup, TeamSale }, {
-    //                 headers: {
-    //                     'Content-Type': 'multipart/form-data',
-    //                 },
-    //             });
-    //             const data = Array.isArray(response.data.data) ? response.data.data : [];
-    //             setCategories(data);
-    //         } catch (error) {
-    //             console.error('Error fetching CATEGORIES_URL:', error);
-    //         } finally {
-    //             setLoadingCategories(false); // เปลี่ยนสถานะการโหลดเมื่อข้อมูลเสร็จ
-    //         }
-    //     };
-    //     postData();
-    // }, [EmpId, TeamSale, SaleCode, SupEmpId, SecEmpId, DivisionId, DepartId, DepartGroup, auth]);
+    useEffect(() => {
+        const postData = async () => {
+            try {
+                const response = await axios.post(CATEGORIES_URL,
+                    { EmpId, DivisionId, DepartId, DepartGroup, TeamSale }, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
+                const data = Array.isArray(response.data.data) ? response.data.data : [];
+                setCategories(data);
+            } catch (error) {
+                console.error('Error fetching CATEGORIES_URL:', error);
+            }
+        };
+        postData();
+    }, [EmpId, TeamSale, SaleCode, SupEmpId, SecEmpId, DivisionId, DepartId, DepartGroup, auth]);
 
     // GET Product/GetStock?
     useEffect(() => {
@@ -505,7 +505,7 @@ const SalesPackage: React.FC = () => {
                                                     onChange={handleCateOptionChange}
                                                 >
                                                     <option value=''>เลือกหมวดหมู่สินค้า...</option>
-                                                    {fetchCategory.map((item: any, index: number) => (
+                                                    {(fetchCategory.length > 0 ? fetchCategory : categories).map((item: any, index: number) => (
                                                         <option key={index} value={item.CATEGORIES_ID}>
                                                             {item.CATEGORIES_NAME_TH}
                                                         </option>

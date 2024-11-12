@@ -1126,7 +1126,7 @@ import { useFormik } from 'formik'
 import { login } from '../core/_requests'
 import { useAuth } from '../core/Auth'
 import { KTIcon, toAbsoluteUrl } from '../../../../_metronic/helpers'
-import { useCategoryStore, useFetchCategoryStore } from '../../../modules/stores/sales/packageStore/packageStore';
+import { useCategoryStore, useFetchCategoryStore } from '../../../modules/stores/sales/packageStore/packageStore'
 import CryptoJS from 'crypto-js'
 
 const loginSchema = Yup.object().shape({
@@ -1140,8 +1140,8 @@ const initialValues = {
 }
 
 export function Login() {
-  const API_URL_POST_CATEGORIES = import.meta.env.VITE_APP_API_SALECONNEXT;
-  const CATEGORIES_URL = `${API_URL_POST_CATEGORIES}/GetProduct/Categories`;
+  const API_URL_POST_CATEGORIES = import.meta.env.VITE_APP_API_SALECONNEXT
+  const CATEGORIES_URL = `${API_URL_POST_CATEGORIES}/GetProduct/Categories`
 
   const {
     EmpId, setEmpId,
@@ -1152,16 +1152,15 @@ export function Login() {
     DivisionId, setDivisionId,
     DepartId, setDepartId,
     DepartGroup, setDepartGroup,
-  } = useCategoryStore();
+  } = useCategoryStore()
 
-  // สถานะเพื่อติดตามการโหลด fetchCategory
-  const { fetchCategory, setFetchCategory } = useFetchCategoryStore();
+  const { auth, saveAuth, setCurrentUser } = useAuth()
+  const [loading, setLoading] = useState(false)
+  const navigate = useNavigate()
 
-  // useEffect(() => {
-  //   console.log(`fetchCategory after login`, fetchCategory);
-  // }, [fetchCategory]);
-
-  const [isFetchCategoryLoaded, setIsFetchCategoryLoaded] = useState(false);
+  const { fetchCategory, setFetchCategory } = useFetchCategoryStore()
+  const [isCategoryLoaded, setIsCategoryLoaded] = useState(false)
+  const SECRET_KEY = import.meta.env.VITE_APP_SECRET_KEY
 
   const postData = async () => {
     try {
@@ -1171,104 +1170,110 @@ export function Login() {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
-      });
-      const data = Array.isArray(response.data.data) ? response.data.data : [];
+      })
+      const data = Array.isArray(response.data.data) ? response.data.data : []
 
-      setFetchCategory(data);
-      localStorage.setItem('fetchCategory', JSON.stringify(data));
-      console.log('fetchCategory set with data:', data);
-
-      // เมื่อ fetchCategory โหลดเสร็จ ให้ตั้งค่า isFetchCategoryLoaded เป็น true
-      setIsFetchCategoryLoaded(true);
+      if (data.length > 0) {
+        setFetchCategory(data)
+        localStorage.setItem('fetchCategory', JSON.stringify(data)) // บันทึกลง localStorage
+        setIsCategoryLoaded(true)
+      } else {
+        setIsCategoryLoaded(false)
+      }
     } catch (error) {
-      console.error('Error fetching data:', error);
-      setIsFetchCategoryLoaded(false); // ในกรณีเกิดข้อผิดพลาด
+      console.error('Error fetching data:', error)
+      setIsCategoryLoaded(false)
     }
-  };
+  }
 
-  const { auth, saveAuth, setCurrentUser } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-
-  const SECRET_KEY = import.meta.env.VITE_APP_SECRET_KEY
+  useEffect(() => {
+    const savedCategory = localStorage.getItem('fetchCategory')
+    if (savedCategory) {
+      const parsedCategory = JSON.parse(savedCategory)
+      setFetchCategory(parsedCategory)
+      setIsCategoryLoaded(parsedCategory.length > 0)
+    }
+  }, [setFetchCategory])
 
   const requestPermissions = async () => {
     try {
-      await navigator.mediaDevices.getUserMedia({ video: true });
-      console.log('Camera access granted');
-
-      const locationPermission = await navigator.permissions.query({ name: 'geolocation' });
+      await navigator.mediaDevices.getUserMedia({ video: true })
+      const locationPermission = await navigator.permissions.query({ name: 'geolocation' })
       if (locationPermission.state !== 'granted') {
-        alert('โปรดอนุญาตการเข้าถึงตำแหน่ง (GPS)');
+        alert('โปรดอนุญาตการเข้าถึงตำแหน่ง (GPS)')
       }
 
-      const filePermission = await navigator.permissions.query({ name: 'persistent-storage' as PermissionName });
+      const filePermission = await navigator.permissions.query({ name: 'persistent-storage' as PermissionName })
       if (filePermission.state !== 'granted') {
-        alert('โปรดอนุญาตการเข้าถึงไฟล์');
+        alert('โปรดอนุญาตการเข้าถึงไฟล์')
       }
     } catch (error) {
-      console.error('Error requesting permissions:', error);
-      alert('อุปกรณ์ของคุณไม่รองรับการขอ permissions ทั้งหมด');
+      console.error('Error requesting permissions:', error)
+      alert('อุปกรณ์ของคุณไม่รองรับการขอ permissions ทั้งหมด')
     }
-  };
+  }
 
   const formik = useFormik({
     initialValues,
     validationSchema: loginSchema,
     onSubmit: async (values, { setSubmitting, setErrors }) => {
-      setLoading(true);
+      setLoading(true)
       try {
-        const response = await login(values.username, values.password);
+        const response = await login(values.username, values.password)
 
         if (response.data.status === 500) {
           setErrors({
             username: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง.',
             password: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง.',
-          });
-          setSubmitting(false);
-          setLoading(false);
+          })
+          setSubmitting(false)
+          setLoading(false)
         } else {
-          const authData = JSON.stringify(response.data);
-          const encryptedAuthData = CryptoJS.AES.encrypt(authData, SECRET_KEY).toString();
-          localStorage.setItem('authData', encryptedAuthData);
+          const authData = JSON.stringify(response.data)
+          const encryptedAuthData = CryptoJS.AES.encrypt(authData, SECRET_KEY).toString()
+          localStorage.setItem('authData', encryptedAuthData)
 
-          saveAuth(response.data);
+          saveAuth(response.data)
           const user = {
             id: response.data.userId,
             username: values.username,
             ...response.data.userDetails,
-          };
-          setCurrentUser(user);
+          }
+          setCurrentUser(user)
 
-          // ขอ permissions ก่อน
-          await requestPermissions();
+          await requestPermissions()
 
-          // ตรวจสอบว่า fetchCategory มีข้อมูลหรือไม่
-          if (fetchCategory.length === 0) {
-            // หากไม่มีข้อมูลให้เรียก postData เพื่อดึงข้อมูลใหม่
-            await postData();
+          // ตรวจสอบว่ามีข้อมูลใน fetchCategory แล้วหรือไม่
+          if (!isCategoryLoaded) {
+            await postData()
           }
 
-          // กำหนดค่า EmpId และอื่น ๆ หลังจาก postData
-          setEmpId(response.data.userDetails.EmpId);
-          setTeamSale(response.data.userDetails.TeamSale);
-          setSaleCode(response.data.userDetails.SaleCode);
-          setSupEmpId(response.data.userDetails.SupEmp);
-          setSecEmpId(response.data.userDetails.SecEmp);
-          setDivisionId(response.data.userDetails.DivisionId);
-          setDepartId(response.data.userDetails.DepartId);
-          setDepartGroup(response.data.userDetails.DepartGroup);
+          // ตรวจสอบว่า isCategoryLoaded เป็น true ก่อนเข้าสู่ dashboard
+          if (isCategoryLoaded && fetchCategory.length > 0) {
+            setEmpId(response.data.userDetails.EmpId)
+            setTeamSale(response.data.userDetails.TeamSale)
+            setSaleCode(response.data.userDetails.SaleCode)
+            setSupEmpId(response.data.userDetails.SupEmp)
+            setSecEmpId(response.data.userDetails.SecEmp)
+            setDivisionId(response.data.userDetails.DivisionId)
+            setDepartId(response.data.userDetails.DepartId)
+            setDepartGroup(response.data.userDetails.DepartGroup)
 
-          setLoading(false);
-          navigate('/dashboard');
+            setLoading(false)
+            navigate('/dashboard')
+          } else {
+            console.error('fetchCategory ยังไม่ได้ถูกโหลดหรือไม่มีข้อมูล')
+            setErrors({ username: 'เกิดข้อผิดพลาดในการดึงข้อมูลหมวดหมู่สินค้า' })
+            setLoading(false)
+          }
         }
       } catch (error: any) {
-        console.error('Login error:', error);
-        setSubmitting(false);
-        setLoading(false);
+        console.error('Login error:', error)
+        setSubmitting(false)
+        setLoading(false)
       }
     }
-  });
+  })
 
   return (
     <form
