@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { Content } from '../../../_metronic/layout/components/content';
-import { firstBillItemNumber } from './components/firstBillItemNumber/firstBillItemNumber';
+import { FirstBillItemNumber } from './components/firstBillItemNumber/FirstBillItemNumber';
 import { useUUIDStore } from '../../modules/stores/stepsStore';
 import { useAuth } from '../../modules/auth/core/Auth';
 
@@ -18,8 +18,6 @@ const FirstBillOverview: React.FC = () => {
   const EmpId = auth?.data?.[0]?.EmpId || '';
   const TeamSale = auth?.data?.[0]?.TeamSale || '';
   const SaleCode = auth?.data?.[0]?.SaleCode || '';
-  const SupEmpId = auth?.data?.[0]?.SupEmp || '';
-  const SecEmpId = auth?.data?.[0]?.SecEmp || '';
 
   const API_URL_GET_ALLCONTRACT = import.meta.env.VITE_APP_API_MONGO;
   const FINISH_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=FINISH&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`;
@@ -28,32 +26,29 @@ const FirstBillOverview: React.FC = () => {
   // console.log(`fetchCategory: `, fetchCategory);
 
   const [finish, setFinish] = useState<any[]>([]); // กำหนดให้ state เป็น array เพื่อรองรับ map()
-  console.log(`finish`, finish);
-  
-  const getDataFinish = async () => {
-    try {
-      const response = await axios.get(FINISH_ALLCONTRACT_URL, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      const data = Array.isArray(response.data.data) ? response.data.data : [];
-      setFinish(data); // บันทึกข้อมูล finish
-      console.log('Finish: ', data)
-    } catch (error) {
-      console.error('Error fetching FINISH_ALLCONTRACT_URL:', error);
-    }
-  };
+  // console.log(`finish`, finish);
 
-  const handleFinishTab = () => {
+  useEffect(() => {
+    const getDataFinish = async () => {
+      try {
+        const response = await axios.get(FINISH_ALLCONTRACT_URL, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        const data = Array.isArray(response.data.data) ? response.data.data : []
+        setFinish(data); // บันทึกข้อมูล finish
+      } catch (error) {
+        console.error('Error fetching FINISH_ALLCONTRACT_URL:', error);
+      }
+    };
     getDataFinish()
-  }
+  }, [])
 
   const handleAddItemClick = () => {
     SETREFNO(); // Generate a new REFNO before navigating
     navigate('/firstBill/CreateFirstBill'); // Navigate to the package page
   };
-
   return (
     <>
       <Content>
@@ -73,34 +68,18 @@ const FirstBillOverview: React.FC = () => {
               <li className="breadcrumb-item text-gray-900">ภาพรวม</li>
             </ul>
           </div>
-
-          <div className='d-flex justify-content-end mb-5 mt-10'>
-            <button onClick={handleAddItemClick} className='btn btn-primary w-100 w-md-100 w-lg-auto'>
-              เพิ่มรายการ
-            </button>
-          </div>
         </div>
 
         {/* Card Body */}
         <div className='card mb-10'>
-          <div className='card-body d-flex align-items-center py-5'>
+          <div className='card-body d-flex align-items-center'>
             <div className='col-12'>
-              <div className="tab-content" id="myTabContent">
-                {/* แท็บรายการขายเสร็จสมบูรณ์ */}
-                <div className="tab-pane fade" id="kt_tab_pane_2" role="tabpanel">
-                  {finish.length > 0 && (
-                    finish.map((item, index) => (
-                      <firstBillItemNumber key={index} status="FINISH" item={item} />
-                      
-                    ))
-                  )}
-                  {
-                    finish.length === 0 && (
-                      <span className='text-gray-800 fw-bold d-block'>{`ไม่มีรายการที่เสร็จสมบูรณ์`}</span>
-                    )
-                  }
-                </div>
-              </div>
+              {finish.length > 0 && (
+                finish.map((item, index) => (
+                  <FirstBillItemNumber key={index} item={item} />
+
+                ))
+              )}
             </div>
           </div>
         </div>

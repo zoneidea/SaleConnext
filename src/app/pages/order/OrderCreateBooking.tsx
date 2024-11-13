@@ -544,6 +544,30 @@ const OrderCreateBooking: React.FC = () => {
 
     {/*-------------------- End ที่อยู่ติดตั้ง --------------------*/ }
 
+    {/*-------------------- Start ค่าใช้จ่ายอื่น ๆ --------------------*/ }
+    const [expenses, setExpenses] = useState([
+        { id: 1, description: 'ค่าขนส่ง', unit: 'กิโลเมตร', cost: '' },
+    ]);
+
+    const handleAddExpense = () => {
+        const newId = expenses.length > 0 ? expenses[expenses.length - 1].id + 1 : 1;
+        setExpenses([
+            ...expenses,
+            { id: newId, description: '', unit: '', cost: '' },
+        ]);
+    };
+
+    const handleRemoveExpense = (id: number) => {
+        setExpenses(expenses.filter((expense) => expense.id !== id));
+    };
+
+    const handleChange = (id: number, field: any, value: any) => {
+        setExpenses(expenses.map((expense) =>
+            expense.id === id ? { ...expense, [field]: value } : expense
+        ));
+    };
+    {/*-------------------- End ค่าใช้จ่ายอื่น ๆ --------------------*/ }
+
     {/*-------------------- Start สลิป --------------------*/ }
     interface FileWithPreview extends File {
         preview?: string;
@@ -1975,7 +1999,7 @@ const OrderCreateBooking: React.FC = () => {
 
                             <hr className='my-1' style={{ borderTop: '1px dotted black' }} />
 
-                            {auth.data[0].Hasfreegift === "true" && (
+                            {auth.data[0].Hasfreegift === "false" && (
                                 <>
                                     <label className='form-label fw-bold fs-3 mb-10 mt-10'>ของแถม</label>
 
@@ -1995,8 +2019,8 @@ const OrderCreateBooking: React.FC = () => {
                                                         {selectedPackageIndex !== null &&
                                                             packageList[selectedPackageIndex] &&
                                                             packageList[selectedPackageIndex].FREEGIFT ? (
-                                                            packageList[selectedPackageIndex].FREEGIFT.map((item: any, index: number) => (
-                                                                <option key={index} value={item.GIFTID}>
+                                                            packageList[selectedPackageIndex].FREEGIFT.map((item: any, idx: number) => (
+                                                                <option key={idx} value={item.GIFTID}>
                                                                     {item.GIFTNAME}
                                                                 </option>
                                                             ))
@@ -2018,9 +2042,11 @@ const OrderCreateBooking: React.FC = () => {
                                                     <span>หน่วย</span>
                                                 </div>
                                                 <div className="col-2 text-center">
-                                                    <button type="button" className="btn btn-danger" onClick={() => removeGiftField(index)}>
-                                                        ลบ
-                                                    </button>
+                                                    {index !== 0 && ( // ซ่อนปุ่มลบเมื่อ index เป็น 0
+                                                        <button type="button" className="btn btn-danger" onClick={() => removeGiftField(index)}>
+                                                            ลบ
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
                                         ))}
@@ -2040,48 +2066,64 @@ const OrderCreateBooking: React.FC = () => {
                             )}
 
                             <label className='form-label fw-bold fs-3 mb-10 mt-10'>ค่าใช้จ่าย อื่นๆ</label>
-
                             <div className="container">
-                                <div className="row mb-3 align-items-center">
-                                    <div className="col-1 text-center">
-                                        <span>1.</span>
-                                    </div>
-                                    <div className="col-2">
-                                        <label className="form-label fw-bold mb-0">ค่าขนส่ง</label>
-                                    </div>
-                                    <div className="col-3">
-                                        <input type="text" className="form-control" />
-                                    </div>
-                                    <div className="col-2 text-center">
-                                        <span>กิโลเมตร</span>
-                                    </div>
-                                    <div className="col-2 text-center">
-                                        <span>เป็นเงิน</span>
-                                    </div>
-                                    <div className="col-2 d-flex align-items-center">
-                                        <input type="text" className="form-control me-2" />
-                                        <span>บาท</span>
-                                    </div>
-                                </div>
-
-                                {/* ข้ออื่น ๆ */}
-                                {[2, 3, 4, 5].map((num) => (
-                                    <div className="row mb-3 align-items-center" key={num}>
+                                {expenses.map((expense, index) => (
+                                    <div className="row mb-3 align-items-center" key={expense.id}>
                                         <div className="col-1 text-center">
-                                            <span>{num}.</span>
+                                            <span>{index + 1}.</span> {/* ใช้ index ที่เป็น parameter ของ map */}
                                         </div>
-                                        <div className="col-7">
-                                            <input type="text" className="form-control" placeholder="..." />
+                                        <div className="col-2">
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                value={expense.description}
+                                                onChange={(e) => handleChange(expense.id, 'description', e.target.value)}
+                                                placeholder={index === 0 ? "ค่าขนส่ง" : "..."}
+                                            />
+                                        </div>
+                                        <div className="col-3">
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                value={expense.unit}
+                                                onChange={(e) => handleChange(expense.id, 'unit', e.target.value)}
+                                                placeholder={index === 0 ? "กิโลเมตร" : ""}
+                                            />
                                         </div>
                                         <div className="col-2 text-center">
                                             <span>เป็นเงิน</span>
                                         </div>
                                         <div className="col-2 d-flex align-items-center">
-                                            <input type="text" className="form-control me-2" />
+                                            <input
+                                                type="text"
+                                                className="form-control me-2"
+                                                value={expense.cost}
+                                                onChange={(e) => handleChange(expense.id, 'cost', e.target.value)}
+                                            />
                                             <span>บาท</span>
+                                        </div>
+                                        <div className="col-2">
+                                            {index > 0 && (
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-danger"
+                                                    onClick={() => handleRemoveExpense(expense.id)}
+                                                >
+                                                    ลบ
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 ))}
+
+                                {/* ปุ่มสำหรับเพิ่มค่าใช้จ่ายอื่น ๆ */}
+                                <div className="row mt-10">
+                                    <div className="col-12 text-center">
+                                        <button type="button" className="btn btn-primary" onClick={handleAddExpense}>
+                                            เพิ่มค่าใช้จ่ายอื่น ๆ
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
 
                             <hr className='mt-10 mb-10' style={{ borderTop: '1px dotted black' }} />

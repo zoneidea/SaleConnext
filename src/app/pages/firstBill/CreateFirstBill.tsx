@@ -165,7 +165,7 @@ const CreateFirstBill: React.FC = () => {
                         </div>
 
                         <div className='row mb-7'>
-                            <label className='col-lg-4 fw-bold text-muted'>ผู้เช่าซื้อ</label>
+                            <label className='col-lg-4 fw-bold text-muted'>ชื่อลูกค้า</label>
                             <div className='col-lg-8'>
                                 <a href='#' className='fw-bold fs-6 text-gray-900 text-hover-primary'>
                                     {saveCustomerTypes[0]?.CUSTOMERNAME}
@@ -328,13 +328,19 @@ const CreateFirstBill: React.FC = () => {
                 </div>
                 {/* End Card Body */}
 
-                <div className='d-flex justify-content-end mb-5 mt-10'>
+                <div className='d-flex justify-content-between mb-5 mt-10'>
+                    <Link to="/firstBill/overview"
+                        className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'
+                        type='button'
+                    >
+                        ย้อนกลับ
+                    </Link>
                     <button
                         className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
                         type='button'
                         onClick={handleNextClick}
                     >
-                        บันทึกสัญญา
+                        ถัดไป
                     </button>
                 </div>
 

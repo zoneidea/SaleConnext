@@ -231,11 +231,7 @@ const UpdateSalesContract: React.FC = () => {
                         </div>
 
                         <div className='row mb-7'>
-                            {product[0]?.Package[0]?.PACKAGETYPEID == 1 ? (
-                                <label className='col-lg-4 fw-bold text-muted'>ผู้ซื้อ</label>
-                            ) : (
-                                <label className='col-lg-4 fw-bold text-muted'>ผู้เช่าซื้อ</label>
-                            )}
+                            <label className='col-lg-4 fw-bold text-muted'>ชื่อลูกค้า</label>
                             <div className='col-lg-8'>
                                 <a href='#' className='fw-bold fs-6 text-gray-900 text-hover-primary'>
                                     {customerDetail[0]?.CUSTOMERNAME}

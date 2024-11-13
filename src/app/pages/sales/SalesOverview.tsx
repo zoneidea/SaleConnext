@@ -30,7 +30,8 @@ const SalesOverview: React.FC = () => {
 
   const [draft, setDraft] = useState<any[]>([]); // กำหนดให้ state เป็น array เพื่อรองรับ map()
   const [finish, setFinish] = useState<any[]>([]); // กำหนดให้ state เป็น array เพื่อรองรับ map()
-
+  // console.log(`finish`, finish);
+  
   useEffect(() => {
     getDataDraft();
   }, []);
