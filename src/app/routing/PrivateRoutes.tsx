@@ -55,6 +55,9 @@ const PrivateRoutes = () => {
   //หัวข้อ ระบบจอง
   const OrderCreateBooking = lazy(() => import('../pages/order/OrderCreateBooking'))
 
+  // โครงสร้างพนักงาน
+  const EmpStructure = lazy(() => import('../pages/employee/EmpStructure'))
+
   return (
     <Routes>
       <Route element={<MasterLayout />}>
@@ -333,6 +336,16 @@ const PrivateRoutes = () => {
           element={
             <SuspensedView>
               <OrderCreateBooking />
+            </SuspensedView>
+          }
+        />
+
+        {/* โครงสร้างพนักงาน */}
+        <Route
+          path='employee/EmpStructure'
+          element={
+            <SuspensedView>
+              <EmpStructure />
             </SuspensedView>
           }
         />
