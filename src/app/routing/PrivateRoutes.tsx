@@ -8,6 +8,7 @@ import { WithChildren } from '../../_metronic/helpers'
 import { DashboardWrapper } from '../pages/dashboard/DashboardWrapper'
 import { SalesWrapper } from '../pages/sales/SalesWrapper'
 import { OrderWrapper } from '../pages/order/OrderWrapper'
+import { FirstBillWrapper } from '../pages/firstBill/FirstBillWrapper'
 
 const PrivateRoutes = () => {
   //หัวข้อ ระบบขาย
@@ -55,6 +56,9 @@ const PrivateRoutes = () => {
   //หัวข้อ ระบบจอง
   const OrderCreateBooking = lazy(() => import('../pages/order/OrderCreateBooking'))
 
+  //หัวข้อ ระบบเก็บเงินงวดแรก
+  const CreateFirstBill = lazy(() => import('../pages/firstBill/CreateFirstBill'))
+
   return (
     <Routes>
       <Route element={<MasterLayout />}>
@@ -66,7 +70,7 @@ const PrivateRoutes = () => {
         <Route path='order/overview' element={<OrderWrapper />} />
 
 
-        {/* ระบบขาย */}
+        {/* Start ระบบขาย */}
         <Route
           path='sale/statuscust'
           element={
@@ -252,6 +256,9 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
+        {/* End ระบบขาย */}
+
+        {/* Start ระบบตรวจสัญญา */}
         <Route
           path='contract-checker'
           element={
@@ -276,8 +283,9 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
+        {/* End ระบบตรวจสัญญา */}
 
-        {/* Update contract route  */}
+        {/* Start อัพเดท ระบบขาย */}
         <Route
           path='sale/update/updateSalePackage'
           element={
@@ -326,8 +334,9 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
+        {/* End อัพเดท ระบบขาย */}
 
-        {/* ระบบจอง */}
+        {/* Start ระบบจอง */}
         <Route
           path='order/OrderCreateBooking'
           element={
@@ -336,6 +345,26 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
+        {/* End ระบบจอง */}
+
+        {/* Start ระบบเก็บเงินงวดแรก */}
+        <Route
+          path='firstBill/overview'
+          element={
+            <SuspensedView>
+              <FirstBillWrapper />
+            </SuspensedView>
+          }
+        />
+         <Route
+          path='firstBill/CreateFirstBill'
+          element={
+            <SuspensedView>
+              <CreateFirstBill />
+            </SuspensedView>
+          }
+        />
+        {/* End ระบบเก็บเงินงวดแรก */}
 
         {/* Page Not Found */}
         <Route path='*' element={<Navigate to='/error/404' />} />

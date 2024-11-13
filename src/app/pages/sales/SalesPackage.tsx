@@ -338,7 +338,7 @@ const SalesPackage: React.FC = () => {
                 SALECODE: SaleCode,
                 SUPEMPID: SupEmpId,
                 SECEMPID: SecEmpId,
-                STATUS: "DRAFT",
+                STATUS: "FINISH",
                 PRODUCT,
             }, {
                 headers: {

@@ -52,7 +52,7 @@ const OrderCreateBooking: React.FC = () => {
     const getProductUrl = () => `${API_URL_MONGO}/Product/GetStock?empid=${auth.data[0].EmpId}&teamSale=${auth.data[0].TeamSale}&categoryId=${selectedCategoryId}`;
 
     const { auth } = useAuth();
-    // console.log(`auth`, auth);
+    // console.log(`auth`, auth.data[0]);
 
     {/*-------------------- Start Modals ค้นหาลูกค้า --------------------*/ }
     const [showModal, setShowModal] = useState(false);
@@ -148,20 +148,13 @@ const OrderCreateBooking: React.FC = () => {
     const [usePackagePricing, setUsePackagePricing] = useState<boolean>(true);
 
     const { fetchCategory } = useFetchCategoryStore();
-    // console.log(`fetchCategory: `, fetchCategory);
-
     const [categories, setCategories] = useState<any[]>([]);
-
     const [product, setProduct] = useState<any>('');
-    // console.log(`product: `, product);
 
     const [selectedCategoryId, setSelectedCategoryId] = useState<any>('');
-
     const [selectedProductIndex, setSelectedProductIndex] = useState<number | null>(null);
-    // console.log(`selectedProductIndex: `, selectedProductIndex);
-
     const [selectedItemID, setSelectedItemID] = useState<any>('');
-    // console.log(`selectedItemID: `, selectedItemID);
+
 
     const packageType = [
         {
@@ -183,12 +176,14 @@ const OrderCreateBooking: React.FC = () => {
     ]
 
     const [selectedPackageTypeId, setSelectedPackageTypeId] = useState<number | null>(null);
-    // console.log(`selectedPackageTypeId`, selectedPackageTypeId);
 
     const [packageList, setPackageList] = useState<any[]>([]);
     console.log(`packageList`, packageList);
 
     const [selectedPackageIndex, setSelectedPackageIndex] = useState<number | null>(null);
+
+    const [isLoading, setIsLoading] = useState<boolean>(false); // สถานะโหลดข้อมูลสินค้า
+    const [isLoadingPackage, setIsLoadingPackage] = useState<boolean>(false);
 
     // คำนวณ ใช้ราคาและส่วนลดจากแพ็คเกจ
     const [totalPrice, setTotalPrice] = useState<any>('');
@@ -254,6 +249,9 @@ const OrderCreateBooking: React.FC = () => {
     useEffect(() => {
         const getData = async () => {
             if (!selectedCategoryId) return;
+
+            setIsLoading(true); // ตั้งค่าสถานะกำลังโหลดเป็น true
+
             try {
                 const response = await axios.get(getProductUrl(), {
                     headers: {
@@ -262,42 +260,54 @@ const OrderCreateBooking: React.FC = () => {
                     }
                 });
                 const data = Array.isArray(response.data.data) ? response.data.data : [];
-                console.log(response);
 
-                setProduct(data);
+                // ตั้งเวลาให้ข้อความ "กรุณารอสักครู่..." แสดงเป็นเวลา 2 วินาที
+                setTimeout(() => {
+                    setProduct(data);
+                    setIsLoading(false); // ตั้งค่าสถานะกำลังโหลดเป็น false หลัง 2 วินาที
+                }, 2000);
             } catch (error) {
                 console.error('Error fetching getProductUrl:', error);
+                setIsLoading(false); // กรณีเกิดข้อผิดพลาด ให้ปิดการแสดงสถานะกำลังโหลด
             }
         };
         getData();
-    }, [selectedCategoryId, setProduct]);
+    }, [selectedCategoryId]);
 
     // POST GetPackage/PackageList
     useEffect(() => {
-        const postData = async () => {
+        const fetchPackageData = async () => {
             if (!selectedPackageTypeId) return;
+
+            setIsLoadingPackage(true); // ตั้งค่าสถานะกำลังโหลดแพ็คเกจเป็น true
             try {
-                const response = await axios.post(POST_PACKAGE_URL,
-                    {
-                        EmpId: auth.data[0].EmpId,
-                        DivisionId: auth.data[0].DivisionId,
-                        DepartId: auth.data[0].DepartId,
-                        DepartGroup: auth.data[0].DepartGroup,
-                        TeamSale: auth.data[0].TeamSale,
-                        ItemID: selectedItemID, PackageTypeID: selectedPackageTypeId
-                    }, {
+                const response = await axios.post(POST_PACKAGE_URL, {
+                    EmpId: auth.data[0].EmpId,
+                    DivisionId: auth.data[0].DivisionId,
+                    DepartId: auth.data[0].DepartId,
+                    DepartGroup: auth.data[0].DepartGroup,
+                    TeamSale: auth.data[0].TeamSale,
+                    ItemID: selectedItemID,
+                    PackageTypeID: selectedPackageTypeId
+                }, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     },
                 });
                 const data = Array.isArray(response.data.data) ? response.data.data : [];
-                setPackageList(data);
+
+                // ตั้งเวลาให้ข้อความ "กรุณารอสักครู่..." แสดงเป็นเวลา 2 วินาที
+                setTimeout(() => {
+                    setPackageList(data);
+                    setIsLoadingPackage(false); // ตั้งค่าสถานะกำลังโหลดเป็น false หลัง 2 วินาที
+                }, 2000);
             } catch (error) {
                 console.error('Error fetching POST_PACKAGE_URL:', error);
+                setIsLoadingPackage(false);
             }
         };
-        postData();
-    }, [selectedPackageTypeId, auth]);
+        fetchPackageData();
+    }, [selectedPackageTypeId]);
 
     // set ค่า totalprice เมื่อมีการเลือก selectedPackageIndex
     useEffect(() => {
@@ -332,13 +342,18 @@ const OrderCreateBooking: React.FC = () => {
 
     const handleCardProductClick = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedIndex = e.target.value;
-        setSelectedProductIndex(Number(selectedIndex));
 
-        if (selectedIndex !== "") {
+        if (selectedIndex === "") {
+            // ล้างค่าเมื่อเลือก "เลือกสินค้า..."
+            setSelectedProductIndex(null);
+            setSelectedItemID('');
+            setSelectedPackageTypeId(null);
+            setSelectedPackageIndex(null);
+        } else {
+            // ตั้งค่าเมื่อเลือกสินค้า
+            setSelectedProductIndex(Number(selectedIndex));
             const selectedProduct = product[Number(selectedIndex)];
             setSelectedItemID(selectedProduct.ItemCode);
-        } else {
-            setSelectedItemID('');
         }
     };
 
@@ -348,7 +363,14 @@ const OrderCreateBooking: React.FC = () => {
 
     const handlePackageClick = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedIndex = e.target.value;
-        setSelectedPackageIndex(Number(selectedIndex));
+
+        if (selectedIndex === "") {
+            // ล้างค่าเมื่อเลือกแพ็คเกจ...
+            setSelectedPackageIndex(null);
+        } else {
+            // ตั้งค่าเมื่อเลือกแพ็คเกจ
+            setSelectedPackageIndex(Number(selectedIndex));
+        }
     };
     {/*-------------------- End ข้อมูลสินค้า --------------------*/ }
 
@@ -606,11 +628,29 @@ const OrderCreateBooking: React.FC = () => {
 
     {/* Start ของแถม */ }
     const [selectedGiftId, setSelectedGiftId] = useState<any>('');
-    // console.log(`selectedGiftId`, selectedGiftId);
 
-    const handleGiftOptionChange = (event: any) => {
-        const value = event.target.value
-        setSelectedGiftId(value);
+    const [giftFields, setGiftFields] = useState([{ id: '', quantity: '' }]); // state สำหรับเก็บรายการของแถม
+
+    const handleGiftOptionChange = (index: number, value: string) => {
+        const newGiftFields = [...giftFields];
+        newGiftFields[index].id = value;
+        setGiftFields(newGiftFields);
+    };
+
+    const handleQuantityChange = (index: number, value: string) => {
+        const newGiftFields = [...giftFields];
+        newGiftFields[index].quantity = value;
+        setGiftFields(newGiftFields);
+    };
+
+    const addGiftField = () => {
+        setGiftFields([...giftFields, { id: '', quantity: '' }]);
+    };
+
+    const removeGiftField = (index: number) => {
+        const newGiftFields = [...giftFields];
+        newGiftFields.splice(index, 1); // ลบฟีลด์ที่ระบุตาม index
+        setGiftFields(newGiftFields);
     };
     {/*-------------------- End ของแถม --------------------*/ }
 
@@ -620,7 +660,7 @@ const OrderCreateBooking: React.FC = () => {
 
     const [getShipping, setGetShipping] = useState<any[]>([]);
     const [selectedShipping, setSelectedShipping] = useState<any>('');
-    console.log(`selectedShipping`, selectedShipping);
+    // console.log(`selectedShipping`, selectedShipping);
 
 
     const valueTimeInstallation = [
@@ -701,13 +741,16 @@ const OrderCreateBooking: React.FC = () => {
                     <div className='card-body d-flex align-items-center py-5'>
                         <div className='col-12'>
 
-                            {/* {auth[0].DepartGroup === "S2"} */}
                             {/* Start ปุ่มค้นหาลูกค้า */}
-                            <ModalTrigger handleShow={handleShow} />
-                            <SerchCustomerModal show={showModal} handleClose={handleClose} />
+                            {auth.data[0].HascustomerSearch === "true" && (
+                                <>
+                                    < ModalTrigger handleShow={handleShow} />
+                                    <SerchCustomerModal show={showModal} handleClose={handleClose} />
+                                    <hr className='my-10' style={{ borderTop: '1px dotted black' }} />
+                                </>
+                            )}
                             {/* End ปุ่มค้นหาลูกค้า */}
 
-                            <hr className='my-10' style={{ borderTop: '1px dotted black' }} />
 
                             <label className='form-label fw-bold fs-3 mb-10'>ข้อมูลพนักงานขาย</label>
 
@@ -782,30 +825,34 @@ const OrderCreateBooking: React.FC = () => {
                             <label className='form-label fw-bold fs-3 mb-10'>ข้อมูลสินค้า</label>
 
                             <div className="container">
-                                <div className="d-flex mb-6">
-                                    <div className="form-check form-check-inline me-3">
-                                        <input
-                                            className="form-check-input"
-                                            type="radio"
-                                            name="priceOption"
-                                            checked={usePackagePricing}
-                                            onChange={() => handleOptionChange(true)}
-                                        />
-                                        <label className="form-label fw-bold fs-6">ใช้ราคาและส่วนลดจากแพ็คเกจ</label>
-                                    </div>
-                                    <div className="form-check form-check-inline me-3">
-                                        <input
-                                            className="form-check-input"
-                                            type="radio"
-                                            name="priceOption"
-                                            checked={!usePackagePricing}
-                                            onChange={() => handleOptionChange(false)}
-                                        />
-                                        <label className="form-label fw-bold fs-6">กรอกราคาและส่วนลดเอง</label>
-                                    </div>
-                                </div>
 
-                                {usePackagePricing && (
+                                {auth.data[0].PriceinsertType === "all" && (
+                                    <div className="d-flex mb-6">
+                                        <div className="form-check form-check-inline me-3">
+                                            <input
+                                                className="form-check-input"
+                                                type="radio"
+                                                name="priceOption"
+                                                checked={usePackagePricing}
+                                                onChange={() => handleOptionChange(true)}
+                                            />
+                                            <label className="form-label fw-bold fs-6">ใช้ราคาและส่วนลดจากแพ็คเกจ</label>
+                                        </div>
+                                        <div className="form-check form-check-inline me-3">
+                                            <input
+                                                className="form-check-input"
+                                                type="radio"
+                                                name="priceOption"
+                                                checked={!usePackagePricing}
+                                                onChange={() => handleOptionChange(false)}
+                                            />
+                                            <label className="form-label fw-bold fs-6">กรอกราคาและส่วนลดเอง</label>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Start PriceinsertType === "all" */}
+                                {usePackagePricing && auth.data[0].PriceinsertType === "all" && (
                                     <>
                                         <div className="container">
                                             {/* Left Side */}
@@ -832,14 +879,27 @@ const OrderCreateBooking: React.FC = () => {
                                                             className="form-select"
                                                             onChange={handleCardProductClick}
                                                             value={selectedProductIndex !== null ? selectedProductIndex : ''}
+                                                            disabled={isLoading} // ปิดการใช้งาน select ขณะกำลังโหลด
                                                         >
                                                             <option value="">เลือกสินค้า...</option>
-                                                            {Array.isArray(product) && product.map((item: any, index: number) => (
-                                                                <option key={index} value={index}>
-                                                                    {item.ItemCode} - {item.ItemDescription}
-                                                                </option>
-                                                            ))}
+                                                            {Array.isArray(product) && product.length > 0 && (
+                                                                product.map((item: any, index: number) => (
+                                                                    <option key={index} value={index}>
+                                                                        {item.ItemCode} - {item.ItemDescription}
+                                                                    </option>
+                                                                ))
+                                                            )}
                                                         </select>
+
+                                                        {/* ข้อความแสดงระหว่างการโหลด */}
+                                                        {isLoading && (
+                                                            <div className="text-muted mt-2">กรุณารอสักครู่...</div>
+                                                        )}
+
+                                                        {/* ข้อความแสดงเมื่อไม่มีสินค้าในหมวดหมู่นี้ */}
+                                                        {!isLoading && selectedCategoryId && Array.isArray(product) && product.length === 0 && (
+                                                            <div className="text-danger mt-2">ไม่มีสินค้าในหมวดหมู่นี้</div>
+                                                        )}
                                                     </div>
 
                                                     <div className="mb-6">
@@ -866,32 +926,35 @@ const OrderCreateBooking: React.FC = () => {
                                                             className="form-select"
                                                             onChange={handlePackageClick}
                                                             value={selectedPackageIndex !== null ? selectedPackageIndex : ''}
+                                                            disabled={isLoadingPackage} // ปิดการใช้งาน select ขณะกำลังโหลดแพ็คเกจ
                                                         >
                                                             <option value="">เลือกแพ็คเกจ...</option>
-                                                            {packageList.map((item: any, index: number) => (
-                                                                <option key={index} value={index}>
-                                                                    {item.PACKAGETITLE}
-                                                                </option>
-                                                            ))}
+                                                            {Array.isArray(packageList) && packageList.length > 0 && (
+                                                                packageList.map((item: any, index: number) => (
+                                                                    <option key={index} value={index}>
+                                                                        {item.PACKAGETITLE}
+                                                                    </option>
+                                                                ))
+                                                            )}
                                                         </select>
+                                                        {isLoadingPackage && (
+                                                            <div className="text-muted mt-2">กรุณารอสักครู่...</div>
+                                                        )}
+                                                        {!isLoadingPackage && selectedPackageTypeId && Array.isArray(packageList) && packageList.length === 0 && (
+                                                            <div className="text-danger mt-2">ไม่มีแพ็คเกจสำหรับการชำระประเภทนี้</div>
+                                                        )}
                                                     </div>
 
                                                     <div className="mb-6">
                                                         <label className="form-label required fw-bold fs-6">ส่วนลด</label>
-                                                        <select className="form-select">
-                                                            <option>เลือกส่วนลด...</option>
-                                                            <option
-                                                                value={
-                                                                    selectedPackageIndex !== null && packageList[selectedPackageIndex] && packageList[selectedPackageIndex].DISCOUNTPRICE
-                                                                        ? packageList[selectedPackageIndex].DISCOUNTPRICE
-                                                                        : 0
-                                                                }
-                                                            >
-                                                                {selectedPackageIndex !== null && packageList[selectedPackageIndex] && packageList[selectedPackageIndex].DISCOUNTPRICE
-                                                                    ? packageList[selectedPackageIndex].DISCOUNTPRICE
-                                                                    : ""}
-                                                            </option>
-                                                        </select>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control"
+                                                            readOnly
+                                                            value={selectedPackageIndex !== null && packageList[selectedPackageIndex]
+                                                                ? discountAmount
+                                                                : ""}
+                                                        />
                                                     </div>
 
                                                 </div>
@@ -982,7 +1045,7 @@ const OrderCreateBooking: React.FC = () => {
                                     </>
                                 )}
 
-                                {!usePackagePricing && (
+                                {!usePackagePricing && auth.data[0].PriceinsertType === "all" && (
                                     <>
                                         <div className="container">
                                             {/* Left Side */}
@@ -1009,14 +1072,27 @@ const OrderCreateBooking: React.FC = () => {
                                                             className="form-select"
                                                             onChange={handleCardProductClick}
                                                             value={selectedProductIndex !== null ? selectedProductIndex : ''}
+                                                            disabled={isLoading} // ปิดการใช้งาน select ขณะกำลังโหลด
                                                         >
                                                             <option value="">เลือกสินค้า...</option>
-                                                            {Array.isArray(product) && product.map((item: any, index: number) => (
-                                                                <option key={index} value={index}>
-                                                                    {item.ItemCode} - {item.ItemDescription}
-                                                                </option>
-                                                            ))}
+                                                            {Array.isArray(product) && product.length > 0 && (
+                                                                product.map((item: any, index: number) => (
+                                                                    <option key={index} value={index}>
+                                                                        {item.ItemCode} - {item.ItemDescription}
+                                                                    </option>
+                                                                ))
+                                                            )}
                                                         </select>
+
+                                                        {/* ข้อความแสดงระหว่างการโหลด */}
+                                                        {isLoading && (
+                                                            <div className="text-muted mt-2">กรุณารอสักครู่...</div>
+                                                        )}
+
+                                                        {/* ข้อความแสดงเมื่อไม่มีสินค้าในหมวดหมู่นี้ */}
+                                                        {!isLoading && selectedCategoryId && Array.isArray(product) && product.length === 0 && (
+                                                            <div className="text-danger mt-2">ไม่มีสินค้าในหมวดหมู่นี้</div>
+                                                        )}
                                                     </div>
 
                                                     <div className="mb-6">
@@ -1087,6 +1163,324 @@ const OrderCreateBooking: React.FC = () => {
                                         </div>
                                     </>
                                 )}
+                                {/* End PriceinsertType === "all" */}
+
+                                {/* Start PriceinsertType === "package" */}
+                                {usePackagePricing && auth.data[0].PriceinsertType === "package" && (
+                                    <>
+                                        <div className="container">
+                                            {/* Left Side */}
+                                            <div className="row mb-6">
+                                                <div className="col-lg-6">
+                                                    <div className="mb-6">
+                                                        <label className='form-label required fw-bold fs-3'>หมวดหมู่สินค้า</label>
+                                                        <select
+                                                            className='form-select'
+                                                            onChange={handleCateOptionChange}
+                                                        >
+                                                            <option value=''>เลือกหมวดหมู่สินค้า...</option>
+                                                            {(fetchCategory.length > 0 ? fetchCategory : categories).map((item: any, index: number) => (
+                                                                <option key={index} value={item.CATEGORIES_ID}>
+                                                                    {item.CATEGORIES_NAME_TH}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+
+                                                    <div className="mb-6">
+                                                        <label className="form-label required fw-bold fs-6">สินค้า</label>
+                                                        <select
+                                                            className="form-select"
+                                                            onChange={handleCardProductClick}
+                                                            value={selectedProductIndex !== null ? selectedProductIndex : ''}
+                                                            disabled={isLoading} // ปิดการใช้งาน select ขณะกำลังโหลด
+                                                        >
+                                                            <option value="">เลือกสินค้า...</option>
+                                                            {Array.isArray(product) && product.length > 0 && (
+                                                                product.map((item: any, index: number) => (
+                                                                    <option key={index} value={index}>
+                                                                        {item.ItemCode} - {item.ItemDescription}
+                                                                    </option>
+                                                                ))
+                                                            )}
+                                                        </select>
+
+                                                        {/* ข้อความแสดงระหว่างการโหลด */}
+                                                        {isLoading && (
+                                                            <div className="text-muted mt-2">กรุณารอสักครู่...</div>
+                                                        )}
+
+                                                        {/* ข้อความแสดงเมื่อไม่มีสินค้าในหมวดหมู่นี้ */}
+                                                        {!isLoading && selectedCategoryId && Array.isArray(product) && product.length === 0 && (
+                                                            <div className="text-danger mt-2">ไม่มีสินค้าในหมวดหมู่นี้</div>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="mb-6">
+                                                        <label className="form-label required fw-bold fs-6">การชำระ</label>
+                                                        <div className="d-flex">
+                                                            {packageType.map((pkg, index) => (
+                                                                <div className="form-check form-check-inline me-3" key={index}>
+                                                                    <input
+                                                                        className="form-check-input"
+                                                                        type="radio"
+                                                                        name="payment"
+                                                                        value={pkg.PACKAGETYPEID}
+                                                                        onChange={() => setSelectedPackageTypeId(pkg.PACKAGETYPEID)}
+                                                                    />
+                                                                    <label className="form-label fw-bold fs-6">{pkg.PACKAGETYPENAME}</label>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="mb-6">
+                                                        <label className="form-label required fw-bold fs-6">แพ็คเกจ</label>
+                                                        <select
+                                                            className="form-select"
+                                                            onChange={handlePackageClick}
+                                                            value={selectedPackageIndex !== null ? selectedPackageIndex : ''}
+                                                            disabled={isLoadingPackage} // ปิดการใช้งาน select ขณะกำลังโหลดแพ็คเกจ
+                                                        >
+                                                            <option value="">เลือกแพ็คเกจ...</option>
+                                                            {Array.isArray(packageList) && packageList.length > 0 && (
+                                                                packageList.map((item: any, index: number) => (
+                                                                    <option key={index} value={index}>
+                                                                        {item.PACKAGETITLE}
+                                                                    </option>
+                                                                ))
+                                                            )}
+                                                        </select>
+                                                        {isLoadingPackage && (
+                                                            <div className="text-muted mt-2">กรุณารอสักครู่...</div>
+                                                        )}
+                                                        {!isLoadingPackage && selectedPackageTypeId && Array.isArray(packageList) && packageList.length === 0 && (
+                                                            <div className="text-danger mt-2">ไม่มีแพ็คเกจสำหรับการชำระประเภทนี้</div>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="mb-6">
+                                                        <label className="form-label required fw-bold fs-6">ส่วนลด</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control"
+                                                            readOnly
+                                                            value={selectedPackageIndex !== null && packageList[selectedPackageIndex]
+                                                                ? discountAmount
+                                                                : ""}
+                                                        />
+                                                    </div>
+
+                                                </div>
+
+                                                {/* Right Side */}
+                                                <div className="col-lg-6">
+                                                    <div className="mb-6">
+                                                        <label className="form-label fw-bold">ราคาขาย</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control"
+                                                            readOnly
+                                                            style={{
+                                                                backgroundColor: '#d7dbde',
+                                                            }}
+                                                            value={selectedPackageIndex !== null && packageList[selectedPackageIndex]
+                                                                ? totalPrice
+                                                                : ""}
+                                                        />
+                                                    </div>
+
+                                                    <div className="mb-6">
+                                                        <label className="form-label fw-bold">ส่วนลด</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control"
+                                                            readOnly
+                                                            style={{
+                                                                backgroundColor: '#d7dbde',
+                                                            }}
+                                                            value={selectedPackageIndex !== null && packageList[selectedPackageIndex]
+                                                                ? discountAmount
+                                                                : ""}
+                                                        />
+                                                    </div>
+
+                                                    <div className="mb-6">
+                                                        <label className="form-label fw-bold">ราคาสุทธิ</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control"
+                                                            readOnly
+                                                            style={{
+                                                                backgroundColor: '#d7dbde',
+                                                            }}
+                                                            value={netPrice ? netPrice : ""}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Summary Table */}
+                                            {selectedPackageIndex !== null && selectedPackageIndex !== 1 && selectedPackageTypeId !== 1 && (
+                                                <div className="mt-4">
+                                                    <table className="table table-bordered">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>งวดที่</th>
+                                                                <th>ราคา</th>
+                                                                <th>หน่วย</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {/* งวดที่ 1 */}
+                                                            <tr>
+                                                                <td>1</td>
+                                                                <td>
+                                                                    {packageList[selectedPackageIndex] && packageList[selectedPackageIndex].PERIODDETAILS[0]
+                                                                        ? packageList[selectedPackageIndex].PERIODDETAILS[0].PAYMENTAMOUNT - (packageList[selectedPackageIndex].DISCOUNTPRICE || 0)
+                                                                        : ""}
+                                                                </td>
+                                                                <td>บาท</td>
+                                                            </tr>
+
+                                                            {/* งวดที่ 2 ถึงงวดสุดท้าย */}
+                                                            {packageList[selectedPackageIndex] && packageList[selectedPackageIndex].PERIODDETAILS.length > 1 && (
+                                                                <tr>
+                                                                    <td>2-{packageList[selectedPackageIndex].PERIODDETAILS.length}</td>
+                                                                    <td>{packageList[selectedPackageIndex].PERIODDETAILS[1].PAYMENTAMOUNT}</td>
+                                                                    <td>บาท</td>
+                                                                </tr>
+                                                            )}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </>
+                                )}
+                                {/* End PriceinsertType === "package" */}
+
+                                {/* Start PriceinsertType === "manual" */}
+                                {usePackagePricing && auth.data[0].PriceinsertType === "manual" && (
+                                    <>
+                                        <div className="container">
+                                            {/* Left Side */}
+                                            <div className="row mb-6">
+                                                <div className="col-lg-6">
+                                                    <div className="mb-6">
+                                                        <label className='form-label required fw-bold fs-3'>หมวดหมู่สินค้า</label>
+                                                        <select
+                                                            className='form-select'
+                                                            onChange={handleCateOptionChange}
+                                                        >
+                                                            <option value=''>เลือกหมวดหมู่สินค้า...</option>
+                                                            {(fetchCategory.length > 0 ? fetchCategory : categories).map((item: any, index: number) => (
+                                                                <option key={index} value={item.CATEGORIES_ID}>
+                                                                    {item.CATEGORIES_NAME_TH}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+
+                                                    <div className="mb-6">
+                                                        <label className="form-label required fw-bold fs-6">สินค้า</label>
+                                                        <select
+                                                            className="form-select"
+                                                            onChange={handleCardProductClick}
+                                                            value={selectedProductIndex !== null ? selectedProductIndex : ''}
+                                                            disabled={isLoading} // ปิดการใช้งาน select ขณะกำลังโหลด
+                                                        >
+                                                            <option value="">เลือกสินค้า...</option>
+                                                            {Array.isArray(product) && product.length > 0 && (
+                                                                product.map((item: any, index: number) => (
+                                                                    <option key={index} value={index}>
+                                                                        {item.ItemCode} - {item.ItemDescription}
+                                                                    </option>
+                                                                ))
+                                                            )}
+                                                        </select>
+
+                                                        {/* ข้อความแสดงระหว่างการโหลด */}
+                                                        {isLoading && (
+                                                            <div className="text-muted mt-2">กรุณารอสักครู่...</div>
+                                                        )}
+
+                                                        {/* ข้อความแสดงเมื่อไม่มีสินค้าในหมวดหมู่นี้ */}
+                                                        {!isLoading && selectedCategoryId && Array.isArray(product) && product.length === 0 && (
+                                                            <div className="text-danger mt-2">ไม่มีสินค้าในหมวดหมู่นี้</div>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="mb-6">
+                                                        <label className="form-label required fw-bold fs-6">ราคาขาย</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control"
+                                                            onChange={(e) => setPriceInput(Number(e.target.value))}
+                                                            value={priceInput !== undefined ? priceInput : ''}
+                                                        />
+                                                    </div>
+
+                                                    <div className="mb-6">
+                                                        <label className="form-label required fw-bold fs-6">ส่วนลด</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control"
+                                                            onChange={(e) => setDiscountInput(Number(e.target.value))}
+                                                            value={discountInput !== undefined ? discountInput : ''}
+                                                        />
+                                                    </div>
+
+                                                </div>
+
+                                                {/* Right Side */}
+                                                <div className="col-lg-6">
+                                                    <div className="mb-6">
+                                                        <label className="form-label fw-bold">ราคาขาย</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control"
+                                                            readOnly
+                                                            style={{
+                                                                backgroundColor: '#d7dbde',
+                                                            }}
+                                                            value={priceInput !== undefined ? priceInput : ''}
+                                                        />
+                                                    </div>
+
+                                                    <div className="mb-6">
+                                                        <label className="form-label fw-bold">ส่วนลด</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control"
+                                                            readOnly
+                                                            style={{
+                                                                backgroundColor: '#d7dbde',
+                                                            }}
+                                                            value={discountInput !== undefined ? discountInput : ''}
+                                                        />
+                                                    </div>
+
+                                                    <div className="mb-6">
+                                                        <label className="form-label fw-bold">ราคาสุทธิ</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control"
+                                                            readOnly
+                                                            style={{
+                                                                backgroundColor: '#d7dbde',
+                                                            }}
+                                                            value={netPriceInput !== undefined ? netPriceInput : ''}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </>
+                                )}
+                                {/* End PriceinsertType === "manual" */}
+
                             </div>
 
                             <hr className='my-10' style={{ borderTop: '1px dotted black' }} />
@@ -1581,69 +1975,69 @@ const OrderCreateBooking: React.FC = () => {
 
                             <hr className='my-1' style={{ borderTop: '1px dotted black' }} />
 
-                            <label className='form-label fw-bold fs-3 mb-10 mt-10'>ของแถม</label>
+                            {auth.data[0].Hasfreegift === "true" && (
+                                <>
+                                    <label className='form-label fw-bold fs-3 mb-10 mt-10'>ของแถม</label>
 
-                            <div className="container">
-                                <div className="row mb-3 align-items-center">
-                                    <div className="col-1 text-center">
-                                        <span></span>
-                                    </div>
-                                    <div className="col-7">
-                                        <select
-                                            className='form-select'
-                                            onChange={handleGiftOptionChange}
-                                            value={selectedGiftId}
-                                        >
-                                            <option value="">เลือกของแถม...</option>
-                                            {selectedPackageIndex !== null && packageList[selectedPackageIndex] && packageList[selectedPackageIndex].FREEGIFT
-                                                ? packageList[selectedPackageIndex].FREEGIFT.map((item: any, index: number) => (
-                                                    <option key={index} value={item.GIFTID}>
-                                                        {item.GIFTNAME}
-                                                    </option>
-                                                ))
-                                                : <option value="">ไม่มีของแถม</option>}
-                                        </select>
-                                    </div>
-                                    <div className="col-2 text-center">
-                                        <span>จำนวน</span>
-                                    </div>
-                                    <div className="col-2 d-flex align-items-center">
-                                        <input type="text" className="form-control me-2" />
-                                        <span>หน่วย</span>
-                                    </div>
-                                </div>
-                            </div>
+                                    <div className="container">
+                                        {giftFields.map((gift, index) => (
+                                            <div className="row mb-3 align-items-center" key={index}>
+                                                <div className="col-1 text-center">
+                                                    <span>{index + 1}</span>
+                                                </div>
+                                                <div className="col-5">
+                                                    <select
+                                                        className="form-select"
+                                                        onChange={(e) => handleGiftOptionChange(index, e.target.value)}
+                                                        value={gift.id}
+                                                    >
+                                                        <option value="">เลือกของแถม...</option>
+                                                        {selectedPackageIndex !== null &&
+                                                            packageList[selectedPackageIndex] &&
+                                                            packageList[selectedPackageIndex].FREEGIFT ? (
+                                                            packageList[selectedPackageIndex].FREEGIFT.map((item: any, index: number) => (
+                                                                <option key={index} value={item.GIFTID}>
+                                                                    {item.GIFTNAME}
+                                                                </option>
+                                                            ))
+                                                        ) : (
+                                                            <option value="">ไม่มีของแถม</option>
+                                                        )}
+                                                    </select>
+                                                </div>
+                                                <div className="col-2 text-center">
+                                                    <span>จำนวน</span>
+                                                </div>
+                                                <div className="col-2 d-flex align-items-center">
+                                                    <input
+                                                        type="text"
+                                                        className="form-control me-2"
+                                                        value={gift.quantity}
+                                                        onChange={(e) => handleQuantityChange(index, e.target.value)}
+                                                    />
+                                                    <span>หน่วย</span>
+                                                </div>
+                                                <div className="col-2 text-center">
+                                                    <button type="button" className="btn btn-danger" onClick={() => removeGiftField(index)}>
+                                                        ลบ
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
 
-                            <div className="container">
-                                <div className="row mb-3 align-items-center">
-                                    <div className="col-1 text-center">
-                                        <span></span>
+                                        {/* ปุ่มสำหรับเพิ่มรายการของแถมใหม่ */}
+                                        <div className="row mt-10">
+                                            <div className="col-12 text-center">
+                                                <button type="button" className="btn btn-primary" onClick={addGiftField}>
+                                                    เพิ่มของแถม
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="col-7">
-                                        <select
-                                            className='form-select'
-                                        // onChange={handleCustTypeOptionChange}
-                                        // value={selectedCustomerType}
-                                        >
-                                            <option value=''>เลือกของแถม...</option>
-                                            {/* {customerTypes.map((item: any) => (
-                                        <option key={item.CUSTOMERTYPE} value={item.CUSTOMERTYPE}>
-                                            {item.CUSTOMERTYPENAME}
-                                        </option>
-                                    ))} */}
-                                        </select>
-                                    </div>
-                                    <div className="col-2 text-center">
-                                        <span>จำนวน</span>
-                                    </div>
-                                    <div className="col-2 d-flex align-items-center">
-                                        <input type="text" className="form-control me-2" />
-                                        <span>หน่วย</span>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <hr className='mt-10' style={{ borderTop: '1px dotted black' }} />
+                                    <hr className='mt-10' style={{ borderTop: '1px dotted black' }} />
+                                </>
+                            )}
 
                             <label className='form-label fw-bold fs-3 mb-10 mt-10'>ค่าใช้จ่าย อื่นๆ</label>
 
