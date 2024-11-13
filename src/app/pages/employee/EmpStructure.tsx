@@ -79,7 +79,7 @@ const EmpStructure: React.FC = () => {
                 </div>
                 <div className='accordion mb-10' id='kt_accordion_1'>
                     <div className='accordion-item mb-10'>
-                        <div id='kt_accordion_1_body_1' className='accordion-collapse collapse show' aria-labelledby='kt_accordion_1_header_1' data-bs-parent='#kt_accordion_1' >
+                        <div id='kt_accordion_1_body_1' className='accordion-collapse collapse show' >
                             <div className='accordion-body'>
                                 <div className='row gy-5 gx-xl-8'>
                                     <div className='col-xl-12'>
