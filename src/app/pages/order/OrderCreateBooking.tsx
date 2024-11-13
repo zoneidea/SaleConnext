@@ -23,6 +23,9 @@ import 'react-datetime-picker/dist/DateTimePicker.css';
 import 'react-calendar/dist/Calendar.css';
 import 'react-clock/dist/Clock.css';
 
+import ModalTrigger from "./ModalSerchCustomer/ModalTrigger";
+import SerchCustomerModal from "./ModalSerchCustomer/SerchCustomerModal";
+
 const OrderCreateBooking: React.FC = () => {
     const navigate = useNavigate();
     const { SETREFNO } = useUUIDStore();
@@ -50,6 +53,12 @@ const OrderCreateBooking: React.FC = () => {
 
     const { auth } = useAuth();
     // console.log(`auth`, auth);
+
+    {/*-------------------- Start Modals ค้นหาลูกค้า --------------------*/ }
+    const [showModal, setShowModal] = useState(false);
+    const handleShow = () => setShowModal(true);
+    const handleClose = () => setShowModal(false);
+    {/*-------------------- End Modals ค้นหาลูกค้า --------------------*/ }
 
     {/*-------------------- Start ข้อมูลพนักงานขาย --------------------*/ }
     // POST พนักงานขาย
@@ -136,6 +145,8 @@ const OrderCreateBooking: React.FC = () => {
     {/*-------------------- End ข้อมูลพนักงานขาย --------------------*/ }
 
     {/*-------------------- Start ข้อมูลสินค้า --------------------*/ }
+    const [usePackagePricing, setUsePackagePricing] = useState<boolean>(true);
+
     const { fetchCategory } = useFetchCategoryStore();
     // console.log(`fetchCategory: `, fetchCategory);
 
@@ -179,13 +190,39 @@ const OrderCreateBooking: React.FC = () => {
 
     const [selectedPackageIndex, setSelectedPackageIndex] = useState<number | null>(null);
 
+    // คำนวณ ใช้ราคาและส่วนลดจากแพ็คเกจ
     const [totalPrice, setTotalPrice] = useState<any>('');
-    // console.log(`totalPrice`, totalPrice);
-
     const [discountAmount, setDiscountAmount] = useState<any>('');
-    // console.log(`discountAmount`, discountAmount);
-
     const netPrice = totalPrice - discountAmount;
+
+    // คำนวณ กรอกราคาและส่วนลดเอง
+    const [priceInput, setPriceInput] = useState<number | undefined>(undefined);
+    const [discountInput, setDiscountInput] = useState<number | undefined>(undefined);
+    const [netPriceInput, setNetPriceInput] = useState<number | undefined>(undefined);
+
+    // โหมด กรอกราคาและส่วนลดเอง เมื่อใส่ฟิลด์ ราคาขาย + ส่วนลด ฟีลด์ readonly ด้านขวาจะแสดงอัตโนมัติ
+    useEffect(() => {
+        if (priceInput !== undefined && discountInput !== undefined) {
+            setNetPriceInput(priceInput - discountInput);
+        } else if (priceInput !== undefined) {
+            setNetPriceInput(priceInput);
+        } else {
+            setNetPriceInput(undefined);
+        }
+    }, [priceInput, discountInput]);
+
+    // ล้างค่าฟีลด์เมื่อสลับไปอีกโหมด
+    useEffect(() => {
+        setSelectedCategoryId(null)
+        setSelectedProductIndex(null)
+        setSelectedPackageIndex(null);
+        setTotalPrice(undefined);
+        setDiscountAmount(undefined);
+
+        setPriceInput(undefined);
+        setDiscountInput(undefined);
+        setNetPriceInput(undefined);
+    }, [usePackagePricing]);
 
     // POST GetProduct/Categories
     useEffect(() => {
@@ -303,6 +340,10 @@ const OrderCreateBooking: React.FC = () => {
         } else {
             setSelectedItemID('');
         }
+    };
+
+    const handleOptionChange = (value: boolean) => {
+        setUsePackagePricing(value);
     };
 
     const handlePackageClick = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -660,12 +701,11 @@ const OrderCreateBooking: React.FC = () => {
                     <div className='card-body d-flex align-items-center py-5'>
                         <div className='col-12'>
 
-                            <button
-                                className='btn btn-success w-100 w-md-auto align-self-center h-50px mt-5'
-                            // onClick={handleCheckerClick}
-                            >
-                                ค้นหาลูกค้า
-                            </button>
+                            {/* {auth[0].DepartGroup === "S2"} */}
+                            {/* Start ปุ่มค้นหาลูกค้า */}
+                            <ModalTrigger handleShow={handleShow} />
+                            <SerchCustomerModal show={showModal} handleClose={handleClose} />
+                            {/* End ปุ่มค้นหาลูกค้า */}
 
                             <hr className='my-10' style={{ borderTop: '1px dotted black' }} />
 
@@ -719,7 +759,7 @@ const OrderCreateBooking: React.FC = () => {
                                             <option value=''>เลือกผู้แนะนำ (ถ้ามี)...</option>
                                             {Array.isArray(adviser) && adviser.map((item: any) => (
                                                 <option key={item.CHANNEL_ID} value={item.CHANNEL_ID}>
-                                                    {item.CHANNEL_NAME}
+                                                    {item.SaleCode} - {item.FName} {item.LName}&nbsp;&nbsp;{item.TeamName ? `(ทีม ${item.TeamName})` : ""}
                                                 </option>
                                             ))}
                                         </select>
@@ -742,177 +782,311 @@ const OrderCreateBooking: React.FC = () => {
                             <label className='form-label fw-bold fs-3 mb-10'>ข้อมูลสินค้า</label>
 
                             <div className="container">
-                                {/* Left Side */}
-                                <div className="row mb-6">
-                                    <div className="col-lg-6">
-                                        <div className="mb-6">
-                                            <label className='form-label required fw-bold fs-3'>หมวดหมู่สินค้า</label>
-                                            <select
-                                                className='form-select'
-                                                onChange={handleCateOptionChange}
-                                            >
-                                                <option value=''>เลือกหมวดหมู่สินค้า...</option>
-                                                {(fetchCategory.length > 0 ? fetchCategory : categories).map((item: any, index: number) => (
-                                                    <option key={index} value={item.CATEGORIES_ID}>
-                                                        {item.CATEGORIES_NAME_TH}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-
-                                        <div className="mb-6">
-                                            <label className="form-label required fw-bold fs-6">สินค้า</label>
-                                            <select
-                                                className="form-select"
-                                                onChange={handleCardProductClick}
-                                                value={selectedProductIndex !== null ? selectedProductIndex : ''}
-                                            >
-                                                <option value="">เลือกสินค้า...</option>
-                                                {Array.isArray(product) && product.map((item: any, index: number) => (
-                                                    <option key={index} value={index}>
-                                                        {item.ItemCode} - {item.ItemDescription}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-
-                                        <div className="mb-6">
-                                            <label className="form-label required fw-bold fs-6">การชำระ</label>
-                                            <div className="d-flex">
-                                                {packageType.map((pkg, index) => (
-                                                    <div className="form-check form-check-inline me-3" key={index}>
-                                                        <input
-                                                            className="form-check-input"
-                                                            type="radio"
-                                                            name="payment"
-                                                            value={pkg.PACKAGETYPEID}
-                                                            onChange={() => setSelectedPackageTypeId(pkg.PACKAGETYPEID)}
-                                                        />
-                                                        <label className="form-label fw-bold fs-6">{pkg.PACKAGETYPENAME}</label>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-
-                                        <div className="mb-6">
-                                            <label className="form-label required fw-bold fs-6">แพ็คเกจ</label>
-                                            <select
-                                                className="form-select"
-                                                onChange={handlePackageClick}
-                                                value={selectedPackageIndex !== null ? selectedPackageIndex : ''}
-                                            >
-                                                <option value="">เลือกแพ็คเกจ...</option>
-                                                {packageList.map((item: any, index: number) => (
-                                                    <option key={index} value={index}>
-                                                        {item.PACKAGETITLE}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-
-                                        <div className="mb-6">
-                                            <label className="form-label required fw-bold fs-6">ส่วนลด</label>
-                                            <select className="form-select">
-                                                <option>เลือกส่วนลด...</option>
-                                                <option
-                                                    value={
-                                                        selectedPackageIndex !== null && packageList[selectedPackageIndex] && packageList[selectedPackageIndex].DISCOUNTPRICE
-                                                            ? packageList[selectedPackageIndex].DISCOUNTPRICE
-                                                            : 0
-                                                    }
-                                                >
-                                                    {selectedPackageIndex !== null && packageList[selectedPackageIndex] && packageList[selectedPackageIndex].DISCOUNTPRICE
-                                                        ? packageList[selectedPackageIndex].DISCOUNTPRICE
-                                                        : ""}
-                                                </option>
-                                            </select>
-                                        </div>
-
+                                <div className="d-flex mb-6">
+                                    <div className="form-check form-check-inline me-3">
+                                        <input
+                                            className="form-check-input"
+                                            type="radio"
+                                            name="priceOption"
+                                            checked={usePackagePricing}
+                                            onChange={() => handleOptionChange(true)}
+                                        />
+                                        <label className="form-label fw-bold fs-6">ใช้ราคาและส่วนลดจากแพ็คเกจ</label>
                                     </div>
-
-                                    {/* Right Side */}
-                                    <div className="col-lg-6">
-                                        <div className="mb-6">
-                                            <label className="form-label fw-bold">ราคาขาย</label>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                readOnly
-                                                style={{
-                                                    backgroundColor: '#d7dbde',
-                                                }}
-                                                value={selectedPackageIndex !== null && packageList[selectedPackageIndex]
-                                                    ? totalPrice
-                                                    : ""}
-                                            />
-                                        </div>
-
-                                        <div className="mb-6">
-                                            <label className="form-label fw-bold">ส่วนลด</label>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                readOnly
-                                                style={{
-                                                    backgroundColor: '#d7dbde',
-                                                }}
-                                                value={selectedPackageIndex !== null && packageList[selectedPackageIndex]
-                                                    ? discountAmount
-                                                    : ""}
-                                            />
-                                        </div>
-
-                                        <div className="mb-6">
-                                            <label className="form-label fw-bold">ราคาสุทธิ</label>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                readOnly
-                                                style={{
-                                                    backgroundColor: '#d7dbde',
-                                                }}
-                                                value={netPrice ? netPrice : ""}
-                                            />
-                                        </div>
+                                    <div className="form-check form-check-inline me-3">
+                                        <input
+                                            className="form-check-input"
+                                            type="radio"
+                                            name="priceOption"
+                                            checked={!usePackagePricing}
+                                            onChange={() => handleOptionChange(false)}
+                                        />
+                                        <label className="form-label fw-bold fs-6">กรอกราคาและส่วนลดเอง</label>
                                     </div>
                                 </div>
 
-                                {/* Summary Table */}
-                                {selectedPackageIndex !== null && selectedPackageIndex !== 1 && selectedPackageTypeId !== 1 && (
-                                    <div className="mt-4">
-                                        <table className="table table-bordered">
-                                            <thead>
-                                                <tr>
-                                                    <th>งวดที่</th>
-                                                    <th>ราคา</th>
-                                                    <th>หน่วย</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {/* งวดที่ 1 */}
-                                                <tr>
-                                                    <td>1</td>
-                                                    <td>
-                                                        {packageList[selectedPackageIndex] && packageList[selectedPackageIndex].PERIODDETAILS[0]
-                                                            ? packageList[selectedPackageIndex].PERIODDETAILS[0].PAYMENTAMOUNT - (packageList[selectedPackageIndex].DISCOUNTPRICE || 0)
-                                                            : ""}
-                                                    </td>
-                                                    <td>บาท</td>
-                                                </tr>
+                                {usePackagePricing && (
+                                    <>
+                                        <div className="container">
+                                            {/* Left Side */}
+                                            <div className="row mb-6">
+                                                <div className="col-lg-6">
+                                                    <div className="mb-6">
+                                                        <label className='form-label required fw-bold fs-3'>หมวดหมู่สินค้า</label>
+                                                        <select
+                                                            className='form-select'
+                                                            onChange={handleCateOptionChange}
+                                                        >
+                                                            <option value=''>เลือกหมวดหมู่สินค้า...</option>
+                                                            {(fetchCategory.length > 0 ? fetchCategory : categories).map((item: any, index: number) => (
+                                                                <option key={index} value={item.CATEGORIES_ID}>
+                                                                    {item.CATEGORIES_NAME_TH}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
 
-                                                {/* งวดที่ 2 ถึงงวดสุดท้าย */}
-                                                {packageList[selectedPackageIndex] && packageList[selectedPackageIndex].PERIODDETAILS.length > 1 && (
-                                                    <tr>
-                                                        <td>2-{packageList[selectedPackageIndex].PERIODDETAILS.length}</td>
-                                                        <td>{packageList[selectedPackageIndex].PERIODDETAILS[1].PAYMENTAMOUNT}</td>
-                                                        <td>บาท</td>
-                                                    </tr>
-                                                )}
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                                    <div className="mb-6">
+                                                        <label className="form-label required fw-bold fs-6">สินค้า</label>
+                                                        <select
+                                                            className="form-select"
+                                                            onChange={handleCardProductClick}
+                                                            value={selectedProductIndex !== null ? selectedProductIndex : ''}
+                                                        >
+                                                            <option value="">เลือกสินค้า...</option>
+                                                            {Array.isArray(product) && product.map((item: any, index: number) => (
+                                                                <option key={index} value={index}>
+                                                                    {item.ItemCode} - {item.ItemDescription}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+
+                                                    <div className="mb-6">
+                                                        <label className="form-label required fw-bold fs-6">การชำระ</label>
+                                                        <div className="d-flex">
+                                                            {packageType.map((pkg, index) => (
+                                                                <div className="form-check form-check-inline me-3" key={index}>
+                                                                    <input
+                                                                        className="form-check-input"
+                                                                        type="radio"
+                                                                        name="payment"
+                                                                        value={pkg.PACKAGETYPEID}
+                                                                        onChange={() => setSelectedPackageTypeId(pkg.PACKAGETYPEID)}
+                                                                    />
+                                                                    <label className="form-label fw-bold fs-6">{pkg.PACKAGETYPENAME}</label>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="mb-6">
+                                                        <label className="form-label required fw-bold fs-6">แพ็คเกจ</label>
+                                                        <select
+                                                            className="form-select"
+                                                            onChange={handlePackageClick}
+                                                            value={selectedPackageIndex !== null ? selectedPackageIndex : ''}
+                                                        >
+                                                            <option value="">เลือกแพ็คเกจ...</option>
+                                                            {packageList.map((item: any, index: number) => (
+                                                                <option key={index} value={index}>
+                                                                    {item.PACKAGETITLE}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+
+                                                    <div className="mb-6">
+                                                        <label className="form-label required fw-bold fs-6">ส่วนลด</label>
+                                                        <select className="form-select">
+                                                            <option>เลือกส่วนลด...</option>
+                                                            <option
+                                                                value={
+                                                                    selectedPackageIndex !== null && packageList[selectedPackageIndex] && packageList[selectedPackageIndex].DISCOUNTPRICE
+                                                                        ? packageList[selectedPackageIndex].DISCOUNTPRICE
+                                                                        : 0
+                                                                }
+                                                            >
+                                                                {selectedPackageIndex !== null && packageList[selectedPackageIndex] && packageList[selectedPackageIndex].DISCOUNTPRICE
+                                                                    ? packageList[selectedPackageIndex].DISCOUNTPRICE
+                                                                    : ""}
+                                                            </option>
+                                                        </select>
+                                                    </div>
+
+                                                </div>
+
+                                                {/* Right Side */}
+                                                <div className="col-lg-6">
+                                                    <div className="mb-6">
+                                                        <label className="form-label fw-bold">ราคาขาย</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control"
+                                                            readOnly
+                                                            style={{
+                                                                backgroundColor: '#d7dbde',
+                                                            }}
+                                                            value={selectedPackageIndex !== null && packageList[selectedPackageIndex]
+                                                                ? totalPrice
+                                                                : ""}
+                                                        />
+                                                    </div>
+
+                                                    <div className="mb-6">
+                                                        <label className="form-label fw-bold">ส่วนลด</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control"
+                                                            readOnly
+                                                            style={{
+                                                                backgroundColor: '#d7dbde',
+                                                            }}
+                                                            value={selectedPackageIndex !== null && packageList[selectedPackageIndex]
+                                                                ? discountAmount
+                                                                : ""}
+                                                        />
+                                                    </div>
+
+                                                    <div className="mb-6">
+                                                        <label className="form-label fw-bold">ราคาสุทธิ</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control"
+                                                            readOnly
+                                                            style={{
+                                                                backgroundColor: '#d7dbde',
+                                                            }}
+                                                            value={netPrice ? netPrice : ""}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Summary Table */}
+                                            {selectedPackageIndex !== null && selectedPackageIndex !== 1 && selectedPackageTypeId !== 1 && (
+                                                <div className="mt-4">
+                                                    <table className="table table-bordered">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>งวดที่</th>
+                                                                <th>ราคา</th>
+                                                                <th>หน่วย</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {/* งวดที่ 1 */}
+                                                            <tr>
+                                                                <td>1</td>
+                                                                <td>
+                                                                    {packageList[selectedPackageIndex] && packageList[selectedPackageIndex].PERIODDETAILS[0]
+                                                                        ? packageList[selectedPackageIndex].PERIODDETAILS[0].PAYMENTAMOUNT - (packageList[selectedPackageIndex].DISCOUNTPRICE || 0)
+                                                                        : ""}
+                                                                </td>
+                                                                <td>บาท</td>
+                                                            </tr>
+
+                                                            {/* งวดที่ 2 ถึงงวดสุดท้าย */}
+                                                            {packageList[selectedPackageIndex] && packageList[selectedPackageIndex].PERIODDETAILS.length > 1 && (
+                                                                <tr>
+                                                                    <td>2-{packageList[selectedPackageIndex].PERIODDETAILS.length}</td>
+                                                                    <td>{packageList[selectedPackageIndex].PERIODDETAILS[1].PAYMENTAMOUNT}</td>
+                                                                    <td>บาท</td>
+                                                                </tr>
+                                                            )}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </>
                                 )}
 
+                                {!usePackagePricing && (
+                                    <>
+                                        <div className="container">
+                                            {/* Left Side */}
+                                            <div className="row mb-6">
+                                                <div className="col-lg-6">
+                                                    <div className="mb-6">
+                                                        <label className='form-label required fw-bold fs-3'>หมวดหมู่สินค้า</label>
+                                                        <select
+                                                            className='form-select'
+                                                            onChange={handleCateOptionChange}
+                                                        >
+                                                            <option value=''>เลือกหมวดหมู่สินค้า...</option>
+                                                            {(fetchCategory.length > 0 ? fetchCategory : categories).map((item: any, index: number) => (
+                                                                <option key={index} value={item.CATEGORIES_ID}>
+                                                                    {item.CATEGORIES_NAME_TH}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+
+                                                    <div className="mb-6">
+                                                        <label className="form-label required fw-bold fs-6">สินค้า</label>
+                                                        <select
+                                                            className="form-select"
+                                                            onChange={handleCardProductClick}
+                                                            value={selectedProductIndex !== null ? selectedProductIndex : ''}
+                                                        >
+                                                            <option value="">เลือกสินค้า...</option>
+                                                            {Array.isArray(product) && product.map((item: any, index: number) => (
+                                                                <option key={index} value={index}>
+                                                                    {item.ItemCode} - {item.ItemDescription}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+
+                                                    <div className="mb-6">
+                                                        <label className="form-label required fw-bold fs-6">ราคาขาย</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control"
+                                                            onChange={(e) => setPriceInput(Number(e.target.value))}
+                                                            value={priceInput !== undefined ? priceInput : ''}
+                                                        />
+                                                    </div>
+
+                                                    <div className="mb-6">
+                                                        <label className="form-label required fw-bold fs-6">ส่วนลด</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control"
+                                                            onChange={(e) => setDiscountInput(Number(e.target.value))}
+                                                            value={discountInput !== undefined ? discountInput : ''}
+                                                        />
+                                                    </div>
+
+                                                </div>
+
+                                                {/* Right Side */}
+                                                <div className="col-lg-6">
+                                                    <div className="mb-6">
+                                                        <label className="form-label fw-bold">ราคาขาย</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control"
+                                                            readOnly
+                                                            style={{
+                                                                backgroundColor: '#d7dbde',
+                                                            }}
+                                                            value={priceInput !== undefined ? priceInput : ''}
+                                                        />
+                                                    </div>
+
+                                                    <div className="mb-6">
+                                                        <label className="form-label fw-bold">ส่วนลด</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control"
+                                                            readOnly
+                                                            style={{
+                                                                backgroundColor: '#d7dbde',
+                                                            }}
+                                                            value={discountInput !== undefined ? discountInput : ''}
+                                                        />
+                                                    </div>
+
+                                                    <div className="mb-6">
+                                                        <label className="form-label fw-bold">ราคาสุทธิ</label>
+                                                        <input
+                                                            type="text"
+                                                            className="form-control"
+                                                            readOnly
+                                                            style={{
+                                                                backgroundColor: '#d7dbde',
+                                                            }}
+                                                            value={netPriceInput !== undefined ? netPriceInput : ''}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </>
+                                )}
                             </div>
 
                             <hr className='my-10' style={{ borderTop: '1px dotted black' }} />
@@ -1554,7 +1728,6 @@ const OrderCreateBooking: React.FC = () => {
                                                 selected={valueCalendarInstall}
                                                 onChange={handleDateChangeInstall}
                                                 className="form-control mb-3 mb-lg-0"
-                                                placeholderText="วันที่สะดวกติดตั้ง"
                                                 showYearDropdown
                                                 showMonthDropdown
                                                 dropdownMode="select"

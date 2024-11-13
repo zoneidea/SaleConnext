@@ -3,7 +3,6 @@ import axios from 'axios';
 import { useState, useEffect } from 'react';
 import { Content } from '../../../../_metronic/layout/components/content'
 
-
 interface ItemProps {
   REFNO: String,
   EMPID: String,
