@@ -58,6 +58,8 @@ const PrivateRoutes = () => {
 
   //หัวข้อ ระบบเก็บเงินงวดแรก
   const CreateFirstBill = lazy(() => import('../pages/firstBill/CreateFirstBill'))
+  // โครงสร้างพนักงาน
+  const EmpStructure = lazy(() => import('../pages/employee/EmpStructure'))
 
   return (
     <Routes>
@@ -365,6 +367,16 @@ const PrivateRoutes = () => {
           }
         />
         {/* End ระบบเก็บเงินงวดแรก */}
+
+        {/* โครงสร้างพนักงาน */}
+        <Route
+          path='employee/EmpStructure'
+          element={
+            <SuspensedView>
+              <EmpStructure />
+            </SuspensedView>
+          }
+        />
 
         {/* Page Not Found */}
         <Route path='*' element={<Navigate to='/error/404' />} />
