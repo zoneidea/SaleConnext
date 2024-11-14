@@ -45,10 +45,6 @@ const FirstBillOverview: React.FC = () => {
     getDataFinish()
   }, [])
 
-  const handleAddItemClick = () => {
-    SETREFNO(); // Generate a new REFNO before navigating
-    navigate('/firstBill/CreateFirstBill'); // Navigate to the package page
-  };
   return (
     <>
       <Content>

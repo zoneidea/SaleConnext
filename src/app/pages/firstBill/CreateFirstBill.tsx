@@ -1,20 +1,11 @@
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import clsx from 'clsx'
-import { useState } from 'react'
-import { KTIcon, toAbsoluteUrl } from '../../../_metronic/helpers'
-import { getLayoutFromLocalStorage, ILayout, LayoutSetup } from '../../../_metronic/layout/core'
-import { ToolbarWrapper } from '../../../_metronic/layout/components/toolbar'
-import { Content } from '../../../_metronic/layout/components/content'
-import { TablesWidget5 } from '../../../_metronic/partials/widgets'
+import { useState, useEffect, useMemo } from 'react';
+import { Content } from '../../../_metronic/layout/components/content';
 import { useAuth } from '../../modules/auth/core/Auth';
-import {
-    useUUIDStore,
-    useSaveProductStore,
-    useSaveDiscountStore,
-    useSaveCustomerStore,
-    useSaveAddressStore
-} from '../../modules/stores/stepsStore';
+
+import { useUUIDStore, useSaveProductStore } from '../../modules/stores/stepsStore';
+import { useSaveDiscountStore } from '../../modules/stores/stepsStore';
 
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
@@ -23,12 +14,30 @@ interface ContractState {
     contNo: string;
 }
 
+interface ItemProps {
+    REFNO: String,
+    CONTNO: String,
+    EMPID: String,
+    TEAMSALE: String,
+    SALECODE: String,
+    SUPEMPID: String,
+    SECEMPID: String,
+    STATUS: String,
+    PRODUCT: [any],
+    CUSTOMERSTATUS: [any],
+    DISCOUNT: [any],
+    CUSTOMERDETAIL: [any],
+    ADDRESS: [any],
+    PDPA: [any],
+    CONTRACT: [any],
+    IMAGE: [any],
+    CHECKERCOMMENT: [any]
+}
+
 const CreateFirstBill: React.FC = () => {
     const navigate = useNavigate()
-
     const location = useLocation();
-    const contNo = (location.state as ContractState)?.contNo;
-    // console.log(`contNo`, contNo);
+    const MySwal = withReactContent(Swal);
 
     const { auth } = useAuth();
     const EmpId = auth?.data?.[0]?.EmpId || '';
@@ -39,32 +48,124 @@ const CreateFirstBill: React.FC = () => {
 
     const { REFNO } = useUUIDStore();
 
+    const item = location.state as ItemProps || [];
+    console.log(`item`, item);
+    const refno = item?.REFNO
+
+    const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
+    const TRADEINBRAND_URL = `${API_SALECONNEXT}/GetProduct/Tradeinbrand`;
+
     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
     const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
 
-    const currentDate = new Date();
-    const formattedDate = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate()}`;
+    const { PRODUCT } = useSaveProductStore();
+    // console.log(`PRODUCT`, PRODUCT)
 
-    const { PRODUCT } = useSaveProductStore()
-    // console.log(`PRODUCT`, PRODUCT[0].Package[0].PACKAGETYPEID);
+    const { DISCOUNT, SETDISCOUNT } = useSaveDiscountStore();
 
-    const { DISCOUNT } = useSaveDiscountStore()
-    // console.log(`DISCOUNT`, DISCOUNT);
+    const [tradeInBrand, setTradeInBrand] = useState<any[]>([]);
+    // console.log(`tradeInBrand`, tradeInBrand);
 
-    const { saveCustomerTypes } = useSaveCustomerStore()
-    // console.log(`saveCustomerTypes`, saveCustomerTypes);
+    const [selectedTurnId, setSelectedTurnId] = useState<any>('');
+    // console.log(`selectedTurnId`, selectedTurnId);
+    const [selectedTradeInBrandName, setSelectedTradeInBrandName] = useState<string>('');
+    // console.log(`selectedTradeInBrandName`, selectedTradeInBrandName);
+    const [tradeInModel, setTradeInModel] = useState<any>('');
+    const [tradeInSerial, setTradeInSerial] = useState<any>('');
+    const [selectedGiftId, setSelectedGiftId] = useState<any>('');
 
-    const { addressCard, addressInstallation, addressPayment } = useSaveAddressStore()
-    // console.log(`addressCard`, addressCard)
-    // console.log(`addressInstallation`, addressInstallation)
-    // console.log(`addressPayment`, addressPayment)
+    // ตรวจสอบว่ามีข้อมูล PRODUCT หรือไม่ก่อนที่จะดึงข้อมูลจากมัน
+    const hasTradeIn = PRODUCT?.[0]?.Package?.[0]?.HASTRADEIN ?? null;
+    console.log(`hasTradeIn`, hasTradeIn);
 
-    const totalPrice = PRODUCT[0]?.Package[0]?.TOTALPRICE || 0;
-    const discountAmount = DISCOUNT[0]?.DISCOUNTAMOUNT || 0;
-    const netPrice = totalPrice - discountAmount;
+    const totalPrice = PRODUCT?.[0]?.Package?.[0]?.TOTALPRICE ?? 0;
+    const discountPrice = PRODUCT?.[0]?.Package?.[0]?.DISCOUNTPRICE ?? 0;
+    console.log(`discountPrice`, discountPrice);
 
+    const sequence = PRODUCT?.[0]?.Package?.[0]?.SEQUENCE ?? 0;
+    const freeGift = PRODUCT?.[0]?.Package?.[0]?.FREEGIFT ?? [];
+    console.log(`freeGift`, freeGift);
+
+    // console.log(`selectedGift`, freeGift[selectedGiftId-1]?.GIFTCODE);
+
+    const [step, setStep] = useState<number>(100);
+    const [currentSequence, setCurrentSequence] = useState<number>(sequence);
+    const totalPriceSafe = totalPrice; // ตั้งค่า TOTALPRICE เป็น 0 ถ้าเป็น null
+
+    // อัปเดต selectedTradeInBrandName เมื่อ selectedTurnId หรือ tradeInBrand เปลี่ยน
+    useEffect(() => {
+        // console.log("Selected TradeIn ID:", selectedTurnId);
+        // console.log("TradeIn Brand List:", tradeInBrand);
+
+        const selectedTradeInBrand = tradeInBrand.find(
+            (brand) => String(brand.TRADEINBRANDID) === String(selectedTurnId) // แปลงเป็นสตริงก่อนการเปรียบเทียบ
+        );
+
+        if (selectedTradeInBrand) {
+            setSelectedTradeInBrandName(selectedTradeInBrand.TRADEINBRANDNAME || '');
+            // console.log("Found TradeIn Brand Name:", selectedTradeInBrand.TRADEINBRANDNAME);
+        } else {
+            setSelectedTradeInBrandName(''); // รีเซ็ตค่าเมื่อไม่มีการเลือก
+            // console.log("No TradeIn Brand Name Found");
+        }
+    }, [selectedTurnId, tradeInBrand]);
+
+    // เก็บข้อมูลส่วนลดใน state และ store
+    const SaveDiscountData = useMemo(() => {
+        if (!PRODUCT?.[0]?.Package?.[0]) {
+            return [];
+        }
+
+        return [
+            {
+                TRADEIN: {
+                    HASTRADEIN: PRODUCT[0].Package[0].HASTRADEIN,
+                    TRADEINBRANDID: selectedTurnId,
+                    TRADEINBRANDNAME: selectedTradeInBrandName, // ใช้ selectedTradeInBrandName ที่อัปเดตจาก useEffect
+                    TRADEINMODEL: tradeInModel,
+                    TRADEINSERIAL: tradeInSerial,
+                },
+                DISCOUNTAMOUNT: currentSequence,
+                GIFT: {
+                    GIFTID: selectedGiftId,
+                    GIFTCODE: freeGift[selectedGiftId - 1]?.GIFTCODE,
+                    GIFTNAME: freeGift[selectedGiftId - 1]?.GIFTNAME,
+                    GIFTPRICE: freeGift[selectedGiftId - 1]?.GIFTPRICE ?? 0,
+                    GIFTDESCRIPTION: freeGift[selectedGiftId - 1]?.GIFTDESCRIPTION || null,
+                },
+            },
+        ];
+    }, [PRODUCT, selectedTurnId, tradeInModel, tradeInSerial, currentSequence, selectedGiftId, selectedTradeInBrandName]);
+
+    // อัปเดตข้อมูลส่วนลดใน store
+    useEffect(() => {
+        if (JSON.stringify(SaveDiscountData) !== JSON.stringify(DISCOUNT)) {
+            SETDISCOUNT(SaveDiscountData); // อัปเดตข้อมูลลง store
+        }
+    }, [SaveDiscountData, DISCOUNT, SETDISCOUNT]);
+
+    // GET Trade-in brands
+    useEffect(() => {
+        const getData = async () => {
+            try {
+                const response = await axios.get(TRADEINBRAND_URL, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                const data = Array.isArray(response.data.data) ? response.data.data : [];
+                setTradeInBrand(data);
+            } catch (error) {
+                console.error('Error fetching TRADEINBRAND_URL:', error);
+            }
+        };
+        getData();
+    }, []);
+
+    // POST Contract/updateContract
     const handleNextClick = async () => {
         try {
+            // POST Contract/updateContract
             const updateContract = await axios.post(UPDATECONTACT, {
                 REFNO,
                 EMPID: EmpId,
@@ -72,37 +173,58 @@ const CreateFirstBill: React.FC = () => {
                 SALECODE: SaleCode,
                 SUPEMPID: SupEmpId,
                 SECEMPID: SecEmpId,
-                FIELD: "CONTRACT",
-                DATA: { createdAt: formattedDate }
+                FIELD: "DISCOUNT",
+                DATA: SaveDiscountData
             }, {
                 headers: {
                     'Content-Type': 'application/json',
                 },
             });
-
-            console.log(`updateContract CONTRACT: `, updateContract.data);
-
-            // แสดง SweetAlert2 หลังจากบันทึกสำเร็จ
-            Swal.fire({
-                icon: 'success',
-                title: 'สำเร็จ!',
-                text: 'บันทึกสัญญาเรียบร้อยแล้ว',
-                confirmButtonText: 'ตกลง'
-            }).then(() => {
-                navigate('/sale/photo'); // นำทางไปยังหน้าอื่นถ้าต้องการ
-            });
-
+            console.log(`updateContract DISCOUNT: `, updateContract.data);
+            // หลังจากทำการส่งข้อมูลสำเร็จ นำทางไปยังหน้า /sale/createcust
+            navigate('/sale/createcust');
         } catch (error) {
-            console.error('Error fetching CONTRACT:', error);
-
-            // แสดง SweetAlert2 เมื่อเกิดข้อผิดพลาด
-            Swal.fire({
-                icon: 'error',
-                title: 'เกิดข้อผิดพลาด!',
-                text: 'ไม่สามารถบันทึกสัญญาได้ กรุณาลองใหม่อีกครั้ง',
-                confirmButtonText: 'ตกลง'
-            });
+            console.error('Error fetching UPDATECONTACT:', error);
         }
+    };
+
+    // Handle increment and decrement functions
+    const handleDecrement = () => {
+        setCurrentSequence((prev) => Math.max(0, prev - step)); // ลดค่า step แต่ไม่ให้ต่ำกว่า 0
+    };
+
+    const handleIncrement = () => {
+        setCurrentSequence((prev) => {
+            if (prev + step <= discountPrice) {
+                return prev + step;
+            } else {
+                return prev;
+            }
+        });
+    };
+
+    // คำนวณราคาหลังหักส่วนลด
+    const finalPrice = Math.max(0, totalPriceSafe - currentSequence);
+
+    // Handle option changes
+    const handleTurnOptionChange = (event: any) => {
+        const value = event.target.value;
+        setSelectedTurnId(value);
+    };
+
+    const handleTradeInModelChange = (event: any) => {
+        const value = event.target.value;
+        setTradeInModel(value);
+    };
+
+    const handleTradeInSerialChange = (event: any) => {
+        const value = event.target.value;
+        setTradeInSerial(value);
+    };
+
+    const handleGiftOptionChange = (event: any) => {
+        const value = event.target.value
+        setSelectedGiftId(value);
     };
 
     return (
@@ -113,7 +235,7 @@ const CreateFirstBill: React.FC = () => {
                         data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
                         className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
                         <h1 className="page-heading d-flex text-gray-900 fw-bold fs-3 my-0 flex-column justify-content-center">
-                            <span>รายละเอียดการซื้อ</span>
+                            การรับชำระเงินงวดแรก
                         </h1>
                         <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
                             <li className="breadcrumb-item text-muted">
@@ -121,232 +243,197 @@ const CreateFirstBill: React.FC = () => {
                                     ระบบเก็บเงินงวดแรก
                                 </span></li>
                             <li className="breadcrumb-item"><span className="bullet bg-gray-500 w-5px h-2px"></span></li>
-                            <li className="breadcrumb-item text-gray-900">รายละเอียดการซื้อ</li>
+                            <li className="breadcrumb-item text-gray-900">การรับชำระเงินงวดแรก</li>
                         </ul>
                     </div>
                 </div>
-                {/* <p>เลขที่ขาย: {REFNO}</p> */}
+                <p>เลขที่ขาย: {REFNO}</p>
 
-                {/* Card Body */}
-                <div className='card mb-10'>
-                    <div className='card-body py-5'>
-
-                        {/* begin::Header */}
-                        <div className='d-flex justify-content-between align-items-center mb-7 mt-5'>
-                            <h3 className='card-title'>รายละเอียดการซื้อ</h3>
-                            <button
-                                type='button'
-                                className='btn btn-sm btn-icon btn-color-primary btn-active-light-primary'
+                <div className='accordion mb-10' id='kt_accordion_1'>
+                    {hasTradeIn === 1 && (
+                        <div className='accordion-item mb-10'>
+                            <h2 className='accordion-header' id='kt_accordion_1_header_1'>
+                                <h3
+                                    className='accordion-button fs-4 fw-bold collapsed border-0 h-50px pt-5 rounded-top px-lg-15 px-7'
+                                    data-bs-toggle='collapse'
+                                    data-bs-target='#kt_accordion_1_body_1'
+                                    aria-expanded='true'
+                                    aria-controls='kt_accordion_1_body_1'
+                                    style={{ color: 'white', cursor: 'pointer', backgroundColor: '#3777bc' }}
+                                >
+                                    เครื่องเทิร์น
+                                </h3>
+                            </h2>
+                            <div
+                                id='kt_accordion_1_body_1'
+                                className='accordion-collapse collapse show'
+                                aria-labelledby='kt_accordion_1_header_1'
+                                data-bs-parent='#kt_accordion_1'
                             >
-                                <KTIcon iconName='category' className='fs-2' />
-                            </button>
-                        </div>
-                        {/* end::Header */}
-
-                        <div className='row mb-7'>
-                            <label className='col-lg-4 fw-bold text-muted'>วันที่ทำสัญญา</label>
-                            <div className='col-lg-8'>
-                                <span className='fw-bolder fs-6 text-gray-900'>{formattedDate}</span>
-                            </div>
-                        </div>
-
-                        <div className='row mb-7'>
-                            <label className='col-lg-4 fw-bold text-muted'>เลขที่สัญญา</label>
-                            <div className='col-lg-8 fv-row'>
-                                <span className='fw-bold fs-6'>{contNo}</span>
-                            </div>
-                        </div>
-
-                        <div className='row mb-7'>
-                            <label className='col-lg-4 fw-bold text-muted'>REFNO</label>
-                            <div className='col-lg-8 fv-row'>
-                                <span className='fw-bold fs-6'>{REFNO}</span>
-                            </div>
-                        </div>
-
-                        <div className='row mb-7'>
-                            <label className='col-lg-4 fw-bold text-muted'>ชื่อลูกค้า</label>
-                            <div className='col-lg-8'>
-                                <a href='#' className='fw-bold fs-6 text-gray-900 text-hover-primary'>
-                                    {saveCustomerTypes[0]?.CUSTOMERNAME}
-                                </a>
-                            </div>
-                        </div>
-
-                        <div className='row mb-7'>
-                            {saveCustomerTypes[0]?.CUSTOMERTYPE === "1" ? (
-                                <label className='col-lg-4 fw-bold text-muted'>เลขประจำตัวผู้เสียภาษี</label>
-                            ) : (
-                                <label className='col-lg-4 fw-bold text-muted'>เลขที่บัตรประชาชน</label>
-                            )}
-                            <div className='col-lg-8'>
-                                <span className='fw-bolder fs-6 text-gray-900'>{saveCustomerTypes[0]?.CUSTOMERID}</span>
-                            </div>
-                        </div>
-
-                        <div className='row mb-7'>
-                            <label className='col-lg-4 fw-bold text-muted'>ที่อยู่บัตรประชาชน</label>
-                            <div className='col-lg-8'>
-                                <span className='fw-bolder fs-6 text-gray-900'>
-                                    {addressCard.ADDRESSNUMBER && `${addressCard.ADDRESSNUMBER}`}&nbsp;
-                                    {addressCard.ADDRESSMOO && `หมู่ที่ ${addressCard.ADDRESSMOO}`}&nbsp;
-                                    {addressCard.ADDRESSSOI && `ซอย ${addressCard.ADDRESSSOI}`}&nbsp;
-                                    {addressCard.ADDRESSROAD && `ถนน ${addressCard.ADDRESSROAD}`}&nbsp;
-                                    {addressCard.ADDRESSSUBDISTRICTNAME && `ตำบล / แขวง ${addressCard.ADDRESSSUBDISTRICTNAME}`}&nbsp;
-                                    {addressCard.ADDRESSDISTRICTNAME && `อำเภอ ${addressCard.ADDRESSDISTRICTNAME}`}&nbsp;
-                                    {addressCard.ADDRESSPROVINCENAME && `จังหวัด ${addressCard.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
-                                    {addressCard.ADDRESSZIPCODE && `${addressCard.ADDRESSZIPCODE}`}&nbsp;
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className='row mb-10'>
-                            <label className='col-lg-4 fw-bold text-muted'>ที่อยู่ติดตั้ง</label>
-                            <div className='col-lg-8'>
-                                <span className='fw-bolder fs-6 text-gray-900'>
-                                    {addressInstallation.ADDRESSNUMBER}&nbsp;
-                                    {addressInstallation.ADDRESSMOO && `หมู่ที่ ${addressInstallation.ADDRESSMOO}`}&nbsp;
-                                    {addressInstallation.ADDRESSSOI && `ซอย ${addressInstallation.ADDRESSSOI}`}&nbsp;
-                                    {addressInstallation.ADDRESSROAD && `ถนน ${addressInstallation.ADDRESSROAD}`}&nbsp;
-                                    {addressInstallation.ADDRESSSUBDISTRICTNAME && `ตำบล / แขวง ${addressInstallation.ADDRESSSUBDISTRICTNAME}`}&nbsp;
-                                    {addressInstallation.ADDRESSDISTRICTNAME && `อำเภอ ${addressInstallation.ADDRESSDISTRICTNAME}`}&nbsp;
-                                    {addressInstallation.ADDRESSPROVINCENAME && `จังหวัด ${addressInstallation.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
-                                    {addressInstallation.ADDRESSZIPCODE && `${addressInstallation.ADDRESSZIPCODE}`}&nbsp;
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className='row mb-10'>
-                            <label className='col-lg-4 fw-bold text-muted'>ที่อยู่เก็บเงิน</label>
-                            <div className='col-lg-8'>
-                                <span className='fw-bolder fs-6 text-gray-900'>
-                                    {addressPayment.ADDRESSNUMBER}&nbsp;
-                                    {addressPayment.ADDRESSMOO && `หมู่ที่ ${addressPayment.ADDRESSMOO}`}&nbsp;
-                                    {addressPayment.ADDRESSSOI && `ซอย ${addressPayment.ADDRESSSOI}`}&nbsp;
-                                    {addressPayment.ADDRESSROAD && `ถนน ${addressPayment.ADDRESSROAD}`}&nbsp;
-                                    {addressPayment.ADDRESSSUBDISTRICTNAME && `ตำบล / แขวง ${addressPayment.ADDRESSSUBDISTRICTNAME}`}&nbsp;
-                                    {addressPayment.ADDRESSDISTRICTNAME && `อำเภอ ${addressPayment.ADDRESSDISTRICTNAME}`}&nbsp;
-                                    {addressPayment.ADDRESSPROVINCENAME && `จังหวัด ${addressPayment.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
-                                    {addressPayment.ADDRESSZIPCODE && `${addressPayment.ADDRESSZIPCODE}`}&nbsp;
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className='row mb-10'>
-                            <label className='col-lg-4 fw-bold text-muted'>เบอร์โทรติดต่อ</label>
-                            <div className='col-lg-8'>
-                                <span className='fw-bold fs-6'>{saveCustomerTypes[0]?.CUSTOMERMOBILE}</span>
-                            </div>
-                        </div>
-
-                        <div className='row mb-10'>
-                            <label className='col-lg-4 fw-bold text-muted'>สินค้า</label>
-                            <div className='col-lg-8'>
-                                <span className='fw-bold fs-6'>{PRODUCT[0]?.ItemDescription}</span>
-                            </div>
-                        </div>
-
-                        {PRODUCT[0]?.Package?.[0]?.PACKAGETITLE && (
-                            <div className='row mb-10'>
-                                <label className='col-lg-4 fw-bold text-muted'>แพ็คเกจ</label>
-                                <div className='col-lg-8'>
-                                    <span className='fw-bold fs-6'>{PRODUCT[0]?.Package[0]?.PACKAGETITLE}</span>
-                                </div>
-                            </div>
-                        )}
-
-                        {DISCOUNT[0]?.GIFT?.GIFTNAME && (
-                            <div className='row align-items-center mb-10'>
-                                <label className='col-lg-4 fw-bold text-muted mb-0'>ของแถม</label>
-                                <div className='col-lg-8 d-flex justify-content-between'>
-                                    <span className='fw-bold fs-6'>{DISCOUNT[0]?.GIFT?.GIFTNAME}</span>
-                                </div>
-                            </div>
-                        )}
-
-                        {PRODUCT[0]?.Package?.[0]?.TOTALPRICE && (
-                            <div className='row align-items-center mb-10'>
-                                <label className='col-lg-4 fw-bold text-muted mb-0'>ราคาสินค้า</label>
-                                <div className='col-lg-8 d-flex justify-content-between'>
-                                    <span className='fw-bold fs-6'>{PRODUCT[0]?.Package[0]?.TOTALPRICE}</span>
-                                    <span className='badge badge-light-success'>บาท</span>
-                                </div>
-                            </div>
-                        )}
-
-                        {DISCOUNT[0]?.TRADEIN?.TRADEINBRANDNAME && (
-                            <div className='row align-items-center mb-10'>
-                                <label className='col-lg-4 fw-bold text-muted mb-0'>เครื่องเทิร์น</label>
-                                <div className='col-lg-8 d-flex justify-content-between'>
-                                    <span className='fw-bold fs-6'>{DISCOUNT[0]?.TRADEIN?.TRADEINBRANDNAME}</span>
-                                </div>
-                            </div>
-                        )}
-
-                        <div className='row align-items-center mb-10'>
-                            <label className='col-lg-4 fw-bold text-muted mb-0'>ส่วนลด</label>
-                            <div className='col-lg-8 d-flex justify-content-between'>
-                                {DISCOUNT[0]?.DISCOUNTAMOUNT && (
-                                    <span className='fw-bold fs-6'>{DISCOUNT[0]?.DISCOUNTAMOUNT}</span>
-                                )}
-                                <span className='badge badge-light-success'>บาท</span>
-                            </div>
-                        </div>
-
-                        <div className='row align-items-center mb-10'>
-                            <label className='col-lg-4 fw-bold text-muted mb-0'>ราคาสุทธิ</label>
-                            <div className='col-lg-8 d-flex justify-content-between'>
-                                <span className='fw-bold fs-6'>{netPrice}</span>
-                                <span className='badge badge-light-success'>บาท</span>
-                            </div>
-                        </div>
-
-                        {/* ถ้าเป็นเงินสดไม่ต้องแสดง */}
-                        {PRODUCT[0]?.Package[0]?.PACKAGETYPEID !== 1 && (
-                            <>
-                                <div className='row align-items-center mb-10'>
-                                    <label className='col-lg-4 fw-bold text-muted mb-0'>งวดที่ 1 ที่ต้องชำระ</label>
-                                    <div className='col-lg-8 d-flex justify-content-between'>
-                                        <span className='fw-bold fs-6'>{PRODUCT[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTAMOUNT - discountAmount}</span>
-                                        <span className='badge badge-light-success'>บาท</span>
-                                    </div>
-                                </div>
-
-                                {PRODUCT[0]?.Package[0]?.PERIODDETAILS.length > 1 && (
-                                    <div className='row align-items-center mb-10'>
-                                        <label className='col-lg-4 fw-bold text-muted mb-0'>งวดที่ 2 ถึง {PRODUCT[0]?.Package[0]?.PERIODDETAILS.length} ต้องชำระงวดละ</label>
-                                        <div className='col-lg-8 d-flex justify-content-between'>
-                                            <span className='fw-bold fs-6'>{PRODUCT[0]?.Package[0]?.PERIODDETAILS[1]?.PAYMENTAMOUNT}</span>
-                                            <span className='badge badge-light-success'>บาท</span>
+                                <div className='accordion-body'>
+                                    <form noValidate className='form'>
+                                        <div className='card-body px-lg-9 px-1'>
+                                            <div className='row mb-6'>
+                                                <div className='col-lg-4 mb-3'>
+                                                    <label className='form-label fw-bold fs-6'>เครื่องเทิร์น</label>
+                                                    <select
+                                                        className='form-select'
+                                                        onChange={handleTurnOptionChange}
+                                                    >
+                                                        <option value=''>เลือกเครื่องเทิร์น...</option>
+                                                        {tradeInBrand.map((item, index) => (
+                                                            <option key={index} value={item.TRADEINBRANDID}>
+                                                                {item.TRADEINBRANDNAME}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                <div className='col-lg-4 mb-3'>
+                                                    <label className='form-label fw-bold fs-6'>รุ่น</label>
+                                                    <input
+                                                        type='text'
+                                                        className='form-control mb-3 mb-lg-0'
+                                                        onChange={handleTradeInModelChange}
+                                                    />
+                                                </div>
+                                                <div className='col-lg-4 mb-3'>
+                                                    <label className='form-label fw-bold fs-6'>หมายเลขเครื่อง</label>
+                                                    <input
+                                                        type='text'
+                                                        className='form-control mb-3 mb-lg-0'
+                                                        onChange={handleTradeInSerialChange}
+                                                    />
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
-                            </>
-                        )}
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
-                    </div>
+                    {discountPrice !== 0 && (
+                        <div className='accordion-item mb-10'>
+                            <h2 className='accordion-header' id='kt_accordion_2_header_2'>
+                                <h3
+                                    className='accordion-button fs-4 fw-bold collapsed border-0 h-50px pt-5 rounded-top px-lg-15 px-7'
+                                    data-bs-toggle='collapse'
+                                    data-bs-target='#kt_accordion_2_body_2'
+                                    aria-expanded='true'
+                                    aria-controls='kt_accordion_2_body_2'
+                                    style={{ color: 'white', cursor: 'pointer', backgroundColor: '#3777bc' }}
+                                >
+                                    ส่วนลด
+                                </h3>
+                            </h2>
+                            <div
+                                id='kt_accordion_2_body_2'
+                                className='accordion-collapse collapse show'
+                                aria-labelledby='kt_accordion_2_header_2'
+                                data-bs-parent='#kt_accordion_2'
+                            >
+                                <div className='accordion-body'>
+                                    <form noValidate className='form'>
+                                        <div className='card-body px-lg-9 px-1'>
+                                            <div className='row mb-6'>
+                                                <div className='col-lg-6 mb-3'>
+                                                    <label className='form-label fw-bold fs-6'>ราคา</label>
+                                                    <p className='form-control mb-3 mb-lg-0'>
+                                                        {finalPrice}
+                                                    </p>
+                                                </div>
+                                                <div className='col-lg-6 mb-3'>
+                                                    <label className='form-label fw-bold fs-6'>ส่วนลด</label>
+                                                    <div className='d-flex align-items-center'>
+                                                        <button className='btn btn-light-primary' type='button' onClick={handleDecrement}>
+                                                            -
+                                                        </button>
+                                                        <div className='form-control mx-2 mb-0 text-center flex-grow-1'>
+                                                            {currentSequence}
+                                                        </div>
+                                                        <button className='btn btn-light-primary' type='button' onClick={handleIncrement}>
+                                                            +
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {freeGift.length > 0 && (
+                        <div className='accordion-item mb-10'>
+                            <h2 className='accordion-header' id='kt_accordion_3_header_3'>
+                                <h3
+                                    className='accordion-button fs-4 fw-bold collapsed border-0 h-50px pt-5 rounded-top px-lg-15 px-7'
+                                    data-bs-toggle='collapse'
+                                    data-bs-target='#kt_accordion_3_body_3'
+                                    aria-expanded='true'
+                                    aria-controls='kt_accordion_3_body_3'
+                                    style={{ color: 'white', cursor: 'pointer', backgroundColor: '#3777bc' }}
+                                >
+                                    ของแถม
+                                </h3>
+                            </h2>
+                            <div
+                                id='kt_accordion_3_body_3'
+                                className='accordion-collapse collapse show'
+                                aria-labelledby='kt_accordion_3_header_3'
+                                data-bs-parent='#kt_accordion_3'
+                            >
+                                <div className='accordion-body'>
+                                    <form noValidate className='form'>
+                                        <div className='card-body px-lg-9 px-1'>
+                                            <div className='row mb-6'>
+                                                <div className='col-lg-12 mb-3'>
+                                                    <label className='form-label fw-bold fs-6'>ของแถม</label>
+                                                    <select
+                                                        className='form-select'
+                                                        onChange={handleGiftOptionChange}
+                                                    >
+                                                        <option value=''>เลือกของแถม...</option>
+                                                        {freeGift.map((item, index) => (
+                                                            <option key={index} value={item.GIFTID}>
+                                                                {item.GIFTNAME}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
-                {/* End Card Body */}
 
-                <div className='d-flex justify-content-between mb-5 mt-10'>
-                    <Link to="/firstBill/overview"
-                        className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'
-                        type='button'
-                    >
-                        ย้อนกลับ
-                    </Link>
+                {hasTradeIn === null && discountPrice === 0 && freeGift.length === 0 && (
+                    <div className='text-center mt-20'>
+                        <h5>ไม่มี เครื่องเทิร์น / ส่วนลด / ของแถม</h5>
+                    </div>
+                )}
+
+                <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-20'>
                     <button
-                        className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
-                        type='button'
+                        className='btn btn-secondary w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'
+                        onClick={() => navigate('/firstBill/FirstBillDetail', { state: item })}
+                    >
+                        ถัดไป
+                    </button>
+                    <button
+                        className='btn btn-primary w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'
                         onClick={handleNextClick}
                     >
                         ถัดไป
                     </button>
                 </div>
-
             </Content>
         </>
     )
 }
 
-export default CreateFirstBill
+export default CreateFirstBill;

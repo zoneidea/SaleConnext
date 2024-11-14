@@ -40,7 +40,7 @@ const FirstBillItemNumber: React.FC<StatusLabelProps> = ({ item }) => {
 
     return (
         <>
-            <Link to='/firstBill/CreateFirstBill' state={item} >
+            <Link to='/firstBill/FirstBillDetail' state={item} >
                 <div className='d-flex align-items-center bg-light-success rounded p-5 mb-3 col-12'>
                     <span className='text-warning me-5'>
                         <KTIcon iconName='abstract-26' className='text-warning fs-1 me-5' />
