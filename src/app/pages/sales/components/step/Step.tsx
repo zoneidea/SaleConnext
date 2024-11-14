@@ -1,8 +1,17 @@
 import { Link, useLocation } from 'react-router-dom'
 import axios from 'axios';
 import { useState, useEffect } from 'react';
+import { useAuth } from '../../../../modules/auth/core/Auth';
 import { Content } from '../../../../../_metronic/layout/components/content'
 
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+
+
+//useStore
+import {
+  useCategoryStore
+} from '../../../../modules/stores/sales/packageStore/packageStore';
 
 interface ItemProps {
   REFNO: String,
@@ -25,29 +34,277 @@ interface ItemProps {
 }
 
 const Step: React.FC = () => {
+  const MySwal = withReactContent(Swal);
   const location = useLocation();
   const item = location.state as ItemProps || [];
   const [data, setData] = useState<any[]>([])
-  const API_URL_UPDATE_CONTRACT = import.meta.env.VITE_APP_API_MONGO;
-  const GET_CONTRACT_URL = `${API_URL_UPDATE_CONTRACT}/Contract/GetContractSummary`;
+  const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
+  const GET_CONTRACT_URL = `${API_URL_MONGO}/Contract/GetContractSummary`;
+  const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
+
+  const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
+  const API_URL_POST_CONDITIONSCHECKHISTORY = `${API_SALECONNEXT}/ConditionsCheckHistory`;
+
+  const API_URL_POST_CHECKCUSTOMER = import.meta.env.VITE_APP_API_THIENSURAT;
+  const CHECKCUSTOMER_URL = `${API_URL_POST_CHECKCUSTOMER}/CheckCustomer`;
+
+  const { auth } = useAuth();
+
+  const {
+    EmpId, setEmpId,
+    TeamSale, setTeamSale,
+    SaleCode, setSaleCode,
+    SupEmpId, setSupEmpId,
+    SecEmpId, setSecEmpId,
+    DivisionId, setDivisionId,
+    DepartId, setDepartId,
+    DepartGroup, setDepartGroup,
+  } = useCategoryStore();
+
+  const getData = async () => {
+    try {
+      const response = await axios.get(GET_CONTRACT_URL + '?refno=' + item.REFNO, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = Array.isArray(response.data.data) ? response.data.data : [];
+      setData(data);
+      console.log('Load data', data)
+    } catch (error) {
+      console.error('Error fetching DRAFT_ALLCONTRACT_URL:', error);
+    }
+  };
 
   useEffect(() => {
-    const getData = async () => {
-      try {
-        const response = await axios.get(GET_CONTRACT_URL + '?refno=' + item.REFNO, {
+    getData();
+    setEmpId(auth.data[0].EmpId);
+    setTeamSale(auth.data[0].TeamSale);
+    setSaleCode(auth.data[0].SaleCode);
+    setSupEmpId(auth.data[0].SupEmp);
+    setSecEmpId(auth.data[0].SecEmp);
+    setDivisionId(auth.data[0].DivisionId);
+    setDepartId(auth.data[0].DepartId);
+    setDepartGroup(auth.data[0].DepartGroup);
+  }, [location]);
+
+  useEffect(() => {
+    if (data?.[0]?.PRODUCT?.length > 0) {
+      setToPackage('../sale/update/updateSalePackage')
+      setToPhoto('../sale/photo')
+      setToDiscount('../sale/update/updateSaleDiscount')
+    }
+
+    if (data?.[0]?.DISCOUNT?.length > 0) {
+      setToDiscount('../sale/update/updateSaleDiscount')
+      setToCustDetail('../sale/update/updateCustDetail')
+    }
+
+    if (data?.[0]?.CUSTOMERDETAIL?.length > 0) {
+      setToCustDetail('../sale/update/updateCustDetail')
+      setToAddress('../sale/update/updateAddress')
+    }
+
+    if (data?.[0]?.ADDRESS?.length > 0) {
+      setToAddress('../sale/update/updateAddress')
+      setToPDPA('../sale/update/UpdateSalesPDPA')
+    }
+
+    if (data?.[0]?.PDPA?.length > 0) {
+      setToPDPA('../sale/update/UpdateSalesPDPA')
+      setToContract('../sale/update/UpdateSalesContract')
+    }
+
+    if (data?.[0]?.PDPA?.length > 0) {
+      setToContract('../sale/update/UpdateSalesContract')
+      setToPhoto('../sale/photo')
+    }
+  }, [data, location]);
+
+  const [toPackage, setToPackage] = useState('')
+  const [toDiscount, setToDiscount] = useState('')
+  const [toCustDetail, setToCustDetail] = useState('')
+  const [toAddress, setToAddress] = useState('')
+  const [toPDPA, setToPDPA] = useState('')
+  const [toContract, setToContract] = useState('')
+  const [toPhoto, setToPhoto] = useState('')
+  const handleClick = (routeName: any) => {
+
+    if (routeName === 'updateSalePackage') {
+      setToPackage('../sale/update/updateSalePackage')
+    } else if (routeName === 'updateSaleDiscount') {
+      if (data?.[0]?.CUSTOMERSTATU?.length === 0) {
+        Swal.fire({
+          icon: 'error',
+          title: 'เกิดข้อผิดพลาด!',
+          text: 'กรุณาตรวจสอบสถานะลูกค้าก่อน',
+          confirmButtonText: 'ตกลง'
+        });
+      } else if (data?.[0]?.PRODUCT?.length === 0) {
+        Swal.fire({
+          icon: 'error',
+          title: 'เกิดข้อผิดพลาด!',
+          text: 'กรุณาบันทึกข้อมูลสินค้าและแพ็คเกจสินค้าก่อน',
+          confirmButtonText: 'ตกลง'
+        });
+      } else {
+        setToDiscount('../sale/update/updateSaleDiscount')
+      }
+    } else if (routeName === 'updateCustDetail') {
+      if (data?.[0]?.DISCOUNT?.length === 0 && data?.[0]?.PRODUCT?.length === 0) {
+        Swal.fire({
+          icon: 'error',
+          title: 'เกิดข้อผิดพลาด!',
+          text: 'กรุณาบันทึกข้อมูลสินค้าและตรวจสอบสถานะลูกค้า',
+          confirmButtonText: 'ตกลง'
+        });
+      } else if (data?.[0]?.DISCOUNT?.length === 0 && data?.[0]?.PRODUCT?.length !== 0) {
+        Swal.fire({
+          icon: 'error',
+          title: 'เกิดข้อผิดพลาด!',
+          text: 'กรุณาบันทึกข้อมูลส่วนลด/เครื่องเทิร์น/ของแถม',
+          confirmButtonText: 'ตกลง'
+        });
+      } else {
+        setToCustDetail('../sale/update/updateCustDetail')
+      }
+    } else if (routeName === 'updateAddress') {
+      if (data?.[0]?.CUSTOMERDETAIL?.length === 0) {
+        Swal.fire({
+          icon: 'error',
+          title: 'เกิดข้อผิดพลาด!',
+          text: 'กรุณาบันทึกข้อมูลลูกค้าก่อน',
+          confirmButtonText: 'ตกลง'
+        });
+      } else {
+        setToAddress('../sale/update/updateAddress')
+      }
+    } else if (routeName === 'UpdateSalesPDPA') {
+      if (data?.[0]?.ADDRESS?.length === 0) {
+        Swal.fire({
+          icon: 'error',
+          title: 'เกิดข้อผิดพลาด!',
+          text: 'กรุณาบันทึกข้อมูลที่อยู่ก่อน',
+          confirmButtonText: 'ตกลง'
+        });
+      } else {
+        setToPDPA('../sale/update/UpdateSalesPDPA')
+      }
+    } else if (routeName === 'UpdateSalesContract') {
+      if (data?.[0]?.PRODUCT?.length === 0 || data?.[0]?.CUSTOMERSTATUS?.length === 0 || data?.[0]?.DISCOUNT?.length === 0 ||
+        data?.[0]?.CUSTOMERDETAIL?.length === 0 || data?.[0]?.ADDRESS?.length === 0 || data?.[0]?.PDPA?.length === 0) {
+        Swal.fire({
+          icon: 'error',
+          title: 'เกิดข้อผิดพลาด!',
+          text: 'กรุณาบันทึกข้อมูลให้ครบทุกส่วน',
+          confirmButtonText: 'ตกลง'
+        });
+      } else {
+        setToContract('../sale/update/UpdateSalesContract')
+      }
+    } else if (routeName === 'photo') {
+      if (data?.[0]?.PRODUCT?.length === 0 || data?.[0]?.CUSTOMERSTATUS?.length === 0 || data?.[0]?.DISCOUNT?.length === 0 ||
+        data?.[0]?.CUSTOMERDETAIL?.length === 0 || data?.[0]?.ADDRESS?.length === 0 || data?.[0]?.PDPA?.length === 0) {
+        Swal.fire({
+          icon: 'error',
+          title: 'เกิดข้อผิดพลาด!',
+          text: 'กรุณาบันทึกข้อมูลให้ครบทุกส่วน',
+          confirmButtonText: 'ตกลง'
+        });
+      } else {
+        setToPhoto('../sale/photo')
+      }
+    } else {
+      setToPackage('')
+      setToDiscount('')
+      setToCustDetail('')
+      setToAddress('')
+      setToPDPA('')
+      setToContract('')
+      setToPhoto('')
+    }
+  }
+
+  const handleCheckCustStatus = async () => {
+    const Model = data?.[0]?.PRODUCT?.[0]?.Package.MODEL
+    const conditionCheckResponse = await axios.post(API_URL_POST_CONDITIONSCHECKHISTORY, {
+      EmpId, DivisionId, DepartId, DepartGroup, TeamSale, Model
+    }, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    let updateData;
+
+    if (conditionCheckResponse.data.checktype !== 0) {
+      const { value: idCard } = await MySwal.fire({
+        title: 'ตรวจสอบประวัติลูกค้า',
+        html: `
+              <input 
+                  id="idCardInput" 
+                  type="text" 
+                  class="form-control" 
+                  placeholder="กรุณากรอกเลขบัตรประชาชน (13 หลัก)" 
+                  maxlength="13"
+                  oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,13);" 
+              />
+          `,
+        showCancelButton: true,
+        confirmButtonText: 'ตรวจสอบ',
+        cancelButtonText: 'ยกเลิก',
+        preConfirm: async () => {
+          const input = (document.getElementById('idCardInput') as HTMLInputElement).value;
+          if (input.length === 13) {
+            return input;
+          } else {
+            MySwal.showValidationMessage('กรุณากรอกเลขบัตรประชาชนให้ครบ 13 หลัก');
+            return null;
+          }
+        }
+      });
+
+      if (idCard) {
+        const apiResponse = await axios.post(CHECKCUSTOMER_URL, { Search: idCard }, {
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'multipart/form-data',
           },
         });
-        const data = Array.isArray(response.data.data) ? response.data.data : [];
-        setData(data);
-        console.log('Load data', data)
-      } catch (error) {
-        console.error('Error fetching DRAFT_ALLCONTRACT_URL:', error);
+
+        const { Customerstatus, message } = apiResponse.data;
+        const destination = Customerstatus ? '/sale/overview' : '/sale/discount';
+
+        await MySwal.fire({
+          text: message,
+          icon: Customerstatus ? 'success' : 'success',
+          confirmButtonText: 'ตกลง'
+        });
+
+        updateData = [idCard, conditionCheckResponse.data.checktype, message];
       }
-    };
-    getData();
-  }, [location]);
+    } else {
+      updateData = ["", conditionCheckResponse.data.checktype, conditionCheckResponse.data.message];
+    }
+
+    try {
+      const updateContract = await axios.post(UPDATECONTACT, {
+        REFNO: item.REFNO,
+        EMPID: EmpId,
+        TEAMSALE: TeamSale,
+        FIELD: "CUSTOMERSTATUS",
+        DATA: updateData,
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      console.log(`updateContract CUSTOMERSTATUS: `, updateContract.data);
+      getData();
+    } catch (error) {
+      console.error('Error updating contract:', error);
+      MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถอัปเดตข้อมูลได้', 'error');
+    }
+  }
 
   return (
     <>
@@ -87,7 +344,7 @@ const Step: React.FC = () => {
           </div>
           <div className='card-body d-flex align-items-center py-5 pt-6'>
             <div className='col-12'>
-              <Link to='../sale/update/updateSalePackage' state={data?.[0]}>
+              <Link to={toPackage} state={data?.[0]} onClick={() => handleClick('updateSalePackage')}>
                 <div className='d-flex align-items-center pb-8'>
                   <span className={`bullet bullet-vertical h-40px ${data?.[0]?.PRODUCT?.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
                   <div className='form-check form-check-custom form-check-solid mx-5'></div>
@@ -109,23 +366,25 @@ const Step: React.FC = () => {
                   </div>
                 </div>
               </Link>
-              {/* <Link to=''> */}
-              <div className='d-flex align-items-center pb-8'>
-                <span className={`bullet bullet-vertical h-40px ${data?.[0]?.CUSTOMERSTATUS.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
-                <div className='form-check form-check-custom form-check-solid mx-5'></div>
-                <div className='flex-grow-1'>
-                  <div className='text-gray-800 fw-bold fs-2'>
-                    {`2. ตรวจสอบข้อมูลลูกค้า`}
+              {/* <Link onClick={handleCheckCustStatus} to={''}> */}
+              <a onClick={handleCheckCustStatus} style={{ cursor: 'pointer' }}>
+                <div className='d-flex align-items-center pb-8'>
+                  <span className={`bullet bullet-vertical h-40px ${data?.[0]?.CUSTOMERSTATUS.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
+                  <div className='form-check form-check-custom form-check-solid mx-5'></div>
+                  <div className='flex-grow-1'>
+                    <div className='text-gray-800 fw-bold fs-2'>
+                      {`2. ตรวจสอบข้อมูลลูกค้า`}
+                    </div>
+                    {
+                      data?.[0]?.CUSTOMERSTATUS?.length !== 0 && (
+                        <span className='text-gray-700 fw-semibold d-block'>{`สถานะ: ${data?.[0]?.CUSTOMERSTATUS?.[2]}`}</span>
+                      )
+                    }
                   </div>
-                  {
-                    data?.[0]?.CUSTOMERSTATUS?.length !== 0 && (
-                      <span className='text-gray-700 fw-semibold d-block'>{`สถานะ: ${data?.[0]?.CUSTOMERSTATUS?.[2]}`}</span>
-                    )
-                  }
                 </div>
-              </div>
+              </a>
               {/* </Link> */}
-              <Link to='../sale/update/updateSaleDiscount' state={data?.[0]}>
+              <Link to={toDiscount} state={data?.[0]} onClick={() => handleClick('updateSaleDiscount')}>
                 <div className='d-flex align-items-center pb-8'>
                   <span className={`bullet bullet-vertical h-40px ${data?.[0]?.DISCOUNT.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
                   <div className='form-check form-check-custom form-check-solid mx-5'> </div>
@@ -146,7 +405,7 @@ const Step: React.FC = () => {
                   </div>
                 </div>
               </Link>
-              <Link to='../sale/update/updateCustDetail' state={data?.[0]}>
+              <Link to={toCustDetail} state={data?.[0]} onClick={() => handleClick('updateCustDetail')}>
                 <div className='d-flex align-items-center pb-8'>
                   <span className={`bullet bullet-vertical h-40px ${data?.[0]?.CUSTOMERDETAIL.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
                   <div className='form-check form-check-custom form-check-solid mx-5'></div>
@@ -170,7 +429,7 @@ const Step: React.FC = () => {
                   </div>
                 </div>
               </Link>
-              <Link to='../sale/update/updateAddress' state={data?.[0]}>
+              <Link to={toAddress} state={data?.[0]} onClick={() => handleClick('updateAddress')}>
                 <div className='d-flex align-items-center pb-8'>
                   <span className={`bullet bullet-vertical h-40px ${data?.[0]?.ADDRESS.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
                   <div className='form-check form-check-custom form-check-solid mx-5'></div>
@@ -196,7 +455,7 @@ const Step: React.FC = () => {
                   </div>
                 </div>
               </Link>
-              <Link to='../sale/update/UpdateSalesPDPA' state={data?.[0]}>
+              <Link to={toPDPA} state={data?.[0]} onClick={() => handleClick('UpdateSalesPDPA')}>
                 <div className='d-flex align-items-center pb-8'>
                   <span className={`bullet bullet-vertical h-40px ${data?.[0]?.PDPA.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
                   <div className='form-check form-check-custom form-check-solid mx-5'></div>
@@ -212,7 +471,7 @@ const Step: React.FC = () => {
                   </div>
                 </div>
               </Link>
-              <Link to='../sale/update/UpdateSalesContract' state={data?.[0]}>
+              <Link to={toContract} state={data?.[0]} onClick={() => handleClick('UpdateSalesContract')}>
                 <div className='d-flex align-items-center pb-8'>
                   <span className={`bullet bullet-vertical h-40px ${data?.[0]?.CONTRACT.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
                   <div className='form-check form-check-custom form-check-solid mx-5'></div>
@@ -239,7 +498,7 @@ const Step: React.FC = () => {
                   </div>
                 </div>
               </Link> */}
-              <Link to='../sale/photo' state={{ fromStep: true, data: data?.[0] }}>
+              <Link to={toPhoto} state={{ fromStep: true, data: data?.[0] }} onClick={() => handleClick('photo')}>
                 <div className='d-flex align-items-center pb-8'>
                   <span className={`bullet bullet-vertical h-40px ${data?.[0]?.IMAGE.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
                   <div className='form-check form-check-custom form-check-solid mx-5'></div>
