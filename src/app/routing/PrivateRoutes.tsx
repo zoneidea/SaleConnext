@@ -57,7 +57,6 @@ const PrivateRoutes = () => {
   const OrderCreateBooking = lazy(() => import('../pages/order/OrderCreateBooking'))
 
   //หัวข้อ ระบบเก็บเงินงวดแรก
-  const FirstBillDetail = lazy(() => import('../pages/firstBill/FirstBillDetail'))
   const CreateFirstBill = lazy(() => import('../pages/firstBill/CreateFirstBill'))
   // โครงสร้างพนักงาน
   const EmpStructure = lazy(() => import('../pages/employee/EmpStructure'))
@@ -356,14 +355,6 @@ const PrivateRoutes = () => {
           element={
             <SuspensedView>
               <FirstBillWrapper />
-            </SuspensedView>
-          }
-        />
-         <Route
-          path='firstBill/FirstBillDetail'
-          element={
-            <SuspensedView>
-              <FirstBillDetail />
             </SuspensedView>
           }
         />

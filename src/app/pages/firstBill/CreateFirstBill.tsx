@@ -3,12 +3,21 @@ import axios from 'axios';
 import { useState, useEffect, useMemo } from 'react';
 import { Content } from '../../../_metronic/layout/components/content';
 import { useAuth } from '../../modules/auth/core/Auth';
+import { KTIcon } from '../../../_metronic/helpers'
 
 import { useUUIDStore, useSaveProductStore } from '../../modules/stores/stepsStore';
 import { useSaveDiscountStore } from '../../modules/stores/stepsStore';
 
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
+
+import dayjs, { Dayjs } from 'dayjs';
+import DatePicker from 'react-datepicker';
+import DateTimePicker from 'react-datetime-picker';
+import 'react-datepicker/dist/react-datepicker.css';
+import 'react-datetime-picker/dist/DateTimePicker.css';
+import 'react-calendar/dist/Calendar.css';
+import 'react-clock/dist/Clock.css';
 
 interface ContractState {
     contNo: string;
@@ -51,186 +60,38 @@ const CreateFirstBill: React.FC = () => {
     const item = location.state as ItemProps || [];
     console.log(`item`, item);
     const refno = item?.REFNO
+    const product = item?.PRODUCT
+    const contNo = item?.CONTNO
+    const customerDetail = item?.CUSTOMERDETAIL
 
-    const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
-    const TRADEINBRAND_URL = `${API_SALECONNEXT}/GetProduct/Tradeinbrand`;
+    const totalPrice = product[0]?.Package[0]?.TOTALPRICE || 0;
+    const discountAmount = item?.DISCOUNT[0]?.DISCOUNTAMOUNT || 0;
+    const netPrice = totalPrice - discountAmount;
 
-    const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
-    const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
+    const [payQuick, setPayQuick] = useState<boolean>(true);
+    const [payFullAmount, setPayFullAmount] = useState<boolean>(true);
+    const [paySomeAmount, setPaySomeAmount] = useState<number>(0);
 
-    const { PRODUCT } = useSaveProductStore();
-    // console.log(`PRODUCT`, PRODUCT)
+    const remainingAmount = netPrice - paySomeAmount
 
-    const { DISCOUNT, SETDISCOUNT } = useSaveDiscountStore();
+    const [valueCalendarInstall, setValueCalendarInstall] = useState<Date | null>(null);
 
-    const [tradeInBrand, setTradeInBrand] = useState<any[]>([]);
-    // console.log(`tradeInBrand`, tradeInBrand);
-
-    const [selectedTurnId, setSelectedTurnId] = useState<any>('');
-    // console.log(`selectedTurnId`, selectedTurnId);
-    const [selectedTradeInBrandName, setSelectedTradeInBrandName] = useState<string>('');
-    // console.log(`selectedTradeInBrandName`, selectedTradeInBrandName);
-    const [tradeInModel, setTradeInModel] = useState<any>('');
-    const [tradeInSerial, setTradeInSerial] = useState<any>('');
-    const [selectedGiftId, setSelectedGiftId] = useState<any>('');
-
-    // ตรวจสอบว่ามีข้อมูล PRODUCT หรือไม่ก่อนที่จะดึงข้อมูลจากมัน
-    const hasTradeIn = PRODUCT?.[0]?.Package?.[0]?.HASTRADEIN ?? null;
-    console.log(`hasTradeIn`, hasTradeIn);
-
-    const totalPrice = PRODUCT?.[0]?.Package?.[0]?.TOTALPRICE ?? 0;
-    const discountPrice = PRODUCT?.[0]?.Package?.[0]?.DISCOUNTPRICE ?? 0;
-    console.log(`discountPrice`, discountPrice);
-
-    const sequence = PRODUCT?.[0]?.Package?.[0]?.SEQUENCE ?? 0;
-    const freeGift = PRODUCT?.[0]?.Package?.[0]?.FREEGIFT ?? [];
-    console.log(`freeGift`, freeGift);
-
-    // console.log(`selectedGift`, freeGift[selectedGiftId-1]?.GIFTCODE);
-
-    const [step, setStep] = useState<number>(100);
-    const [currentSequence, setCurrentSequence] = useState<number>(sequence);
-    const totalPriceSafe = totalPrice; // ตั้งค่า TOTALPRICE เป็น 0 ถ้าเป็น null
-
-    // อัปเดต selectedTradeInBrandName เมื่อ selectedTurnId หรือ tradeInBrand เปลี่ยน
-    useEffect(() => {
-        // console.log("Selected TradeIn ID:", selectedTurnId);
-        // console.log("TradeIn Brand List:", tradeInBrand);
-
-        const selectedTradeInBrand = tradeInBrand.find(
-            (brand) => String(brand.TRADEINBRANDID) === String(selectedTurnId) // แปลงเป็นสตริงก่อนการเปรียบเทียบ
-        );
-
-        if (selectedTradeInBrand) {
-            setSelectedTradeInBrandName(selectedTradeInBrand.TRADEINBRANDNAME || '');
-            // console.log("Found TradeIn Brand Name:", selectedTradeInBrand.TRADEINBRANDNAME);
-        } else {
-            setSelectedTradeInBrandName(''); // รีเซ็ตค่าเมื่อไม่มีการเลือก
-            // console.log("No TradeIn Brand Name Found");
-        }
-    }, [selectedTurnId, tradeInBrand]);
-
-    // เก็บข้อมูลส่วนลดใน state และ store
-    const SaveDiscountData = useMemo(() => {
-        if (!PRODUCT?.[0]?.Package?.[0]) {
-            return [];
-        }
-
-        return [
-            {
-                TRADEIN: {
-                    HASTRADEIN: PRODUCT[0].Package[0].HASTRADEIN,
-                    TRADEINBRANDID: selectedTurnId,
-                    TRADEINBRANDNAME: selectedTradeInBrandName, // ใช้ selectedTradeInBrandName ที่อัปเดตจาก useEffect
-                    TRADEINMODEL: tradeInModel,
-                    TRADEINSERIAL: tradeInSerial,
-                },
-                DISCOUNTAMOUNT: currentSequence,
-                GIFT: {
-                    GIFTID: selectedGiftId,
-                    GIFTCODE: freeGift[selectedGiftId - 1]?.GIFTCODE,
-                    GIFTNAME: freeGift[selectedGiftId - 1]?.GIFTNAME,
-                    GIFTPRICE: freeGift[selectedGiftId - 1]?.GIFTPRICE ?? 0,
-                    GIFTDESCRIPTION: freeGift[selectedGiftId - 1]?.GIFTDESCRIPTION || null,
-                },
-            },
-        ];
-    }, [PRODUCT, selectedTurnId, tradeInModel, tradeInSerial, currentSequence, selectedGiftId, selectedTradeInBrandName]);
-
-    // อัปเดตข้อมูลส่วนลดใน store
-    useEffect(() => {
-        if (JSON.stringify(SaveDiscountData) !== JSON.stringify(DISCOUNT)) {
-            SETDISCOUNT(SaveDiscountData); // อัปเดตข้อมูลลง store
-        }
-    }, [SaveDiscountData, DISCOUNT, SETDISCOUNT]);
-
-    // GET Trade-in brands
-    useEffect(() => {
-        const getData = async () => {
-            try {
-                const response = await axios.get(TRADEINBRAND_URL, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                });
-                const data = Array.isArray(response.data.data) ? response.data.data : [];
-                setTradeInBrand(data);
-            } catch (error) {
-                console.error('Error fetching TRADEINBRAND_URL:', error);
-            }
-        };
-        getData();
-    }, []);
-
-    // POST Contract/updateContract
-    const handleNextClick = async () => {
-        try {
-            // POST Contract/updateContract
-            const updateContract = await axios.post(UPDATECONTACT, {
-                REFNO,
-                EMPID: EmpId,
-                TEAMSALE: TeamSale,
-                SALECODE: SaleCode,
-                SUPEMPID: SupEmpId,
-                SECEMPID: SecEmpId,
-                FIELD: "DISCOUNT",
-                DATA: SaveDiscountData
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-            console.log(`updateContract DISCOUNT: `, updateContract.data);
-            // หลังจากทำการส่งข้อมูลสำเร็จ นำทางไปยังหน้า /sale/createcust
-            navigate('/sale/createcust');
-        } catch (error) {
-            console.error('Error fetching UPDATECONTACT:', error);
-        }
+    const handlePayQuickChange = (value: boolean) => {
+        setPayQuick(value);
     };
 
-    // Handle increment and decrement functions
-    const handleDecrement = () => {
-        setCurrentSequence((prev) => Math.max(0, prev - step)); // ลดค่า step แต่ไม่ให้ต่ำกว่า 0
+    const handlePayFullAmountChange = (value: boolean) => {
+        setPayFullAmount(value);
     };
 
-    const handleIncrement = () => {
-        setCurrentSequence((prev) => {
-            if (prev + step <= discountPrice) {
-                return prev + step;
-            } else {
-                return prev;
-            }
-        });
-    };
-
-    // คำนวณราคาหลังหักส่วนลด
-    const finalPrice = Math.max(0, totalPriceSafe - currentSequence);
-
-    // Handle option changes
-    const handleTurnOptionChange = (event: any) => {
-        const value = event.target.value;
-        setSelectedTurnId(value);
-    };
-
-    const handleTradeInModelChange = (event: any) => {
-        const value = event.target.value;
-        setTradeInModel(value);
-    };
-
-    const handleTradeInSerialChange = (event: any) => {
-        const value = event.target.value;
-        setTradeInSerial(value);
-    };
-
-    const handleGiftOptionChange = (event: any) => {
-        const value = event.target.value
-        setSelectedGiftId(value);
+    const handleDateChangeInstall = (date: Date | null) => {
+        setValueCalendarInstall(date);
     };
 
     return (
         <>
             <Content>
-                <div className='d-flex justify-content-between align-items-center mb-7 mt-7 mt-lg-0'>
+                <div className='d-flex justify-content-between align-items-center mt-7 mt-lg-0'>
                     <div id="kt_page_title" data-kt-swapper="true" data-kt-swapper-mode="prepend"
                         data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
                         className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
@@ -249,184 +110,377 @@ const CreateFirstBill: React.FC = () => {
                 </div>
                 <p>เลขที่ขาย: {REFNO}</p>
 
-                <div className='accordion mb-10' id='kt_accordion_1'>
-                    {hasTradeIn === 1 && (
-                        <div className='accordion-item mb-10'>
-                            <h2 className='accordion-header' id='kt_accordion_1_header_1'>
-                                <h3
-                                    className='accordion-button fs-4 fw-bold collapsed border-0 h-50px pt-5 rounded-top px-lg-15 px-7'
-                                    data-bs-toggle='collapse'
-                                    data-bs-target='#kt_accordion_1_body_1'
-                                    aria-expanded='true'
-                                    aria-controls='kt_accordion_1_body_1'
-                                    style={{ color: 'white', cursor: 'pointer', backgroundColor: '#3777bc' }}
+                <div className='row'>
+                    {/* Card Body */}
+                    <div className='col-lg-6'>
+                        <div className='accordion mb-10' id='kt_accordion_1'>
+                            <div className='accordion-item mb-10'>
+                                <h2 className='accordion-header' id='kt_accordion_1_header_1'>
+                                    <h3
+                                        className='accordion-button fs-4 fw-bold collapsed border-0 h-50px pt-5 rounded-top px-lg-15 px-7'
+                                        data-bs-toggle='collapse'
+                                        data-bs-target='#kt_accordion_1_body_1'
+                                        aria-expanded='true'
+                                        aria-controls='kt_accordion_1_body_1'
+                                        style={{ color: 'white', cursor: 'pointer', backgroundColor: '#3777bc' }}
+                                    >
+                                        การรับชำระเงินงวดแรก
+                                    </h3>
+                                </h2>
+                                <div
+                                    id='kt_accordion_1_body_1'
+                                    className='accordion-collapse collapse show'
+                                    aria-labelledby='kt_accordion_1_header_1'
+                                    data-bs-parent='#kt_accordion_1'
                                 >
-                                    เครื่องเทิร์น
-                                </h3>
-                            </h2>
-                            <div
-                                id='kt_accordion_1_body_1'
-                                className='accordion-collapse collapse show'
-                                aria-labelledby='kt_accordion_1_header_1'
-                                data-bs-parent='#kt_accordion_1'
-                            >
-                                <div className='accordion-body'>
-                                    <form noValidate className='form'>
-                                        <div className='card-body px-lg-9 px-1'>
-                                            <div className='row mb-6'>
-                                                <div className='col-lg-4 mb-3'>
-                                                    <label className='form-label fw-bold fs-6'>เครื่องเทิร์น</label>
-                                                    <select
-                                                        className='form-select'
-                                                        onChange={handleTurnOptionChange}
-                                                    >
-                                                        <option value=''>เลือกเครื่องเทิร์น...</option>
-                                                        {tradeInBrand.map((item, index) => (
-                                                            <option key={index} value={item.TRADEINBRANDID}>
-                                                                {item.TRADEINBRANDNAME}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                </div>
-                                                <div className='col-lg-4 mb-3'>
-                                                    <label className='form-label fw-bold fs-6'>รุ่น</label>
-                                                    <input
-                                                        type='text'
-                                                        className='form-control mb-3 mb-lg-0'
-                                                        onChange={handleTradeInModelChange}
-                                                    />
-                                                </div>
-                                                <div className='col-lg-4 mb-3'>
-                                                    <label className='form-label fw-bold fs-6'>หมายเลขเครื่อง</label>
-                                                    <input
-                                                        type='text'
-                                                        className='form-control mb-3 mb-lg-0'
-                                                        onChange={handleTradeInSerialChange}
-                                                    />
+                                    <div className='accordion-body'>
+                                        <form noValidate className='form'>
+                                            <div className='card-body px-lg-9 px-1'>
+
+                                                <div className="container">
+                                                    <div className="d-flex mb-6">
+                                                        <div className="form-check form-check-inline me-3">
+                                                            <input
+                                                                className="form-check-input"
+                                                                type="radio"
+                                                                name="payQuick"
+                                                                checked={payQuick}
+                                                                onChange={() => handlePayQuickChange(true)}
+                                                            />
+                                                            <label className="form-label fw-bold fs-6">ชำระเงินทันที</label>
+                                                        </div>
+                                                        <div className="form-check form-check-inline me-3">
+                                                            <input
+                                                                className="form-check-input"
+                                                                type="radio"
+                                                                name="payQuick"
+                                                                checked={!payQuick}
+                                                                onChange={() => handlePayQuickChange(false)}
+                                                            />
+                                                            <label className="form-label fw-bold fs-6">นัดชำระ</label>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Start ชำระเงินทันที */}
+                                                    {payQuick && (
+                                                        <>
+                                                            <div className="d-flex mb-6 mt-10">
+                                                                <div className="form-check form-check-inline me-3">
+                                                                    <input
+                                                                        className="form-check-input"
+                                                                        type="radio"
+                                                                        name="payFullAmount"
+                                                                        checked={payFullAmount}
+                                                                        onChange={() => handlePayFullAmountChange(true)}
+                                                                    />
+                                                                    <label className="form-label fw-bold fs-6">ชำระเต็ม</label>
+                                                                </div>
+                                                                <div className="form-check form-check-inline me-3">
+                                                                    <input
+                                                                        className="form-check-input"
+                                                                        type="radio"
+                                                                        name="payFullAmount"
+                                                                        checked={!payFullAmount}
+                                                                        onChange={() => handlePayFullAmountChange(false)}
+                                                                    />
+                                                                    <label className="form-label fw-bold fs-6">ชำระบางส่วน / เกินจำนวน</label>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Start ชำระเต็ม */}
+                                                            {payFullAmount && (
+                                                                <>
+                                                                    <div className="mb-6">
+                                                                        <label className="form-label fw-bold fs-6">จำนวนเงินที่ต้องชำระ</label>
+                                                                        <input
+                                                                            type="text"
+                                                                            className="form-control"
+                                                                            readOnly
+                                                                            style={{
+                                                                                backgroundColor: '#d7dbde',
+                                                                            }}
+                                                                            value={netPrice}
+                                                                        />
+                                                                    </div>
+                                                                    <div className="d-flex mb-6 mt-10">
+                                                                        <div className="form-check form-check-inline me-3">
+                                                                            <input
+                                                                                className="form-check-input"
+                                                                                type="radio"
+                                                                                name="priceOption"
+                                                                            // checked={usePackagePricing}
+                                                                            // onChange={() => handleOptionChange(true)}
+                                                                            />
+                                                                            <label className="form-label fw-bold fs-6">เงินสด</label>
+                                                                        </div>
+                                                                        <div className="form-check form-check-inline me-3">
+                                                                            <input
+                                                                                className="form-check-input"
+                                                                                type="radio"
+                                                                                name="priceOption"
+                                                                            // checked={!usePackagePricing}
+                                                                            // onChange={() => handleOptionChange(false)}
+                                                                            />
+                                                                            <label className="form-label fw-bold fs-6">บัตรเครดิต</label>
+                                                                        </div>
+                                                                    </div>
+                                                                </>
+                                                            )}
+                                                            {/* End ชำระเต็ม */}
+
+                                                            {/* Start ชำระบางส่วน / เกินจำนวน */}
+                                                            {!payFullAmount && (
+                                                                <>
+                                                                    <div className="mb-6">
+                                                                        <label className="form-label fw-bold fs-6">จำนวนเงินที่ต้องชำระ</label>
+                                                                        <input
+                                                                            type="text"
+                                                                            className="form-control"
+                                                                            readOnly
+                                                                            style={{
+                                                                                backgroundColor: '#d7dbde',
+                                                                            }}
+                                                                            value={netPrice}
+                                                                        />
+                                                                    </div>
+                                                                    <div className="mb-6">
+                                                                        <label className="form-label required fw-bold fs-6">จำนวนเงินที่แบ่งชำระ</label>
+                                                                        <input
+                                                                            type="text"
+                                                                            className="form-control"
+                                                                            onChange={(e) => setPaySomeAmount(Number(e.target.value))}
+                                                                            value={paySomeAmount}
+                                                                        />
+                                                                    </div>
+                                                                    <div className="mb-6">
+                                                                        <label className="form-label fw-bold fs-6">จำนวนเงินที่เหลือ</label>
+                                                                        <input
+                                                                            type="text"
+                                                                            className="form-control"
+                                                                            readOnly
+                                                                            style={{
+                                                                                backgroundColor: '#d7dbde',
+                                                                            }}
+                                                                            value={remainingAmount}
+                                                                        />
+                                                                    </div>
+                                                                    <div className="col-lg-12 mb-6">
+                                                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                                            <label className="form-label required fw-bold fs-6">วันที่สะดวกชำระ</label>
+                                                                            <DatePicker
+                                                                                selected={valueCalendarInstall}
+                                                                                onChange={handleDateChangeInstall}
+                                                                                className="form-control mb-3 mb-lg-0"
+                                                                                showYearDropdown
+                                                                                showMonthDropdown
+                                                                                dropdownMode="select"
+                                                                                isClearable
+                                                                                dateFormat="yyyy/MM/dd"
+                                                                            />
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="d-flex mb-6 mt-10">
+                                                                        <div className="form-check form-check-inline me-3">
+                                                                            <input
+                                                                                className="form-check-input"
+                                                                                type="radio"
+                                                                                name="priceOption"
+                                                                            // checked={usePackagePricing}
+                                                                            // onChange={() => handleOptionChange(true)}
+                                                                            />
+                                                                            <label className="form-label fw-bold fs-6">เงินสด</label>
+                                                                        </div>
+                                                                        <div className="form-check form-check-inline me-3">
+                                                                            <input
+                                                                                className="form-check-input"
+                                                                                type="radio"
+                                                                                name="priceOption"
+                                                                            // checked={!usePackagePricing}
+                                                                            // onChange={() => handleOptionChange(false)}
+                                                                            />
+                                                                            <label className="form-label fw-bold fs-6">บัตรเครดิต</label>
+                                                                        </div>
+                                                                    </div>
+                                                                </>
+                                                            )}
+                                                            {/* End ชำระบางส่วน / เกินจำนวน */}
+                                                        </>
+                                                    )}
+                                                    {/* End ชำระเงินทันที */}
+
+                                                    {/* Start นัดชำระ */}
+                                                    {!payQuick && (
+                                                        <div className="col-lg-12 mb-6">
+                                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                                <label className="form-label required fw-bold fs-6">วันที่สะดวกชำระ</label>
+                                                                <DatePicker
+                                                                    selected={valueCalendarInstall}
+                                                                    onChange={handleDateChangeInstall}
+                                                                    className="form-control mb-3 mb-lg-0"
+                                                                    showYearDropdown
+                                                                    showMonthDropdown
+                                                                    dropdownMode="select"
+                                                                    isClearable
+                                                                    dateFormat="yyyy/MM/dd"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                    {/* End นัดชำระ*/}
                                                 </div>
                                             </div>
-                                        </div>
-                                    </form>
+
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    )}
+                    </div>
+                    {/* End Card Body */}
 
-                    {discountPrice !== 0 && (
-                        <div className='accordion-item mb-10'>
-                            <h2 className='accordion-header' id='kt_accordion_2_header_2'>
-                                <h3
-                                    className='accordion-button fs-4 fw-bold collapsed border-0 h-50px pt-5 rounded-top px-lg-15 px-7'
-                                    data-bs-toggle='collapse'
-                                    data-bs-target='#kt_accordion_2_body_2'
-                                    aria-expanded='true'
-                                    aria-controls='kt_accordion_2_body_2'
-                                    style={{ color: 'white', cursor: 'pointer', backgroundColor: '#3777bc' }}
-                                >
-                                    ส่วนลด
-                                </h3>
-                            </h2>
-                            <div
-                                id='kt_accordion_2_body_2'
-                                className='accordion-collapse collapse show'
-                                aria-labelledby='kt_accordion_2_header_2'
-                                data-bs-parent='#kt_accordion_2'
-                            >
-                                <div className='accordion-body'>
-                                    <form noValidate className='form'>
-                                        <div className='card-body px-lg-9 px-1'>
-                                            <div className='row mb-6'>
-                                                <div className='col-lg-6 mb-3'>
-                                                    <label className='form-label fw-bold fs-6'>ราคา</label>
-                                                    <p className='form-control mb-3 mb-lg-0'>
-                                                        {finalPrice}
-                                                    </p>
+                    {/* Card Body */}
+                    <div className='col-lg-6'>
+                        <div className='card'>
+                            <div className='card-body'>
+                                <div className='d-flex justify-content-between mb-5'>
+                                    <h1 className="page-heading d-flex text-gray-900 fw-bold fs-3 my-0 flex-column justify-content-center">
+                                        รายละเอียดสัญญา
+                                    </h1>
+                                    <button
+                                        type='button'
+                                        className='btn btn-sm btn-icon btn-color-primary btn-active-light-primary'
+                                    >
+                                        <KTIcon iconName='category' className='fs-2' />
+                                    </button>
+                                </div>
+
+                                <div className='container'>
+                                    <div className='row mb-7'>
+                                        <label className='col-5 col-md-4 fw-bold text-muted'>เลขที่สัญญา</label>
+                                        <div className='col-7 col-md-8'>
+                                            <span className='fw-bold fs-6'>{contNo}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className='row mb-7'>
+                                        <label className='col-5 col-md-4 fw-bold text-muted'>ชื่อลูกค้า</label>
+                                        <div className='col-7 col-md-8'>
+                                            <a href='#' className='fw-bold fs-6 text-gray-900 text-hover-primary'>
+                                                {customerDetail[0]?.CUSTOMERNAME}
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <div className='row mb-7'>
+                                        <label className='col-5 col-md-4 fw-bold text-muted'>เบอร์โทรติดต่อ</label>
+                                        <div className='col-7 col-md-8'>
+                                            <span className='fw-bold fs-6'>{customerDetail[0]?.CUSTOMERMOBILE}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className='row mb-7'>
+                                        <label className='col-5 col-md-4 fw-bold text-muted'>สินค้า</label>
+                                        <div className='col-7 col-md-8'>
+                                            <span className='fw-bold fs-6'>{product[0]?.ItemDescription}</span>
+                                        </div>
+                                    </div>
+
+                                    {product[0]?.Package[0]?.PACKAGETITLE && (
+                                        <div className='row mb-7'>
+                                            <label className='col-5 col-md-4 fw-bold text-muted'>แพ็คเกจ</label>
+                                            <div className='col-7 col-md-8'>
+                                                <span className='fw-bold fs-6'>{product[0]?.Package[0]?.PACKAGETITLE}</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {item?.DISCOUNT[0]?.GIFT && (
+                                        <div className='row mb-7'>
+                                            <label className='col-5 col-md-4 fw-bold text-muted'>ของแถม</label>
+                                            <div className='col-7 col-md-8'>
+                                                <span className='fw-bold fs-6'>{item?.DISCOUNT[0]?.GIFT?.GIFTNAME}</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {product[0]?.Package[0]?.TOTALPRICE && (
+                                        <div className='row mb-7'>
+                                            <label className='col-5 col-md-4 fw-bold text-muted'>ราคาสินค้า</label>
+                                            <div className='col-7 col-md-8 d-flex align-items-center justify-content-between'>
+                                                <span className='fw-bold fs-6'>{product[0]?.Package[0]?.TOTALPRICE}</span>
+                                                <span className='badge badge-light-success'>บาท</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {item?.DISCOUNT[0]?.TRADEIN?.HASTRADEIN != 0 && (
+                                        <div className='row mb-7'>
+                                            <label className='col-5 col-md-4 fw-bold text-muted'>เครื่องเทิร์น</label>
+                                            <div className='col-7 col-md-8 d-flex align-items-center justify-content-between'>
+                                                <span className='fw-bold fs-6'>{item?.DISCOUNT[0]?.TRADEIN?.TRADEINBRANDNAME}</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {item?.DISCOUNT[0]?.DISCOUNTAMOUNT != 0 && (
+                                        <div className='row mb-7'>
+                                            <label className='col-5 col-md-4 fw-bold text-muted'>ส่วนลด</label>
+                                            <div className='col-7 col-md-8 d-flex align-items-center justify-content-between'>
+                                                <span className='fw-bold fs-6'>{item?.DISCOUNT[0]?.DISCOUNTAMOUNT}</span>
+                                                <span className='badge badge-light-success'>บาท</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className='row mb-7'>
+                                        <label className='col-5 col-md-4 fw-bold text-muted'>ราคาสุทธิ</label>
+                                        <div className='col-7 col-md-8 d-flex align-items-center justify-content-between'>
+                                            <span className='fw-bold fs-6'>{netPrice}</span>
+                                            <span className='badge badge-light-success'>บาท</span>
+                                        </div>
+                                    </div>
+
+                                    {/* ถ้าเป็นเงินสดไม่ต้องแสดง */}
+                                    {product[0]?.Package[0]?.PACKAGETYPEID !== 1 && (
+                                        <>
+                                            <div className='row mb-7'>
+                                                <label className='col-5 col-md-4 fw-bold text-muted'>งวดที่ 1 ที่ต้องชำระ</label>
+                                                <div className='col-7 col-md-8 d-flex align-items-center justify-content-between'>
+                                                    <span className='fw-bold fs-6'>{product[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTAMOUNT - discountAmount}</span>
+                                                    <span className='badge badge-light-success'>บาท</span>
                                                 </div>
-                                                <div className='col-lg-6 mb-3'>
-                                                    <label className='form-label fw-bold fs-6'>ส่วนลด</label>
-                                                    <div className='d-flex align-items-center'>
-                                                        <button className='btn btn-light-primary' type='button' onClick={handleDecrement}>
-                                                            -
-                                                        </button>
-                                                        <div className='form-control mx-2 mb-0 text-center flex-grow-1'>
-                                                            {currentSequence}
-                                                        </div>
-                                                        <button className='btn btn-light-primary' type='button' onClick={handleIncrement}>
-                                                            +
-                                                        </button>
+                                            </div>
+
+                                            {product[0]?.Package[0]?.PERIODDETAILS.length > 1 && (
+                                                <div className='row mb-7'>
+                                                    <label className='col-5 col-md-4 fw-bold text-muted'>งวดที่ 2 ถึง {product[0]?.Package[0]?.PERIODDETAILS.length} ต้องชำระงวดละ</label>
+                                                    <div className='col-7 col-md-8 d-flex align-items-center justify-content-between'>
+                                                        <span className='fw-bold fs-6'>{product[0]?.Package[0]?.PERIODDETAILS[1]?.PAYMENTAMOUNT}</span>
+                                                        <span className='badge badge-light-success'>บาท</span>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </div>
-                                    </form>
+                                            )}
+                                        </>
+                                    )}
+
                                 </div>
                             </div>
                         </div>
-                    )}
-
-                    {freeGift.length > 0 && (
-                        <div className='accordion-item mb-10'>
-                            <h2 className='accordion-header' id='kt_accordion_3_header_3'>
-                                <h3
-                                    className='accordion-button fs-4 fw-bold collapsed border-0 h-50px pt-5 rounded-top px-lg-15 px-7'
-                                    data-bs-toggle='collapse'
-                                    data-bs-target='#kt_accordion_3_body_3'
-                                    aria-expanded='true'
-                                    aria-controls='kt_accordion_3_body_3'
-                                    style={{ color: 'white', cursor: 'pointer', backgroundColor: '#3777bc' }}
-                                >
-                                    ของแถม
-                                </h3>
-                            </h2>
-                            <div
-                                id='kt_accordion_3_body_3'
-                                className='accordion-collapse collapse show'
-                                aria-labelledby='kt_accordion_3_header_3'
-                                data-bs-parent='#kt_accordion_3'
-                            >
-                                <div className='accordion-body'>
-                                    <form noValidate className='form'>
-                                        <div className='card-body px-lg-9 px-1'>
-                                            <div className='row mb-6'>
-                                                <div className='col-lg-12 mb-3'>
-                                                    <label className='form-label fw-bold fs-6'>ของแถม</label>
-                                                    <select
-                                                        className='form-select'
-                                                        onChange={handleGiftOptionChange}
-                                                    >
-                                                        <option value=''>เลือกของแถม...</option>
-                                                        {freeGift.map((item, index) => (
-                                                            <option key={index} value={item.GIFTID}>
-                                                                {item.GIFTNAME}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {hasTradeIn === null && discountPrice === 0 && freeGift.length === 0 && (
-                    <div className='text-center mt-20'>
-                        <h5>ไม่มี เครื่องเทิร์น / ส่วนลด / ของแถม</h5>
                     </div>
-                )}
+                    {/* End Card Body */}
+
+                </div>
 
                 <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-20'>
                     <button
                         className='btn btn-secondary w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'
-                        onClick={() => navigate('/firstBill/FirstBillDetail', { state: item })}
+                        onClick={() => navigate('/firstBill/overview', { state: item })}
                     >
-                        ถัดไป
+                        ย้อนกลับ
                     </button>
                     <button
                         className='btn btn-primary w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'
-                        onClick={handleNextClick}
+                    // onClick={handleNextClick}
                     >
                         ถัดไป
                     </button>

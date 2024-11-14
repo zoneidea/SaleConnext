@@ -334,7 +334,7 @@ const UpdateSalesContract: React.FC = () => {
                             <div className='row align-items-center mb-10'>
                                 <label className='col-lg-4 fw-bold text-muted mb-0'>ราคาสินค้า</label>
                                 <div className='col-lg-8 d-flex justify-content-between'>
-                                    <span className='fw-bold fs-6'>{product[0]?.Package[0]?.TOTALPRICE}</span>
+                                    <span className='fw-bold fs-6'>{(product[0]?.Package[0]?.TOTALPRICE).toLocaleString()}</span>
                                     <span className='badge badge-light-success'>บาท</span>
                                 </div>
                             </div>
@@ -353,7 +353,7 @@ const UpdateSalesContract: React.FC = () => {
                             <div className='row align-items-center mb-10'>
                                 <label className='col-lg-4 fw-bold text-muted mb-0'>ส่วนลด</label>
                                 <div className='col-lg-8 d-flex justify-content-between'>
-                                    <span className='fw-bold fs-6'>{item?.DISCOUNT[0]?.DISCOUNTAMOUNT}</span>
+                                    <span className='fw-bold fs-6'>{(item?.DISCOUNT[0]?.DISCOUNTAMOUNT).toLocaleString()}</span>
                                     <span className='badge badge-light-success'>บาท</span>
                                 </div>
                             </div>
@@ -362,7 +362,7 @@ const UpdateSalesContract: React.FC = () => {
                         <div className='row align-items-center mb-10'>
                             <label className='col-lg-4 fw-bold text-muted mb-0'>ราคาสุทธิ</label>
                             <div className='col-lg-8 d-flex justify-content-between'>
-                                <span className='fw-bold fs-6'>{netPrice}</span>
+                                <span className='fw-bold fs-6'>{(netPrice).toLocaleString()}</span>
                                 <span className='badge badge-light-success'>บาท</span>
                             </div>
                         </div>
@@ -373,7 +373,7 @@ const UpdateSalesContract: React.FC = () => {
                                 <div className='row align-items-center mb-10'>
                                     <label className='col-lg-4 fw-bold text-muted mb-0'>งวดที่ 1 ที่ต้องชำระ</label>
                                     <div className='col-lg-8 d-flex justify-content-between'>
-                                        <span className='fw-bold fs-6'>{product[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTAMOUNT - discountAmount}</span>
+                                        <span className='fw-bold fs-6'>{(product[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTAMOUNT - discountAmount).toLocaleString()}</span>
                                         <span className='badge badge-light-success'>บาท</span>
                                     </div>
                                 </div>
@@ -382,7 +382,7 @@ const UpdateSalesContract: React.FC = () => {
                                     <div className='row align-items-center mb-10'>
                                         <label className='col-lg-4 fw-bold text-muted mb-0'>งวดที่ 2 ถึง {product[0]?.Package[0]?.PERIODDETAILS.length} ต้องชำระงวดละ</label>
                                         <div className='col-lg-8 d-flex justify-content-between'>
-                                            <span className='fw-bold fs-6'>{product[0]?.Package[0]?.PERIODDETAILS[1]?.PAYMENTAMOUNT}</span>
+                                            <span className='fw-bold fs-6'>{(product[0]?.Package[0]?.PERIODDETAILS[1]?.PAYMENTAMOUNT).toLocaleString()}</span>
                                             <span className='badge badge-light-success'>บาท</span>
                                         </div>
                                     </div>

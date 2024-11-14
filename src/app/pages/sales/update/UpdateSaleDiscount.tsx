@@ -375,7 +375,7 @@ const UpdateSalesDiscount: React.FC = () => {
                                                 <div className='col-lg-6 mb-3'>
                                                     <label className='form-label fw-bold fs-6'>ราคา</label>
                                                     <p className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'>
-                                                        {finalPrice}
+                                                        {(finalPrice).toLocaleString()}
                                                     </p>
                                                 </div>
                                                 <div className='col-lg-6 mb-3'>
@@ -385,7 +385,7 @@ const UpdateSalesDiscount: React.FC = () => {
                                                             -
                                                         </button>
                                                         <div className='form-control form-control-lg form-control-solid mx-2 mb-0 text-center flex-grow-1'>
-                                                            {currentSequence}
+                                                            {(currentSequence).toLocaleString()}
                                                         </div>
                                                         <button className='btn btn-light-primary' type='button' onClick={handleIncrement}>
                                                             +

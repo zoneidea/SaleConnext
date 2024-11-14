@@ -176,11 +176,13 @@ const OrderCreateBooking: React.FC = () => {
     ]
 
     const [selectedPackageTypeId, setSelectedPackageTypeId] = useState<number | null>(null);
+    // console.log(`selectedPackageTypeId`, selectedPackageTypeId);
 
     const [packageList, setPackageList] = useState<any[]>([]);
     console.log(`packageList`, packageList);
 
     const [selectedPackageIndex, setSelectedPackageIndex] = useState<number | null>(null);
+    // console.log(`selectedPackageIndex`, selectedPackageIndex);
 
     const [isLoading, setIsLoading] = useState<boolean>(false); // สถานะโหลดข้อมูลสินค้า
     const [isLoadingPackage, setIsLoadingPackage] = useState<boolean>(false);
@@ -742,7 +744,7 @@ const OrderCreateBooking: React.FC = () => {
     return (
         <>
             <Content>
-                <div className='d-flex justify-content-between align-items-center mb-7 mt-7 mt-lg-0'>
+                <div className='d-flex justify-content-between align-items-center mt-7 mt-lg-0'>
                     <div id="kt_page_title" data-kt-swapper="true" data-kt-swapper-mode="prepend"
                         data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
                         className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
@@ -975,9 +977,14 @@ const OrderCreateBooking: React.FC = () => {
                                                             type="text"
                                                             className="form-control"
                                                             readOnly
-                                                            value={selectedPackageIndex !== null && packageList[selectedPackageIndex]
-                                                                ? discountAmount
-                                                                : ""}
+                                                            value={
+                                                                selectedPackageIndex !== null && packageList[selectedPackageIndex]
+                                                                    ? discountAmount.toLocaleString(undefined, {
+                                                                        minimumFractionDigits: 2,
+                                                                        maximumFractionDigits: 2,
+                                                                    })
+                                                                    : ""
+                                                            }
                                                         />
                                                     </div>
 
@@ -995,8 +1002,12 @@ const OrderCreateBooking: React.FC = () => {
                                                                 backgroundColor: '#d7dbde',
                                                             }}
                                                             value={selectedPackageIndex !== null && packageList[selectedPackageIndex]
-                                                                ? totalPrice
-                                                                : ""}
+                                                                ? totalPrice.toLocaleString(undefined, {
+                                                                    minimumFractionDigits: 2,
+                                                                    maximumFractionDigits: 2,
+                                                                })
+                                                                : ""
+                                                            }
                                                         />
                                                     </div>
 
@@ -1009,9 +1020,14 @@ const OrderCreateBooking: React.FC = () => {
                                                             style={{
                                                                 backgroundColor: '#d7dbde',
                                                             }}
-                                                            value={selectedPackageIndex !== null && packageList[selectedPackageIndex]
-                                                                ? discountAmount
-                                                                : ""}
+                                                            value={
+                                                                selectedPackageIndex !== null && packageList[selectedPackageIndex]
+                                                                    ? discountAmount.toLocaleString(undefined, {
+                                                                        minimumFractionDigits: 2,
+                                                                        maximumFractionDigits: 2,
+                                                                    })
+                                                                    : ""
+                                                            }
                                                         />
                                                     </div>
 
@@ -1024,14 +1040,18 @@ const OrderCreateBooking: React.FC = () => {
                                                             style={{
                                                                 backgroundColor: '#d7dbde',
                                                             }}
-                                                            value={netPrice ? netPrice : ""}
+                                                            value={netPrice ? netPrice.toLocaleString(undefined, {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })
+                                                                : ""}
                                                         />
                                                     </div>
                                                 </div>
                                             </div>
 
                                             {/* Summary Table */}
-                                            {selectedPackageIndex !== null && selectedPackageIndex !== 1 && selectedPackageTypeId !== 1 && (
+                                            {selectedPackageIndex !== null && selectedPackageIndex !== 1 && selectedPackageTypeId !== 1 && packageList.length !== 0 && (
                                                 <div className="mt-4">
                                                     <table className="table table-bordered">
                                                         <thead>
@@ -1047,8 +1067,10 @@ const OrderCreateBooking: React.FC = () => {
                                                                 <td>1</td>
                                                                 <td>
                                                                     {packageList[selectedPackageIndex] && packageList[selectedPackageIndex].PERIODDETAILS[0]
-                                                                        ? packageList[selectedPackageIndex].PERIODDETAILS[0].PAYMENTAMOUNT - (packageList[selectedPackageIndex].DISCOUNTPRICE || 0)
+                                                                        ? (Number(packageList[selectedPackageIndex].PERIODDETAILS[0].PAYMENTAMOUNT - (packageList[selectedPackageIndex].DISCOUNTPRICE || 0)))
+                                                                            .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                                                                         : ""}
+
                                                                 </td>
                                                                 <td>บาท</td>
                                                             </tr>
@@ -1057,7 +1079,11 @@ const OrderCreateBooking: React.FC = () => {
                                                             {packageList[selectedPackageIndex] && packageList[selectedPackageIndex].PERIODDETAILS.length > 1 && (
                                                                 <tr>
                                                                     <td>2-{packageList[selectedPackageIndex].PERIODDETAILS.length}</td>
-                                                                    <td>{packageList[selectedPackageIndex].PERIODDETAILS[1].PAYMENTAMOUNT}</td>
+                                                                    <td>{packageList[selectedPackageIndex] && packageList[selectedPackageIndex].PERIODDETAILS[1]
+                                                                        ? Number(packageList[selectedPackageIndex].PERIODDETAILS[1].PAYMENTAMOUNT)
+                                                                            .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                                                        : ""}
+                                                                    </td>
                                                                     <td>บาท</td>
                                                                 </tr>
                                                             )}
@@ -1125,7 +1151,12 @@ const OrderCreateBooking: React.FC = () => {
                                                             type="text"
                                                             className="form-control"
                                                             onChange={(e) => setPriceInput(Number(e.target.value))}
-                                                            value={priceInput !== undefined ? priceInput : ''}
+                                                            value={priceInput !== undefined ? priceInput.toLocaleString(undefined, {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })
+                                                                : "0.00"
+                                                            }
                                                         />
                                                     </div>
 
@@ -1135,7 +1166,12 @@ const OrderCreateBooking: React.FC = () => {
                                                             type="text"
                                                             className="form-control"
                                                             onChange={(e) => setDiscountInput(Number(e.target.value))}
-                                                            value={discountInput !== undefined ? discountInput : ''}
+                                                            value={discountInput !== undefined ? discountInput.toLocaleString(undefined, {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })
+                                                                : "0.00"
+                                                            }
                                                         />
                                                     </div>
 
@@ -1152,7 +1188,12 @@ const OrderCreateBooking: React.FC = () => {
                                                             style={{
                                                                 backgroundColor: '#d7dbde',
                                                             }}
-                                                            value={priceInput !== undefined ? priceInput : ''}
+                                                            value={priceInput !== undefined ? priceInput.toLocaleString(undefined, {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })
+                                                                : "0.00"
+                                                            }
                                                         />
                                                     </div>
 
@@ -1165,7 +1206,12 @@ const OrderCreateBooking: React.FC = () => {
                                                             style={{
                                                                 backgroundColor: '#d7dbde',
                                                             }}
-                                                            value={discountInput !== undefined ? discountInput : ''}
+                                                            value={discountInput !== undefined ? discountInput.toLocaleString(undefined, {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })
+                                                                : "0.00"
+                                                            }
                                                         />
                                                     </div>
 
@@ -1178,7 +1224,12 @@ const OrderCreateBooking: React.FC = () => {
                                                             style={{
                                                                 backgroundColor: '#d7dbde',
                                                             }}
-                                                            value={netPriceInput !== undefined ? netPriceInput : ''}
+                                                            value={netPriceInput !== undefined ? netPriceInput.toLocaleString(undefined, {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })
+                                                                : "0.00"
+                                                            }
                                                         />
                                                     </div>
                                                 </div>
@@ -1289,9 +1340,14 @@ const OrderCreateBooking: React.FC = () => {
                                                             type="text"
                                                             className="form-control"
                                                             readOnly
-                                                            value={selectedPackageIndex !== null && packageList[selectedPackageIndex]
-                                                                ? discountAmount
-                                                                : ""}
+                                                            value={
+                                                                selectedPackageIndex !== null && packageList[selectedPackageIndex]
+                                                                    ? discountAmount.toLocaleString(undefined, {
+                                                                        minimumFractionDigits: 2,
+                                                                        maximumFractionDigits: 2,
+                                                                    })
+                                                                    : ""
+                                                            }
                                                         />
                                                     </div>
 
@@ -1309,8 +1365,12 @@ const OrderCreateBooking: React.FC = () => {
                                                                 backgroundColor: '#d7dbde',
                                                             }}
                                                             value={selectedPackageIndex !== null && packageList[selectedPackageIndex]
-                                                                ? totalPrice
-                                                                : ""}
+                                                                ? totalPrice.toLocaleString(undefined, {
+                                                                    minimumFractionDigits: 2,
+                                                                    maximumFractionDigits: 2,
+                                                                })
+                                                                : "0.00"
+                                                            }
                                                         />
                                                     </div>
 
@@ -1324,8 +1384,12 @@ const OrderCreateBooking: React.FC = () => {
                                                                 backgroundColor: '#d7dbde',
                                                             }}
                                                             value={selectedPackageIndex !== null && packageList[selectedPackageIndex]
-                                                                ? discountAmount
-                                                                : ""}
+                                                                ? discountAmount.toLocaleString(undefined, {
+                                                                    minimumFractionDigits: 2,
+                                                                    maximumFractionDigits: 2,
+                                                                })
+                                                                : "0.00"
+                                                            }
                                                         />
                                                     </div>
 
@@ -1338,14 +1402,19 @@ const OrderCreateBooking: React.FC = () => {
                                                             style={{
                                                                 backgroundColor: '#d7dbde',
                                                             }}
-                                                            value={netPrice ? netPrice : ""}
+                                                            value={netPrice ? netPrice.toLocaleString(undefined, {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })
+                                                                : "0.00"
+                                                            }
                                                         />
                                                     </div>
                                                 </div>
                                             </div>
 
                                             {/* Summary Table */}
-                                            {selectedPackageIndex !== null && selectedPackageIndex !== 1 && selectedPackageTypeId !== 1 && (
+                                            {selectedPackageIndex !== null && selectedPackageIndex !== 1 && selectedPackageTypeId !== 1 && packageList.length !== 0 && (
                                                 <div className="mt-4">
                                                     <table className="table table-bordered">
                                                         <thead>
@@ -1360,9 +1429,15 @@ const OrderCreateBooking: React.FC = () => {
                                                             <tr>
                                                                 <td>1</td>
                                                                 <td>
-                                                                    {packageList[selectedPackageIndex] && packageList[selectedPackageIndex].PERIODDETAILS[0]
-                                                                        ? packageList[selectedPackageIndex].PERIODDETAILS[0].PAYMENTAMOUNT - (packageList[selectedPackageIndex].DISCOUNTPRICE || 0)
-                                                                        : ""}
+                                                                    {/* งวดที่ 1 */}
+                                                                    <tr>
+                                                                        <td>
+                                                                            {packageList[selectedPackageIndex] && packageList[selectedPackageIndex].PERIODDETAILS[0]
+                                                                                ? (Number(packageList[selectedPackageIndex].PERIODDETAILS[0].PAYMENTAMOUNT - (packageList[selectedPackageIndex].DISCOUNTPRICE || 0)))
+                                                                                    .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                                                                : ""}
+                                                                        </td>
+                                                                    </tr>
                                                                 </td>
                                                                 <td>บาท</td>
                                                             </tr>
@@ -1371,7 +1446,11 @@ const OrderCreateBooking: React.FC = () => {
                                                             {packageList[selectedPackageIndex] && packageList[selectedPackageIndex].PERIODDETAILS.length > 1 && (
                                                                 <tr>
                                                                     <td>2-{packageList[selectedPackageIndex].PERIODDETAILS.length}</td>
-                                                                    <td>{packageList[selectedPackageIndex].PERIODDETAILS[1].PAYMENTAMOUNT}</td>
+                                                                    <td>{packageList[selectedPackageIndex] && packageList[selectedPackageIndex].PERIODDETAILS[1]
+                                                                        ? Number(packageList[selectedPackageIndex].PERIODDETAILS[1].PAYMENTAMOUNT)
+                                                                            .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                                                        : ""}
+                                                                    </td>
                                                                     <td>บาท</td>
                                                                 </tr>
                                                             )}
@@ -1441,7 +1520,12 @@ const OrderCreateBooking: React.FC = () => {
                                                             type="text"
                                                             className="form-control"
                                                             onChange={(e) => setPriceInput(Number(e.target.value))}
-                                                            value={priceInput !== undefined ? priceInput : ''}
+                                                            value={priceInput !== undefined ? priceInput.toLocaleString(undefined, {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })
+                                                                : ""
+                                                            }
                                                         />
                                                     </div>
 
@@ -1451,7 +1535,12 @@ const OrderCreateBooking: React.FC = () => {
                                                             type="text"
                                                             className="form-control"
                                                             onChange={(e) => setDiscountInput(Number(e.target.value))}
-                                                            value={discountInput !== undefined ? discountInput : ''}
+                                                            value={discountInput !== undefined ? discountInput.toLocaleString(undefined, {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })
+                                                                : ""
+                                                            }
                                                         />
                                                     </div>
 
@@ -1468,7 +1557,12 @@ const OrderCreateBooking: React.FC = () => {
                                                             style={{
                                                                 backgroundColor: '#d7dbde',
                                                             }}
-                                                            value={priceInput !== undefined ? priceInput : ''}
+                                                            value={priceInput !== undefined ? priceInput.toLocaleString(undefined, {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })
+                                                                : ""
+                                                            }
                                                         />
                                                     </div>
 
@@ -1481,7 +1575,12 @@ const OrderCreateBooking: React.FC = () => {
                                                             style={{
                                                                 backgroundColor: '#d7dbde',
                                                             }}
-                                                            value={discountInput !== undefined ? discountInput : ''}
+                                                            value={discountInput !== undefined ? discountInput.toLocaleString(undefined, {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })
+                                                                : ""
+                                                            }
                                                         />
                                                     </div>
 
@@ -1494,7 +1593,12 @@ const OrderCreateBooking: React.FC = () => {
                                                             style={{
                                                                 backgroundColor: '#d7dbde',
                                                             }}
-                                                            value={netPriceInput !== undefined ? netPriceInput : ''}
+                                                            value={netPriceInput !== undefined ? netPriceInput.toLocaleString(undefined, {
+                                                                minimumFractionDigits: 2,
+                                                                maximumFractionDigits: 2,
+                                                            })
+                                                                : ""
+                                                            }
                                                         />
                                                     </div>
                                                 </div>

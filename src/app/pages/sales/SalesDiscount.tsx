@@ -170,7 +170,7 @@ const SalesDiscount: React.FC = () => {
     };
 
     // คำนวณราคาหลังหักส่วนลด
-    const finalPrice = Math.max(0, totalPriceSafe - currentSequence);
+    const finalPrice = Math.max(0, totalPriceSafe - currentSequence)
 
     // Handle option changes
     const handleTurnOptionChange = (event: any) => {
@@ -305,7 +305,7 @@ const SalesDiscount: React.FC = () => {
                                                 <div className='col-lg-6 mb-3'>
                                                     <label className='form-label fw-bold fs-6'>ราคา</label>
                                                     <p className='form-control mb-3 mb-lg-0'>
-                                                        {finalPrice}
+                                                        {(finalPrice).toLocaleString()}
                                                     </p>
                                                 </div>
                                                 <div className='col-lg-6 mb-3'>
@@ -315,7 +315,7 @@ const SalesDiscount: React.FC = () => {
                                                             -
                                                         </button>
                                                         <div className='form-control mx-2 mb-0 text-center flex-grow-1'>
-                                                            {currentSequence}
+                                                            {(currentSequence).toLocaleString()}
                                                         </div>
                                                         <button className='btn btn-light-primary' type='button' onClick={handleIncrement}>
                                                             +
