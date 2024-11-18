@@ -1139,7 +1139,8 @@ const OrderCreateBooking: React.FC = () => {
                                                                         type="radio"
                                                                         name="payment"
                                                                         value={pkg.PACKAGETYPEID}
-                                                                        onChange={() => setSelectedPackageTypeId(pkg.PACKAGETYPEID)}
+                                                                        checked={selectedPackageTypeId === pkg.PACKAGETYPEID}
+                                                                        onChange={() => handlePaymentChange(pkg.PACKAGETYPEID)} // เรียกฟังก์ชันเมื่อเปลี่ยนการชำระ
                                                                     />
                                                                     <label className="form-label fw-bold fs-6">{pkg.PACKAGETYPENAME}</label>
                                                                 </div>
@@ -1177,15 +1178,35 @@ const OrderCreateBooking: React.FC = () => {
                                                         <input
                                                             type="text"
                                                             className="form-control"
+                                                            disabled={
+                                                                isLoadingPackage || discountPrice === 0 || selectedPackageIndex === null
+                                                            } // ปิดการแก้ไขเมื่อยังโหลด, ไม่มีส่วนลด, หรือยังไม่ได้เลือกแพ็คเกจ
                                                             onChange={(e) => handleDiscountChange(e.target.value)}
-                                                            value={discountInput ?? ""}
+                                                            value={
+                                                                isLoadingPackage
+                                                                    ? "" // แสดงค่าว่างเมื่อยังโหลดข้อมูลอยู่
+                                                                    : discountPrice === 0
+                                                                        ? "0.00" // แสดงค่า 0.00 เมื่อไม่มีส่วนลด
+                                                                        : discountInput || ""
+                                                            }
                                                         />
+                                                        {selectedCategoryId &&
+                                                            selectedProductId &&
+                                                            selectedPackageIndex !== null &&
+                                                            !isLoadingProduct &&
+                                                            !isLoadingPackage &&
+                                                            discountPrice === 0 && (
+                                                                <div className="text-danger mt-2">ไม่มีส่วนลดสำหรับสินค้านี้</div>
+                                                            )}
+
+                                                        {/* แสดงข้อความ Validation */}
                                                         {discountValidationMessage && (
                                                             <div className={`text-${discountValidationMessage.type} mt-2`}>
                                                                 {discountValidationMessage.message}
                                                             </div>
                                                         )}
                                                     </div>
+
                                                 </div>
 
                                                 {/* Right Side */}
@@ -1216,15 +1237,11 @@ const OrderCreateBooking: React.FC = () => {
                                                             className="form-control"
                                                             readOnly
                                                             style={{
-                                                                backgroundColor: '#d7dbde',
+                                                                backgroundColor: "#d7dbde",
                                                             }}
-                                                            value={isDiscountValid && discountInput !== undefined
-                                                                ? discountInput.toLocaleString(undefined, {
-                                                                    minimumFractionDigits: 2,
-                                                                    maximumFractionDigits: 2,
-                                                                })
-                                                                : ""
-                                                            }
+                                                            value={discountPrice === 0
+                                                                ? "0.00"
+                                                                : discountInput || ""}
                                                         />
                                                     </div>
 
