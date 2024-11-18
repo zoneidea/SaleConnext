@@ -6,6 +6,7 @@ import { Content } from '../../../_metronic/layout/components/content';
 import { SalesItemNumber } from './components/salesItemNumber/SalesItemNumber';
 import { useUUIDStore } from '../../modules/stores/stepsStore';
 import { useAuth } from '../../modules/auth/core/Auth';
+import {Commet } from 'react-loading-indicators/'
 
 //useStore
 import { useFetchCategoryStore } from '../../modules/stores/sales/packageStore/packageStore';

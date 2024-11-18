@@ -59,6 +59,7 @@
     "react-hook-form": "^7.53.0",
     "react-inlinesvg": "4.1.0",
     "react-intl": "^6.4.4",
+    "react-loading-indicators": "^1.0.0",
     "react-query": "3.38.0",
     "react-router-dom": "6.3.0",
     "react-select": "^5.8.0",
