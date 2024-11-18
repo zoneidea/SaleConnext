@@ -451,37 +451,54 @@ const OrderCreateBooking: React.FC = () => {
         const selectedId = e.target.value;
 
         if (selectedId === "") {
-            // ล้างค่าที่เกี่ยวข้องเมื่อไม่ได้เลือกสินค้า
+            // หากไม่ได้เลือกสินค้า ให้ล้างค่าที่เกี่ยวข้อง
             setSelectedProductId(null);
             setSelectedItemID('');
             setSelectedPromotionId(null);
-            setSelectedPackageTypeId(null); // ล้างการชำระ
+            setPromotionList([]);
+            setSelectedPackageTypeId(null);
             setSelectedPackageIndex(null);
-            setPackageList([]);
             setDiscountInput(undefined);
             setDiscountValidationMessage(null);
             setIsDiscountValid(true);
-        } else {
-            setSelectedProductId(Number(selectedId));
-            setSelectedPackageTypeId(null); // ล้างการชำระ
-
-            const selectedProduct = product.find((item: any) => item.ITEMID === selectedId);
-            if (selectedProduct) {
-                setSelectedItemID(selectedProduct.ItemCode);
-
-                const validPromotions = selectedProduct.PROMOTION?.filter(
-                    (promo: any) => promo.PROMOTIONID !== 0
-                );
-
-                if (validPromotions && validPromotions.length > 0) {
-                    setPromotionList(validPromotions);
-                    setSelectedPromotionId(null);
-                } else {
-                    setPromotionList([]);
-                    setSelectedPromotionId("0");
-                }
-            }
+            return;
         }
+
+        // อัปเดตสินค้าเมื่อเลือก
+        setSelectedProductId(Number(selectedId));
+
+        // ค้นหาข้อมูลสินค้าที่เลือก
+        const selectedProduct = product.find((item: any) => item.ITEMID === selectedId);
+
+        if (selectedProduct) {
+            // อัปเดตรหัสสินค้า
+            setSelectedItemID(selectedProduct.ItemCode);
+
+            // อัปเดตรายการโปรโมชั่น
+            const validPromotions = selectedProduct.PROMOTION?.filter(
+                (promo: any) => promo.PROMOTIONID !== 0
+            ) || [];
+
+            if (validPromotions.length > 0) {
+                setPromotionList(validPromotions);
+                setSelectedPromotionId(null); // รอผู้ใช้เลือกโปรโมชั่น
+            } else {
+                setPromotionList([]);
+                setSelectedPromotionId("0"); // ไม่มีโปรโมชั่น
+            }
+        } else {
+            // หากไม่พบสินค้าในข้อมูล ให้ล้างค่าที่เกี่ยวข้อง
+            setSelectedItemID('');
+            setPromotionList([]);
+            setSelectedPromotionId(null);
+        }
+
+        // ล้างค่าที่เกี่ยวข้องเพิ่มเติม
+        setSelectedPackageTypeId(null); // ล้างการชำระ
+        setSelectedPackageIndex(null); // ล้างแพ็คเกจ
+        setDiscountInput(undefined); // ล้างส่วนลด
+        setDiscountValidationMessage(null); // ล้างข้อความการตรวจสอบส่วนลด
+        setIsDiscountValid(true); // รีเซ็ตสถานะส่วนลดให้ถูกต้อง
     };
 
     const handlePromotionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -1486,13 +1503,9 @@ const OrderCreateBooking: React.FC = () => {
                                                                     </option>
                                                                 ))}
                                                         </select>
-                                                        {/* ข้อความแสดงระหว่างการโหลด */}
-                                                        {isLoadingProduct && (
-                                                            <div className="text-muted mt-2">กรุณารอสักครู่...</div>
-                                                        )}
 
-                                                        {/* ข้อความแสดงเมื่อไม่มีสินค้าในหมวดหมู่นี้ */}
-                                                        {!isLoadingProduct && selectedCategoryId && Array.isArray(product) && product.length === 0 && (
+                                                        {isLoadingProduct && <div className="text-muted mt-2">กรุณารอสักครู่...</div>}
+                                                        {!isLoadingProduct && selectedCategoryId && product.length === 0 && (
                                                             <div className="text-danger mt-2">ไม่มีสินค้าในหมวดหมู่นี้</div>
                                                         )}
                                                     </div>
@@ -1749,13 +1762,9 @@ const OrderCreateBooking: React.FC = () => {
                                                                     </option>
                                                                 ))}
                                                         </select>
-                                                        {/* ข้อความแสดงระหว่างการโหลด */}
-                                                        {isLoadingProduct && (
-                                                            <div className="text-muted mt-2">กรุณารอสักครู่...</div>
-                                                        )}
 
-                                                        {/* ข้อความแสดงเมื่อไม่มีสินค้าในหมวดหมู่นี้ */}
-                                                        {!isLoadingProduct && selectedCategoryId && Array.isArray(product) && product.length === 0 && (
+                                                        {isLoadingProduct && <div className="text-muted mt-2">กรุณารอสักครู่...</div>}
+                                                        {!isLoadingProduct && selectedCategoryId && product.length === 0 && (
                                                             <div className="text-danger mt-2">ไม่มีสินค้าในหมวดหมู่นี้</div>
                                                         )}
                                                     </div>
