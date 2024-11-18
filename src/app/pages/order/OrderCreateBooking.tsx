@@ -212,8 +212,18 @@ const OrderCreateBooking: React.FC = () => {
     } | null>(null);
 
     // คำนวณส่วนลดอัตโนมัติเพื่อนำไปแสดงที่ฟีลด์ด้านขวา
-    const discountPrice = selectedPackageIndex !== null && packageList[selectedPackageIndex].DISCOUNTPRICE
-    const seq = selectedPackageIndex !== null && packageList[selectedPackageIndex].SEQUENCE
+    const discountPrice =
+        selectedPackageIndex !== null &&
+            packageList[selectedPackageIndex]?.DISCOUNTPRICE !== undefined
+            ? packageList[selectedPackageIndex].DISCOUNTPRICE
+            : 0;
+
+    const seq =
+        selectedPackageIndex !== null &&
+            packageList[selectedPackageIndex] &&
+            packageList[selectedPackageIndex].SEQUENCE
+            ? packageList[selectedPackageIndex].SEQUENCE
+            : 1; // ตั้งค่าเริ่มต้นเป็น 1 หากไม่มีข้อมูล
 
     // ราคาสุทธิ
     const netPrice = discountInput !== undefined ? totalPrice - discountInput : totalPrice;
@@ -222,23 +232,31 @@ const OrderCreateBooking: React.FC = () => {
     const [isDiscountValid, setIsDiscountValid] = useState<boolean>(true);
 
     const handleDiscountChange = (value: string) => {
-        const inputNumber = Number(value.replace(/,/g, "")); // แปลง input ที่เป็น string เป็น number
+        const inputNumber = Number(value.replace(/,/g, "")); // แปลงค่าที่กรอกเป็นตัวเลข
 
         if (isNaN(inputNumber)) {
             setDiscountValidationMessage({
                 message: "กรุณากรอกตัวเลขที่ถูกต้อง",
                 type: "danger",
             });
-            setIsDiscountValid(false); // ส่วนลดไม่ถูกต้อง
+            setIsDiscountValid(false); // กรอกค่าผิด
             return;
         }
 
-        setDiscountInput(inputNumber); // อัปเดต state
+        setDiscountInput(inputNumber); // อัปเดตส่วนลด
+        validateDiscount(inputNumber); // เรียกฟังก์ชัน validateDiscount เพื่อเช็คค่า
+    };
+
+    const validateDiscount = (inputNumber: number) => {
+        if (discountPrice === 0) {
+            setDiscountValidationMessage(null);
+            setIsDiscountValid(true); // ไม่มีส่วนลด ไม่ต้องแสดงข้อความ
+            return;
+        }
 
         if (discountPrice !== undefined && seq !== undefined) {
             let validationMessage = "";
 
-            // ตรวจสอบเงื่อนไข
             if (inputNumber <= discountPrice) {
                 if (inputNumber % seq === 0) {
                     validationMessage = "";
@@ -287,7 +305,7 @@ const OrderCreateBooking: React.FC = () => {
         setTotalPrice(undefined); // ล้างราคาขาย
         setDiscountAmount(undefined); // ล้างส่วนลดจากแพ็คเกจ
         setPriceInput(undefined); // ล้างราคาขาย (input)
-        setDiscountInput(undefined); // ล้างส่วนลด (input)
+        setDiscountInput(0); // ล้างส่วนลด (input)
         setNetPriceInput(undefined); // ล้างราคาสุทธิ
         setDiscountValidationMessage(null); // ล้างข้อความการตรวจสอบส่วนลด
         setIsDiscountValid(true); // รีเซ็ตสถานะส่วนลดให้ถูกต้อง
@@ -408,48 +426,59 @@ const OrderCreateBooking: React.FC = () => {
         }
     }, [selectedPackageIndex, packageList]);
 
-    const handleCateOptionChange = (event: any) => {
+    // โหมด all สลับตัวเลือก
+    const handleOptionChange = (value: boolean) => {
+        setUsePackagePricing(value);
+    };
+
+    const handleCateOptionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const value = event.target.value;
         setSelectedCategoryId(value);
 
-        // ล้างข้อมูล product ทันทีเมื่อเลือกหมวดหมู่ใหม่
+        // ล้างค่าที่เกี่ยวข้องเมื่อเปลี่ยนหมวดหมู่สินค้า
         setProduct([]);
-
-        // ล้างค่าที่เลือกสำหรับ product, packageType, และ packageModel
         setSelectedProductId(null);
-        setSelectedPackageTypeId(null);
+        setSelectedPromotionId(null);
+        setSelectedPackageTypeId(null); // ล้างการชำระ
         setSelectedPackageIndex(null);
+        setPackageList([]);
+        setDiscountInput(undefined);
+        setDiscountValidationMessage(null);
+        setIsDiscountValid(true);
     };
 
     const handleCardProductClick = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedId = e.target.value;
 
         if (selectedId === "") {
-            // ล้างค่าทั้งหมดเมื่อไม่ได้เลือกสินค้า
+            // ล้างค่าที่เกี่ยวข้องเมื่อไม่ได้เลือกสินค้า
             setSelectedProductId(null);
             setSelectedItemID('');
-            setSelectedPromotionId(null); // ล้างค่าโปรโมชั่น
-            setPromotionList([]); // ล้างรายการโปรโมชั่น
+            setSelectedPromotionId(null);
+            setSelectedPackageTypeId(null); // ล้างการชำระ
+            setSelectedPackageIndex(null);
+            setPackageList([]);
+            setDiscountInput(undefined);
+            setDiscountValidationMessage(null);
+            setIsDiscountValid(true);
         } else {
-            setSelectedProductId(Number(selectedId)); // อัปเดต selectedProductId
+            setSelectedProductId(Number(selectedId));
+            setSelectedPackageTypeId(null); // ล้างการชำระ
 
-            // หา Product ที่ตรงกับ selectedId
             const selectedProduct = product.find((item: any) => item.ITEMID === selectedId);
-
             if (selectedProduct) {
                 setSelectedItemID(selectedProduct.ItemCode);
 
-                // ตรวจสอบว่ามีโปรโมชั่นหรือไม่
                 const validPromotions = selectedProduct.PROMOTION?.filter(
                     (promo: any) => promo.PROMOTIONID !== 0
                 );
 
                 if (validPromotions && validPromotions.length > 0) {
                     setPromotionList(validPromotions);
-                    setSelectedPromotionId(null); // รอให้ผู้ใช้เลือกโปรโมชั่น
+                    setSelectedPromotionId(null);
                 } else {
-                    setPromotionList([]); // ไม่มีโปรโมชั่น
-                    setSelectedPromotionId("0"); // ตั้งค่าเป็น "0"
+                    setPromotionList([]);
+                    setSelectedPromotionId("0");
                 }
             }
         }
@@ -457,23 +486,56 @@ const OrderCreateBooking: React.FC = () => {
 
     const handlePromotionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const promotionId = e.target.value;
-        setSelectedPromotionId(promotionId === "" ? null : promotionId);
+
+        if (promotionId === "") {
+            // ล้างค่าที่เกี่ยวข้องเมื่อไม่ได้เลือกโปรโมชั่น
+            setSelectedPromotionId(null);
+            setSelectedPackageTypeId(null); // ล้างการชำระ
+            setSelectedPackageIndex(null);
+            setPackageList([]);
+            setDiscountInput(undefined);
+            setDiscountValidationMessage(null);
+            setIsDiscountValid(true);
+        } else {
+            setSelectedPromotionId(promotionId);
+            setSelectedPackageTypeId(null); // ล้างการชำระ
+            setSelectedPackageIndex(null);
+            setPackageList([]);
+            setDiscountInput(undefined);
+            setDiscountValidationMessage(null);
+            setIsDiscountValid(true);
+        }
     };
 
-    const handleOptionChange = (value: boolean) => {
-        setUsePackagePricing(value);
+    const handlePaymentChange = (paymentTypeId: number | null) => {
+        // ตั้งค่าการชำระใหม่
+        setSelectedPackageTypeId(paymentTypeId);
+
+        // ล้างค่าแพ็คเกจและส่วนลด
+        setSelectedPackageIndex(null);
+        setDiscountInput(undefined); // ล้างฟีลด์ส่วนลด
+        setDiscountValidationMessage(null); // ล้างข้อความการตรวจสอบส่วนลด
+        setIsDiscountValid(true); // รีเซ็ตสถานะส่วนลดให้ถูกต้อง
     };
 
     const handlePackageClick = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedIndex = e.target.value;
 
         if (selectedIndex === "") {
-            // ล้างค่าเมื่อเลือกแพ็คเกจ...
+            // ล้างค่าเมื่อเลือกแพ็คเกจเป็น "เลือกแพ็คเกจ..."
             setSelectedPackageIndex(null);
+            setDiscountInput(undefined); // ล้างฟีลด์ส่วนลด
+            setDiscountValidationMessage(null); // ล้างข้อความการตรวจสอบส่วนลด
+            setIsDiscountValid(true); // รีเซ็ตสถานะส่วนลดให้ถูกต้อง
         } else {
-            // ตั้งค่าเมื่อเลือกแพ็คเกจ
+            // ตั้งค่าเมื่อเลือกแพ็คเกจใหม่
             setSelectedPackageIndex(Number(selectedIndex));
+            setDiscountInput(undefined); // ล้างฟีลด์ส่วนลด
+            setDiscountValidationMessage(null); // ล้างข้อความการตรวจสอบส่วนลด
+            setIsDiscountValid(true); // รีเซ็ตสถานะส่วนลดให้ถูกต้อง
         }
+
+        // ไม่ล้าง `selectedPackageTypeId` เพื่อคง UI การชำระเงินไว้
     };
     {/*-------------------- End ข้อมูลสินค้า --------------------*/ }
 
@@ -1450,7 +1512,8 @@ const OrderCreateBooking: React.FC = () => {
                                                                         type="radio"
                                                                         name="payment"
                                                                         value={pkg.PACKAGETYPEID}
-                                                                        onChange={() => setSelectedPackageTypeId(pkg.PACKAGETYPEID)}
+                                                                        checked={selectedPackageTypeId === pkg.PACKAGETYPEID}
+                                                                        onChange={() => handlePaymentChange(pkg.PACKAGETYPEID)} // เรียกฟังก์ชันเมื่อเปลี่ยนการชำระ
                                                                     />
                                                                     <label className="form-label fw-bold fs-6">{pkg.PACKAGETYPENAME}</label>
                                                                 </div>
@@ -1488,15 +1551,35 @@ const OrderCreateBooking: React.FC = () => {
                                                         <input
                                                             type="text"
                                                             className="form-control"
+                                                            disabled={
+                                                                isLoadingPackage || discountPrice === 0 || selectedPackageIndex === null
+                                                            } // ปิดการแก้ไขเมื่อยังโหลด, ไม่มีส่วนลด, หรือยังไม่ได้เลือกแพ็คเกจ
                                                             onChange={(e) => handleDiscountChange(e.target.value)}
-                                                            value={discountInput}
+                                                            value={
+                                                                isLoadingPackage
+                                                                    ? "" // แสดงค่าว่างเมื่อยังโหลดข้อมูลอยู่
+                                                                    : discountPrice === 0
+                                                                        ? "0.00" // แสดงค่า 0.00 เมื่อไม่มีส่วนลด
+                                                                        : discountInput || ""
+                                                            }
                                                         />
+                                                        {selectedCategoryId &&
+                                                            selectedProductId &&
+                                                            selectedPackageIndex !== null &&
+                                                            !isLoadingProduct &&
+                                                            !isLoadingPackage &&
+                                                            discountPrice === 0 && (
+                                                                <div className="text-danger mt-2">ไม่มีส่วนลดสำหรับสินค้านี้</div>
+                                                            )}
+
+                                                        {/* แสดงข้อความ Validation */}
                                                         {discountValidationMessage && (
                                                             <div className={`text-${discountValidationMessage.type} mt-2`}>
                                                                 {discountValidationMessage.message}
                                                             </div>
                                                         )}
                                                     </div>
+
                                                 </div>
 
                                                 {/* Right Side */}
@@ -1527,15 +1610,11 @@ const OrderCreateBooking: React.FC = () => {
                                                             className="form-control"
                                                             readOnly
                                                             style={{
-                                                                backgroundColor: '#d7dbde',
+                                                                backgroundColor: "#d7dbde",
                                                             }}
-                                                            value={isDiscountValid && discountInput !== undefined
-                                                                ? discountInput.toLocaleString(undefined, {
-                                                                    minimumFractionDigits: 2,
-                                                                    maximumFractionDigits: 2,
-                                                                })
-                                                                : ""
-                                                            }
+                                                            value={discountPrice === 0
+                                                                ? "0.00"
+                                                                : discountInput || ""}
                                                         />
                                                     </div>
 
@@ -1592,11 +1671,16 @@ const OrderCreateBooking: React.FC = () => {
                                                             {/* งวดที่ 2 ถึงงวดสุดท้าย */}
                                                             {packageList[selectedPackageIndex] && packageList[selectedPackageIndex].PERIODDETAILS.length > 1 && (
                                                                 <tr>
-                                                                    <td>2-{packageList[selectedPackageIndex].PERIODDETAILS.length}</td>
-                                                                    <td>{packageList[selectedPackageIndex] && packageList[selectedPackageIndex].PERIODDETAILS[1]
-                                                                        ? Number(packageList[selectedPackageIndex].PERIODDETAILS[1].PAYMENTAMOUNT)
-                                                                            .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                                                                        : ""}
+                                                                    <td>
+                                                                        {packageList[selectedPackageIndex].PERIODDETAILS.length === 2
+                                                                            ? "2" // แสดงเฉพาะ "2" ถ้ามีแค่ 2 งวด
+                                                                            : `2-${packageList[selectedPackageIndex].PERIODDETAILS.length}`} {/* แสดง 2-งวดสุดท้าย */}
+                                                                    </td>
+                                                                    <td>
+                                                                        {packageList[selectedPackageIndex] && packageList[selectedPackageIndex].PERIODDETAILS[1]
+                                                                            ? Number(packageList[selectedPackageIndex].PERIODDETAILS[1].PAYMENTAMOUNT)
+                                                                                .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                                                            : ""}
                                                                     </td>
                                                                     <td>บาท</td>
                                                                 </tr>
