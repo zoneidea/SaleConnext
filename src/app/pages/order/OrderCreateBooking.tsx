@@ -431,74 +431,66 @@ const OrderCreateBooking: React.FC = () => {
         setUsePackagePricing(value);
     };
 
-    const handleCateOptionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const handleCateOptionChange = (event: any) => {
         const value = event.target.value;
         setSelectedCategoryId(value);
 
-        // ล้างค่าที่เกี่ยวข้องเมื่อเปลี่ยนหมวดหมู่สินค้า
+        // ล้างข้อมูลที่เกี่ยวข้อง
         setProduct([]);
         setSelectedProductId(null);
-        setSelectedPromotionId(null);
-        setSelectedPackageTypeId(null); // ล้างการชำระ
+        setSelectedPackageTypeId(null);
         setSelectedPackageIndex(null);
-        setPackageList([]);
+        setSelectedPromotionId(null);
+        setPromotionList([]);
         setDiscountInput(undefined);
         setDiscountValidationMessage(null);
         setIsDiscountValid(true);
+        setPriceInput(undefined); // ล้างราคาขาย
     };
 
     const handleCardProductClick = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedId = e.target.value;
 
         if (selectedId === "") {
-            // หากไม่ได้เลือกสินค้า ให้ล้างค่าที่เกี่ยวข้อง
+            // ล้างข้อมูลเมื่อไม่ได้เลือกสินค้า
             setSelectedProductId(null);
             setSelectedItemID('');
-            setSelectedPromotionId(null);
-            setPromotionList([]);
             setSelectedPackageTypeId(null);
             setSelectedPackageIndex(null);
+            setSelectedPromotionId(null);
+            setPromotionList([]);
             setDiscountInput(undefined);
             setDiscountValidationMessage(null);
             setIsDiscountValid(true);
+            setPriceInput(undefined); // ล้างราคาขาย
             return;
         }
 
         // อัปเดตสินค้าเมื่อเลือก
         setSelectedProductId(Number(selectedId));
-
-        // ค้นหาข้อมูลสินค้าที่เลือก
         const selectedProduct = product.find((item: any) => item.ITEMID === selectedId);
 
         if (selectedProduct) {
-            // อัปเดตรหัสสินค้า
             setSelectedItemID(selectedProduct.ItemCode);
 
-            // อัปเดตรายการโปรโมชั่น
             const validPromotions = selectedProduct.PROMOTION?.filter(
                 (promo: any) => promo.PROMOTIONID !== 0
             ) || [];
 
-            if (validPromotions.length > 0) {
-                setPromotionList(validPromotions);
-                setSelectedPromotionId(null); // รอผู้ใช้เลือกโปรโมชั่น
-            } else {
-                setPromotionList([]);
-                setSelectedPromotionId("0"); // ไม่มีโปรโมชั่น
-            }
-        } else {
-            // หากไม่พบสินค้าในข้อมูล ให้ล้างค่าที่เกี่ยวข้อง
-            setSelectedItemID('');
-            setPromotionList([]);
+            setPromotionList(validPromotions);
             setSelectedPromotionId(null);
+        } else {
+            setPromotionList([]);
+            setSelectedPromotionId("0");
         }
 
         // ล้างค่าที่เกี่ยวข้องเพิ่มเติม
-        setSelectedPackageTypeId(null); // ล้างการชำระ
-        setSelectedPackageIndex(null); // ล้างแพ็คเกจ
-        setDiscountInput(undefined); // ล้างส่วนลด
-        setDiscountValidationMessage(null); // ล้างข้อความการตรวจสอบส่วนลด
-        setIsDiscountValid(true); // รีเซ็ตสถานะส่วนลดให้ถูกต้อง
+        setSelectedPackageTypeId(null);
+        setSelectedPackageIndex(null);
+        setDiscountInput(undefined);
+        setDiscountValidationMessage(null);
+        setIsDiscountValid(true);
+        setPriceInput(undefined); // ล้างราคาขาย
     };
 
     const handlePromotionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -1386,7 +1378,7 @@ const OrderCreateBooking: React.FC = () => {
                                                             type="text"
                                                             className="form-control"
                                                             onChange={(e) => setPriceInput(Number(e.target.value))}
-                                                            value={priceInput}
+                                                            value={priceInput !== undefined ? priceInput : ""}
                                                         />
                                                     </div>
 
@@ -1775,7 +1767,7 @@ const OrderCreateBooking: React.FC = () => {
                                                             type="text"
                                                             className="form-control"
                                                             onChange={(e) => setPriceInput(Number(e.target.value))}
-                                                            value={priceInput}
+                                                            value={priceInput !== undefined ? priceInput : ""}
                                                         />
                                                     </div>
 
