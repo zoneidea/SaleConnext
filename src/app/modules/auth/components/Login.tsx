@@ -1129,6 +1129,9 @@ import { KTIcon, toAbsoluteUrl } from '../../../../_metronic/helpers'
 import { useCategoryStore, useFetchCategoryStore } from '../../../modules/stores/sales/packageStore/packageStore'
 import CryptoJS from 'crypto-js'
 
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+
 const loginSchema = Yup.object().shape({
   username: Yup.string().required('Username is required'),
   password: Yup.string().required('Password is required'),
@@ -1195,12 +1198,68 @@ export function Login() {
     }
   }, [setFetchCategory])
 
+  // set permission GPS
+  const [locationAccess, setLocationAccess] = useState<boolean>(false);
+  console.log(`locationAccess`, locationAccess);
+
+  function success(pos: any) {
+    var crd = pos.coords;
+    console.log("Your current position is:");
+    console.log(`Latitude : ${crd.latitude}`);
+    console.log(`Longitude: ${crd.longitude}`);
+    console.log(`More or less ${crd.accuracy} meters.`);
+  }
+
+  function errors(err: any) {
+    console.warn(`ERROR(${err.code}): ${err.message}`);
+    Swal.fire({
+      icon: 'warning',
+      text: 'กรุณาเปิดการใช้งานตำแหน่ง GPS',
+      confirmButtonText: 'ตกลง',
+    }).then(() => {
+      // navigator.geolocation.getCurrentPosition(success, errors, options);
+      // const locationPermission = await navigator.permissions.query({ name: 'geolocation' })
+      // console.log(`locationPermission`, locationPermission);
+      // requestPermissions()
+      navigate("chrome://settings/content/location")
+    })
+  }
+
+  var options = {
+    enableHighAccuracy: true,
+    timeout: 5000,
+    maximumAge: 0,
+  };
+
+  useEffect(() => {
+    navigator.permissions
+      .query({ name: "geolocation" })
+      .then((permissionStatus) => {
+        setLocationAccess(permissionStatus.state === "granted");
+      });
+  }, [locationAccess]);
+
   const requestPermissions = async () => {
     try {
-      await navigator.mediaDevices.getUserMedia({ video: true })
+      // await navigator.mediaDevices.getUserMedia({ video: true })
       const locationPermission = await navigator.permissions.query({ name: 'geolocation' })
-      if (locationPermission.state !== 'granted') {
-        alert('โปรดอนุญาตการเข้าถึงตำแหน่ง (GPS)')
+      // console.log(`locationPermission`, locationPermission);
+
+      if (locationPermission.state === 'granted') {
+        navigator.geolocation.watchPosition(success, errors, options);
+      }
+      else if (locationPermission.state === 'prompt') {
+        navigator.geolocation.watchPosition(success, errors, options);
+        locationPermission.onchange = () => {
+          setLocationAccess(locationPermission.state === "granted");
+        };
+      }
+      else if (locationPermission.state === 'denied') {
+        Swal.fire({
+          icon: 'warning',
+          text: 'กรุณาเปิดการใช้งานตำแหน่ง GPS',
+          confirmButtonText: 'ตกลง',
+        })
       }
 
       const filePermission = await navigator.permissions.query({ name: 'persistent-storage' as PermissionName })

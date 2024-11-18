@@ -44,18 +44,18 @@ interface ItemProps {
 const UpdateSalesPackage: React.FC = () => {
     const navigate = useNavigate(); // ใช้ useNavigate สำหรับการเปลี่ยนเส้นทาง
     const MySwal = withReactContent(Swal);
-    
+
     const location = useLocation();
     const item = location.state as ItemProps || [];
-    
+
     const refno = item?.REFNO
     const productContract = item?.PRODUCT
-    
+
     const { auth } = useAuth();
-    
+
     const [loadingCategories, setLoadingCategories] = useState(true); // เพิ่ม state สำหรับการโหลดหมวดหมู่
     const [loadingProducts, setLoadingProducts] = useState(false); // เพิ่ม state สำหรับการโหลดสินค้า
-    
+
     const { fetchCategory } = useFetchCategoryStore();
     // console.log(`fetchCategory: `, fetchCategory);
 
@@ -589,7 +589,7 @@ const UpdateSalesPackage: React.FC = () => {
                     </div>
                 </div>
 
-                <div className='d-flex flex-column flex-md-row justify-content-between align-items-center p-3'>
+                <div className='d-none d-md-flex justify-content-between align-items-center mt-5'>
                     <button
                         className='btn btn-secondary w-100 w-md-auto align-self-center h-50px'
                         onClick={() => navigate('/sale/step', { state: item })}
@@ -611,6 +611,40 @@ const UpdateSalesPackage: React.FC = () => {
                         ส่งตรวจสอบ
                     </button>
                 </div>
+
+                {/* ปุ่มในหน้าจอเล็ก */}
+                <div
+                    className="d-flex d-md-none justify-content-between align-items-center bg-light p-3 border-top"
+                    style={{
+                        position: "fixed",
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        zIndex: 1050,
+                    }}
+                >
+                    <button
+                        className="btn btn-secondary w-auto me-2"
+                        onClick={() => navigate('/sale/overview')}
+                    >
+                        ย้อนกลับ
+                    </button>
+                    <button
+                        className={`btn btn-warning w-auto me-2 
+                                ${product.length === 0 || selectedProductIndex === null ? 'disabled' : ''}`}
+                        disabled={product.length === 0 || selectedProductIndex === null}
+                        onClick={handleNextClick}
+                    >
+                        อัพเดทข้อมูล
+                    </button>
+                    <button
+                        className='btn btn-primary w-auto'
+                        onClick={handleCheckerClick}
+                    >
+                        ส่งตรวจสอบ
+                    </button>
+                </div>
+
             </Content>
         </>
     );

@@ -48,7 +48,7 @@ const UpdateSalesContract: React.FC = () => {
     const location = useLocation();
     const MySwal = withReactContent(Swal);
 
-    //   const contNo = (location.state as ContractState)?.contNo;
+    // const contNo = (location.state as ContractState)?.contNo;
     // console.log(`contNo`, contNo);
 
     const { auth } = useAuth();
@@ -66,6 +66,7 @@ const UpdateSalesContract: React.FC = () => {
     const product = item?.PRODUCT
     console.log(`product`, product);
     const contNo = item?.CONTNO
+    // console.log(`contNo`, contNo);
     const customerDetail = item?.CUSTOMERDETAIL
     const address = item?.ADDRESS
 
@@ -394,19 +395,39 @@ const UpdateSalesContract: React.FC = () => {
                 </div>
                 {/* End Card Body */}
 
-                <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10'>
+                <div className='d-none d-md-flex justify-content-between align-items-center mt-5'>
                     <button
                         className='btn btn-secondary w-100 w-md-auto align-self-center h-50px'
                         onClick={() => navigate('/sale/step', { state: item })}>
                         ย้อนกลับ
                     </button>
                     <button
-                        className='btn btn-warning w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'
-                        onClick={handleNextClick}>
-                        อัพเดทข้อมูล
+                        className='btn btn-primary w-100 w-md-auto align-self-center h-50px'
+                        onClick={handleCheckerClick}
+                    >
+                        ส่งตรวจสอบ
+                    </button>
+                </div>
+
+                {/* ปุ่มในหน้าจอเล็ก */}
+                <div
+                    className="d-flex d-md-none justify-content-between align-items-center bg-light p-3 border-top"
+                    style={{
+                        position: "fixed",
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        zIndex: 1050,
+                    }}
+                >
+                    <button
+                        className="btn btn-secondary w-auto me-2"
+                        onClick={() => navigate('/sale/step', { state: item })}
+                    >
+                        ย้อนกลับ
                     </button>
                     <button
-                        className='btn btn-primary w-100 w-md-auto align-self-center h-50px'
+                        className='btn btn-primary w-auto'
                         onClick={handleCheckerClick}
                     >
                         ส่งตรวจสอบ

@@ -35,6 +35,7 @@ const OrderCreateBooking: React.FC = () => {
     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
 
     const CATEGORIES_URL = `${API_SALECONNEXT}/GetProduct/Categories`;
+    const PRODUCTLIST_URL = `${API_SALECONNEXT}/GetProduct/ProductList`;
     const PACKAGE_URL = `${API_SALECONNEXT}/GetPackage/PackageType`;
     const POST_PACKAGE_URL = `${API_SALECONNEXT}/GetPackage/PackageList`;
 
@@ -48,6 +49,7 @@ const OrderCreateBooking: React.FC = () => {
     const CHANNEL_SALE_URL = `${API_SALECONNEXT}/GetChannelSale`;
     const ADVISER_URL = `${API_THIENSURAT}/Employee_Structure/Emp_All`;
     const SHIPPING_URL = `${API_SALECONNEXT}/GetShipping`;
+    const FREEGIFT_URL = `${API_SALECONNEXT}/GetFreegift`;
 
     const getProductUrl = () => `${API_URL_MONGO}/Product/GetStock?empid=${auth.data[0].EmpId}&teamSale=${auth.data[0].TeamSale}&categoryId=${selectedCategoryId}`;
 
@@ -148,13 +150,21 @@ const OrderCreateBooking: React.FC = () => {
     const [usePackagePricing, setUsePackagePricing] = useState<boolean>(true);
 
     const { fetchCategory } = useFetchCategoryStore();
+
     const [categories, setCategories] = useState<any[]>([]);
-    const [product, setProduct] = useState<any>('');
-
     const [selectedCategoryId, setSelectedCategoryId] = useState<any>('');
-    const [selectedProductIndex, setSelectedProductIndex] = useState<number | null>(null);
-    const [selectedItemID, setSelectedItemID] = useState<any>('');
 
+    const [product, setProduct] = useState<any>('');
+    console.log(`product`, product);
+    const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
+    console.log(`selectedProductId`, selectedProductId);
+
+    const [promotionList, setPromotionList] = useState<any[]>([]);
+    const [selectedPromotionId, setSelectedPromotionId] = useState<string | null>(null);
+    console.log(`selectedPromotionId`, selectedPromotionId);
+
+    const [selectedItemID, setSelectedItemID] = useState<any>('');
+    // console.log(`selectedItemID`, selectedItemID);
 
     const packageType = [
         {
@@ -176,7 +186,7 @@ const OrderCreateBooking: React.FC = () => {
     ]
 
     const [selectedPackageTypeId, setSelectedPackageTypeId] = useState<number | null>(null);
-    // console.log(`selectedPackageTypeId`, selectedPackageTypeId);
+    console.log(`selectedPackageTypeId`, selectedPackageTypeId);
 
     const [packageList, setPackageList] = useState<any[]>([]);
     console.log(`packageList`, packageList);
@@ -184,7 +194,7 @@ const OrderCreateBooking: React.FC = () => {
     const [selectedPackageIndex, setSelectedPackageIndex] = useState<number | null>(null);
     // console.log(`selectedPackageIndex`, selectedPackageIndex);
 
-    const [isLoading, setIsLoading] = useState<boolean>(false); // สถานะโหลดข้อมูลสินค้า
+    const [isLoadingProduct, setIsLoadingProduct] = useState<boolean>(false); // สถานะโหลดข้อมูลสินค้า
     const [isLoadingPackage, setIsLoadingPackage] = useState<boolean>(false);
 
     // คำนวณ ใช้ราคาและส่วนลดจากแพ็คเกจ
@@ -211,7 +221,7 @@ const OrderCreateBooking: React.FC = () => {
     // ล้างค่าฟีลด์เมื่อสลับไปอีกโหมด
     useEffect(() => {
         setSelectedCategoryId(null)
-        setSelectedProductIndex(null)
+        setSelectedProductId(null)
         setSelectedPackageIndex(null);
         setTotalPrice(undefined);
         setDiscountAmount(undefined);
@@ -232,7 +242,8 @@ const OrderCreateBooking: React.FC = () => {
                         DepartId: auth.data[0].DepartId,
                         DepartGroup: auth.data[0].DepartGroup,
                         TeamSale: auth.data[0].TeamSale,
-                        ItemID: selectedItemID, PackageTypeID: selectedPackageTypeId
+                        ItemID: selectedItemID,
+                        PackageTypeID: selectedPackageTypeId
                     }, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
@@ -247,33 +258,38 @@ const OrderCreateBooking: React.FC = () => {
         postData();
     }, [auth]);
 
-    // GET Product/GetStock?
+    // POST GetProduct/ProductList
     useEffect(() => {
-        const getData = async () => {
+        const fetchPromotionData = async () => {
             if (!selectedCategoryId) return;
 
-            setIsLoading(true); // ตั้งค่าสถานะกำลังโหลดเป็น true
-
+            setIsLoadingProduct(true); // ตั้งค่าสถานะกำลังโหลดโปรโมชั่นเป็น true
             try {
-                const response = await axios.get(getProductUrl(), {
+                const response = await axios.post(PRODUCTLIST_URL, {
+                    EmpId: auth.data[0].EmpId,
+                    DivisionId: auth.data[0].DivisionId,
+                    DepartId: auth.data[0].DepartId,
+                    DepartGroup: auth.data[0].DepartGroup,
+                    TeamSale: auth.data[0].TeamSale,
+                    Categories_id: selectedCategoryId
+                }, {
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                    }
+                        'Content-Type': 'multipart/form-data',
+                    },
                 });
                 const data = Array.isArray(response.data.data) ? response.data.data : [];
 
-                // ตั้งเวลาให้ข้อความ "กรุณารอสักครู่..." แสดงเป็นเวลา 2 วินาที
+                // // ตั้งเวลาให้ข้อความ "กรุณารอสักครู่..." แสดงเป็นเวลา 2 วินาที
                 setTimeout(() => {
                     setProduct(data);
-                    setIsLoading(false); // ตั้งค่าสถานะกำลังโหลดเป็น false หลัง 2 วินาที
+                    setIsLoadingProduct(false); // ตั้งค่าสถานะกำลังโหลดเป็น false หลัง 2 วินาที
                 }, 2000);
             } catch (error) {
-                console.error('Error fetching getProductUrl:', error);
-                setIsLoading(false); // กรณีเกิดข้อผิดพลาด ให้ปิดการแสดงสถานะกำลังโหลด
+                console.error('Error fetching PRODUCTLIST_URL:', error);
+                setIsLoadingProduct(false);
             }
         };
-        getData();
+        fetchPromotionData();
     }, [selectedCategoryId]);
 
     // POST GetPackage/PackageList
@@ -289,8 +305,9 @@ const OrderCreateBooking: React.FC = () => {
                     DepartId: auth.data[0].DepartId,
                     DepartGroup: auth.data[0].DepartGroup,
                     TeamSale: auth.data[0].TeamSale,
-                    ItemID: selectedItemID,
-                    PackageTypeID: selectedPackageTypeId
+                    ItemID: selectedProductId,
+                    PackageTypeID: selectedPackageTypeId,
+                    PromotionID: selectedPromotionId
                 }, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
@@ -337,26 +354,48 @@ const OrderCreateBooking: React.FC = () => {
         setProduct([]);
 
         // ล้างค่าที่เลือกสำหรับ product, packageType, และ packageModel
-        setSelectedProductIndex(null);
+        setSelectedProductId(null);
         setSelectedPackageTypeId(null);
         setSelectedPackageIndex(null);
     };
 
     const handleCardProductClick = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const selectedIndex = e.target.value;
+        const selectedId = e.target.value;
 
-        if (selectedIndex === "") {
-            // ล้างค่าเมื่อเลือก "เลือกสินค้า..."
-            setSelectedProductIndex(null);
+        if (selectedId === "") {
+            // ล้างค่าทั้งหมดเมื่อไม่ได้เลือกสินค้า
+            setSelectedProductId(null);
             setSelectedItemID('');
-            setSelectedPackageTypeId(null);
-            setSelectedPackageIndex(null);
+            setSelectedPromotionId(null); // ล้างค่าโปรโมชั่น
+            setPromotionList([]); // ล้างรายการโปรโมชั่น
         } else {
-            // ตั้งค่าเมื่อเลือกสินค้า
-            setSelectedProductIndex(Number(selectedIndex));
-            const selectedProduct = product[Number(selectedIndex)];
-            setSelectedItemID(selectedProduct.ItemCode);
+            setSelectedProductId(Number(selectedId)); // อัปเดต selectedProductId
+
+            // หา Product ที่ตรงกับ selectedId
+            const selectedProduct = product.find((item: any) => item.ITEMID === selectedId);
+
+            if (selectedProduct) {
+                setSelectedItemID(selectedProduct.ItemCode);
+
+                // ตรวจสอบว่ามีโปรโมชั่นหรือไม่
+                const validPromotions = selectedProduct.PROMOTION?.filter(
+                    (promo: any) => promo.PROMOTIONID !== 0
+                );
+
+                if (validPromotions && validPromotions.length > 0) {
+                    setPromotionList(validPromotions);
+                    setSelectedPromotionId(null); // รอให้ผู้ใช้เลือกโปรโมชั่น
+                } else {
+                    setPromotionList([]); // ไม่มีโปรโมชั่น
+                    setSelectedPromotionId("0"); // ตั้งค่าเป็น "0"
+                }
+            }
         }
+    };
+
+    const handlePromotionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const promotionId = e.target.value;
+        setSelectedPromotionId(promotionId === "" ? null : promotionId);
     };
 
     const handleOptionChange = (value: boolean) => {
@@ -548,7 +587,7 @@ const OrderCreateBooking: React.FC = () => {
 
     {/*-------------------- Start ค่าใช้จ่ายอื่น ๆ --------------------*/ }
     const [expenses, setExpenses] = useState([
-        { id: 1, description: 'ค่าขนส่ง', unit: 'กิโลเมตร', cost: '' },
+        { id: 1, description: '...', unit: '...', cost: '' },
     ]);
 
     const handleAddExpense = () => {
@@ -653,9 +692,11 @@ const OrderCreateBooking: React.FC = () => {
     {/*-------------------- End สลิป --------------------*/ }
 
     {/* Start ของแถม */ }
-    const [selectedGiftId, setSelectedGiftId] = useState<any>('');
+    const [freegift, setFreegift] = useState<any>([]);
+    // console.log(`freegift`, freegift);
 
     const [giftFields, setGiftFields] = useState([{ id: '', quantity: '' }]); // state สำหรับเก็บรายการของแถม
+    // console.log(`giftFields`, giftFields);
 
     const handleGiftOptionChange = (index: number, value: string) => {
         const newGiftFields = [...giftFields];
@@ -678,6 +719,23 @@ const OrderCreateBooking: React.FC = () => {
         newGiftFields.splice(index, 1); // ลบฟีลด์ที่ระบุตาม index
         setGiftFields(newGiftFields);
     };
+
+    // GET GetFreegift
+    useEffect(() => {
+        const getData = async () => {
+            try {
+                const response = await axios.get(FREEGIFT_URL, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    }
+                });
+                setFreegift(response.data);
+            } catch (error) {
+                console.error('Error fetching CUSTOMER_TYPE_URL:', error);
+            }
+        };
+        getData();
+    }, []);
     {/*-------------------- End ของแถม --------------------*/ }
 
     {/*-------------------- Start ข้อมูลเพิ่มเติม --------------------*/ }
@@ -768,15 +826,14 @@ const OrderCreateBooking: React.FC = () => {
                         <div className='col-12'>
 
                             {/* Start ปุ่มค้นหาลูกค้า */}
-                            {auth.data[0].HascustomerSearch === "true" && (
-                                <>
-                                    < ModalTrigger handleShow={handleShow} />
-                                    <SerchCustomerModal show={showModal} handleClose={handleClose} />
-                                    <hr className='my-10' style={{ borderTop: '1px dotted black' }} />
-                                </>
-                            )}
+                            {/* {auth.data[0].HascustomerSearch === "true" && ( */}
+                            <>
+                                < ModalTrigger handleShow={handleShow} />
+                                <SerchCustomerModal show={showModal} handleClose={handleClose} />
+                                <hr className='my-10' style={{ borderTop: '1px dotted black' }} />
+                            </>
+                            {/* )} */}
                             {/* End ปุ่มค้นหาลูกค้า */}
-
 
                             <label className='form-label fw-bold fs-3 mb-10'>ข้อมูลพนักงานขาย</label>
 
@@ -904,8 +961,8 @@ const OrderCreateBooking: React.FC = () => {
                                                         <select
                                                             className="form-select"
                                                             onChange={handleCardProductClick}
-                                                            value={selectedProductIndex !== null ? selectedProductIndex : ''}
-                                                            disabled={isLoading} // ปิดการใช้งาน select ขณะกำลังโหลด
+                                                            value={selectedProductId !== null ? selectedProductId : ''}
+                                                            disabled={isLoadingProduct} // ปิดการใช้งาน select ขณะกำลังโหลด
                                                         >
                                                             <option value="">เลือกสินค้า...</option>
                                                             {Array.isArray(product) && product.length > 0 && (
@@ -918,12 +975,12 @@ const OrderCreateBooking: React.FC = () => {
                                                         </select>
 
                                                         {/* ข้อความแสดงระหว่างการโหลด */}
-                                                        {isLoading && (
+                                                        {isLoadingProduct && (
                                                             <div className="text-muted mt-2">กรุณารอสักครู่...</div>
                                                         )}
 
                                                         {/* ข้อความแสดงเมื่อไม่มีสินค้าในหมวดหมู่นี้ */}
-                                                        {!isLoading && selectedCategoryId && Array.isArray(product) && product.length === 0 && (
+                                                        {!isLoadingProduct && selectedCategoryId && Array.isArray(product) && product.length === 0 && (
                                                             <div className="text-danger mt-2">ไม่มีสินค้าในหมวดหมู่นี้</div>
                                                         )}
                                                     </div>
@@ -1121,8 +1178,8 @@ const OrderCreateBooking: React.FC = () => {
                                                         <select
                                                             className="form-select"
                                                             onChange={handleCardProductClick}
-                                                            value={selectedProductIndex !== null ? selectedProductIndex : ''}
-                                                            disabled={isLoading} // ปิดการใช้งาน select ขณะกำลังโหลด
+                                                            value={selectedProductId !== null ? selectedProductId : ''}
+                                                            disabled={isLoadingProduct} // ปิดการใช้งาน select ขณะกำลังโหลด
                                                         >
                                                             <option value="">เลือกสินค้า...</option>
                                                             {Array.isArray(product) && product.length > 0 && (
@@ -1135,12 +1192,12 @@ const OrderCreateBooking: React.FC = () => {
                                                         </select>
 
                                                         {/* ข้อความแสดงระหว่างการโหลด */}
-                                                        {isLoading && (
+                                                        {isLoadingProduct && (
                                                             <div className="text-muted mt-2">กรุณารอสักครู่...</div>
                                                         )}
 
                                                         {/* ข้อความแสดงเมื่อไม่มีสินค้าในหมวดหมู่นี้ */}
-                                                        {!isLoading && selectedCategoryId && Array.isArray(product) && product.length === 0 && (
+                                                        {!isLoadingProduct && selectedCategoryId && Array.isArray(product) && product.length === 0 && (
                                                             <div className="text-danger mt-2">ไม่มีสินค้าในหมวดหมู่นี้</div>
                                                         )}
                                                     </div>
@@ -1267,27 +1324,39 @@ const OrderCreateBooking: React.FC = () => {
                                                         <select
                                                             className="form-select"
                                                             onChange={handleCardProductClick}
-                                                            value={selectedProductIndex !== null ? selectedProductIndex : ''}
-                                                            disabled={isLoading} // ปิดการใช้งาน select ขณะกำลังโหลด
+                                                            value={selectedProductId || ''}
+                                                            disabled={isLoadingProduct}
                                                         >
                                                             <option value="">เลือกสินค้า...</option>
-                                                            {Array.isArray(product) && product.length > 0 && (
-                                                                product.map((item: any, index: number) => (
-                                                                    <option key={index} value={index}>
-                                                                        {item.ItemCode} - {item.ItemDescription}
+                                                            {Array.isArray(product) &&
+                                                                product.map((item: any) => (
+                                                                    <option key={item.ITEMID} value={item.ITEMID}>
+                                                                        {item.ITEMID} - {item.PRODUCTNAME}
                                                                     </option>
-                                                                ))
-                                                            )}
+                                                                ))}
+                                                        </select>
+                                                        {isLoadingProduct && <div className="text-muted mt-2">กรุณารอสักครู่...</div>}
+                                                    </div>
+
+                                                    <div className="mb-6">
+                                                        <label className="form-label required fw-bold fs-6">โปรโมชั่น</label>
+                                                        <select
+                                                            className="form-select"
+                                                            onChange={handlePromotionChange}
+                                                            value={selectedPromotionId || ''}
+                                                            disabled={promotionList.length === 0 || isLoadingProduct}
+                                                        >
+                                                            <option value="">เลือกโปรโมชั่น...</option>
+                                                            {promotionList.map((promotion: any, index: number) => (
+                                                                <option key={index} value={promotion.PROMOTIONID}>
+                                                                    {promotion.PROMOTIONNAME}
+                                                                </option>
+                                                            ))}
                                                         </select>
 
-                                                        {/* ข้อความแสดงระหว่างการโหลด */}
-                                                        {isLoading && (
-                                                            <div className="text-muted mt-2">กรุณารอสักครู่...</div>
-                                                        )}
-
-                                                        {/* ข้อความแสดงเมื่อไม่มีสินค้าในหมวดหมู่นี้ */}
-                                                        {!isLoading && selectedCategoryId && Array.isArray(product) && product.length === 0 && (
-                                                            <div className="text-danger mt-2">ไม่มีสินค้าในหมวดหมู่นี้</div>
+                                                        {/* แสดงข้อความเมื่อเลือกสินค้าแล้วไม่มีโปรโมชั่น */}
+                                                        {selectedProductId && promotionList.length === 0 && !isLoadingProduct && (
+                                                            <div className="text-danger mt-2">ไม่มีโปรโมชั่นสำหรับสินค้านี้</div>
                                                         )}
                                                     </div>
 
@@ -1339,7 +1408,6 @@ const OrderCreateBooking: React.FC = () => {
                                                         <input
                                                             type="text"
                                                             className="form-control"
-                                                            readOnly
                                                             value={
                                                                 selectedPackageIndex !== null && packageList[selectedPackageIndex]
                                                                     ? discountAmount.toLocaleString(undefined, {
@@ -1490,13 +1558,13 @@ const OrderCreateBooking: React.FC = () => {
                                                         <select
                                                             className="form-select"
                                                             onChange={handleCardProductClick}
-                                                            value={selectedProductIndex !== null ? selectedProductIndex : ''}
-                                                            disabled={isLoading} // ปิดการใช้งาน select ขณะกำลังโหลด
+                                                            value={selectedProductId !== null ? selectedProductId : ''}
+                                                            disabled={isLoadingProduct} // ปิดการใช้งาน select ขณะกำลังโหลด
                                                         >
                                                             <option value="">เลือกสินค้า...</option>
                                                             {Array.isArray(product) && product.length > 0 && (
                                                                 product.map((item: any, index: number) => (
-                                                                    <option key={index} value={index}>
+                                                                    <option key={item.ITEMID} value={item.ITEMID}>
                                                                         {item.ItemCode} - {item.ItemDescription}
                                                                     </option>
                                                                 ))
@@ -1504,12 +1572,12 @@ const OrderCreateBooking: React.FC = () => {
                                                         </select>
 
                                                         {/* ข้อความแสดงระหว่างการโหลด */}
-                                                        {isLoading && (
+                                                        {isLoadingProduct && (
                                                             <div className="text-muted mt-2">กรุณารอสักครู่...</div>
                                                         )}
 
                                                         {/* ข้อความแสดงเมื่อไม่มีสินค้าในหมวดหมู่นี้ */}
-                                                        {!isLoading && selectedCategoryId && Array.isArray(product) && product.length === 0 && (
+                                                        {!isLoadingProduct && selectedCategoryId && Array.isArray(product) && product.length === 0 && (
                                                             <div className="text-danger mt-2">ไม่มีสินค้าในหมวดหมู่นี้</div>
                                                         )}
                                                     </div>
@@ -1534,14 +1602,21 @@ const OrderCreateBooking: React.FC = () => {
                                                         <input
                                                             type="text"
                                                             className="form-control"
-                                                            onChange={(e) => setDiscountInput(Number(e.target.value))}
-                                                            value={discountInput !== undefined ? discountInput.toLocaleString(undefined, {
-                                                                minimumFractionDigits: 2,
-                                                                maximumFractionDigits: 2,
-                                                            })
-                                                                : ""
+                                                            onChange={(e) => handleDiscountChange(e.target.value)}
+                                                            value={
+                                                                discountInput !== undefined
+                                                                    ? discountInput.toLocaleString(undefined, {
+                                                                        minimumFractionDigits: 2,
+                                                                        maximumFractionDigits: 2,
+                                                                    })
+                                                                    : ""
                                                             }
                                                         />
+                                                        {discountValidationMessage && (
+                                                            <div className={`text-${discountValidationMessage.type} mt-2`}>
+                                                                {discountValidationMessage.message}
+                                                            </div>
+                                                        )}
                                                     </div>
 
                                                 </div>
@@ -1661,7 +1736,6 @@ const OrderCreateBooking: React.FC = () => {
                                                     onChange={handleIdCardChange}
                                                     type='text'
                                                     className='form-control mb-3 mb-lg-0'
-                                                    placeholder='บัตรประชาชน'
                                                 />
                                                 {/* {errors.idCard && <p className='text-danger'>{errors.idCard.message}</p>} */}
                                             </div>
@@ -1685,7 +1759,6 @@ const OrderCreateBooking: React.FC = () => {
                                                     onChange={(e) => setFullName(e.target.value)}
                                                     type='text'
                                                     className='form-control mb-3 mb-lg-0'
-                                                    placeholder='ชื่อ-สกุล'
                                                 />
                                                 {/* {errors.fullName && <p className='text-danger'>{errors.fullName}</p>} */}
                                             </div>
@@ -1701,7 +1774,6 @@ const OrderCreateBooking: React.FC = () => {
                                                         selected={valueCalendar}
                                                         onChange={handleDateChange}
                                                         className="form-control mb-3 mb-lg-0"
-                                                        placeholderText="วันเดือนปีเกิด"
                                                         showYearDropdown
                                                         showMonthDropdown
                                                         dropdownMode="select"
@@ -2105,7 +2177,7 @@ const OrderCreateBooking: React.FC = () => {
 
                             {auth.data[0].Hasfreegift === "false" && (
                                 <>
-                                    <label className='form-label fw-bold fs-3 mb-10 mt-10'>ของแถม</label>
+                                    <label className="form-label fw-bold fs-3 mb-10 mt-10">ของแถม</label>
 
                                     <div className="container">
                                         {giftFields.map((gift, index) => (
@@ -2120,17 +2192,12 @@ const OrderCreateBooking: React.FC = () => {
                                                         value={gift.id}
                                                     >
                                                         <option value="">เลือกของแถม...</option>
-                                                        {selectedPackageIndex !== null &&
-                                                            packageList[selectedPackageIndex] &&
-                                                            packageList[selectedPackageIndex].FREEGIFT ? (
-                                                            packageList[selectedPackageIndex].FREEGIFT.map((item: any, idx: number) => (
-                                                                <option key={idx} value={item.GIFTID}>
+                                                        {Array.isArray(freegift) &&
+                                                            freegift.map((item: any) => (
+                                                                <option key={item.GIFTID} value={item.GIFTID}>
                                                                     {item.GIFTNAME}
                                                                 </option>
-                                                            ))
-                                                        ) : (
-                                                            <option value="">ไม่มีของแถม</option>
-                                                        )}
+                                                            ))}
                                                     </select>
                                                 </div>
                                                 <div className="col-2 text-center">
@@ -2146,8 +2213,12 @@ const OrderCreateBooking: React.FC = () => {
                                                     <span>หน่วย</span>
                                                 </div>
                                                 <div className="col-2 text-center">
-                                                    {index !== 0 && ( // ซ่อนปุ่มลบเมื่อ index เป็น 0
-                                                        <button type="button" className="btn btn-danger" onClick={() => removeGiftField(index)}>
+                                                    {index !== 0 && (
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-danger"
+                                                            onClick={() => removeGiftField(index)}
+                                                        >
                                                             ลบ
                                                         </button>
                                                     )}
@@ -2155,7 +2226,6 @@ const OrderCreateBooking: React.FC = () => {
                                             </div>
                                         ))}
 
-                                        {/* ปุ่มสำหรับเพิ่มรายการของแถมใหม่ */}
                                         <div className="row mt-10">
                                             <div className="col-12 text-center">
                                                 <button type="button" className="btn btn-primary" onClick={addGiftField}>
@@ -2182,7 +2252,7 @@ const OrderCreateBooking: React.FC = () => {
                                                 className="form-control"
                                                 value={expense.description}
                                                 onChange={(e) => handleChange(expense.id, 'description', e.target.value)}
-                                                placeholder={index === 0 ? "ค่าขนส่ง" : "..."}
+                                                placeholder={"..."}
                                             />
                                         </div>
                                         <div className="col-3">
@@ -2191,7 +2261,7 @@ const OrderCreateBooking: React.FC = () => {
                                                 className="form-control"
                                                 value={expense.unit}
                                                 onChange={(e) => handleChange(expense.id, 'unit', e.target.value)}
-                                                placeholder={index === 0 ? "กิโลเมตร" : ""}
+                                                placeholder={"..."}
                                             />
                                         </div>
                                         <div className="col-2 text-center">
@@ -2324,28 +2394,51 @@ const OrderCreateBooking: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
-
-                            <hr className='mt-10' style={{ borderTop: '1px dotted black' }} />
-
-                            <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10'>
-                                <button
-                                    className='btn btn-secondary w-100 w-md-auto align-self-center h-50px'
-                                // onClick={() => navigate('/sale/step', { state: item })}
-                                >
-                                    ย้อนกลับ
-                                </button>
-                                <button
-                                    className='btn btn-primary w-100 w-md-auto align-self-center h-50px mt-5'
-                                // onClick={handleCheckerClick}
-                                >
-                                    บันทึก
-                                </button>
-                            </div>
-
                         </div>
                     </div>
                 </div >
                 {/* End Card Body */}
+
+                <div className='d-none d-md-flex justify-content-between align-items-center mt-5'>
+                    <button
+                        className='btn btn-secondary w-100 w-md-auto align-self-center h-50px'
+                        onClick={() => navigate('/order/overview')}
+                    >
+                        ย้อนกลับ
+                    </button>
+                    <button
+                        className='btn btn-primary w-100 w-md-auto align-self-center h-50px mt-5'
+                    // onClick={handleCheckerClick}
+                    >
+                        บันทึก
+                    </button>
+                </div>
+
+                {/* ปุ่มในหน้าจอเล็ก */}
+                <div
+                    className="d-flex d-md-none justify-content-between align-items-center bg-light p-3 border-top"
+                    style={{
+                        position: "fixed",
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        zIndex: 1050,
+                    }}
+                >
+                    <button
+                        className="btn btn-secondary w-auto me-2"
+                        onClick={() => navigate('/order/overview')}
+                    >
+                        ย้อนกลับ
+                    </button>
+                    <button
+                        className={`btn btn-primary w-auto`}
+                    // onClick={handleNextClick}
+                    >
+                        บันทึก
+                    </button>
+                </div>
+
             </Content >
         </>
     )

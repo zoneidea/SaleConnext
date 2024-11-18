@@ -296,15 +296,15 @@ const SalesContract: React.FC = () => {
               </div>
             )}
 
-            <div className='row align-items-center mb-10'>
-              <label className='col-lg-4 fw-bold text-muted mb-0'>ส่วนลด</label>
-              <div className='col-lg-8 d-flex justify-content-between'>
-                {DISCOUNT[0]?.DISCOUNTAMOUNT && (
+            {DISCOUNT[0]?.DISCOUNTAMOUNT && (
+              <div className='row align-items-center mb-10'>
+                <label className='col-lg-4 fw-bold text-muted mb-0'>ส่วนลด</label>
+                <div className='col-lg-8 d-flex justify-content-between'>
                   <span className='fw-bold fs-6'>{(DISCOUNT[0]?.DISCOUNTAMOUNT).toLocaleString()}</span>
-                )}
-                <span className='badge badge-light-success'>บาท</span>
+                  <span className='badge badge-light-success'>บาท</span>
+                </div>
               </div>
-            </div>
+            )}
 
             <div className='row align-items-center mb-10'>
               <label className='col-lg-4 fw-bold text-muted mb-0'>ราคาสุทธิ</label>
@@ -341,10 +341,29 @@ const SalesContract: React.FC = () => {
         </div>
         {/* End Card Body */}
 
-        <div className='d-flex justify-content-end mb-5 mt-10'>
+        <div className='d-none d-md-flex justify-content-between align-items-center mt-5'>
           <button
             className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
             type='button'
+            onClick={handleNextClick}
+          >
+            บันทึกสัญญา
+          </button>
+        </div>
+
+        {/* ปุ่มในหน้าจอเล็ก */}
+        <div
+          className="d-flex d-md-none justify-content-end align-items-center bg-light p-3 border-top"
+          style={{
+            position: "fixed",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            zIndex: 1050,
+          }}
+        >
+          <button
+            className="btn btn-primary w-auto me-2"
             onClick={handleNextClick}
           >
             บันทึกสัญญา

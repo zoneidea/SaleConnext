@@ -383,10 +383,13 @@ const SalesDiscount: React.FC = () => {
                     </div>
                 )}
 
-                <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-20'>
-                    <Link to='/sale/package' className='btn btn-secondary w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'>
+                <div className='d-none d-md-flex justify-content-between align-items-center mt-5'>
+                    <button
+                        className="btn btn-secondary w-auto me-2"
+                        onClick={() => navigate('/sale/package')}
+                    >
                         ย้อนกลับ
-                    </Link>
+                    </button>
                     <button
                         className='btn btn-primary w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'
                         onClick={handleNextClick}
@@ -394,6 +397,32 @@ const SalesDiscount: React.FC = () => {
                         ถัดไป
                     </button>
                 </div>
+
+                {/* ปุ่มในหน้าจอเล็ก */}
+                <div
+                    className="d-flex d-md-none justify-content-between align-items-center bg-light p-3 border-top"
+                    style={{
+                        position: "fixed",
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        zIndex: 1050,
+                    }}
+                >
+                    <button
+                        className="btn btn-secondary w-auto me-2"
+                        onClick={() => navigate('/sale/overview')}
+                    >
+                        ย้อนกลับ
+                    </button>
+                    <button
+                        className={`btn btn-primary w-auto`}           
+                        onClick={handleNextClick}
+                    >
+                        บันทึก
+                    </button>
+                </div>
+
             </Content>
         </>
     )

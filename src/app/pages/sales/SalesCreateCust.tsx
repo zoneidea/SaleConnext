@@ -2417,15 +2417,43 @@ const SalesCreateCust: React.FC = () => {
                     {/* End Card */}
 
                     {showCustomerAddress && (
-                        <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10'>
-                            <Link to='/sale/discount' className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
-                                ย้อนกลับ
-                            </Link>
-                            <Link to='/sale/pdpa' className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
-                                จัดเก็บข้อมูล
-                            </Link>
-                        </div>
+                        <>
+                            <div className='d-none d-md-flex justify-content-between align-items-center mt-5'>
+                                <button onClick={() => navigate('/sale/discount')} className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
+                                    ย้อนกลับ
+                                </button>
+                                <button onClick={() => navigate('/sale/pdpa')} className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
+                                    บันทึก
+                                </button>
+                            </div>
+
+                            {/* ปุ่มในหน้าจอเล็ก */}
+                            <div
+                                className="d-flex d-md-none justify-content-between align-items-center bg-light p-3 border-top"
+                                style={{
+                                    position: "fixed",
+                                    bottom: 0,
+                                    left: 0,
+                                    right: 0,
+                                    zIndex: 1050,
+                                }}
+                            >
+                                <button
+                                    className="btn btn-secondary w-auto me-2"
+                                    onClick={() => navigate('/sale/discount')}
+                                >
+                                    ย้อนกลับ
+                                </button>
+                                <button
+                                    className={`btn btn-primary w-auto`}
+                                    onClick={() => navigate('/sale/pdpa')}
+                                >
+                                    บันทึก
+                                </button>
+                            </div>
+                        </>
                     )}
+
                 </form>
             </Content >
         </>
