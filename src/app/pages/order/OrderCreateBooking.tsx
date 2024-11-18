@@ -1356,7 +1356,7 @@ const OrderCreateBooking: React.FC = () => {
                                 {/* End PriceinsertType === "all" */}
 
                                 {/* Start PriceinsertType === "package" */}
-                                {usePackagePricing && auth.data[0].PriceinsertType === "package" && (
+                                {usePackagePricing && auth.data[0].PriceinsertType === "packagea" && (
                                     <>
                                         <div className="container">
                                             {/* Left Side */}
@@ -1393,7 +1393,15 @@ const OrderCreateBooking: React.FC = () => {
                                                                     </option>
                                                                 ))}
                                                         </select>
-                                                        {isLoadingProduct && <div className="text-muted mt-2">กรุณารอสักครู่...</div>}
+                                                        {/* ข้อความแสดงระหว่างการโหลด */}
+                                                        {isLoadingProduct && (
+                                                            <div className="text-muted mt-2">กรุณารอสักครู่...</div>
+                                                        )}
+
+                                                        {/* ข้อความแสดงเมื่อไม่มีสินค้าในหมวดหมู่นี้ */}
+                                                        {!isLoadingProduct && selectedCategoryId && Array.isArray(product) && product.length === 0 && (
+                                                            <div className="text-danger mt-2">ไม่มีสินค้าในหมวดหมู่นี้</div>
+                                                        )}
                                                     </div>
 
                                                     <div className="mb-6">
@@ -1467,14 +1475,6 @@ const OrderCreateBooking: React.FC = () => {
                                                             type="text"
                                                             className="form-control"
                                                             onChange={(e) => handleDiscountChange(e.target.value)}
-                                                            // value={
-                                                            //     discountInput !== undefined
-                                                            //         ? discountInput.toLocaleString(undefined, {
-                                                            //             minimumFractionDigits: 2,
-                                                            //             maximumFractionDigits: 2,
-                                                            //         })
-                                                            //         : ""
-                                                            // }
                                                             value={discountInput}
                                                         />
                                                         {discountValidationMessage && (
@@ -1597,7 +1597,7 @@ const OrderCreateBooking: React.FC = () => {
                                 {/* End PriceinsertType === "package" */}
 
                                 {/* Start PriceinsertType === "manual" */}
-                                {usePackagePricing && auth.data[0].PriceinsertType === "manual" && (
+                                {usePackagePricing && auth.data[0].PriceinsertType === "package" && (
                                     <>
                                         <div className="container">
                                             {/* Left Side */}
