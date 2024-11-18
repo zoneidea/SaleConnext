@@ -277,16 +277,20 @@ const OrderCreateBooking: React.FC = () => {
         }
     }, [priceInput, discountInput]);
 
-    // ล้างค่าฟีลด์เมื่อสลับไปอีกโหมด
     useEffect(() => {
-        setSelectedCategoryId(null)
-        setSelectedProductId(null)
-        setSelectedPackageIndex(null);
-        setTotalPrice(undefined);
-        setDiscountAmount(undefined);
-        setPriceInput(undefined);
-        setDiscountInput(undefined);
-        setNetPriceInput(undefined);
+        // ล้างค่าฟิลด์เมื่อสลับโหมด
+        setSelectedCategoryId(null); // ล้างหมวดหมู่สินค้า
+        setSelectedProductId(null); // ล้างสินค้า
+        setSelectedPromotionId(null); // ล้างโปรโมชั่น
+        setSelectedPackageTypeId(null); // ล้างประเภทการชำระเงิน
+        setSelectedPackageIndex(null); // ล้างแพ็คเกจที่เลือก
+        setTotalPrice(undefined); // ล้างราคาขาย
+        setDiscountAmount(undefined); // ล้างส่วนลดจากแพ็คเกจ
+        setPriceInput(undefined); // ล้างราคาขาย (input)
+        setDiscountInput(undefined); // ล้างส่วนลด (input)
+        setNetPriceInput(undefined); // ล้างราคาสุทธิ
+        setDiscountValidationMessage(null); // ล้างข้อความการตรวจสอบส่วนลด
+        setIsDiscountValid(true); // รีเซ็ตสถานะส่วนลดให้ถูกต้อง
     }, [usePackagePricing]);
 
     // POST GetProduct/Categories
@@ -1019,19 +1023,17 @@ const OrderCreateBooking: React.FC = () => {
                                                         <select
                                                             className="form-select"
                                                             onChange={handleCardProductClick}
-                                                            value={selectedProductId !== null ? selectedProductId : ''}
-                                                            disabled={isLoadingProduct} // ปิดการใช้งาน select ขณะกำลังโหลด
+                                                            value={selectedProductId || ''}
+                                                            disabled={isLoadingProduct}
                                                         >
                                                             <option value="">เลือกสินค้า...</option>
-                                                            {Array.isArray(product) && product.length > 0 && (
-                                                                product.map((item: any, index: number) => (
-                                                                    <option key={index} value={index}>
-                                                                        {item.ItemCode} - {item.ItemDescription}
+                                                            {Array.isArray(product) &&
+                                                                product.map((item: any) => (
+                                                                    <option key={item.ITEMID} value={item.ITEMID}>
+                                                                        {item.ITEMID} - {item.PRODUCTNAME}
                                                                     </option>
-                                                                ))
-                                                            )}
+                                                                ))}
                                                         </select>
-
                                                         {/* ข้อความแสดงระหว่างการโหลด */}
                                                         {isLoadingProduct && (
                                                             <div className="text-muted mt-2">กรุณารอสักครู่...</div>
@@ -1040,6 +1042,28 @@ const OrderCreateBooking: React.FC = () => {
                                                         {/* ข้อความแสดงเมื่อไม่มีสินค้าในหมวดหมู่นี้ */}
                                                         {!isLoadingProduct && selectedCategoryId && Array.isArray(product) && product.length === 0 && (
                                                             <div className="text-danger mt-2">ไม่มีสินค้าในหมวดหมู่นี้</div>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="mb-6">
+                                                        <label className="form-label required fw-bold fs-6">โปรโมชั่น</label>
+                                                        <select
+                                                            className="form-select"
+                                                            onChange={handlePromotionChange}
+                                                            value={selectedPromotionId || ''}
+                                                            disabled={promotionList.length === 0 || isLoadingProduct}
+                                                        >
+                                                            <option value="">เลือกโปรโมชั่น...</option>
+                                                            {promotionList.map((promotion: any, index: number) => (
+                                                                <option key={index} value={promotion.PROMOTIONID}>
+                                                                    {promotion.PROMOTIONNAME}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+
+                                                        {/* แสดงข้อความเมื่อเลือกสินค้าแล้วไม่มีโปรโมชั่น */}
+                                                        {selectedProductId && promotionList.length === 0 && !isLoadingProduct && (
+                                                            <div className="text-danger mt-2">ไม่มีโปรโมชั่นสำหรับสินค้านี้</div>
                                                         )}
                                                     </div>
 
@@ -1091,18 +1115,15 @@ const OrderCreateBooking: React.FC = () => {
                                                         <input
                                                             type="text"
                                                             className="form-control"
-                                                            readOnly
-                                                            value={
-                                                                selectedPackageIndex !== null && packageList[selectedPackageIndex]
-                                                                    ? discountAmount.toLocaleString(undefined, {
-                                                                        minimumFractionDigits: 2,
-                                                                        maximumFractionDigits: 2,
-                                                                    })
-                                                                    : ""
-                                                            }
+                                                            onChange={(e) => handleDiscountChange(e.target.value)}
+                                                            value={discountInput ?? ""}
                                                         />
+                                                        {discountValidationMessage && (
+                                                            <div className={`text-${discountValidationMessage.type} mt-2`}>
+                                                                {discountValidationMessage.message}
+                                                            </div>
+                                                        )}
                                                     </div>
-
                                                 </div>
 
                                                 {/* Right Side */}
@@ -1121,7 +1142,7 @@ const OrderCreateBooking: React.FC = () => {
                                                                     minimumFractionDigits: 2,
                                                                     maximumFractionDigits: 2,
                                                                 })
-                                                                : ""
+                                                                : "0.00"
                                                             }
                                                         />
                                                     </div>
@@ -1135,13 +1156,12 @@ const OrderCreateBooking: React.FC = () => {
                                                             style={{
                                                                 backgroundColor: '#d7dbde',
                                                             }}
-                                                            value={
-                                                                selectedPackageIndex !== null && packageList[selectedPackageIndex]
-                                                                    ? discountAmount.toLocaleString(undefined, {
-                                                                        minimumFractionDigits: 2,
-                                                                        maximumFractionDigits: 2,
-                                                                    })
-                                                                    : ""
+                                                            value={isDiscountValid && discountInput !== undefined
+                                                                ? discountInput.toLocaleString(undefined, {
+                                                                    minimumFractionDigits: 2,
+                                                                    maximumFractionDigits: 2,
+                                                                })
+                                                                : ""
                                                             }
                                                         />
                                                     </div>
@@ -1155,11 +1175,13 @@ const OrderCreateBooking: React.FC = () => {
                                                             style={{
                                                                 backgroundColor: '#d7dbde',
                                                             }}
-                                                            value={netPrice ? netPrice.toLocaleString(undefined, {
-                                                                minimumFractionDigits: 2,
-                                                                maximumFractionDigits: 2,
-                                                            })
-                                                                : ""}
+                                                            value={isDiscountValid && netPrice !== undefined
+                                                                ? netPrice.toLocaleString(undefined, {
+                                                                    minimumFractionDigits: 2,
+                                                                    maximumFractionDigits: 2,
+                                                                })
+                                                                : ""
+                                                            }
                                                         />
                                                     </div>
                                                 </div>
@@ -1181,11 +1203,15 @@ const OrderCreateBooking: React.FC = () => {
                                                             <tr>
                                                                 <td>1</td>
                                                                 <td>
-                                                                    {packageList[selectedPackageIndex] && packageList[selectedPackageIndex].PERIODDETAILS[0]
-                                                                        ? (Number(packageList[selectedPackageIndex].PERIODDETAILS[0].PAYMENTAMOUNT - (packageList[selectedPackageIndex].DISCOUNTPRICE || 0)))
-                                                                            .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                                                                        : ""}
-
+                                                                    {/* งวดที่ 1 */}
+                                                                    <tr>
+                                                                        <td>
+                                                                            {packageList[selectedPackageIndex] && packageList[selectedPackageIndex].PERIODDETAILS[0]
+                                                                                ? (Number(packageList[selectedPackageIndex].PERIODDETAILS[0].PAYMENTAMOUNT - (discountInput || 0)))
+                                                                                    .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                                                                : ""}
+                                                                        </td>
+                                                                    </tr>
                                                                 </td>
                                                                 <td>บาท</td>
                                                             </tr>
@@ -1236,19 +1262,17 @@ const OrderCreateBooking: React.FC = () => {
                                                         <select
                                                             className="form-select"
                                                             onChange={handleCardProductClick}
-                                                            value={selectedProductId !== null ? selectedProductId : ''}
-                                                            disabled={isLoadingProduct} // ปิดการใช้งาน select ขณะกำลังโหลด
+                                                            value={selectedProductId || ''}
+                                                            disabled={isLoadingProduct}
                                                         >
                                                             <option value="">เลือกสินค้า...</option>
-                                                            {Array.isArray(product) && product.length > 0 && (
-                                                                product.map((item: any, index: number) => (
-                                                                    <option key={index} value={index}>
-                                                                        {item.ItemCode} - {item.ItemDescription}
+                                                            {Array.isArray(product) &&
+                                                                product.map((item: any) => (
+                                                                    <option key={item.ITEMID} value={item.ITEMID}>
+                                                                        {item.ITEMID} - {item.PRODUCTNAME}
                                                                     </option>
-                                                                ))
-                                                            )}
+                                                                ))}
                                                         </select>
-
                                                         {/* ข้อความแสดงระหว่างการโหลด */}
                                                         {isLoadingProduct && (
                                                             <div className="text-muted mt-2">กรุณารอสักครู่...</div>
@@ -1266,12 +1290,7 @@ const OrderCreateBooking: React.FC = () => {
                                                             type="text"
                                                             className="form-control"
                                                             onChange={(e) => setPriceInput(Number(e.target.value))}
-                                                            value={priceInput !== undefined ? priceInput.toLocaleString(undefined, {
-                                                                minimumFractionDigits: 2,
-                                                                maximumFractionDigits: 2,
-                                                            })
-                                                                : "0.00"
-                                                            }
+                                                            value={priceInput}
                                                         />
                                                     </div>
 
@@ -1281,12 +1300,7 @@ const OrderCreateBooking: React.FC = () => {
                                                             type="text"
                                                             className="form-control"
                                                             onChange={(e) => setDiscountInput(Number(e.target.value))}
-                                                            value={discountInput !== undefined ? discountInput.toLocaleString(undefined, {
-                                                                minimumFractionDigits: 2,
-                                                                maximumFractionDigits: 2,
-                                                            })
-                                                                : "0.00"
-                                                            }
+                                                            value={discountInput ?? ""}
                                                         />
                                                     </div>
 
@@ -1356,7 +1370,7 @@ const OrderCreateBooking: React.FC = () => {
                                 {/* End PriceinsertType === "all" */}
 
                                 {/* Start PriceinsertType === "package" */}
-                                {usePackagePricing && auth.data[0].PriceinsertType === "packagea" && (
+                                {usePackagePricing && auth.data[0].PriceinsertType === "package" && (
                                     <>
                                         <div className="container">
                                             {/* Left Side */}
@@ -1597,7 +1611,7 @@ const OrderCreateBooking: React.FC = () => {
                                 {/* End PriceinsertType === "package" */}
 
                                 {/* Start PriceinsertType === "manual" */}
-                                {usePackagePricing && auth.data[0].PriceinsertType === "package" && (
+                                {usePackagePricing && auth.data[0].PriceinsertType === "manual" && (
                                     <>
                                         <div className="container">
                                             {/* Left Side */}
@@ -1623,19 +1637,17 @@ const OrderCreateBooking: React.FC = () => {
                                                         <select
                                                             className="form-select"
                                                             onChange={handleCardProductClick}
-                                                            value={selectedProductId !== null ? selectedProductId : ''}
-                                                            disabled={isLoadingProduct} // ปิดการใช้งาน select ขณะกำลังโหลด
+                                                            value={selectedProductId || ''}
+                                                            disabled={isLoadingProduct}
                                                         >
                                                             <option value="">เลือกสินค้า...</option>
-                                                            {Array.isArray(product) && product.length > 0 && (
-                                                                product.map((item: any, index: number) => (
+                                                            {Array.isArray(product) &&
+                                                                product.map((item: any) => (
                                                                     <option key={item.ITEMID} value={item.ITEMID}>
-                                                                        {item.ItemCode} - {item.ItemDescription}
+                                                                        {item.ITEMID} - {item.PRODUCTNAME}
                                                                     </option>
-                                                                ))
-                                                            )}
+                                                                ))}
                                                         </select>
-
                                                         {/* ข้อความแสดงระหว่างการโหลด */}
                                                         {isLoadingProduct && (
                                                             <div className="text-muted mt-2">กรุณารอสักครู่...</div>
@@ -1653,12 +1665,7 @@ const OrderCreateBooking: React.FC = () => {
                                                             type="text"
                                                             className="form-control"
                                                             onChange={(e) => setPriceInput(Number(e.target.value))}
-                                                            value={priceInput !== undefined ? priceInput.toLocaleString(undefined, {
-                                                                minimumFractionDigits: 2,
-                                                                maximumFractionDigits: 2,
-                                                            })
-                                                                : ""
-                                                            }
+                                                            value={priceInput}
                                                         />
                                                     </div>
 
@@ -1668,20 +1675,8 @@ const OrderCreateBooking: React.FC = () => {
                                                             type="text"
                                                             className="form-control"
                                                             onChange={(e) => handleDiscountChange(e.target.value)}
-                                                            value={
-                                                                discountInput !== undefined
-                                                                    ? discountInput.toLocaleString(undefined, {
-                                                                        minimumFractionDigits: 2,
-                                                                        maximumFractionDigits: 2,
-                                                                    })
-                                                                    : ""
-                                                            }
+                                                            value={discountInput}
                                                         />
-                                                        {discountValidationMessage && (
-                                                            <div className={`text-${discountValidationMessage.type} mt-2`}>
-                                                                {discountValidationMessage.message}
-                                                            </div>
-                                                        )}
                                                     </div>
 
                                                 </div>
