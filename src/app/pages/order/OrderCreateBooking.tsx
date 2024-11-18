@@ -192,20 +192,79 @@ const OrderCreateBooking: React.FC = () => {
     console.log(`packageList`, packageList);
 
     const [selectedPackageIndex, setSelectedPackageIndex] = useState<number | null>(null);
-    // console.log(`selectedPackageIndex`, selectedPackageIndex);
+    console.log(`selectedPackageIndex`, selectedPackageIndex);
 
-    const [isLoadingProduct, setIsLoadingProduct] = useState<boolean>(false); // สถานะโหลดข้อมูลสินค้า
+    const [isLoadingProduct, setIsLoadingProduct] = useState<boolean>(false);
     const [isLoadingPackage, setIsLoadingPackage] = useState<boolean>(false);
 
-    // คำนวณ ใช้ราคาและส่วนลดจากแพ็คเกจ
-    const [totalPrice, setTotalPrice] = useState<any>('');
-    const [discountAmount, setDiscountAmount] = useState<any>('');
-    const netPrice = totalPrice - discountAmount;
+    // ตัวแปรเก็บค่าราคา + ส่วนลดจาก api
+    const [totalPrice, setTotalPrice] = useState<any>(''); //TOTALPRICE
+    const [discountAmount, setDiscountAmount] = useState<any>(''); //DISCOUNT
 
-    // คำนวณ กรอกราคาและส่วนลดเอง
+    // input + ฟีลด์ด้านขวา กรอกราคาและส่วนลดเอง
     const [priceInput, setPriceInput] = useState<number | undefined>(undefined);
-    const [discountInput, setDiscountInput] = useState<number | undefined>(undefined);
+    const [discountInput, setDiscountInput] = useState<number | undefined>(undefined); // input ส่วนลด
     const [netPriceInput, setNetPriceInput] = useState<number | undefined>(undefined);
+
+    const [discountValidationMessage, setDiscountValidationMessage] = useState<{
+        message: string;
+        type: string;
+    } | null>(null);
+
+    // คำนวณส่วนลดอัตโนมัติเพื่อนำไปแสดงที่ฟีลด์ด้านขวา
+    const discountPrice = selectedPackageIndex !== null && packageList[selectedPackageIndex].DISCOUNTPRICE
+    const seq = selectedPackageIndex !== null && packageList[selectedPackageIndex].SEQUENCE
+
+    // ราคาสุทธิ
+    const netPrice = discountInput !== undefined ? totalPrice - discountInput : totalPrice;
+
+    // ซ่อนฟีลด์ด้านขวา กรณีที่กรอกส่วนลดผิด
+    const [isDiscountValid, setIsDiscountValid] = useState<boolean>(true);
+
+    const handleDiscountChange = (value: string) => {
+        const inputNumber = Number(value.replace(/,/g, "")); // แปลง input ที่เป็น string เป็น number
+
+        if (isNaN(inputNumber)) {
+            setDiscountValidationMessage({
+                message: "กรุณากรอกตัวเลขที่ถูกต้อง",
+                type: "danger",
+            });
+            setIsDiscountValid(false); // ส่วนลดไม่ถูกต้อง
+            return;
+        }
+
+        setDiscountInput(inputNumber); // อัปเดต state
+
+        if (discountPrice !== undefined && seq !== undefined) {
+            let validationMessage = "";
+
+            // ตรวจสอบเงื่อนไข
+            if (inputNumber <= discountPrice) {
+                if (inputNumber % seq === 0) {
+                    validationMessage = "";
+                    setIsDiscountValid(true); // ส่วนลดถูกต้อง
+                    setDiscountValidationMessage({
+                        message: validationMessage,
+                        type: "success",
+                    });
+                } else {
+                    validationMessage = `กรอกส่วนลดผิด ต้องลดหรือเพิ่มได้ทีละ ${seq} บาท`;
+                    setIsDiscountValid(false); // ส่วนลดไม่ถูกต้อง
+                    setDiscountValidationMessage({
+                        message: validationMessage,
+                        type: "danger",
+                    });
+                }
+            } else {
+                validationMessage = `ส่วนลดต้องไม่เกิน ${discountPrice} บาท`;
+                setIsDiscountValid(false); // ส่วนลดไม่ถูกต้อง
+                setDiscountValidationMessage({
+                    message: validationMessage,
+                    type: "danger",
+                });
+            }
+        }
+    };
 
     // โหมด กรอกราคาและส่วนลดเอง เมื่อใส่ฟิลด์ ราคาขาย + ส่วนลด ฟีลด์ readonly ด้านขวาจะแสดงอัตโนมัติ
     useEffect(() => {
@@ -225,7 +284,6 @@ const OrderCreateBooking: React.FC = () => {
         setSelectedPackageIndex(null);
         setTotalPrice(undefined);
         setDiscountAmount(undefined);
-
         setPriceInput(undefined);
         setDiscountInput(undefined);
         setNetPriceInput(undefined);
@@ -333,7 +391,7 @@ const OrderCreateBooking: React.FC = () => {
         if (selectedPackageIndex !== null && packageList[selectedPackageIndex]) {
             setTotalPrice(packageList[selectedPackageIndex].TOTALPRICE);
         } else {
-            setTotalPrice("N/A");
+            setTotalPrice("");
         }
     }, [selectedPackageIndex, packageList]);
 
@@ -342,7 +400,7 @@ const OrderCreateBooking: React.FC = () => {
         if (selectedPackageIndex !== null && packageList[selectedPackageIndex]) {
             setDiscountAmount(packageList[selectedPackageIndex].DISCOUNTPRICE);
         } else {
-            setDiscountAmount("N/A"); // หรือค่าเริ่มต้นที่คุณต้องการเมื่อไม่ได้เลือก
+            setDiscountAmount(""); // หรือค่าเริ่มต้นที่คุณต้องการเมื่อไม่ได้เลือก
         }
     }, [selectedPackageIndex, packageList]);
 
@@ -1408,17 +1466,23 @@ const OrderCreateBooking: React.FC = () => {
                                                         <input
                                                             type="text"
                                                             className="form-control"
-                                                            value={
-                                                                selectedPackageIndex !== null && packageList[selectedPackageIndex]
-                                                                    ? discountAmount.toLocaleString(undefined, {
-                                                                        minimumFractionDigits: 2,
-                                                                        maximumFractionDigits: 2,
-                                                                    })
-                                                                    : ""
-                                                            }
+                                                            onChange={(e) => handleDiscountChange(e.target.value)}
+                                                            // value={
+                                                            //     discountInput !== undefined
+                                                            //         ? discountInput.toLocaleString(undefined, {
+                                                            //             minimumFractionDigits: 2,
+                                                            //             maximumFractionDigits: 2,
+                                                            //         })
+                                                            //         : ""
+                                                            // }
+                                                            value={discountInput}
                                                         />
+                                                        {discountValidationMessage && (
+                                                            <div className={`text-${discountValidationMessage.type} mt-2`}>
+                                                                {discountValidationMessage.message}
+                                                            </div>
+                                                        )}
                                                     </div>
-
                                                 </div>
 
                                                 {/* Right Side */}
@@ -1451,12 +1515,12 @@ const OrderCreateBooking: React.FC = () => {
                                                             style={{
                                                                 backgroundColor: '#d7dbde',
                                                             }}
-                                                            value={selectedPackageIndex !== null && packageList[selectedPackageIndex]
-                                                                ? discountAmount.toLocaleString(undefined, {
+                                                            value={isDiscountValid && discountInput !== undefined
+                                                                ? discountInput.toLocaleString(undefined, {
                                                                     minimumFractionDigits: 2,
                                                                     maximumFractionDigits: 2,
                                                                 })
-                                                                : "0.00"
+                                                                : ""
                                                             }
                                                         />
                                                     </div>
@@ -1470,11 +1534,12 @@ const OrderCreateBooking: React.FC = () => {
                                                             style={{
                                                                 backgroundColor: '#d7dbde',
                                                             }}
-                                                            value={netPrice ? netPrice.toLocaleString(undefined, {
-                                                                minimumFractionDigits: 2,
-                                                                maximumFractionDigits: 2,
-                                                            })
-                                                                : "0.00"
+                                                            value={isDiscountValid && netPrice !== undefined
+                                                                ? netPrice.toLocaleString(undefined, {
+                                                                    minimumFractionDigits: 2,
+                                                                    maximumFractionDigits: 2,
+                                                                })
+                                                                : ""
                                                             }
                                                         />
                                                     </div>
@@ -1501,7 +1566,7 @@ const OrderCreateBooking: React.FC = () => {
                                                                     <tr>
                                                                         <td>
                                                                             {packageList[selectedPackageIndex] && packageList[selectedPackageIndex].PERIODDETAILS[0]
-                                                                                ? (Number(packageList[selectedPackageIndex].PERIODDETAILS[0].PAYMENTAMOUNT - (packageList[selectedPackageIndex].DISCOUNTPRICE || 0)))
+                                                                                ? (Number(packageList[selectedPackageIndex].PERIODDETAILS[0].PAYMENTAMOUNT - (discountInput || 0)))
                                                                                     .toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                                                                                 : ""}
                                                                         </td>

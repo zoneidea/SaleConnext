@@ -6,7 +6,7 @@ import { Content } from '../../../_metronic/layout/components/content';
 import { SalesItemNumber } from './components/salesItemNumber/SalesItemNumber';
 import { useUUIDStore } from '../../modules/stores/stepsStore';
 import { useAuth } from '../../modules/auth/core/Auth';
-import {Commet } from 'react-loading-indicators/'
+import { OrbitProgress } from 'react-loading-indicators'
 
 //useStore
 import { useFetchCategoryStore } from '../../modules/stores/sales/packageStore/packageStore';
@@ -32,7 +32,7 @@ const SalesOverview: React.FC = () => {
   const [draft, setDraft] = useState<any[]>([]); // กำหนดให้ state เป็น array เพื่อรองรับ map()
   const [finish, setFinish] = useState<any[]>([]); // กำหนดให้ state เป็น array เพื่อรองรับ map()
   // console.log(`finish`, finish);
-  
+
   useEffect(() => {
     getDataDraft();
   }, []);

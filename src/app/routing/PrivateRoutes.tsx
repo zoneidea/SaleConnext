@@ -1,14 +1,53 @@
-import { lazy, FC, Suspense } from 'react'
+import React, { lazy, FC, Suspense, useEffect, useState } from 'react'
 import { Route, Routes, Navigate } from 'react-router-dom'
 import { MasterLayout } from '../../_metronic/layout/MasterLayout'
 import TopBarProgress from 'react-topbar-progress-indicator'
 import { getCSSVariableValue } from '../../_metronic/assets/ts/_utils'
 import { WithChildren } from '../../_metronic/helpers'
+import { Commet } from 'react-loading-indicators'
 
 import { DashboardWrapper } from '../pages/dashboard/DashboardWrapper'
 import { SalesWrapper } from '../pages/sales/SalesWrapper'
 import { OrderWrapper } from '../pages/order/OrderWrapper'
 import { FirstBillWrapper } from '../pages/firstBill/FirstBillWrapper'
+
+// SuspensedView Component
+const SuspensedView: FC<WithChildren> = ({ children }) => {
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 1000)
+    return () => clearTimeout(timer)
+  }, [])
+
+  const baseColor = getCSSVariableValue('--bs-primary')
+  TopBarProgress.config({
+    barColors: {
+      '0': baseColor,
+    },
+    barThickness: 1,
+    shadowBlur: 5,
+  })
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+          flexDirection: 'column',
+        }}
+      >
+        <TopBarProgress />
+        <Commet color="#32cd32" size="large" />
+      </div>
+    )
+  }
+
+  return <Suspense fallback={<TopBarProgress />}>{children}</Suspense>
+}
 
 const PrivateRoutes = () => {
   //หัวข้อ ระบบขาย
@@ -68,8 +107,8 @@ const PrivateRoutes = () => {
         <Route path='auth/*' element={<Navigate to='/dashboard' />} />
         {/* Pages */}
         <Route path='dashboard' element={<DashboardWrapper />} />
-        <Route path='sale/overview' element={<SalesWrapper />} />
-        <Route path='order/overview' element={<OrderWrapper />} />
+        <Route path='sale/overview' element={<SuspensedView><SalesWrapper /></SuspensedView>} />
+        <Route path='order/overview' element={<SuspensedView><OrderWrapper /></SuspensedView>} />
 
 
         {/* Start ระบบขาย */}
@@ -358,7 +397,7 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
-          <Route
+        <Route
           path='firstBill/CreateFirstBill'
           element={
             <SuspensedView>
@@ -383,18 +422,6 @@ const PrivateRoutes = () => {
       </Route>
     </Routes>
   )
-}
-
-const SuspensedView: FC<WithChildren> = ({ children }) => {
-  const baseColor = getCSSVariableValue('--bs-primary')
-  TopBarProgress.config({
-    barColors: {
-      '0': baseColor,
-    },
-    barThickness: 1,
-    shadowBlur: 5,
-  })
-  return <Suspense fallback={<TopBarProgress />}>{children}</Suspense>
 }
 
 export { PrivateRoutes }
