@@ -341,7 +341,7 @@ const SalesContract: React.FC = () => {
         </div>
         {/* End Card Body */}
 
-        <div className='d-none d-md-flex justify-content-between align-items-center mt-5'>
+        <div className='d-none d-xl-flex justify-content-between align-items-center mt-5'>
           <button
             className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
             type='button'
@@ -353,7 +353,7 @@ const SalesContract: React.FC = () => {
 
         {/* ปุ่มในหน้าจอเล็ก */}
         <div
-          className="d-flex d-md-none justify-content-end align-items-center bg-light p-3 border-top"
+          className="d-flex d-xl-none justify-content-end align-items-center bg-light p-3 border-top"
           style={{
             position: "fixed",
             bottom: 0,

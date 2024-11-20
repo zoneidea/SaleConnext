@@ -6,6 +6,8 @@ import { MasterInit } from '../_metronic/layout/MasterInit'
 import { AuthInit } from './modules/auth'
 import { ThemeModeProvider } from '../_metronic/partials'
 
+import { Commet, ThreeDot } from 'react-loading-indicators'
+
 const App = () => {
   return (
     <Suspense fallback={<LayoutSplashScreen />}>
@@ -13,8 +15,8 @@ const App = () => {
         <LayoutProvider>
           <ThemeModeProvider>
             {/* <AuthInit> */}
-              <Outlet />
-              <MasterInit />
+            <Outlet />
+            <MasterInit />
             {/* </AuthInit> */}
           </ThemeModeProvider>
         </LayoutProvider>

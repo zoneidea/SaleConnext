@@ -17,6 +17,9 @@ import {
     useSaveAddressStore
 } from '../../modules/stores/stepsStore';
 
+import { EntriesDropdown, PaginationTable } from '../../modules/entriesAndPagination/Pagination';
+import { ThreeDot } from 'react-loading-indicators';
+
 const ContractChecker: React.FC = () => {
     const navigate = useNavigate()
 
@@ -76,13 +79,21 @@ const ContractChecker: React.FC = () => {
     //     }
     // };
 
-    const [pending, setPending] = useState<any[]>([]); // กำหนดให้ state เป็น array เพื่อรองรับ map()
-
     const API_URL_GET_ALLCONTRACT = import.meta.env.VITE_APP_API_MONGO;
     const PENDING_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetContractForCheck?supemp=${SupEmpId}&secemp=${SecEmpId}`;
 
+    const [pending, setPending] = useState<any[]>([]); // กำหนดให้ state เป็น array เพื่อรองรับ map()
+
+    const [isLoadingFinish, setIsLoadingFinish] = useState<boolean>(false);
+    const [searchRefNo, setSearchRefNo] = useState<string>(''); // State สำหรับค้นหา
+
+    // Pagination states
+    const [entries, setEntries] = useState<number>(10); // Default entries per page
+    const [currentPageFinish, setCurrentPageFinish] = useState<number>(1);
+
     useEffect(() => {
         const getDataPending = async () => {
+            setIsLoadingFinish(true);
             try {
                 const response = await axios.get(PENDING_ALLCONTRACT_URL, {
                     headers: {
@@ -93,10 +104,21 @@ const ContractChecker: React.FC = () => {
                 setPending(data); // บันทึกข้อมูล
             } catch (error) {
                 console.error('Error fetching PENDING_ALLCONTRACT_URL:', error);
+            } finally {
+                setIsLoadingFinish(false);
             }
         };
         getDataPending();
     }, []);
+
+    // กรองข้อมูลตาม REFNO
+    const filteredFinish = pending.filter((item) =>
+        item.REFNO?.toLowerCase().includes(searchRefNo.toLowerCase())
+    );
+
+    // Pagination logic for Finish
+    const finishStartIndex = (currentPageFinish - 1) * entries;
+    const finishDisplayedData = filteredFinish.slice(finishStartIndex, finishStartIndex + entries);
 
     return (
         <>
@@ -120,34 +142,70 @@ const ContractChecker: React.FC = () => {
                         </ul>
                     </div>
                 </div>
-                <div className='accordion mb-10' id='kt_accordion_1'>
-                    <div className='accordion-item mb-10'>
-                        <div className='accordion-body p-0'>
-                            <div className='card-body px-lg-9 px-1'>
-                                <div className='row'>
-                                    <div className='col-lg-12 my-7 my-xl-10'>
-                                        {pending.length > 0 && (
-                                            pending.map((item, index) => (
-                                                <SalesItemNumber key={index} status="PENDING" item={item} />
-                                            ))
-                                        )}
-                                        {
-                                            pending.length === 0 && (
-                                                <span className='text-gray-800 fw-bold d-block'>{`ไม่มีรายการรอตรวจสอบ`}</span>
-                                            )
-                                        }
-                                    </div>
-                                </div>
+
+                {/* Card Body */}
+                <div className='card mb-10'>
+                    <div className='card-body d-flex align-items-center'>
+                        <div className='col-12'>
+
+                            {/* ช่องค้นหา */}
+                            <div className="mb-5 col-xl-4">
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="ค้นหาจาก REFNO"
+                                    value={searchRefNo}
+                                    onChange={(e) => setSearchRefNo(e.target.value)}
+                                />
                             </div>
+
+                            {isLoadingFinish ? (
+                                <div className="text-center my-10">
+                                    <ThreeDot />
+                                    <p className="text-gray-600 mt-3">กำลังโหลดรายการ...</p>
+                                </div>
+                            ) : pending.length > 0 ? (
+                                <>
+                                    {pending.map((item, index) => (
+                                        <SalesItemNumber key={index} status="PENDING" item={item} />
+                                    ))}
+
+                                    <div className='d-none d-xl-flex justify-content-end align-items-center mt-5'>
+                                        <PaginationTable
+                                            totalData={filteredFinish.length}
+                                            entries={entries}
+                                            currentPage={currentPageFinish}
+                                            onPageChange={setCurrentPageFinish}
+                                        />
+                                    </div>
+
+                                    {/* PaginationTable หน้าจอเล็ก */}
+                                    <div
+                                        className="d-flex d-xl-none justify-content-end align-items-center bg-light p-3 border-top"
+                                        style={{
+                                            position: "fixed",
+                                            bottom: 0,
+                                            left: 0,
+                                            right: 0,
+                                            zIndex: 1050,
+                                        }}
+                                    >
+                                        <PaginationTable
+                                            totalData={filteredFinish.length}
+                                            entries={entries}
+                                            currentPage={currentPageFinish}
+                                            onPageChange={setCurrentPageFinish}
+                                        />
+                                    </div>
+                                </>
+
+                            ) : (
+                                <p className="text-gray-600 text-center mt-3">ไม่มีรายการที่ต้องตรวจสอบ</p>
+                            )}
                         </div>
                     </div>
                 </div>
-                {/* <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10'>
-                    <Link to='' className='btn btn-secondary w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'>
-                        ย้อนกลับ
-                    </Link>
-                </div> */}
-
+                {/* End Card Body */}
             </Content>
         </>
     )

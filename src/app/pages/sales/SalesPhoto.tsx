@@ -8,7 +8,7 @@ import withReactContent from 'sweetalert2-react-content';
 const SalesPhoto: React.FC = () => {
     const navigate = useNavigate()
 
-    
+
     interface ItemProps {
         REFNO: String,
         CONTNO: String,
@@ -20,7 +20,7 @@ const SalesPhoto: React.FC = () => {
         STATUS: String,
         PRODUCT: [any],
         CUSTOMERSTATUS: [any],
-        DISCOUNT: [any], 
+        DISCOUNT: [any],
         CUSTOMERDETAIL: [any],
         ADDRESS: [any],
         PDPA: [any],
@@ -238,11 +238,10 @@ const SalesPhoto: React.FC = () => {
 
                 {/* แสดงปุ่มเมื่อมาจาก Step */}
                 {fromStep ? (
-                    <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10'>
+                    <div className='d-none d-xl-flex justify-content-between align-items-center mt-5'>
                         <button
                             className='btn btn-secondary w-100 w-md-auto align-self-center h-50px'
-                            // onClick={() => navigate('/sale/step', { state: item })}
-                            onClick={() => navigate('/sale/step')}
+                            onClick={() => navigate('/sale/step', { state: item })}
                         >
                             ย้อนกลับ
                         </button>
@@ -254,13 +253,70 @@ const SalesPhoto: React.FC = () => {
                         </button>
                     </div>
                 ) : (
-                    <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10'>
+                    <div className='d-none d-xl-flex justify-content-between align-items-center mt-5'>
                         <button
                             className='btn btn-secondary w-100 w-md-auto align-self-center h-50px'
-                            // onClick={() => navigate('/sale/step', { state: item })}
-                            onClick={() => navigate('/sale/contract')}
+                            onClick={() => navigate('/sale/overview')}
+                        >
+                            กลับหน้าแรก
+                        </button>
+                        <button
+                            className='btn btn-primary w-100 w-md-auto align-self-center h-50px'
+                        // onClick={handleCheckerClick}
+                        >
+                            ส่งตรวจสอบ
+                        </button>
+                    </div>
+                )}
+
+                {/* ปุ่มในหน้าจอเล็ก */}
+                {/* แสดงปุ่มเมื่อมาจาก Step */}
+                {fromStep ? (
+                    <div
+                        className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
+                        style={{
+                            position: "fixed",
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            zIndex: 1050,
+                        }}
+                    >
+                        <button
+                            className="btn btn-secondary w-auto me-2"
+                            onClick={() => navigate('/sale/step')}
                         >
                             ย้อนกลับ
+                        </button>
+                        <button
+                            className="btn btn-primary w-auto me-2"
+                        // onClick={handleNextClick}
+                        >
+                            ส่งตรวจสอบ
+                        </button>
+                    </div>
+                ) : (
+                    <div
+                        className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
+                        style={{
+                            position: "fixed",
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            zIndex: 1050,
+                        }}
+                    >
+                        <button
+                            className="btn btn-secondary w-auto me-2"
+                            onClick={() => navigate('/sale/overview')}
+                        >
+                            กลับหน้าแรก
+                        </button>
+                        <button
+                            className="btn btn-primary w-auto me-2"
+                        // onClick={handleNextClick}
+                        >
+                            ส่งตรวจสอบ
                         </button>
                     </div>
                 )}

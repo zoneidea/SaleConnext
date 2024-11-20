@@ -208,11 +208,32 @@ const SalesProductStock: React.FC = () => {
                         </div>
                     </div>
                 </div>
-                <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10'>
-                    <Link to='/sale/overview' className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
+
+                <div className="d-none d-xl-flex justify-content-between align-items-center mt-5">
+                    <Link to='/' className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
                         ย้อนกลับ
                     </Link>
                 </div>
+
+                {/* ปุ่มในหน้าจอเล็ก */}
+                <div
+                    className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
+                    style={{
+                        position: "fixed",
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        zIndex: 1050,
+                    }}
+                >
+                    <button
+                        className="btn btn-secondary w-auto me-2"
+                        onClick={() => navigate('/')}
+                    >
+                        ย้อนกลับ
+                    </button>
+                </div>
+
             </Content>
         </>
     )

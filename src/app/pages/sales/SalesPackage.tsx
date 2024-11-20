@@ -174,7 +174,7 @@ const SalesPackage: React.FC = () => {
             }
         };
         postData();
-    }, [EmpId, TeamSale, SaleCode, SupEmpId, SecEmpId, DivisionId, DepartId, DepartGroup, auth]);
+    }, [EmpId, TeamSale, SaleCode, SupEmpId, SecEmpId, DivisionId, DepartId, DepartGroup, auth, setCategories, fetchCategory]);
 
     // GET Product/GetStock?
     useEffect(() => {
@@ -623,7 +623,7 @@ const SalesPackage: React.FC = () => {
                 </div>
 
                 {/* ปุ่มในหน้าจอใหญ่ */}
-                <div className="d-none d-md-flex justify-content-between align-items-center mt-5">
+                <div className="d-none d-xl-flex justify-content-between align-items-center mt-5">
                     <button
                         className="btn btn-secondary w-auto me-2"
                         onClick={() => navigate('/sale/overview')}
@@ -642,7 +642,7 @@ const SalesPackage: React.FC = () => {
 
                 {/* ปุ่มในหน้าจอเล็ก */}
                 <div
-                    className="d-flex d-md-none justify-content-between align-items-center bg-light p-3 border-top"
+                    className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
                     style={{
                         position: "fixed",
                         bottom: 0,

@@ -514,8 +514,24 @@ const Step: React.FC = () => {
         </div>
         {/* End Card Body */}
 
-        <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10'>
+        <div className='d-none d-xl-flex justify-content-between align-items-center my-5'>
           <Link to='/sale/overview' className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
+            ย้อนกลับ
+          </Link>
+        </div>
+
+        {/* ปุ่มในหน้าจอเล็ก */}
+        <div
+          className="d-flex d-xl-none justify-content-start align-items-center bg-light p-3 border-top"
+          style={{
+            position: "fixed",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            zIndex: 1050,
+          }}
+        >
+          <Link to='/sale/overview' className='btn btn-secondary align-self-center mb-2 mb-md-0'>
             ย้อนกลับ
           </Link>
         </div>

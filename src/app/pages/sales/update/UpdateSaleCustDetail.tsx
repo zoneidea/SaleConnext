@@ -821,7 +821,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                     </div>
                     {/* End Card */}
 
-                    <div className='d-none d-md-flex justify-content-between align-items-center mt-5'>
+                    <div className='d-none d-xl-flex justify-content-between align-items-center mt-5'>
                         <button
                             className='btn btn-secondary w-100 w-md-auto align-self-center h-50px'
                             onClick={() => navigate('/sale/step', { state: item })}>
@@ -842,7 +842,7 @@ const UpdateSaleCustDetail: React.FC = () => {
 
                     {/* ปุ่มในหน้าจอเล็ก */}
                     <div
-                        className="d-flex d-md-none justify-content-between align-items-center bg-light p-3 border-top"
+                        className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
                         style={{
                             position: "fixed",
                             bottom: 0,

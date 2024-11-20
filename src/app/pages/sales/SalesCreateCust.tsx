@@ -119,7 +119,6 @@ const SalesCreateCust: React.FC = () => {
     // สร้าง state สำหรับ "ที่อยู่ลูกค้า (ติดตั้ง)
     const [addressNumberForInstall, setAddressNumberForInstall] = useState<string>('');
     // console.log(`addressNumberForInstall`, addressNumberForInstall);
-
     const [addressMooForInstall, setAddressMooForInstall] = useState<string>('');
     const [addressSoiForInstall, setAddressSoiForInstall] = useState<string>('');
     const [addressRoadForInstall, setAddressRoadForInstall] = useState<string>('');
@@ -1927,7 +1926,7 @@ const SalesCreateCust: React.FC = () => {
                                                                         className='form-check-input'
                                                                         name='likeAddressCard'
                                                                         type='checkbox'
-                                                                    // checked={installLikeCardAddr}
+                                                                        checked={installLikeCardAddr}
                                                                     />
                                                                     <span className='fw-bold ps-2 fs-6 mb-sm-5'>ใช้ที่อยู่เดียวกับที่อยู่ตามบัตรฯ</span>
                                                                 </label>
@@ -2418,7 +2417,7 @@ const SalesCreateCust: React.FC = () => {
 
                     {showCustomerAddress && (
                         <>
-                            <div className='d-none d-md-flex justify-content-between align-items-center mt-5'>
+                            <div className='d-none d-xl-flex justify-content-between align-items-center mt-5'>
                                 <button onClick={() => navigate('/sale/discount')} className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
                                     ย้อนกลับ
                                 </button>
@@ -2429,7 +2428,7 @@ const SalesCreateCust: React.FC = () => {
 
                             {/* ปุ่มในหน้าจอเล็ก */}
                             <div
-                                className="d-flex d-md-none justify-content-between align-items-center bg-light p-3 border-top"
+                                className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
                                 style={{
                                     position: "fixed",
                                     bottom: 0,

@@ -383,7 +383,7 @@ const SalesDiscount: React.FC = () => {
                     </div>
                 )}
 
-                <div className='d-none d-md-flex justify-content-between align-items-center mt-5'>
+                <div className='d-none d-xl-flex justify-content-between align-items-center mt-5'>
                     <button
                         className="btn btn-secondary w-auto me-2"
                         onClick={() => navigate('/sale/package')}
@@ -400,7 +400,7 @@ const SalesDiscount: React.FC = () => {
 
                 {/* ปุ่มในหน้าจอเล็ก */}
                 <div
-                    className="d-flex d-md-none justify-content-between align-items-center bg-light p-3 border-top"
+                    className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
                     style={{
                         position: "fixed",
                         bottom: 0,

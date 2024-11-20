@@ -91,7 +91,7 @@ const CreateFirstBill: React.FC = () => {
     return (
         <>
             <Content>
-                <div className='d-flex justify-content-between align-items-center mt-7 mt-lg-0'>
+                <div className='d-flex justify-content-between align-items-center mt-lg-0'>
                     <div id="kt_page_title" data-kt-swapper="true" data-kt-swapper-mode="prepend"
                         data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
                         className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
@@ -471,7 +471,7 @@ const CreateFirstBill: React.FC = () => {
 
                 </div>
 
-                <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-20'>
+                <div className="d-none d-xl-flex justify-content-between align-items-center mt-5">
                     <button
                         className='btn btn-secondary w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'
                         onClick={() => navigate('/firstBill/overview', { state: item })}
@@ -485,6 +485,32 @@ const CreateFirstBill: React.FC = () => {
                         ถัดไป
                     </button>
                 </div>
+
+                {/* ปุ่มในหน้าจอเล็ก */}
+                <div
+                    className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
+                    style={{
+                        position: "fixed",
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        zIndex: 1050,
+                    }}
+                >
+                    <button
+                        className="btn btn-secondary w-auto me-2"
+                        onClick={() => navigate('/firstBill/overview', { state: item })}
+                    >
+                        ย้อนกลับ
+                    </button>
+                    <button
+                        className="btn btn-primary w-auto me-2"
+                    // onClick={handleNextClick}
+                    >
+                        ถัดไป
+                    </button>
+                </div>
+
             </Content>
         </>
     )

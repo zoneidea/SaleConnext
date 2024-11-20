@@ -7,13 +7,8 @@ import { useUUIDStore } from '../../modules/stores/stepsStore';
 import { useAuth } from '../../modules/auth/core/Auth';
 
 //useStore
-import {
-    useCategoryStore,
-    useFetchCategoryStore,
-    useProductStore,
-    usePackageStore,
-    useConditionsCheckHistoryStore
-} from '../../modules/stores/sales/packageStore/packageStore';
+import { useFetchCategoryStore, } from '../../modules/stores/sales/packageStore/packageStore';
+import { useCustomerStore } from './store/SerchCustomerStore'
 
 import dayjs, { Dayjs } from 'dayjs';
 import DatePicker from 'react-datepicker';
@@ -23,12 +18,17 @@ import 'react-datetime-picker/dist/DateTimePicker.css';
 import 'react-calendar/dist/Calendar.css';
 import 'react-clock/dist/Clock.css';
 
-import ModalTrigger from "./ModalSerchCustomer/ModalTrigger";
-import SerchCustomerModal from "./ModalSerchCustomer/SerchCustomerModal";
+import ModalTrigger from "./modalSerchCustomer/ModalTrigger";
+import SerchCustomerModal from "./modalSerchCustomer/SerchCustomerModal";
 
 const OrderCreateBooking: React.FC = () => {
     const navigate = useNavigate();
-    const { SETREFNO } = useUUIDStore();
+    const { auth } = useAuth();
+    // console.log(`auth`, auth.data[0]);
+
+    // ดึงข้อมูลลูกค้าที่เลือกจาก modal ที่เก็บใน Store
+    const selectedCustomerDataFromModal = useCustomerStore((state) => state.selectedCustomer);
+    console.log(`selectedCustomerDataFromModal`, selectedCustomerDataFromModal);
 
     const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
     const API_THIENSURAT = import.meta.env.VITE_APP_API_THIENSURAT
@@ -51,10 +51,9 @@ const OrderCreateBooking: React.FC = () => {
     const SHIPPING_URL = `${API_SALECONNEXT}/GetShipping`;
     const FREEGIFT_URL = `${API_SALECONNEXT}/GetFreegift`;
 
-    const getProductUrl = () => `${API_URL_MONGO}/Product/GetStock?empid=${auth.data[0].EmpId}&teamSale=${auth.data[0].TeamSale}&categoryId=${selectedCategoryId}`;
+    const SAVEDATA_URL = `${API_SALECONNEXT}/CreateBooking/Submit_Createbooking`;
 
-    const { auth } = useAuth();
-    // console.log(`auth`, auth.data[0]);
+    const getProductUrl = () => `${API_URL_MONGO}/Product/GetStock?empid=${auth.data[0].EmpId}&teamSale=${auth.data[0].TeamSale}&categoryId=${selectedCategoryId}`;
 
     {/*-------------------- Start Modals ค้นหาลูกค้า --------------------*/ }
     const [showModal, setShowModal] = useState(false);
@@ -150,18 +149,19 @@ const OrderCreateBooking: React.FC = () => {
     const [usePackagePricing, setUsePackagePricing] = useState<boolean>(true);
 
     const { fetchCategory } = useFetchCategoryStore();
-
+    // console.log(`fetchCategory`, fetchCategory);
     const [categories, setCategories] = useState<any[]>([]);
+    // console.log(`categories`, categories);
     const [selectedCategoryId, setSelectedCategoryId] = useState<any>('');
 
-    const [product, setProduct] = useState<any>('');
-    console.log(`product`, product);
+    const [product, setProduct] = useState<any>('')
+    // console.log(`product`, product);
     const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
-    console.log(`selectedProductId`, selectedProductId);
+    // console.log(`selectedProductId`, selectedProductId);
 
     const [promotionList, setPromotionList] = useState<any[]>([]);
     const [selectedPromotionId, setSelectedPromotionId] = useState<string | null>(null);
-    console.log(`selectedPromotionId`, selectedPromotionId);
+    // console.log(`selectedPromotionId`, selectedPromotionId);
 
     const [selectedItemID, setSelectedItemID] = useState<any>('');
     // console.log(`selectedItemID`, selectedItemID);
@@ -548,7 +548,7 @@ const OrderCreateBooking: React.FC = () => {
     };
     {/*-------------------- End ข้อมูลสินค้า --------------------*/ }
 
-    {/* Start ข้อมูลลูกค้า */ }
+    {/*-------------------- Start ข้อมูลลูกค้า --------------------*/ }
     const [customerTypes, setCustomerTypes] = useState<any[]>([]);
     const [selectedCustomerType, setsSelectedCustomerType] = useState<string>('');
     // console.log(`selectedCustomerType`, selectedCustomerType);
@@ -716,7 +716,180 @@ const OrderCreateBooking: React.FC = () => {
         getZipcode();
     }, [selectedSubDistrictForInstall]);
 
+    // ต้องการใบกำกับภาษีไหม
+    const [isInvoiceRequired, setIsInvoiceRequired] = useState<boolean>(false);
+
+    // เมื่อติ้กหรือยกเลิกติ้ก "ต้องการใบกำกับภาษี"
+    const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { checked } = e.target;
+        setIsInvoiceRequired(checked);
+
+        if (!checked) {
+            // ล้างข้อมูลที่เกี่ยวข้องกับที่อยู่ออกใบกำกับภาษี
+            setAddressNumberForTax('');
+            setAddressMooForTax('');
+            setAddressSoiForTax('');
+            setAddressRoadForTax('');
+            setSelectedProvinceForTax(undefined);
+            setSelectedDistrictForTax(undefined);
+            setSelectedSubDistrictForTax(undefined);
+            setSelectedZipcodeForTax('');
+            setAddressMobileForTax('');
+            setAddressPhoneForTax('');
+            setAddressPhoneReserveForTax('');
+            setAddressEmailForTax('');
+            setAddressTaxLikeInstall(false); // รีเซ็ตการเลือก "ใช้ที่อยู่เดียวกับที่อยู่ติดตั้ง"
+        }
+    };
     {/*-------------------- End ที่อยู่ติดตั้ง --------------------*/ }
+
+    {/*-------------------- Start ที่อยู่ออกใบกำกับภาษี --------------------*/ }
+    // ที่อยู่ติดตั้งเหมือน ที่อยู่ออกใบกำกับภาษี ไหม?
+    const [addressTaxLikeInstall, setAddressTaxLikeInstall] = useState(false)
+
+    // state ที่อยู่ออกใบกำกับภาษี
+    const [getProvinceForTax, setGetProvinceForTax] = useState<any[]>([]);
+    const [getDistrictForTax, setGetDistrictForTax] = useState<any[]>([]);
+    const [getSubDistrictForTax, setGetSubDistrictForTax] = useState<any[]>([]);
+    const [getZipcodeForTax, setGetZipcodeForTax] = useState<any[]>([]);
+
+    const [addressNumberForTax, setAddressNumberForTax] = useState<string>('');
+    const [addressMooForTax, setAddressMooForTax] = useState<string>('');
+    const [addressSoiForTax, setAddressSoiForTax] = useState<string>('');
+    const [addressRoadForTax, setAddressRoadForTax] = useState<string>('');
+    const [selectedProvinceForTax, setSelectedProvinceForTax] = useState<number | undefined>();
+    console.log(`selectedProvinceForTax`, selectedProvinceForTax);
+    const [selectedDistrictForTax, setSelectedDistrictForTax] = useState<number | undefined>();
+    const [selectedSubDistrictForTax, setSelectedSubDistrictForTax] = useState<number | undefined>();
+    const [selectedZipcodeForTax, setSelectedZipcodeForTax] = useState<string>('');
+    const [addressMobileForTax, setAddressMobileForTax] = useState<string>('');
+    const [addressPhoneForTax, setAddressPhoneForTax] = useState<string>('');
+    const [addressPhoneReserveForTax, setAddressPhoneReserveForTax] = useState<string>('');
+    const [addressEmailForTax, setAddressEmailForTax] = useState<string>('');
+
+    // GET Province For Tax
+    useEffect(() => {
+        const getData = async () => {
+            try {
+                const response = await axios.get(PROVINCE_URL, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    }
+                });
+                setGetProvinceForTax(response.data);
+            } catch (error) {
+                console.error('Error fetching CUSTOMER_TYPE_URL:', error);
+            }
+        };
+        getData();
+    }, []);
+
+    // POST District For Tax
+    useEffect(() => {
+        const getData = async () => {
+            if (selectedProvinceForTax) { // ตรวจสอบว่ามี selectedProvince ก่อนการเรียก API
+                try {
+                    const response = await axios.post(DISTRICT_URL, { ProvinceCode: selectedProvinceForTax }, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        }
+                    });
+                    setGetDistrictForTax(response.data); // อัปเดต district เมื่อได้รับข้อมูลใหม่
+                } catch (error) {
+                    console.error('Error fetching DISTRICT_URL:', error);
+                }
+            } else {
+                setGetDistrictForTax([]); // ล้างข้อมูล district เมื่อไม่ได้เลือก province
+            }
+        };
+        getData();
+    }, [selectedProvinceForTax]);
+
+    // POST SubDistrict For Tax
+    useEffect(() => {
+        const fetchSubDistricts = async () => {
+            if (selectedDistrictForTax) {
+                try {
+                    const response = await axios.post(SUBDISTRICT_URL, { DistrictCode: selectedDistrictForTax }, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        }
+                    });
+                    setGetSubDistrictForTax(response.data);
+                } catch (error) {
+                    console.error('Error fetching SUBDISTRICT_URL:', error);
+                }
+            } else {
+                setGetSubDistrictForTax([]);
+            }
+        };
+        fetchSubDistricts();
+    }, [selectedDistrictForTax]);
+
+    // POST Zipcode For Tax
+    useEffect(() => {
+        const getZipcode = async () => {
+            if (selectedSubDistrictForTax) {
+                try {
+                    const response = await axios.post(ZIPCODE_URL, { SubDistrictCode: selectedSubDistrictForTax }, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        }
+                    });
+                    if (response.data.length > 0) {
+                        setSelectedZipcodeForTax(response.data[0].POSTCODE); // อัปเดตรหัสไปรษณีย์ใน state
+                    }
+                } catch (error) {
+                    console.error('Error fetching ZIPCODE_URL:', error);
+                }
+            } else {
+                setSelectedZipcodeForTax(''); // เคลียร์ข้อมูลรหัสไปรษณีย์เมื่อไม่เลือกตำบล
+            }
+        };
+        getZipcode();
+    }, [selectedSubDistrictForTax]);
+
+    // เมื่อติ้กหรือยกเลิกติ้ก "ใช้ที่อยู่เดียวกับที่อยู่ติดตั้ง"
+    const handleCheckboxTax = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const { checked } = event.target;
+        setAddressTaxLikeInstall(checked);
+
+        if (checked) {
+            // คัดลอกข้อมูลจากที่อยู่ติดตั้งไปยังที่อยู่ออกใบกำกับภาษี
+            setAddressNumberForTax(addressNumberForInstall);
+            setAddressMooForTax(addressMooForInstall);
+            setAddressSoiForTax(addressSoiForInstall);
+            setAddressRoadForTax(addressRoadForInstall);
+            setSelectedProvinceForTax(selectedProvinceForInstall);
+            setSelectedDistrictForTax(selectedDistrictForInstall);
+            setSelectedSubDistrictForTax(selectedSubDistrictForInstall);
+            setSelectedZipcodeForTax(selectedZipcodeForInstall);
+            setAddressMobileForTax(addressMobileForInstall);
+            setAddressPhoneForTax(addressPhoneForInstall);
+            setAddressPhoneReserveForTax(addressPhoneReserveForInstall);
+            setAddressEmailForTax(addressEmailForInstall);
+        } else {
+            // ล้างข้อมูลที่อยู่ออกใบกำกับภาษี
+            setAddressNumberForTax('');
+            setAddressMooForTax('');
+            setAddressSoiForTax('');
+            setAddressRoadForTax('');
+            setSelectedProvinceForTax(undefined); // รีเซ็ตจังหวัดให้เป็น undefined
+            setSelectedDistrictForTax(undefined);
+            setSelectedSubDistrictForTax(undefined);
+            setSelectedZipcodeForTax('');
+            setAddressMobileForTax('');
+            setAddressPhoneForTax('');
+            setAddressPhoneReserveForTax('');
+            setAddressEmailForTax('');
+        }
+    };
+
+    // ล้างค่า "ใช้ที่อยู่เดียวกับที่อยู่ติดตั้ง" และรีเซ็ต UI
+    const handleAddressTaxFieldChange = () => {
+        setAddressTaxLikeInstall(false);
+    };
+    {/*-------------------- End ที่อยู่ออกใบกำกับภาษี --------------------*/ }
 
     {/*-------------------- Start ค่าใช้จ่ายอื่น ๆ --------------------*/ }
     const [expenses, setExpenses] = useState([
@@ -932,10 +1105,31 @@ const OrderCreateBooking: React.FC = () => {
     };
     {/*-------------------- End ข้อมูลเพิ่มเติม --------------------*/ }
 
+    // บันทึกข้อมูลลงระบบ
+    const SaveData = async () => {
+        try {
+            const response = await axios.post(SAVEDATA_URL, {
+                EmpId: auth.data[0].EmpId,
+                DivisionId: auth.data[0].DivisionId,
+                DepartId: auth.data[0].DepartId,
+                DepartGroup: auth.data[0].DepartGroup,
+                TeamSale: auth.data[0].TeamSale,
+            }, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            const data = Array.isArray(response.data.data) ? response.data.data : [];
+            setGetShipping(data);
+        } catch (error) {
+            console.error('Error fetching SAVEDATA_URL:', error);
+        }
+    };
+
     return (
         <>
             <Content>
-                <div className='d-flex justify-content-between align-items-center mt-7 mt-lg-0'>
+                <div className='d-flex justify-content-between align-items-center mt-lg-0 mb-7'>
                     <div id="kt_page_title" data-kt-swapper="true" data-kt-swapper-mode="prepend"
                         data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
                         className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
@@ -1894,7 +2088,7 @@ const OrderCreateBooking: React.FC = () => {
                                             <div className='col-lg-4'>
                                                 <label className='form-label required fw-bold fs-6'>บัตรประชาชน</label>
                                                 <input
-                                                    value={idCard}
+                                                    value={selectedCustomerDataFromModal ? selectedCustomerDataFromModal.IDCard : idCard}
                                                     onChange={handleIdCardChange}
                                                     type='text'
                                                     className='form-control mb-3 mb-lg-0'
@@ -1917,7 +2111,7 @@ const OrderCreateBooking: React.FC = () => {
                                             <div className='col-lg-4'>
                                                 <label className='form-label required fw-bold fs-6'>ชื่อสกุล</label>
                                                 <input
-                                                    value={fullName}
+                                                    value={selectedCustomerDataFromModal ? selectedCustomerDataFromModal.name : fullName}
                                                     onChange={(e) => setFullName(e.target.value)}
                                                     type='text'
                                                     className='form-control mb-3 mb-lg-0'
@@ -1976,7 +2170,7 @@ const OrderCreateBooking: React.FC = () => {
                                                     <div className='col-lg-6 mb-3'>
                                                         <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
                                                         <input
-                                                            value={mobile}
+                                                            value={selectedCustomerDataFromModal ? selectedCustomerDataFromModal.phone_number : mobile}
                                                             onChange={(e) => setMobile(e.target.value)}
                                                             type='text'
                                                             className='form-control mb-3 mb-lg-0'
@@ -1986,7 +2180,7 @@ const OrderCreateBooking: React.FC = () => {
                                                     <div className='col-lg-6 mb-3'>
                                                         <label className='form-label fw-bold fs-6'>เบอร์บ้าน</label>
                                                         <input
-                                                            value={phone}
+                                                            value={selectedCustomerDataFromModal ? selectedCustomerDataFromModal.TelHome : phone}
                                                             onChange={(e) => setPhone(e.target.value)}
                                                             type='text'
                                                             className='form-control mb-3 mb-lg-0'
@@ -2001,7 +2195,7 @@ const OrderCreateBooking: React.FC = () => {
                                                 <div className='col-lg-6 mb-3'>
                                                     <label className='form-label fw-bold fs-6'>เบอร์ที่ทำงาน</label>
                                                     <input
-                                                        value={workPhone}
+                                                        value={selectedCustomerDataFromModal ? selectedCustomerDataFromModal.TelOffice : workPhone}
                                                         onChange={(e) => setWorkPhone(e.target.value)}
                                                         type='text'
                                                         className='form-control mb-3 mb-lg-0'
@@ -2154,7 +2348,7 @@ const OrderCreateBooking: React.FC = () => {
                                     <div className='col-lg-4 mb-3'>
                                         <label className='form-label required fw-bold fs-6'>บ้านเลขที่</label>
                                         <input
-                                            value={addressNumberForInstall}
+                                            value={selectedCustomerDataFromModal ? selectedCustomerDataFromModal.AddressDetail : addressNumberForInstall}
                                             onChange={(e) => {
                                                 setAddressNumberForInstall(e.target.value);
                                             }}
@@ -2322,20 +2516,253 @@ const OrderCreateBooking: React.FC = () => {
                                 </div>
                             </div>
 
-                            <hr className='my-10' style={{ borderTop: '1px dotted black' }} />
+                            <div className="container mt-10">
+                                <div className='row'>
+                                    <div className='col-lg-6'>
+                                        <label className='form-check form-check-inline form-check-solid me-5'>
+                                            <input
+                                                className="form-check-input me-5"
+                                                name="isInvoiceRequired"
+                                                type="checkbox"
+                                                onChange={handleCheckboxChange}
+                                                checked={isInvoiceRequired}
+                                            />
+                                            <span className='form-label fw-bold'>ต้องการใบกำกับภาษี</span>
+                                        </label>
+                                    </div>
+                                </div>
 
-                            <div className="container">
-                                <input
-                                    className='form-check-input me-5 mt-1'
-                                    name='billLikeAddressCard'
-                                    type='checkbox'
-                                // onChange={handleCheckboxChange}
-                                // checked={billLikeCardAddr}
-                                />
-                                <label className='form-label fw-bold fs-3 mb-10'>ต้องการใบกำกับภาษี</label>
                             </div>
 
-                            <hr className='my-1' style={{ borderTop: '1px dotted black' }} />
+                            <hr className='my-10' style={{ borderTop: '1px dotted black' }} />
+
+                            {isInvoiceRequired && (
+                                <>
+                                    <label className='form-label fw-bold fs-3 mb-10'>ที่อยู่ออกใบกำกับภาษี</label>
+
+                                    <div className="container">
+                                        <div className='row mb-6'>
+                                            <div className='col-lg-6 mb-3 mt-xl-5'>
+                                                <label className='form-check form-check-inline form-check-solid me-5'>
+                                                    <input
+                                                        onChange={handleCheckboxTax}
+                                                        className='form-check-input'
+                                                        name='addressTaxLikeInstall'
+                                                        type='checkbox'
+                                                        checked={addressTaxLikeInstall}
+                                                    />
+                                                    <span className='fw-bold ps-2 fs-6 mb-sm-5'>ข้อมูลเหมือนที่อยู่ติดตั้งทั้งหมด</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="container">
+                                        <div className='row mb-6'>
+                                            <div className='col-lg-4 mb-3'>
+                                                <label className='form-label required fw-bold fs-6'>บ้านเลขที่</label>
+                                                <input
+                                                    value={addressNumberForTax}
+                                                    onChange={(e) => {
+                                                        setAddressNumberForTax(e.target.value);
+                                                        handleAddressTaxFieldChange(); // ล้างค่า "ใช้ที่อยู่เดียวกับที่อยู่ติดตั้ง"
+                                                    }}
+                                                    type='text'
+                                                    className='form-control mb-3 mb-lg-0'
+                                                />
+                                            </div>
+                                            <div className='col-lg-4 mb-3'>
+                                                <label className='form-label fw-bold fs-6'>หมู่ที่</label>
+                                                <input
+                                                    value={addressMooForTax}
+                                                    onChange={(e) => {
+                                                        setAddressMooForTax(e.target.value);
+                                                        handleAddressTaxFieldChange(); // ล้างค่า "ใช้ที่อยู่เดียวกับที่อยู่ติดตั้ง"
+                                                    }}
+                                                    type='text'
+                                                    className='form-control mb-3 mb-lg-0'
+                                                />
+                                            </div>
+                                            <div className='col-lg-4 mb-3'>
+                                                <label className='form-label fw-bold fs-6'>ตรอก / ซอย</label>
+                                                <input
+                                                    value={addressSoiForTax}
+                                                    onChange={(e) => {
+                                                        setAddressSoiForTax(e.target.value)
+                                                        handleAddressTaxFieldChange(); // ล้างค่า "ใช้ที่อยู่เดียวกับที่อยู่ติดตั้ง"
+                                                    }}
+                                                    type='text'
+                                                    className='form-control mb-3 mb-lg-0'
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="container">
+                                        <div className='row mb-6'>
+                                            <div className='col-lg-4 mb-3'>
+                                                <label className='form-label fw-bold fs-6'>ถนน</label>
+                                                <input
+                                                    value={addressRoadForTax}
+                                                    onChange={(e) => {
+                                                        setAddressRoadForTax(e.target.value)
+                                                        handleAddressTaxFieldChange(); // ล้างค่า "ใช้ที่อยู่เดียวกับที่อยู่ติดตั้ง"
+                                                    }}
+                                                    type='text'
+                                                    className='form-control mb-3 mb-lg-0'
+                                                />
+                                            </div>
+
+                                            {/* จังหวัด */}
+                                            <div className='col-lg-4 mb-3'>
+                                                <label className='form-label required fw-bold fs-6'>จังหวัด</label>
+                                                <select
+                                                    className='form-select'
+                                                    value={selectedProvinceForTax ?? ''} // ใช้ '' แทน undefined เพื่อ UI ไม่แสดงค่าที่ไม่ถูกต้อง
+                                                    onChange={(e) => {
+                                                        const selectedValue = Number(e.target.value) || undefined;
+                                                        setSelectedProvinceForTax(selectedValue);
+                                                        handleAddressTaxFieldChange(); // ล้างค่า "ใช้ที่อยู่เดียวกับที่อยู่ติดตั้ง"
+                                                    }}
+                                                >
+                                                    <option value=''>เลือกจังหวัด...</option>
+                                                    {getProvinceForTax.map((item) => (
+                                                        <option key={item.PROVINCECODE} value={item.PROVINCECODE}>
+                                                            {item.PROVINCENAME}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            {/* อำเภอ / เขต */}
+                                            <div className='col-lg-4 mb-3'>
+                                                <label className='form-label required fw-bold fs-6'>อำเภอ / เขต</label>
+                                                <select
+                                                    className='form-select'
+                                                    value={addressTaxLikeInstall ? selectedDistrictForInstall : selectedDistrictForTax}
+                                                    onChange={(e) => {
+                                                        const selectedValue = Number(e.target.value);
+                                                        if (addressTaxLikeInstall) {
+                                                            setSelectedDistrictForInstall(selectedValue);
+                                                        } else {
+                                                            setSelectedDistrictForTax(selectedValue);
+                                                            handleAddressTaxFieldChange(); // ล้างการติ้ก
+                                                        }
+                                                    }}
+                                                >
+                                                    <option value=''>เลือกอำเภอ / เขต...</option>
+                                                    {(addressTaxLikeInstall ? getDistrictForInstall : getDistrictForTax).map((item) => (
+                                                        <option key={item.DISTRICTCODE} value={item.DISTRICTCODE}>
+                                                            {item.DISTRICTNAME}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            {/* ตำบล / แขวง */}
+                                            <div className='col-lg-4 mb-3'>
+                                                <label className='form-label required fw-bold fs-6'>ตำบล / แขวง</label>
+                                                <select
+                                                    className='form-select'
+                                                    value={addressTaxLikeInstall ? selectedSubDistrictForInstall : selectedSubDistrictForTax}
+                                                    onChange={(e) => {
+                                                        const selectedValue = Number(e.target.value);
+                                                        if (addressTaxLikeInstall) {
+                                                            setSelectedSubDistrictForInstall(selectedValue);
+                                                        } else {
+                                                            setSelectedSubDistrictForTax(selectedValue);
+                                                            handleAddressTaxFieldChange(); // ล้างการติ้ก
+                                                        }
+                                                    }}
+                                                >
+                                                    <option value=''>เลือกตำบล / แขวง...</option>
+                                                    {(addressTaxLikeInstall ? getSubDistrictForInstall : getSubDistrictForTax).map((item) => (
+                                                        <option key={item.SUBDISTRICTCODE} value={item.SUBDISTRICTCODE}>
+                                                            {item.SUBDISTRICTNAME}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            {/* รหัสไปรษณีย์ */}
+                                            <div className='col-lg-4 mb-3'>
+                                                <label className='form-label required fw-bold fs-6'>รหัสไปรษณีย์</label>
+                                                <input
+                                                    type='text'
+                                                    className='form-control mb-3 mb-lg-0'
+                                                    value={addressTaxLikeInstall ? selectedZipcodeForInstall : selectedZipcodeForTax}
+                                                    onChange={() => {
+                                                        if (!addressTaxLikeInstall) {
+                                                            handleAddressTaxFieldChange(); // ล้างการติ้ก
+                                                        }
+                                                    }}
+                                                    readOnly
+                                                    style={{
+                                                        backgroundColor: '#d7dbde',
+                                                    }}
+                                                />
+                                            </div>
+
+                                            <div className='col-lg-4 mb-3'>
+                                                <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
+                                                <input
+                                                    value={addressMobileForTax}
+                                                    onChange={(e) => {
+                                                        setAddressMobileForTax(e.target.value)
+                                                        handleAddressTaxFieldChange(); // ล้างค่า "ใช้ที่อยู่เดียวกับที่อยู่ติดตั้ง"
+                                                    }}
+                                                    type='text'
+                                                    className='form-control mb-3 mb-lg-0'
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="container">
+                                        <div className='row mb-6'>
+                                            <div className='col-lg-4 mb-3'>
+                                                <label className='form-label fw-bold fs-6'>เบอร์โทรศัพท์สำรอง</label>
+                                                <input
+                                                    value={addressPhoneReserveForTax}
+                                                    onChange={(e) => {
+                                                        setAddressPhoneReserveForTax(e.target.value)
+                                                        handleAddressTaxFieldChange(); // ล้างค่า "ใช้ที่อยู่เดียวกับที่อยู่ติดตั้ง"
+                                                    }}
+                                                    type='text'
+                                                    className='form-control mb-3 mb-lg-0'
+                                                />
+                                            </div>
+
+                                            <div className='col-lg-4 mb-3'>
+                                                <label className='form-label fw-bold fs-6'>เบอร์บ้าน</label>
+                                                <input
+                                                    value={addressPhoneForTax}
+                                                    onChange={(e) => {
+                                                        setAddressPhoneForTax(e.target.value)
+                                                        handleAddressTaxFieldChange(); // ล้างค่า "ใช้ที่อยู่เดียวกับที่อยู่ติดตั้ง"
+                                                    }}
+                                                    type='text'
+                                                    className='form-control mb-3 mb-lg-0'
+                                                />
+                                            </div>
+                                            <div className='col-lg-4 mb-3'>
+                                                <label className='form-label fw-bold fs-6'>E-Mail</label>
+                                                <input
+                                                    value={addressEmailForTax}
+                                                    onChange={(e) => {
+                                                        setAddressEmailForTax(e.target.value)
+                                                        handleAddressTaxFieldChange(); // ล้างค่า "ใช้ที่อยู่เดียวกับที่อยู่ติดตั้ง"
+                                                    }}
+                                                    type='text'
+                                                    className='form-control mb-3 mb-lg-0'
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <hr className='mt-10' style={{ borderTop: '1px dotted black' }} />
+                                </>
+                            )}
 
                             {auth.data[0].Hasfreegift === "false" && (
                                 <>
@@ -2561,7 +2988,7 @@ const OrderCreateBooking: React.FC = () => {
                 </div >
                 {/* End Card Body */}
 
-                <div className='d-none d-md-flex justify-content-between align-items-center mt-5'>
+                <div className='d-none d-xl-flex justify-content-between align-items-center my-5'>
                     <button
                         className='btn btn-secondary w-100 w-md-auto align-self-center h-50px'
                         onClick={() => navigate('/order/overview')}
@@ -2578,7 +3005,7 @@ const OrderCreateBooking: React.FC = () => {
 
                 {/* ปุ่มในหน้าจอเล็ก */}
                 <div
-                    className="d-flex d-md-none justify-content-between align-items-center bg-light p-3 border-top"
+                    className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
                     style={{
                         position: "fixed",
                         bottom: 0,

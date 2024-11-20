@@ -7,6 +7,9 @@ import { FirstBillItemNumber } from './components/firstBillItemNumber/FirstBillI
 import { useUUIDStore } from '../../modules/stores/stepsStore';
 import { useAuth } from '../../modules/auth/core/Auth';
 
+import { EntriesDropdown, PaginationTable } from '../../modules/entriesAndPagination/Pagination';
+import { ThreeDot } from 'react-loading-indicators';
+
 //useStore
 import { useFetchCategoryStore } from '../../modules/stores/sales/packageStore/packageStore';
 
@@ -28,22 +31,38 @@ const FirstBillOverview: React.FC = () => {
   const [finish, setFinish] = useState<any[]>([]); // กำหนดให้ state เป็น array เพื่อรองรับ map()
   // console.log(`finish`, finish);
 
+  const [isLoadingFinish, setIsLoadingFinish] = useState<boolean>(false);
+  const [searchRefNo, setSearchRefNo] = useState<string>(''); // State สำหรับค้นหา
+
+  // Pagination states
+  const [entries, setEntries] = useState<number>(10); // Default entries per page
+  const [currentPageFinish, setCurrentPageFinish] = useState<number>(1);
+
   useEffect(() => {
-    const getDataFinish = async () => {
-      try {
-        const response = await axios.get(FINISH_ALLCONTRACT_URL, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-        const data = Array.isArray(response.data.data) ? response.data.data : []
-        setFinish(data); // บันทึกข้อมูล finish
-      } catch (error) {
-        console.error('Error fetching FINISH_ALLCONTRACT_URL:', error);
-      }
-    };
-    getDataFinish()
-  }, [])
+    getDataFinish();
+  }, []);
+
+  const getDataFinish = async () => {
+    setIsLoadingFinish(true);
+    try {
+      const response = await axios.get(FINISH_ALLCONTRACT_URL);
+      const data = Array.isArray(response.data.data) ? response.data.data : [];
+      setFinish(data);
+    } catch (error) {
+      console.error('Error fetching FINISH_ALLCONTRACT_URL:', error);
+    } finally {
+      setIsLoadingFinish(false);
+    }
+  };
+
+  // กรองข้อมูลตาม REFNO
+  const filteredFinish = finish.filter((item) =>
+    item.REFNO?.toLowerCase().includes(searchRefNo.toLowerCase())
+  );
+
+  // Pagination logic for Finish
+  const finishStartIndex = (currentPageFinish - 1) * entries;
+  const finishDisplayedData = filteredFinish.slice(finishStartIndex, finishStartIndex + entries);
 
   return (
     <>
@@ -70,12 +89,62 @@ const FirstBillOverview: React.FC = () => {
         <div className='card mb-10'>
           <div className='card-body d-flex align-items-center'>
             <div className='col-12'>
-              {finish.length > 0 && (
-                finish.map((item, index) => (
-                  <FirstBillItemNumber key={index} item={item} />
 
-                ))
+              {/* ช่องค้นหา */}
+              <div className="mb-5 col-xl-4">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="ค้นหาจาก REFNO"
+                  value={searchRefNo}
+                  onChange={(e) => setSearchRefNo(e.target.value)}
+                />
+              </div>
+
+              {isLoadingFinish ? (
+                <div className="text-center my-10">
+                  <ThreeDot />
+                  <p className="text-gray-600 mt-3">กำลังโหลดรายการเสร็จสมบูรณ์...</p>
+                </div>
+              ) : finishDisplayedData.length > 0 ? (
+                <>
+                  {finishDisplayedData.map((item, index) => (
+                    <FirstBillItemNumber key={index} item={item} />
+                  ))}
+
+                  <div className='d-none d-xl-flex justify-content-end align-items-center mt-5'>
+                    <PaginationTable
+                      totalData={filteredFinish.length}
+                      entries={entries}
+                      currentPage={currentPageFinish}
+                      onPageChange={setCurrentPageFinish}
+                    />
+                  </div>
+
+                  {/* PaginationTable หน้าจอเล็ก */}
+                  <div
+                    className="d-flex d-xl-none justify-content-end align-items-center bg-light p-3 border-top"
+                    style={{
+                      position: "fixed",
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      zIndex: 1050,
+                    }}
+                  >
+                    <PaginationTable
+                      totalData={filteredFinish.length}
+                      entries={entries}
+                      currentPage={currentPageFinish}
+                      onPageChange={setCurrentPageFinish}
+                    />
+                  </div>
+
+                </>
+              ) : (
+                <p className="text-gray-600 text-center mt-3">ไม่มีรายการที่เสร็จสมบูรณ์</p>
               )}
+
             </div>
           </div>
         </div>
