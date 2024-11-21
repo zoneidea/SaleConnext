@@ -1,14 +1,30 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { KTIcon, toAbsoluteUrl } from '../../../_metronic/helpers'
 import { Content } from '../../../_metronic/layout/components/content'
+import axios from 'axios';
+import { useAuth } from '../../modules/auth/core/Auth';
+import { useUUIDStore } from '../../modules/stores/stepsStore';
 
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 
 const SalesPhoto: React.FC = () => {
     const navigate = useNavigate()
+    const MySwal = withReactContent(Swal);
 
+    // สร้างใหม่
+    const { REFNO } = useUUIDStore();
+    const { auth } = useAuth();
+    const EmpId = auth?.data?.[0]?.EmpId || '';
+    const TeamSale = auth?.data?.[0]?.TeamSale || '';
+    const SaleCode = auth?.data?.[0]?.SaleCode || '';
+    const SupEmpId = auth?.data?.[0]?.SupEmp || '';
+    const SecEmpId = auth?.data?.[0]?.SecEmp || '';
 
+    const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
+    const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
+
+    // อัพเดท
     interface ItemProps {
         REFNO: String,
         CONTNO: String,
@@ -34,6 +50,62 @@ const SalesPhoto: React.FC = () => {
     console.log(`item`, item);
 
     const refno = item?.REFNO
+
+    // สร้างใหม่ ส่งตรวจสอบ
+    const handleCheckerClick = async () => {
+        const response = await axios.post(UPDATECONTACT, {
+            REFNO: REFNO,
+            EMPID: EmpId,
+            TEAMSALE: TeamSale,
+            FIELD: "STATUS",
+            DATA: "PENDING",
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        console.log(response)
+
+        if (response.status === 200) {
+            if (!response.data.data) {
+                MySwal.fire('เกิดข้อผิดพลาด', 'ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
+            } else {
+                MySwal.fire('สำเร็จ', 'ส่งข้อมูลตรวจสอบแล้ว', 'success');
+                navigate('/sale/overview')
+            }
+        } else {
+            MySwal.fire('เกิดข้อผิดพลาด', response.data.message, 'error');
+        }
+    }
+
+    // อัพเดต มาจากขั้นตอน step ส่งตรวจสอบ
+    const handleUpdateCheckerClick = async () => {
+        const response = await axios.post(UPDATECONTACT, {
+            REFNO: refno,
+            EMPID: EmpId,
+            TEAMSALE: TeamSale,
+            FIELD: "STATUS",
+            DATA: "PENDING",
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        console.log(response)
+
+        if (response.status === 200) {
+            if (!response.data.data) {
+                MySwal.fire('เกิดข้อผิดพลาด', 'ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
+            } else {
+                MySwal.fire('สำเร็จ', 'ส่งข้อมูลตรวจสอบแล้ว', 'success');
+                navigate('/sale/overview')
+            }
+        } else {
+            MySwal.fire('เกิดข้อผิดพลาด', response.data.message, 'error');
+        }
+    }
 
     return (
         <>
@@ -247,7 +319,7 @@ const SalesPhoto: React.FC = () => {
                         </button>
                         <button
                             className='btn btn-primary w-100 w-md-auto align-self-center h-50px'
-                        // onClick={handleCheckerClick}
+                            onClick={handleUpdateCheckerClick}
                         >
                             ส่งตรวจสอบ
                         </button>
@@ -262,7 +334,7 @@ const SalesPhoto: React.FC = () => {
                         </button>
                         <button
                             className='btn btn-primary w-100 w-md-auto align-self-center h-50px'
-                        // onClick={handleCheckerClick}
+                            onClick={handleCheckerClick}
                         >
                             ส่งตรวจสอบ
                         </button>
@@ -290,7 +362,7 @@ const SalesPhoto: React.FC = () => {
                         </button>
                         <button
                             className="btn btn-primary w-auto me-2"
-                        // onClick={handleNextClick}
+                            onClick={handleUpdateCheckerClick}
                         >
                             ส่งตรวจสอบ
                         </button>
@@ -314,7 +386,7 @@ const SalesPhoto: React.FC = () => {
                         </button>
                         <button
                             className="btn btn-primary w-auto me-2"
-                        // onClick={handleNextClick}
+                            onClick={handleCheckerClick}
                         >
                             ส่งตรวจสอบ
                         </button>
