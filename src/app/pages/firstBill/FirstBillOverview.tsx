@@ -67,7 +67,7 @@ const FirstBillOverview: React.FC = () => {
   return (
     <>
       <Content>
-        <div className='d-flex justify-content-between align-items-center mb-7 mt-7 mt-lg-0'>
+        <div className='d-flex justify-content-between align-items-center my-5'>
           <div id="kt_page_title" data-kt-swapper="true" data-kt-swapper-mode="prepend"
             data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
             className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
@@ -104,7 +104,6 @@ const FirstBillOverview: React.FC = () => {
               {isLoadingFinish ? (
                 <div className="text-center my-10">
                   <ThreeDot />
-                  <p className="text-gray-600 mt-3">กำลังโหลดรายการเสร็จสมบูรณ์...</p>
                 </div>
               ) : finishDisplayedData.length > 0 ? (
                 <>

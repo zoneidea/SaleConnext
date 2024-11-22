@@ -86,7 +86,7 @@ const SalesOverview: React.FC = () => {
 
   return (
     <Content>
-      <div className='d-flex justify-content-between align-items-center mb-7 mt-7 mt-lg-0'>
+      <div className='d-flex justify-content-between align-items-center my-5'>
         <div id="kt_page_title" className="page-title d-flex flex-wrap me-3 flex-column">
           <h1 className="page-heading text-gray-900 fw-bold fs-3 my-0">ภาพรวม</h1>
           <ul className="breadcrumb fw-semibold fs-7 my-0">
@@ -144,7 +144,6 @@ const SalesOverview: React.FC = () => {
               {isLoadingDraft ? (
                 <div className="text-center my-10">
                   <ThreeDot />
-                  <p className="text-gray-600 mt-3">กำลังโหลดรายการคงค้าง...</p>
                 </div>
               ) : draftDisplayedData.length > 0 ? (
                 <>
@@ -191,7 +190,6 @@ const SalesOverview: React.FC = () => {
               {isLoadingFinish ? (
                 <div className="text-center my-10">
                   <ThreeDot />
-                  <p className="text-gray-600 mt-3">กำลังโหลดรายการเสร็จสมบูรณ์...</p>
                 </div>
               ) : finishDisplayedData.length > 0 ? (
                 <>
