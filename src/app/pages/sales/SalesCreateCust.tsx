@@ -16,6 +16,13 @@ import dayjs, { Dayjs } from 'dayjs';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+
+import { useForm, Controller } from "react-hook-form";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
+
 const SalesCreateCust: React.FC = () => {
     const navigate = useNavigate()
 
@@ -162,8 +169,6 @@ const SalesCreateCust: React.FC = () => {
     const [selectedSubDistrictForBilling, setSelectedSubDistrictForBilling] = useState<number | undefined>();
     const [selectedZipcodeForBilling, setSelectedZipcodeForBilling] = useState<string>('');
     const [addressPhoneForBilling, setAddressPhoneForBilling] = useState<string>('');
-
-    const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
     // เก็บข้อมูลส่วนลดใน state และ store
     const SaveCustomertData = useMemo(() => {
@@ -810,48 +815,12 @@ const SalesCreateCust: React.FC = () => {
         SaveAddressData
     ]);
 
-    // validate filed
-    const validateForm = () => {
-        const newErrors: { [key: string]: string } = {};
-
-        if (!idCard || !/^\d{13}$/.test(idCard)) {
-            newErrors.idCard = 'กรุณากรอกเลขบัตรประชาชนที่ถูกต้อง';
-        }
-
-        if (!fullName || fullName.trim() === '') {
-            newErrors.fullName = 'กรุณากรอกชื่อ-สกุล';
-        }
-
-        if (!age || !/^\d+$/.test(age) || parseInt(age) <= 0) {
-            newErrors.age = 'กรุณากรอกอายุที่ถูกต้อง';
-        }
-
-        if (email && !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
-            newErrors.email = 'กรุณากรอกอีเมลให้ถูกต้อง';
-        }
-
-        if (!mobile || !/^\d{9,10}$/.test(mobile)) {
-            newErrors.mobile = 'กรุณากรอกหมายเลขโทรศัพท์ที่ถูกต้อง (9-10 หลัก)';
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
     // Handle Customer Type Change
     const handleCustTypeOptionChange = (event: ChangeEvent<HTMLSelectElement>) => {
         const value = event.target.value;
         setsSelectedCustomerType(value);
         setSelectedCardType('');
     }
-
-    // Handle IdCard Change
-    const handleIdCardChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const value = event.target.value.replace(/\D/g, ''); // ลบตัวอักษรที่ไม่ใช่ตัวเลขออก
-        if (value.length <= 13) {
-            setIdCard(value);
-        }
-    };
 
     const handleDateChange = (date: Date | null) => {
         setValueCalendar(date);
@@ -1133,6 +1102,7 @@ const SalesCreateCust: React.FC = () => {
         setShowPaymentAddress(false);
     };
 
+    // เมื่อกดปุ่มบันทึกข้อมูลลูกค้า จะบันทึกลงระบบ และโชว์ส่วนที่อยู่ลูกค้า
     const handleNextClick = async () => {
         try {
             // POST Contract/updateContract
@@ -1157,51 +1127,141 @@ const SalesCreateCust: React.FC = () => {
         setShowCustomerAddress(true);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (validateForm()) {
-            const formData = {
-                selectedCustomerType,
-                selectedCardType,
-                idCard,
-                selectedPrefixId,
-                fullName,
-                valueCalendar,
-                age,
-                selectedSexId,
-                email,
-                mobile
-            };
-            console.log('Submitting form data:', formData);
-        } else {
-            console.log('Form has errors');
+    {/*-------------------- Start Validate --------------------*/ }
+    const schema = yup.object().shape({
+        //ข้อมูลลูกค้า
+        customerType: yup.string().required("กรุณาเลือกประเภทลูกค้า"),
+        idCard: yup
+            .string()
+            .required("กรุณากรอก")
+            .matches(/^[0-9]{13}$/, "ต้องเป็นตัวเลข 13 หลัก"),
+        telNo: yup
+            .string()
+            .required("กรุณากรอกเบอร์ที่ติดต่อได้")
+            .matches(/^[0-9]{9,10}$/, "เบอร์โทรต้องเป็นตัวเลข 9-10 หลัก"),
+
+        //ที่อยู่ตามบัตร
+        homeNoIdCard: yup.string().required("กรุณากรอกบ้านเลขที่"),
+        provinceIdCard: yup.string().required("กรุณาเลือกจังหวัด"),
+        districtIdCard: yup.string().required("กรุณาเลือกอำเภอ / เขต"),
+        subDistrictIdCard: yup.string().required("กรุณาเลือกตำบล / แขวง"),
+        telNoIdCard: yup
+            .string()
+            .required("กรุณากรอกเบอร์ที่ติดต่อได้")
+            .matches(/^[0-9]{9,10}$/, "เบอร์โทรต้องเป็นตัวเลข 9-10 หลัก"),
+
+        //ที่อยู่ติดตั้ง
+        homeNoInstall: yup.string().required("กรุณากรอกบ้านเลขที่"),
+        provinceInstall: yup.string().required("กรุณาเลือกจังหวัด"),
+        districtInstall: yup.string().required("กรุณาเลือกอำเภอ / เขต"),
+        subDistrictInstall: yup.string().required("กรุณาเลือกตำบล / แขวง"),
+        telNoInstall: yup
+            .string()
+            .required("กรุณากรอกเบอร์ที่ติดต่อได้")
+            .matches(/^[0-9]{9,10}$/, "เบอร์โทรต้องเป็นตัวเลข 9-10 หลัก"),
+
+        //ที่อยู่เก็บเงิน
+        homeNoPayment: yup.string().required("กรุณากรอกบ้านเลขที่"),
+        provincePayment: yup.string().required("กรุณาเลือกจังหวัด"),
+        districtPayment: yup.string().required("กรุณาเลือกอำเภอ / เขต"),
+        subDistrictPayment: yup.string().required("กรุณาเลือกตำบล / แขวง"),
+        telNoPayment: yup
+            .string()
+            .required("กรุณากรอกเบอร์ที่ติดต่อได้")
+            .matches(/^[0-9]{9,10}$/, "เบอร์โทรต้องเป็นตัวเลข 9-10 หลัก"),
+    });
+
+    const { control, handleSubmit, formState: { errors } } = useForm({
+        resolver: yupResolver(schema),
+        defaultValues: {
+            //ข้อมูลลูกค้า
+            customerType: "",
+            idCard: "",
+            telNo: "",
+
+            //ที่อยู่ตามบัตร
+            homeNoIdCard: "",
+            provinceIdCard: "",
+            districtIdCard: "",
+            subDistrictIdCard: "",
+            telNoIdCard: "",
+
+            //ที่อยู่ติดตั้ง
+            homeNoInstall: "",
+            provinceInstall: "",
+            districtInstall: "",
+            subDistrictInstall: "",
+            telNoInstall: "",
+
+            //ที่อยู่เก็บเงิน
+            homeNoPayment: "",
+            provincePayment: "",
+            districtPayment: "",
+            subDistrictPayment: "",
+            telNoPayment: "",
+        },
+    });
+
+    console.log("Errors:", errors)
+
+    {/*-------------------- End Validate --------------------*/ }
+
+    {/*-------------------- Start บันทึกข้อมูลลงระบบ และไปขั้นตอนต่อไป --------------------*/ }
+    const onSubmit = async (data: any) => {
+        try {
+            // เรียก API บันทึกข้อมูล
+            const response = await axios.post(UPDATECONTACT, {
+                REFNO,
+                EMPID: EmpId,
+                TEAMSALE: TeamSale,
+                SALECODE: SaleCode,
+                SUPEMPID: SupEmpId,
+                SECEMPID: SecEmpId,
+                FIELD: "ADDRESS",
+                DATA: SaveAddressData
+            }, {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (response.status === 200) {
+                Swal.fire("สำเร็จ", "บันทึกใบสั่งซื้อสำเร็จ", "success");
+                navigate("/sale/pdpa")
+            } else {
+                Swal.fire("เกิดข้อผิดพลาด", response.data.message || "ไม่สามารถบันทึกข้อมูลได้", "error");
+            }
+        } catch (error) {
+            console.error("Error saving data:", error);
+            Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถส่งข้อมูลได้", "error");
         }
     };
+    {/*-------------------- End บันทึกข้อมูล --------------------*/ }
 
     return (
         <>
             <Content>
-                <div className='d-flex justify-content-between align-items-center my-5'>
-                    <div id="kt_page_title" data-kt-swapper="true" data-kt-swapper-mode="prepend"
-                        data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
-                        className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
-                        <h1 className="page-heading d-flex text-gray-900 fw-bold fs-3 my-0 flex-column justify-content-center">
-                            ข้อมูลลูกค้า
-                        </h1>
-                        <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
-                            <li className="breadcrumb-item text-muted">
-                                <span className="text-muted text-hover-primary">
-                                    ระบบขาย
-                                </span></li>
-                            <li className="breadcrumb-item"><span className="bullet bg-gray-500 w-5px h-2px"></span></li>
-                            <li className="breadcrumb-item text-gray-900">ข้อมูลลูกค้า</li>
-                        </ul>
+                <form onSubmit={handleSubmit(onSubmit)}>
+                    <div className='d-flex justify-content-between align-items-center my-5'>
+                        <div id="kt_page_title" data-kt-swapper="true" data-kt-swapper-mode="prepend"
+                            data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
+                            className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
+                            <h1 className="page-heading d-flex text-gray-900 fw-bold fs-3 my-0 flex-column justify-content-center">
+                                ข้อมูลลูกค้า
+                            </h1>
+                            <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
+                                <li className="breadcrumb-item text-muted">
+                                    <span className="text-muted text-hover-primary">
+                                        ระบบขาย
+                                    </span></li>
+                                <li className="breadcrumb-item"><span className="bullet bg-gray-500 w-5px h-2px"></span></li>
+                                <li className="breadcrumb-item text-gray-900">ข้อมูลลูกค้า</li>
+                            </ul>
+                        </div>
                     </div>
-                </div>
-                <p>เลขที่ขาย: {REFNO}</p>
+                    <p>เลขที่ขาย: {REFNO}</p>
 
-                {/* Card Body */}
-                <form onSubmit={handleSubmit}>
+                    {/* Card Body */}
                     <div className='accordion mb-10' id='kt_accordion_1'>
 
                         {/* Start accordion ข้อมูลลูกค้า*/}
@@ -1228,41 +1288,35 @@ const SalesCreateCust: React.FC = () => {
                                     {/* start form */}
                                     <form className='form'>
                                         <div className='card-body px-lg-9 px-1'>
-
-                                            {/* <div className='row mb-15'>
-                                                <div className='d-flex justify-content-center'>
-                                                    <div
-                                                        className='image-input image-input-outline'
-                                                        data-kt-image-input='true'
-                                                        style={{ backgroundImage: `url(${toAbsoluteUrl('media/avatars/blank.png')})` }}
-                                                    >
-                                                        <img
-                                                            className='image-input-wrapper w-125px h-125px'
-                                                            src={toAbsoluteUrl('media/avatars/300-14.jpg')}
-                                                            alt=''
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </div> */}
-
                                             {selectedCustomerType !== "1" && (
                                                 <>
                                                     <div className="container">
                                                         <div className='row mb-6'>
                                                             <div className='col-lg-6 mb-3'>
                                                                 <label className='form-label required fw-bold fs-6'>ประเภทลูกค้า</label>
-                                                                <select
-                                                                    className='form-select'
-                                                                    onChange={handleCustTypeOptionChange}
-                                                                    value={selectedCustomerType}
-                                                                >
-                                                                    <option value=''>เลือกประเภทลูกค้า...</option>
-                                                                    {customerTypes.map((item: any) => (
-                                                                        <option key={item.CUSTOMERTYPE} value={item.CUSTOMERTYPE}>
-                                                                            {item.CUSTOMERTYPENAME}
-                                                                        </option>
-                                                                    ))}
-                                                                </select>
+                                                                <Controller
+                                                                    name="customerType"
+                                                                    control={control}
+                                                                    render={({ field }) => (
+                                                                        <select
+                                                                            {...field}
+                                                                            className={`form-select ${errors.customerType ? "is-invalid" : ""}`}
+                                                                            onChange={(e) => {
+                                                                                field.onChange(e); // อัปเดต React Hook Form
+                                                                                handleCustTypeOptionChange(e)
+                                                                            }}
+                                                                            value={selectedCustomerType}
+                                                                        >
+                                                                            <option value=''>เลือกประเภทลูกค้า...</option>
+                                                                            {customerTypes.map((item: any) => (
+                                                                                <option key={item.CUSTOMERTYPE} value={item.CUSTOMERTYPE}>
+                                                                                    {item.CUSTOMERTYPENAME}
+                                                                                </option>
+                                                                            ))}
+                                                                        </select>
+                                                                    )}
+                                                                />
+                                                                {errors.customerType && <p className="text-danger">{errors.customerType.message}</p>}
                                                             </div>
 
                                                             <div className='col-lg-6 mb-3'>
@@ -1288,13 +1342,23 @@ const SalesCreateCust: React.FC = () => {
                                                         <div className='row mb-6'>
                                                             <div className='col-lg-4'>
                                                                 <label className='form-label required fw-bold fs-6'>บัตรประชาชน</label>
-                                                                <input
-                                                                    value={idCard}
-                                                                    onChange={handleIdCardChange}
-                                                                    type='text'
-                                                                    className='form-control mb-3 mb-lg-0'
+                                                                <Controller
+                                                                    name="idCard"
+                                                                    control={control}
+                                                                    render={({ field }) => (
+                                                                        <input
+                                                                            {...field}
+                                                                            className={`form-control ${errors.idCard ? "is-invalid" : ""}`}
+                                                                            value={idCard}
+                                                                            onChange={(e) => {
+                                                                                field.onChange(e)
+                                                                                setIdCard(e.target.value)
+                                                                            }}
+                                                                            type='text'
+                                                                        />
+                                                                    )}
                                                                 />
-                                                                {/* {errors.idCard && <p className='text-danger'>{errors.idCard.message}</p>} */}
+                                                                {errors.idCard && <p className="text-danger">{errors.idCard.message}</p>}
                                                             </div>
                                                             <div className='col-lg-4 mb-3'>
                                                                 <label className='form-label required fw-bold fs-6'>คำนำหน้าชื่อ</label>
@@ -1317,7 +1381,6 @@ const SalesCreateCust: React.FC = () => {
                                                                     type='text'
                                                                     className='form-control mb-3 mb-lg-0'
                                                                 />
-                                                                {errors.fullName && <p className='text-danger'>{errors.fullName}</p>}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1371,13 +1434,23 @@ const SalesCreateCust: React.FC = () => {
                                                             <div className='row mb-6 mt-6'>
                                                                 <div className='col-lg-6 mb-3'>
                                                                     <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
-                                                                    <input
-                                                                        value={mobile}
-                                                                        onChange={(e) => setMobile(e.target.value)}
-                                                                        type='text'
-                                                                        className='form-control mb-3 mb-lg-0'
+                                                                    <Controller
+                                                                        name="telNo"
+                                                                        control={control}
+                                                                        render={({ field }) => (
+                                                                            <input
+                                                                                {...field}
+                                                                                className={`form-control ${errors.telNo ? "is-invalid" : ""}`}
+                                                                                value={mobile}
+                                                                                onChange={(e) => {
+                                                                                    field.onChange(e)
+                                                                                    setMobile(e.target.value)
+                                                                                }}
+                                                                                type='text'
+                                                                            />
+                                                                        )}
                                                                     />
-                                                                    {errors.mobile && <p className='text-danger'>{errors.mobile}</p>}
+                                                                    {errors.telNo && <p className="text-danger">{errors.telNo.message}</p>}
                                                                 </div>
                                                                 <div className='col-lg-6 mb-3'>
                                                                     <label className='form-label fw-bold fs-6'>เบอร์บ้าน</label>
@@ -1410,7 +1483,6 @@ const SalesCreateCust: React.FC = () => {
                                                                         type='text'
                                                                         className='form-control mb-3 mb-lg-0'
                                                                     />
-                                                                    {errors.email && <p className='text-danger'>{errors.email}</p>}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -1442,13 +1514,11 @@ const SalesCreateCust: React.FC = () => {
                                                             <div className='col-lg-6'>
                                                                 <label className='form-label required fw-bold fs-6'>ชื่อบริษัท</label>
                                                                 <input
-                                                                    // value={fields.idCard}
-                                                                    // onChange={handleTextChange('idCard')}
+                                                                    value={fullName}
                                                                     onChange={(e) => setFullName(e.target.value)}
                                                                     type='text'
                                                                     className='form-control mb-3 mb-lg-0'
                                                                 />
-                                                                {/* {errors.idCard && <p className='text-danger'>{errors.idCard.message}</p>} */}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1457,14 +1527,23 @@ const SalesCreateCust: React.FC = () => {
                                                         <div className='row mb-6'>
                                                             <div className='col-lg-4'>
                                                                 <label className='form-label required fw-bold fs-6'>เลขประจำตัวผู้เสียภาษี</label>
-                                                                <input
-                                                                    // value={fields.idCard}
-                                                                    // onChange={handleTextChange('idCard')}
-                                                                    onChange={handleIdCardChange}
-                                                                    type='text'
-                                                                    className='form-control mb-3 mb-lg-0'
+                                                                <Controller
+                                                                    name="idCard"
+                                                                    control={control}
+                                                                    render={({ field }) => (
+                                                                        <input
+                                                                            {...field}
+                                                                            className={`form-control ${errors.idCard ? "is-invalid" : ""}`}
+                                                                            value={idCard}
+                                                                            onChange={(e) => {
+                                                                                field.onChange(e)
+                                                                                setIdCard(e.target.value)
+                                                                            }}
+                                                                            type='text'
+                                                                        />
+                                                                    )}
                                                                 />
-                                                                {/* {errors.idCard && <p className='text-danger'>{errors.idCard.message}</p>} */}
+                                                                {errors.idCard && <p className="text-danger">{errors.idCard.message}</p>}
                                                             </div>
                                                             <div className='col-lg-4 mb-3'>
                                                                 <label className='form-label required fw-bold fs-6'>คำนำหน้า</label>
@@ -1488,7 +1567,6 @@ const SalesCreateCust: React.FC = () => {
                                                                     type='text'
                                                                     className='form-control mb-3 mb-lg-0'
                                                                 />
-                                                                {/* {errors.fullname && <p className='text-danger'>{errors.fullname.message}</p>} */}
                                                             </div>
                                                         </div>
 
@@ -1496,12 +1574,23 @@ const SalesCreateCust: React.FC = () => {
                                                             <div className='row mb-6 mt-6'>
                                                                 <div className='col-lg-6 mb-3'>
                                                                     <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
-                                                                    <input
-                                                                        value={mobile}
-                                                                        type='text'
-                                                                        className='form-control mb-3 mb-lg-0'
-                                                                        onChange={(e) => setMobile(e.target.value)}
+                                                                    <Controller
+                                                                        name="telNo"
+                                                                        control={control}
+                                                                        render={({ field }) => (
+                                                                            <input
+                                                                                {...field}
+                                                                                className={`form-control ${errors.telNo ? "is-invalid" : ""}`}
+                                                                                value={mobile}
+                                                                                type='text'
+                                                                                onChange={(e) => {
+                                                                                    field.onChange(e)
+                                                                                    setMobile(e.target.value)
+                                                                                }}
+                                                                            />
+                                                                        )}
                                                                     />
+                                                                    {errors.telNo && <p className="text-danger">{errors.telNo.message}</p>}
                                                                 </div>
                                                                 <div className='col-lg-6 mb-3'>
                                                                     <label className='form-label fw-bold fs-6'>เบอร์บ้าน</label>
@@ -1534,7 +1623,6 @@ const SalesCreateCust: React.FC = () => {
                                                                         type='text'
                                                                         className='form-control mb-3 mb-lg-0'
                                                                     />
-                                                                    {/* {errors.email && <p className='text-danger'>{errors.email.message}</p>} */}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -1779,15 +1867,24 @@ const SalesCreateCust: React.FC = () => {
                                                         <div className='row mb-6'>
                                                             <div className='col-lg-4 mb-3'>
                                                                 <label className='form-label required fw-bold fs-6'>บ้านเลขที่</label>
-                                                                <input
-                                                                    value={addressNumberForInstall}
-                                                                    onChange={(e) => {
-                                                                        setAddressNumberForInstall(e.target.value);
-                                                                        resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                                                    }}
-                                                                    type='text'
-                                                                    className='form-control mb-3 mb-lg-0'
+                                                                <Controller
+                                                                    name="homeNoIdCard"
+                                                                    control={control}
+                                                                    render={({ field }) => (
+                                                                        <input
+                                                                            {...field}
+                                                                            className={`form-control ${errors.homeNoIdCard ? "is-invalid" : ""}`}
+                                                                            value={addressNumberForInstall}
+                                                                            onChange={(e) => {
+                                                                                field.onChange(e)
+                                                                                setAddressNumberForInstall(e.target.value);
+                                                                                resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                                            }}
+                                                                            type='text'
+                                                                        />
+                                                                    )}
                                                                 />
+                                                                {errors.homeNoIdCard && <p className="text-danger">{errors.homeNoIdCard.message}</p>}
                                                             </div>
                                                             <div className='col-lg-4 mb-3'>
                                                                 <label className='form-label fw-bold fs-6'>หมู่ที่</label>
@@ -1832,39 +1929,57 @@ const SalesCreateCust: React.FC = () => {
                                                             </div>
                                                             <div className='col-lg-4 mb-3'>
                                                                 <label className='form-label required fw-bold fs-6'>จังหวัด</label>
-                                                                <select
-                                                                    className='form-select'
-                                                                    value={selectedProvinceForInstall}
-                                                                    onChange={(e) => {
-                                                                        setSelectedProvinceForInstall(Number(e.target.value))
-                                                                        resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                                                    }}
-                                                                >
-                                                                    <option value=''>เลือกจังหวัด...</option>
-                                                                    {getProvinceForInstall.map((item: any) => (
-                                                                        <option key={item.PROVINCECODE} value={item.PROVINCECODE}>
-                                                                            {item.PROVINCENAME}
-                                                                        </option>
-                                                                    ))}
-                                                                </select>
+                                                                <Controller
+                                                                    name="provinceIdCard"
+                                                                    control={control}
+                                                                    render={({ field }) => (
+                                                                        <select
+                                                                            {...field}
+                                                                            className={`form-select ${errors.provinceIdCard ? "is-invalid" : ""}`}
+                                                                            value={selectedProvinceForInstall}
+                                                                            onChange={(e) => {
+                                                                                field.onChange(e)
+                                                                                setSelectedProvinceForInstall(Number(e.target.value))
+                                                                                resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                                            }}
+                                                                        >
+                                                                            <option value=''>เลือกจังหวัด...</option>
+                                                                            {getProvinceForInstall.map((item: any) => (
+                                                                                <option key={item.PROVINCECODE} value={item.PROVINCECODE}>
+                                                                                    {item.PROVINCENAME}
+                                                                                </option>
+                                                                            ))}
+                                                                        </select>
+                                                                    )}
+                                                                />
+                                                                {errors.provinceIdCard && <p className="text-danger">{errors.provinceIdCard.message}</p>}
                                                             </div>
                                                             <div className='col-lg-4 mb-3'>
                                                                 <label className='form-label required fw-bold fs-6'>อำเภอ / เขต</label>
-                                                                <select
-                                                                    className='form-select'
-                                                                    value={selectedDistrictForInstall}
-                                                                    onChange={(e) => {
-                                                                        setSelectedDistrictForInstall(Number(e.target.value))
-                                                                        resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                                                    }}
-                                                                >
-                                                                    <option value=''>เลือกอำเภอ / เขต...</option>
-                                                                    {getDistrictForInstall.map((item: any) => (
-                                                                        <option key={item.DISTRICTCODE} value={item.DISTRICTCODE}>
-                                                                            {item.DISTRICTNAME}
-                                                                        </option>
-                                                                    ))}
-                                                                </select>
+                                                                <Controller
+                                                                    name="districtIdCard"
+                                                                    control={control}
+                                                                    render={({ field }) => (
+                                                                        <select
+                                                                            {...field}
+                                                                            className={`form-select ${errors.districtIdCard ? "is-invalid" : ""}`}
+                                                                            value={selectedDistrictForInstall}
+                                                                            onChange={(e) => {
+                                                                                field.onChange(e)
+                                                                                setSelectedDistrictForInstall(Number(e.target.value))
+                                                                                resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                                            }}
+                                                                        >
+                                                                            <option value=''>เลือกอำเภอ / เขต...</option>
+                                                                            {getDistrictForInstall.map((item: any) => (
+                                                                                <option key={item.DISTRICTCODE} value={item.DISTRICTCODE}>
+                                                                                    {item.DISTRICTNAME}
+                                                                                </option>
+                                                                            ))}
+                                                                        </select>
+                                                                    )}
+                                                                />
+                                                                {errors.districtIdCard && <p className="text-danger">{errors.districtIdCard.message}</p>}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1873,21 +1988,30 @@ const SalesCreateCust: React.FC = () => {
                                                         <div className='row mb-6'>
                                                             <div className='col-lg-4 mb-3'>
                                                                 <label className='form-label required fw-bold fs-6'>ตำบล / แขวง</label>
-                                                                <select
-                                                                    className='form-select'
-                                                                    value={selectedSubDistrictForInstall}
-                                                                    onChange={(e) => {
-                                                                        setSelectedSubDistrictForInstall(Number(e.target.value))
-                                                                        resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                                                    }}
-                                                                >
-                                                                    <option value=''>เลือกตำบล / แขวง...</option>
-                                                                    {getSubDistrictForInstall.map((item: any) => (
-                                                                        <option key={item.SUBDISTRICTCODE} value={item.SUBDISTRICTCODE}>
-                                                                            {item.SUBDISTRICTNAME}
-                                                                        </option>
-                                                                    ))}
-                                                                </select>
+                                                                <Controller
+                                                                    name="subDistrictIdCard"
+                                                                    control={control}
+                                                                    render={({ field }) => (
+                                                                        <select
+                                                                            {...field}
+                                                                            className={`form-select ${errors.subDistrictIdCard ? "is-invalid" : ""}`}
+                                                                            value={selectedSubDistrictForInstall}
+                                                                            onChange={(e) => {
+                                                                                field.onChange(e)
+                                                                                setSelectedSubDistrictForInstall(Number(e.target.value))
+                                                                                resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                                            }}
+                                                                        >
+                                                                            <option value=''>เลือกตำบล / แขวง...</option>
+                                                                            {getSubDistrictForInstall.map((item: any) => (
+                                                                                <option key={item.SUBDISTRICTCODE} value={item.SUBDISTRICTCODE}>
+                                                                                    {item.SUBDISTRICTNAME}
+                                                                                </option>
+                                                                            ))}
+                                                                        </select>
+                                                                    )}
+                                                                />
+                                                                {errors.subDistrictIdCard && <p className="text-danger">{errors.subDistrictIdCard.message}</p>}
                                                             </div>
 
                                                             <div className='col-lg-4 mb-3'>
@@ -1904,15 +2028,24 @@ const SalesCreateCust: React.FC = () => {
                                                             </div>
                                                             <div className='col-lg-4 mb-3'>
                                                                 <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
-                                                                <input
-                                                                    value={addressPhoneForInstall}
-                                                                    onChange={(e) => {
-                                                                        setAddressPhoneForInstall(e.target.value)
-                                                                        resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                                                    }}
-                                                                    type='text'
-                                                                    className='form-control mb-3 mb-lg-0'
+                                                                <Controller
+                                                                    name="telNoIdCard"
+                                                                    control={control}
+                                                                    render={({ field }) => (
+                                                                        <input
+                                                                            {...field}
+                                                                            className={`form-control mb-3 mb-lg-0 ${errors.telNoIdCard ? "is-invalid" : ""}`}
+                                                                            value={addressPhoneForInstall}
+                                                                            onChange={(e) => {
+                                                                                field.onChange(e)
+                                                                                setAddressPhoneForInstall(e.target.value)
+                                                                                resetShowInstallAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                                                                            }}
+                                                                            type='text'
+                                                                        />
+                                                                    )}
                                                                 />
+                                                                {errors.telNoIdCard && <p className="text-danger">{errors.telNoIdCard.message}</p>}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -2418,10 +2551,18 @@ const SalesCreateCust: React.FC = () => {
                     {showCustomerAddress && (
                         <>
                             <div className='d-none d-xl-flex justify-content-between align-items-center mt-5'>
-                                <button onClick={() => navigate('/sale/discount')} className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
+                                <button
+                                    onClick={() => navigate('/sale/discount')}
+                                    className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'
+                                    type='button'
+                                >
                                     ย้อนกลับ
                                 </button>
-                                <button onClick={() => navigate('/sale/pdpa')} className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
+                                <button
+                                    onClick={handleSubmit(onSubmit)}
+                                    className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
+                                    type='button'
+                                >
                                     บันทึก
                                 </button>
                             </div>
@@ -2440,12 +2581,14 @@ const SalesCreateCust: React.FC = () => {
                                 <button
                                     className="btn btn-secondary w-auto me-2"
                                     onClick={() => navigate('/sale/discount')}
+                                    type='button'
                                 >
                                     ย้อนกลับ
                                 </button>
                                 <button
                                     className={`btn btn-primary w-auto`}
-                                    onClick={() => navigate('/sale/pdpa')}
+                                    onClick={handleSubmit(onSubmit)}
+                                    type='button'
                                 >
                                     บันทึก
                                 </button>

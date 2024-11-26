@@ -7,8 +7,8 @@ import { Content } from '../../../_metronic/layout/components/content';
 import { useUUIDStore } from '../../modules/stores/stepsStore';
 import { useAuth } from '../../modules/auth/core/Auth';
 
-//useStore
-import { useFetchCategoryStore } from '../../modules/stores/sales/packageStore/packageStore';
+import { EntriesDropdown, PaginationTable } from '../../modules/entriesAndPagination/Pagination'
+import { Commet, ThreeDot } from 'react-loading-indicators'
 
 const OrderOverview: React.FC = () => {
   const navigate = useNavigate();
@@ -21,67 +21,57 @@ const OrderOverview: React.FC = () => {
   const SupEmpId = auth?.data?.[0]?.SupEmp || '';
   const SecEmpId = auth?.data?.[0]?.SecEmp || '';
 
-  const API_URL_GET_ALLCONTRACT = import.meta.env.VITE_APP_API_MONGO;
-  const DRAFT_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=DRAFT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`;
-  const FINISH_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=FINISH&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`;
+  const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
+  const GETBOOKINGLIST_URL = `${API_SALECONNEXT}/GetBookinglist`;
 
-  const { fetchCategory } = useFetchCategoryStore();
-  // console.log(`fetchCategory: `, fetchCategory);
+  const [allBookingList, setAllBookingList] = useState<any[]>([]); // กำหนดให้ state เป็น array เพื่อรองรับ map()
+  // console.log(`allBookingList`, allBookingList);
 
-  const [draft, setDraft] = useState<any[]>([]); // กำหนดให้ state เป็น array เพื่อรองรับ map()
-  const [finish, setFinish] = useState<any[]>([]); // กำหนดให้ state เป็น array เพื่อรองรับ map()
+  // แสดง Show entries
+  const [entries, setEntries] = useState<number>(10); // ค่าเริ่มต้นของจำนวนรายการ
 
+  // แสดง Pagination
+  const [currentPage, setCurrentPage] = useState<number>(1); // หน้าปัจจุบัน
+
+  // คำนวณข้อมูลที่แสดงในหน้าปัจจุบัน
+  const startIndex = (currentPage - 1) * entries;
+  const displayedData = allBookingList.slice(startIndex, startIndex + entries);
+
+  const [isLoading, setIsLoading] = useState<boolean>(false); // สถานะการโหลด
+
+  // พนักงานขาย
   useEffect(() => {
-    getDataDraft();
-  }, []);
-
-  const getDataDraft = async () => {
-    try {
-      const response = await axios.get(DRAFT_ALLCONTRACT_URL, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      const data = Array.isArray(response.data.data) ? response.data.data : [];
-      setDraft(data); // บันทึกข้อมูล draft
-      console.log('Draft: ', data)
-    } catch (error) {
-      console.error('Error fetching DRAFT_ALLCONTRACT_URL:', error);
-    }
-  };
-
-  const getDataFinish = async () => {
-    try {
-      const response = await axios.get(FINISH_ALLCONTRACT_URL, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      const data = Array.isArray(response.data.data) ? response.data.data : [];
-      setFinish(data); // บันทึกข้อมูล finish
-      console.log('Finish: ', data)
-    } catch (error) {
-      console.error('Error fetching FINISH_ALLCONTRACT_URL:', error);
-    }
-  };
-
-  const handleDragtTab = () => {
-    getDataDraft()
-  }
-
-  const handleFinishTab = () => {
-    getDataFinish()
-  }
+    setIsLoading(true); // เริ่มสถานะการโหลด
+    setTimeout(async () => {
+      try {
+        const response = await axios.post(GETBOOKINGLIST_URL,
+          {
+            EmpId: EmpId,
+            TeamSale: TeamSale,
+          }, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        const data = Array.isArray(response.data.data) ? response.data.data : [];
+        setAllBookingList(data);
+      } catch (error) {
+        console.error('Error fetching GETBOOKINGLIST_URL:', error);
+        setAllBookingList([]); // กำหนดค่าเป็น array ว่าง หากเกิดข้อผิดพลาด
+      } finally {
+        setIsLoading(false); // ปิดสถานะการโหลดหลังจากเสร็จสิ้น
+      }
+    }, 1000)
+  }, [auth]);
 
   const handleAddItemClick = () => {
-    SETREFNO(); // Generate a new REFNO before navigating
     navigate('/order/OrderCreateBooking'); // Navigate to the package page
   };
 
   return (
     <>
       <Content>
-        <div className='d-flex justify-content-between align-items-center my-5'>
+        <div className='d-flex justify-content-between align-items-center'>
           <div id="kt_page_title" data-kt-swapper="true" data-kt-swapper-mode="prepend"
             data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
             className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
@@ -98,7 +88,7 @@ const OrderOverview: React.FC = () => {
             </ul>
           </div>
 
-          <div className='d-flex justify-content-end mb-5 mt-10'>
+          <div className='d-flex justify-content-end mb-5'>
             <button onClick={handleAddItemClick} className='btn btn-primary w-100 w-md-100 w-lg-auto'>
               เพิ่มรายการ
             </button>
@@ -109,62 +99,73 @@ const OrderOverview: React.FC = () => {
         <div className='card mb-10'>
           <div className='card-body d-flex align-items-center py-5'>
             <div className='col-12'>
-              <ul className="nav nav-tabs nav-line-tabs mb-5 fs-6">
-                <li className="nav-item">
-                  <a
-                    className="nav-link active"
-                    data-bs-toggle="tab"
-                    href="#kt_tab_pane_1"
-                    onClick={handleDragtTab}
-                  >
-                    รายการจองคงค้าง
-                  </a>
-                </li>
-                <li className="nav-item">
-                  <a
-                    className="nav-link"
-                    data-bs-toggle="tab"
-                    href="#kt_tab_pane_2"
-                    onClick={handleFinishTab}
-                  >
-                    รายการจองเสร็จสมบูรณ์
-                  </a>
-                </li>
-              </ul>
 
-              <div className="tab-content" id="myTabContent">
-                {/* แท็บรายการจองคงค้าง */}
-                <div
-                  className="tab-pane fade active show"
-                  id="kt_tab_pane_1"
-                  role="tabpanel"
-                >
-                  {/* {draft.length > 0 && (
-                    draft.map((item, index) => (
-                      <SalesItemNumber key={index} status="DRAFT" item={item} />
-                    ))
-                  )} */}
-                  {
-                    draft.length === 0 && (
-                      <span className='text-gray-800 fw-bold d-block'>{`ไม่มีรายการคงค้าง`}</span>
-                    )
-                  }
+              {/* Progress Loader */}
+              {isLoading && (
+                <div className="text-center my-10">
+                  <ThreeDot />
                 </div>
+              )}
 
-                {/* แท็บรายการจองเสร็จสมบูรณ์ */}
-                <div className="tab-pane fade" id="kt_tab_pane_2" role="tabpanel">
-                  {/* {finish.length > 0 && (
-                    finish.map((item, index) => (
-                      <SalesItemNumber key={index} status="FINISH" item={item} />
-                    ))
-                  )} */}
-                  {
-                    finish.length === 0 && (
-                      <span className='text-gray-800 fw-bold d-block'>{`ไม่มีรายการที่เสร็จสมบูรณ์`}</span>
-                    )
-                  }
-                </div>
-              </div>
+              {!isLoading && allBookingList.length > 0 && (
+                <>
+                  {/* Dropdown สำหรับเลือกจำนวนรายการ */}
+                  <EntriesDropdown onEntriesChange={(value) => setEntries(value)} />
+
+                  {!isLoading && allBookingList.length > 0 && (
+                    <>
+                      {/* Start Table */}
+                      <table className="table table-rounded table-row-bordered border table-striped gs-7 mt-3">
+                        <thead>
+                          <tr className="fw-bold fs-6 text-gray-800 border-bottom-2 border-gray-200">
+                            <th>#</th>
+                            <th>เลขใบจอง</th>
+                            <th>ชื่อลูกค้า</th>
+                            <th>เบอร์โทร</th>
+                            <th>ผลิตภัณฑ์</th>
+                            <th>วันที่ติดตั้ง</th>
+                            <th>สถานะ</th>
+                            <th>แก้ไข</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {Array.isArray(displayedData) && displayedData.length > 0 ? (
+                            displayedData.map((booking: any, index: number) => (
+                              <tr key={index}>
+                                <td>{startIndex + index + 1}</td>
+                                <td>{booking?.BOOKINGNO}</td>
+                                <td>{booking?.CUSTOMER?.PREFIXNAME} {booking?.CUSTOMER?.CUSTOMERNAME}</td>
+                                <td>{booking?.ADDRESS[0]?.AddressInstall?.TELMOBILE}</td>
+                                <td>{booking?.PRODUCT?.PRODUCTNAME}</td>
+                                <td>{booking?.APPOINTMENT?.APPOINT_DATE}</td>
+                                <td>{booking.from_data}</td>
+                                <td>
+                                  <button
+                                    className="btn btn-success btn-sm"
+                                  // onClick={() => handleUseDataClick(customer)}
+                                  >
+                                    แก้ไข
+                                  </button>
+                                </td>
+                              </tr>
+                            ))) :
+                            ("")}
+                        </tbody>
+                      </table>
+                      {/* End Table */}
+
+                      {/* Pagination */}
+                      <PaginationTable
+                        totalData={allBookingList.length}
+                        entries={entries}
+                        currentPage={currentPage}
+                        onPageChange={setCurrentPage}
+                      />
+                    </>
+                  )}
+                </>
+              )}
+
             </div>
           </div>
         </div>

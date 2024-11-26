@@ -782,7 +782,7 @@ const SalesPackage: React.FC = () => {
                         </div>
                     </div>
                 </div>
-                <div className='accordion mb-10' id='kt_accordion_1'>
+                {/* <div className='accordion mb-10' id='kt_accordion_1'>
                     <div className='accordion-item mb-10'>
                         <h2 className='accordion-header' id='kt_accordion_1_header_1'>
                             <h3
@@ -1043,7 +1043,7 @@ const SalesPackage: React.FC = () => {
                         </div>
                         <hr />
                     </div>
-                </div>
+                </div> */}
 
                 <div className='row mb-6'>
                     <div className='col-lg-4 mb-3'>
@@ -1093,16 +1093,44 @@ const SalesPackage: React.FC = () => {
                     </div>
                 </div>
 
-                <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10'>
-                    <Link to='/contract-checker' className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
+                <div className='d-none d-xl-flex justify-content-between align-items-center my-5 mt-10'>
+                    <button
+                        className='btn btn-secondary w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'
+                        onClick={() => navigate('/contract-checker')}>
                         ย้อนกลับ
-                    </Link>
+                    </button>
                     <button
                         className='btn btn-primary w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'
                         onClick={handleSaveClick}>
                         บันทึกการตรวจสอบ
                     </button>
                 </div>
+
+                {/* ปุ่มในหน้าจอเล็ก */}
+                <div
+                    className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
+                    style={{
+                        position: "fixed",
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        zIndex: 1050,
+                    }}
+                >
+                    <button
+                        className="btn btn-secondary w-auto me-2"
+                        onClick={() => navigate('/contract-checker')}
+                    >
+                        ย้อนกลับ
+                    </button>
+                    <button
+                        className={`btn btn-primary w-auto`}
+                        onClick={handleSaveClick}
+                    >
+                        บันทึกการตรวจสอบ
+                    </button>
+                </div>
+
             </Content>
         </>
     );

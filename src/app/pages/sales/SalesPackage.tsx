@@ -585,20 +585,6 @@ const SalesPackage: React.FC = () => {
                                             <div className='my-10 my-xl-10' ref={packageSectionRef}>
                                                 <div className='row d-flex'>
                                                     <label className='form-label required fw-bold fs-3'>แพ็คเกจ</label>
-                                                    {/* <div className='row mb-6 mt-6'>
-                                                        <div className='col-lg-6 mb-3'>
-                                                            <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
-                                                            <input
-                                                                type='text'
-                                                                className='form-control mb-3 mb-lg-0'
-                                                                placeholder='พิมพ์ค้นหาแพ็คเกจ'
-                                                                onChange={(e) => {
-                                                                    let searchTerm = e.target.value
-                                                                    let pacList = packageList.filter(p => p.PACKAGETITLE.includes(searchTerm))
-                                                                    setPackageList(pacList)
-                                                                }} />
-                                                        </div>
-                                                    </div> */}
                                                     {packageList.map((item, index) => (
                                                         <div
                                                             className='col-12 col-md-4 col-sm-4 mb-2'

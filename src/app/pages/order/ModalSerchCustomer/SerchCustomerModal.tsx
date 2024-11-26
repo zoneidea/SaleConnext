@@ -25,7 +25,7 @@ const SerchCustomerModal: React.FC<MyModalProps> = ({ show, handleClose }) => {
   const SEARCHTYPE_URL = `${API_THIENSURAT}/SearchCustomer`;
 
   const [responseSearchData, setResponseSearchData] = useState<any[]>([]);
-  console.log(`responseSearchData`, responseSearchData);
+  // console.log(`responseSearchData`, responseSearchData);
   const [dataType, setDataType] = useState<string>('');
   const [dataSearchInput, setDataSearchInput] = useState<string>('');
 
