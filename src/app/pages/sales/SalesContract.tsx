@@ -23,6 +23,26 @@ interface ContractState {
   contNo: string;
 }
 
+interface ItemProps {
+  REFNO: String,
+  CONTNO: String,
+  EMPID: String,
+  TEAMSALE: String,
+  SALECODE: String,
+  SUPEMPID: String,
+  SECEMPID: String,
+  STATUS: String,
+  PRODUCT: [any],
+  CUSTOMERSTATUS: [any],
+  DISCOUNT: [any],
+  CUSTOMERDETAIL: [any],
+  ADDRESS: [any],
+  PDPA: [any],
+  CONTRACT: [any],
+  IMAGE: [any],
+  CHECKERCOMMENT: [any]
+}
+
 const SalesContract: React.FC = () => {
   const navigate = useNavigate()
 

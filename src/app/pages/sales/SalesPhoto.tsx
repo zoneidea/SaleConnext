@@ -26,14 +26,14 @@ const SalesPhoto: React.FC = () => {
 
     // อัพเดท
     interface ItemProps {
-        REFNO: String,
-        CONTNO: String,
-        EMPID: String,
-        TEAMSALE: String,
-        SALECODE: String,
-        SUPEMPID: String,
-        SECEMPID: String,
-        STATUS: String,
+        REFNO: string,
+        CONTNO: string,
+        EMPID: string,
+        TEAMSALE: string,
+        SALECODE: string,
+        SUPEMPID: string,
+        SECEMPID: string,
+        STATUS: string,
         PRODUCT: [any],
         CUSTOMERSTATUS: [any],
         DISCOUNT: [any],
@@ -46,10 +46,12 @@ const SalesPhoto: React.FC = () => {
     }
     const location = useLocation() as any;
     const fromStep = location.state?.fromStep || false;
+    console.log(`fromStep`, fromStep);
     const item = location.state?.data as ItemProps || [];
     console.log(`item`, item);
 
-    const refno = item?.REFNO
+    // กำหนด REFNO
+    const refno = fromStep ? item.REFNO : REFNO;
 
     // สร้างใหม่ ส่งตรวจสอบ
     const handleCheckerClick = async () => {
@@ -127,17 +129,25 @@ const SalesPhoto: React.FC = () => {
                         </ul>
                     </div>
                 </div>
+                <p>เลขที่ขาย: {refno}</p>
 
                 <div className='row'>
                     {/* Card Body */}
                     <div className='card col-lg-3 col-6'>
-                        <Link className='card-body d-flex flex-column justify-content-between 
-                        bgi-no-repeat bgi-size-cover bgi-position-x-center pb-0'
-                            to='/sale/photo/idcard'
+                        <button
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                padding: 0,
+                                color: 'inherit',
+                                cursor: 'pointer',
+                                fontSize: 'inherit',
+                            }}
+                            onClick={() => navigate('/sale/photo/idcard', { state: { fromStep, data: item } })}
                         >
                             <div className='mb-10'>
                                 <div className='fw-bold text-gray-800 text-center'>
-                                    <span className='position-relative d-inline-block text-dangeropacity-75-hover fs-lg-2 fs-28'>
+                                    <span className='mt-8 position-relative d-inline-block text-dangeropacity-75-hover fs-lg-2 fs-28'>
                                         รูปบัตรประชาชน
                                     </span>
                                 </div>
@@ -147,7 +157,7 @@ const SalesPhoto: React.FC = () => {
                                 src={toAbsoluteUrl('media/take-a-pic/id-card-pass.svg')}
                                 alt=''
                             />
-                        </Link>
+                        </button>
                     </div>
                     {/* End Card Body */}
 
@@ -356,7 +366,7 @@ const SalesPhoto: React.FC = () => {
                     >
                         <button
                             className="btn btn-secondary w-auto me-2"
-                            onClick={() => navigate('/sale/step')}
+                            onClick={() => navigate('/sale/step', { state: item })}
                         >
                             ย้อนกลับ
                         </button>

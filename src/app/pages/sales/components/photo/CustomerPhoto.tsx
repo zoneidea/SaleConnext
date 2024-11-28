@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { toAbsoluteUrl } from '../../../../../_metronic/helpers';
 import { useAuth } from '../../../../modules/auth/core/Auth';
 import { useUUIDStore } from '../../../../modules/stores/stepsStore';
@@ -14,17 +14,50 @@ import {
     usePhotoEquipmentStore
 } from '../../../../modules/stores/sales/photoStore/photoStore';
 
+//useStore
+import {
+    useCategoryStore
+  } from '../../../../modules/stores/sales/packageStore/packageStore';
+
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 
+//แก้ไข
+interface ContractState {
+    contNo: string;
+}
+
+interface ItemProps {
+    REFNO: String,
+    CONTNO: String,
+    EMPID: String,
+    TEAMSALE: String,
+    SALECODE: String,
+    SUPEMPID: String,
+    SECEMPID: String,
+    STATUS: String,
+    PRODUCT: [any],
+    CUSTOMERSTATUS: [any],
+    DISCOUNT: [any],
+    CUSTOMERDETAIL: [any],
+    ADDRESS: [any],
+    PDPA: [any],
+    CONTRACT: [any],
+    IMAGE: [any],
+    CHECKERCOMMENT: [any]
+}
+
 const CustomerPhoto: React.FC = () => {
+    const navigate = useNavigate()
+    const MySwal = withReactContent(Swal);
+    
     const { REFNO } = useUUIDStore();
     const { auth } = useAuth();
-    const EmpId = auth?.data?.[0]?.EmpId || '';
-    const TeamSale = auth?.data?.[0]?.TeamSale || '';
-    const SaleCode = auth?.data?.[0]?.SaleCode || '';
-    const SupEmpId = auth?.data?.[0]?.SupEmp || '';
-    const SecEmpId = auth?.data?.[0]?.SecEmp || '';
+    // const EmpId = auth?.data?.[0]?.EmpId || '';
+    // const TeamSale = auth?.data?.[0]?.TeamSale || '';
+    // const SaleCode = auth?.data?.[0]?.SaleCode || '';
+    // const SupEmpId = auth?.data?.[0]?.SupEmp || '';
+    // const SecEmpId = auth?.data?.[0]?.SecEmp || '';
 
     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
     const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
@@ -172,6 +205,57 @@ const CustomerPhoto: React.FC = () => {
             });
         }
     };
+
+    //// แก้ไข
+    const location = useLocation();
+    const item = location.state as ItemProps || [];
+    
+    const [data, setData] = useState<any[]>([])
+    const GET_CONTRACT_URL = `${API_URL_MONGO}/Contract/GetContractSummary`;
+  
+    const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
+    const API_URL_POST_CONDITIONSCHECKHISTORY = `${API_SALECONNEXT}/ConditionsCheckHistory`;
+  
+    const API_URL_POST_CHECKCUSTOMER = import.meta.env.VITE_APP_API_THIENSURAT;
+    const CHECKCUSTOMER_URL = `${API_URL_POST_CHECKCUSTOMER}/CheckCustomer`;
+  
+    const {
+      EmpId, setEmpId,
+      TeamSale, setTeamSale,
+      SaleCode, setSaleCode,
+      SupEmpId, setSupEmpId,
+      SecEmpId, setSecEmpId,
+      DivisionId, setDivisionId,
+      DepartId, setDepartId,
+      DepartGroup, setDepartGroup,
+    } = useCategoryStore();
+  
+    const getData = async () => {
+      try {
+        const response = await axios.get(GET_CONTRACT_URL + '?refno=' + REFNO, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        const data = Array.isArray(response.data.data) ? response.data.data : [];
+        setData(data);
+        console.log('Load data', data)
+      } catch (error) {
+        console.error('Error fetching DRAFT_ALLCONTRACT_URL:', error);
+      }
+    };
+  
+    useEffect(() => {
+      getData();
+      setEmpId(auth.data[0].EmpId);
+      setTeamSale(auth.data[0].TeamSale);
+      setSaleCode(auth.data[0].SaleCode);
+      setSupEmpId(auth.data[0].SupEmp);
+      setSecEmpId(auth.data[0].SecEmp);
+      setDivisionId(auth.data[0].DivisionId);
+      setDepartId(auth.data[0].DepartId);
+      setDepartGroup(auth.data[0].DepartGroup);
+    }, [location]);  
 
     return (
         <div>

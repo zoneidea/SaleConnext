@@ -1101,12 +1101,27 @@ const UpdateSaleAddress: React.FC = () => {
                 MySwal.fire('เกิดข้อผิดพลาด', 'ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
             } else {
                 MySwal.fire('สำเร็จ', 'ส่งข้อมูลตรวจสอบแล้ว', 'success');
+                navigate("/sale/overview")
             }
         } else {
             MySwal.fire('เกิดข้อผิดพลาด', response.data.message, 'error');
         }
     }
 
+    // เช็คว่า data ใน item มีครบทุกขั้นตอน (ไม่เป็น array เปล่า) ใช่ไหม ถ้าเป็นจะ disabled ปุ่มส่งตรวจสอบ
+    const isDataComplete = useMemo(() => {
+        return (
+            Array.isArray(item.ADDRESS) && item.ADDRESS.length > 0 &&
+            Array.isArray(item.CUSTOMERDETAIL) && item.CUSTOMERDETAIL.length > 0 &&
+            Array.isArray(item.CUSTOMERSTATUS) && item.CUSTOMERSTATUS.length > 0 &&
+            Array.isArray(item.DISCOUNT) && item.DISCOUNT.length > 0 &&
+            Array.isArray(item.PDPA) && item.PDPA.length > 0 &&
+            Array.isArray(item.PRODUCT) && item.PRODUCT.length > 0
+        );
+    }, [item]);
+
+    console.log(isDataComplete);
+    
     return (
         <>
             <Content>
@@ -1957,7 +1972,7 @@ const UpdateSaleAddress: React.FC = () => {
                     {/* End accordion ที่อยู่ลูกค้า (ใบกำกับภาษี)*/}
                 </div>
                 {/* End Card */}
-                <div className='d-none d-xl-flex justify-content-between align-items-center mt-5'>
+                <div className='d-none d-xl-flex justify-content-between align-items-center my-5'>
                     <button
                         className='btn btn-secondary w-100 w-md-auto align-self-center h-50px'
                         onClick={() => navigate('/sale/step', { state: item })}>
@@ -1969,7 +1984,8 @@ const UpdateSaleAddress: React.FC = () => {
                         อัพเดทข้อมูล
                     </button>
                     <button
-                        className='btn btn-primary w-100 w-md-auto align-self-center h-50px'
+                        className={`btn btn-primary w-100 w-md-auto align-self-center h-50px ${!isDataComplete ? `disabled` : ``}`}
+                        disabled={!isDataComplete}
                         onClick={handleCheckerClick}
                     >
                         ส่งตรวจสอบ
@@ -2000,7 +2016,8 @@ const UpdateSaleAddress: React.FC = () => {
                         อัพเดทข้อมูล
                     </button>
                     <button
-                        className='btn btn-primary w-auto'
+                        className={`btn btn-primary w-auto ${!isDataComplete ? `disabled` : ``}`}
+                        disabled={!isDataComplete}
                         onClick={handleCheckerClick}
                     >
                         ส่งตรวจสอบ

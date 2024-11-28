@@ -58,6 +58,7 @@ const SalesPackage: React.FC = () => {
     const customer = item?.CUSTOMERDETAIL
     const address = item?.ADDRESS
     const image = item?.IMAGE
+    console.log(`item`, item);
 
     const [comment, setComment] = useState('')
     const [cbxApproveSelected, setApproveSelected] = useState(true);
@@ -782,7 +783,7 @@ const SalesPackage: React.FC = () => {
                         </div>
                     </div>
                 </div>
-                {/* <div className='accordion mb-10' id='kt_accordion_1'>
+                <div className='accordion mb-10' id='kt_accordion_1'>
                     <div className='accordion-item mb-10'>
                         <h2 className='accordion-header' id='kt_accordion_1_header_1'>
                             <h3
@@ -804,22 +805,24 @@ const SalesPackage: React.FC = () => {
                         </div>
                         <div className='d-flex flex-column flex-md-row mx-5 mb-5'>
                             {
-                                image?.[0].IMAGECARD.length !== 0 ? (
-                                    image?.[0].IMAGECARD?.map((image: any, index: Key | null | undefined) => (
+                                Array.isArray(image?.[0]?.IMAGECARD) && image?.[0]?.IMAGECARD.length > 0 ? (
+                                    image?.[0]?.IMAGECARD?.map((image: string, index: number) => (
                                         <div className='m-5' key={index}>
                                             <div className='d-flex justify-content-between mb-3'>
                                                 <img
                                                     src={`data:${image}`}
                                                     style={{
-                                                        width: '200px', height: 'auto',
+                                                        width: '200px',
+                                                        height: 'auto',
                                                     }}
+                                                    alt={`ID Card ${index + 1}`}
                                                 />
                                             </div>
                                         </div>
                                     ))
                                 ) : (
                                     <div className='text-center my-7'>
-                                        <h5>ไม่มีรุปภาพบัตรประชาชนลูกค้า</h5>
+                                        <h5>ไม่มีรูปภาพบัตรประชาชนลูกค้า</h5>
                                     </div>
                                 )
                             }
@@ -835,8 +838,8 @@ const SalesPackage: React.FC = () => {
                         </div>
                         <div className='d-flex flex-column flex-md-row mx-5'>
                             {
-                                image?.[0].IMAGEGPS.length !== 0 ? (
-                                    image?.[0].IMAGEGPS?.map((image: any, index: Key | null | undefined) => (
+                                Array.isArray(image?.[0]?.IMAGEGPS) && image?.[0]?.IMAGEGPS.length > 0 ? (
+                                    image?.[0]?.IMAGEGPS?.map((image: any, index: Key | null | undefined) => (
                                         <div className='m-5' key={index}>
                                             <div className='d-flex justify-content-between mb-3'>
                                                 <img
@@ -866,8 +869,8 @@ const SalesPackage: React.FC = () => {
                         </div>
                         <div className='d-flex flex-column flex-md-row mx-5'>
                             {
-                                image?.[0].IMAGEMAP.length !== 0 ? (
-                                    image?.[0].IMAGEMAP?.map((image: any, index: Key | null | undefined) => (
+                                Array.isArray(image?.[0]?.IMAGEMAP) && image?.[0]?.IMAGEMAP.length > 0 ? (
+                                    image?.[0]?.IMAGEMAP?.map((image: any, index: Key | null | undefined) => (
                                         <div className='m-5' key={index}>
                                             <div className='d-flex justify-content-between mb-3'>
                                                 <img
@@ -897,8 +900,8 @@ const SalesPackage: React.FC = () => {
                         </div>
                         <div className='d-flex flex-column flex-md-row mx-5'>
                             {
-                                image?.[0].IMAGETRADEIN.length !== 0 ? (
-                                    image?.[0].IMAGETRADEIN?.map((image: string | undefined, index: Key | null | undefined) => (
+                                Array.isArray(image?.[0]?.IMAGETRADEIN) && image?.[0]?.IMAGETRADEIN.length > 0 ? (
+                                    image?.[0]?.IMAGETRADEIN?.map((image: string | undefined, index: Key | null | undefined) => (
                                         <div className='m-5' key={index}>
                                             <div className='d-flex justify-content-between mb-3'>
                                                 <img
@@ -928,8 +931,8 @@ const SalesPackage: React.FC = () => {
                         </div>
                         <div className='d-flex flex-column flex-md-row mx-5'>
                             {
-                                image?.[0].IMAGEINSTALLATION.length !== 0 ? (
-                                    image?.[0].IMAGEINSTALLATION?.map((image: any, index: Key | null | undefined) => (
+                                Array.isArray(image?.[0]?.IMAGEINSTALLATION) && image?.[0]?.IMAGEINSTALLATION.length > 0 ? (
+                                    image?.[0]?.IMAGEINSTALLATION?.map((image: any, index: Key | null | undefined) => (
                                         <div className='m-5' key={index}>
                                             <div className='d-flex justify-content-between mb-3'>
                                                 <img
@@ -959,7 +962,7 @@ const SalesPackage: React.FC = () => {
                         </div>
                         <div className='d-flex flex-column flex-md-row mx-5'>
                             {
-                                image?.[0]?.IMAGECUSTOMERHOME.length !== 0 ? (
+                                Array.isArray(image?.[0]?.IMAGECUSTOMERHOME) && image?.[0]?.IMAGECUSTOMERHOME.length > 0 ? (
                                     image?.[0]?.IMAGECUSTOMERHOME.map((image: any, index: Key | null | undefined) => (
                                         <div className='m-5' key={index}>
                                             <div className='d-flex justify-content-between mb-3'>
@@ -990,7 +993,7 @@ const SalesPackage: React.FC = () => {
                         </div>
                         <div className='d-flex flex-column flex-md-row mx-5'>
                             {
-                                image?.[0]?.IMAGECUSTOMER.length !== 0 ? (
+                                Array.isArray(image?.[0]?.IMAGECUSTOMER) && image?.[0]?.IMAGECUSTOMER.length > 0 ? (
                                     image?.[0]?.IMAGECUSTOMER.map((image: any, index: Key | null | undefined) => (
                                         <div className='m-5' key={index}>
                                             <div className='d-flex justify-content-between mb-3'>
@@ -1021,7 +1024,7 @@ const SalesPackage: React.FC = () => {
                         </div>
                         <div className='d-flex flex-column flex-md-row mx-5'>
                             {
-                                image?.[0]?.IMAGETDS.length !== 0 ? (
+                                Array.isArray(image?.[0]?.IMAGETDS) && image?.[0]?.IMAGETDS.length > 0 ? (
                                     image?.[0]?.IMAGETDS.map((image: any, index: Key | null | undefined) => (
                                         <div className='m-5' key={index}>
                                             <div className='d-flex justify-content-between mb-3'>
@@ -1043,7 +1046,7 @@ const SalesPackage: React.FC = () => {
                         </div>
                         <hr />
                     </div>
-                </div> */}
+                </div>
 
                 <div className='row mb-6'>
                     <div className='col-lg-4 mb-3'>

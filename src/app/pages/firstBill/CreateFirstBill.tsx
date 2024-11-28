@@ -55,8 +55,6 @@ const CreateFirstBill: React.FC = () => {
     const SupEmpId = auth?.data?.[0]?.SupEmp || '';
     const SecEmpId = auth?.data?.[0]?.SecEmp || '';
 
-    const { REFNO } = useUUIDStore();
-
     const item = location.state as ItemProps || [];
     console.log(`item`, item);
     const refno = item?.REFNO
@@ -64,30 +62,99 @@ const CreateFirstBill: React.FC = () => {
     const contNo = item?.CONTNO
     const customerDetail = item?.CUSTOMERDETAIL
 
+    const API_URL_GET_ALLCONTRACT = import.meta.env.VITE_APP_API_MONGO;
+    const POST_PAYMENT_TRANSACTION_URL = `${API_URL_GET_ALLCONTRACT}/Payment/UpdatePaymentTransaction`;
+
     const totalPrice = product[0]?.Package[0]?.TOTALPRICE || 0;
     const discountAmount = item?.DISCOUNT[0]?.DISCOUNTAMOUNT || 0;
     const netPrice = totalPrice - discountAmount;
 
+    // ชำระเงินทันที หรือ นัดชำระ
     const [payQuick, setPayQuick] = useState<boolean>(true);
+    const [status, setStatus] = useState("PAID");
+
+    // ชำระเต็ม หรือ ชำระบางส่วน / เกินจำนวน
     const [payFullAmount, setPayFullAmount] = useState<boolean>(true);
     const [paySomeAmount, setPaySomeAmount] = useState<number>(0);
+    const [paymentChoice, setPaymentChoice] = useState<string>("FULL");
+
+    const [priceOption, setPriceOption] = useState<string>("CASH");
+
+    // ประเภทการชำระเงิน
+    const [paymentChannel, setPaymentChannel] = useState<string>("CASH");
 
     const remainingAmount = netPrice - paySomeAmount
 
     const [valueCalendarInstall, setValueCalendarInstall] = useState<Date | null>(null);
+    const dueDate = dayjs(valueCalendarInstall).format("YYYY-MM-DD");
 
-    const handlePayQuickChange = (value: boolean) => {
-        setPayQuick(value);
+    const handlePayQuickChange = (isPayQuick: boolean) => {
+        setPayQuick(isPayQuick);
+        setStatus(isPayQuick ? "PAID" : "SCHEDULE");;
+        setPaymentChannel(isPayQuick ? "CASH" : "NONE");
+        setPaymentChoice(isPayQuick ? (payFullAmount ? "FULL" : "SOME") : "NONE"); // อัปเดต PAYMENTCHOICE
     };
 
     const handlePayFullAmountChange = (value: boolean) => {
         setPayFullAmount(value);
+        setPaymentChoice(value ? "FULL" : "SOME"); // อัปเดต PAYMENTCHOICE
+    
+        // เปลี่ยน status เป็น SCHEDULE เมื่อชำระบางส่วน / เกินจำนวน
+        if (!value) {
+            setStatus("SCHEDULE");
+        } else {
+            setStatus("PAID");
+        }
     };
-
+    
     const handleDateChangeInstall = (date: Date | null) => {
         setValueCalendarInstall(date);
     };
 
+    const handlePaymentChannelChange = (channel: string) => {
+        setPaymentChannel(channel);
+    };
+
+    const handlePriceOptionChange = (option: string) => {
+        setPriceOption(option);
+    };
+
+    const allData = {
+        REFNO: refno,
+        EMPID: EmpId,
+        STATUS: status,
+        DUEDATE: dueDate,
+        PAYMENTPERIODDETAILID: product[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTPERIODDETAILID,
+        PAYMENTPERIODNUMBER: product[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTPERIODNUMBER,
+        PAYMENTCHANNEL: paymentChannel,
+        PAYMENTCHOICE: paymentChoice,
+        AMOUNT: paySomeAmount,
+        PERIODAMOUNT: product[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTAMOUNT - discountAmount,
+    }
+
+    const onSubmit = async (data: any) => {
+        console.log("All Data to Submit:", allData);
+        try {
+            const response = await axios.post(POST_PAYMENT_TRANSACTION_URL, allData, {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (response.status === 200) {
+                Swal.fire("สำเร็จ", "บันทึกธุรกรรมการชำระเงินสำเร็จ", "success");
+                navigate("/order/overview")
+            } else {
+                Swal.fire("เกิดข้อผิดพลาด", response.data.message || "ไม่สามารถบันทึกข้อมูลได้", "error");
+            }
+        } catch (error) {
+            console.error("Error saving data:", error);
+            Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถส่งข้อมูลได้", "error");
+        }
+    };
+
+    // console.log(`test`, status);
+    
     return (
         <>
             <Content>
@@ -108,7 +175,7 @@ const CreateFirstBill: React.FC = () => {
                         </ul>
                     </div>
                 </div>
-                <p>เลขที่ขาย: {REFNO}</p>
+                <p>เลขที่ขาย: {refno}</p>
 
                 <div className='row'>
                     {/* Card Body */}
@@ -173,7 +240,7 @@ const CreateFirstBill: React.FC = () => {
                                                                         checked={payFullAmount}
                                                                         onChange={() => handlePayFullAmountChange(true)}
                                                                     />
-                                                                    <label className="form-label fw-bold fs-6">ชำระเต็ม</label>
+                                                                    <label className="form-label fw-bold fs-6">ชำระเต็มจำนวน</label>
                                                                 </div>
                                                                 <div className="form-check form-check-inline me-3">
                                                                     <input
@@ -207,22 +274,22 @@ const CreateFirstBill: React.FC = () => {
                                                                             <input
                                                                                 className="form-check-input"
                                                                                 type="radio"
-                                                                                name="priceOption"
-                                                                            // checked={usePackagePricing}
-                                                                            // onChange={() => handleOptionChange(true)}
+                                                                                name="paymentChannel"
+                                                                                checked={paymentChannel === "CASH"}
+                                                                                onChange={() => handlePaymentChannelChange("CASH")}
                                                                             />
                                                                             <label className="form-label fw-bold fs-6">เงินสด</label>
                                                                         </div>
-                                                                        <div className="form-check form-check-inline me-3">
+                                                                        {/* <div className="form-check form-check-inline me-3">
                                                                             <input
                                                                                 className="form-check-input"
                                                                                 type="radio"
-                                                                                name="priceOption"
-                                                                            // checked={!usePackagePricing}
-                                                                            // onChange={() => handleOptionChange(false)}
+                                                                                name="paymentChannel"
+                                                                                checked={paymentChannel === "CREDIT"}
+                                                                                onChange={() => handlePaymentChannelChange("CREDIT")}
                                                                             />
                                                                             <label className="form-label fw-bold fs-6">บัตรเครดิต</label>
-                                                                        </div>
+                                                                        </div> */}
                                                                     </div>
                                                                 </>
                                                             )}
@@ -231,26 +298,72 @@ const CreateFirstBill: React.FC = () => {
                                                             {/* Start ชำระบางส่วน / เกินจำนวน */}
                                                             {!payFullAmount && (
                                                                 <>
+                                                                    {product[0]?.Package[0]?.PACKAGETYPEID !== 1 && (
+                                                                        <div className="mb-6">
+                                                                            <label className="form-label fw-bold fs-6">ราคาสุทธิ</label>
+                                                                            <input
+                                                                                type="text"
+                                                                                className="form-control"
+                                                                                readOnly
+                                                                                style={{
+                                                                                    backgroundColor: '#d7dbde',
+                                                                                }}
+                                                                                value={netPrice}
+                                                                            />
+                                                                        </div>
+                                                                    )}
                                                                     <div className="mb-6">
-                                                                        <label className="form-label fw-bold fs-6">จำนวนเงินที่ต้องชำระ</label>
-                                                                        <input
-                                                                            type="text"
-                                                                            className="form-control"
-                                                                            readOnly
-                                                                            style={{
-                                                                                backgroundColor: '#d7dbde',
-                                                                            }}
-                                                                            value={netPrice}
-                                                                        />
+                                                                        {product[0]?.Package[0]?.PACKAGETYPEID !== 1 ? (
+                                                                            <>
+                                                                                <label className="form-label fw-bold fs-6">จำนวนเงินที่ต้องชำระงวดที่ 1</label>
+                                                                                <input
+                                                                                    type="text"
+                                                                                    className="form-control"
+                                                                                    readOnly
+                                                                                    style={{
+                                                                                        backgroundColor: '#d7dbde',
+                                                                                    }}
+                                                                                    value={product[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTAMOUNT - discountAmount}
+                                                                                />
+                                                                            </>
+                                                                        ) : (
+                                                                            <>
+                                                                                <label className="form-label fw-bold fs-6">ราคาสุทธิ</label>
+                                                                                <input
+                                                                                    type="text"
+                                                                                    className="form-control"
+                                                                                    readOnly
+                                                                                    style={{
+                                                                                        backgroundColor: '#d7dbde',
+                                                                                    }}
+                                                                                    value={netPrice}
+                                                                                />
+                                                                            </>
+                                                                        )}
                                                                     </div>
+
                                                                     <div className="mb-6">
-                                                                        <label className="form-label required fw-bold fs-6">จำนวนเงินที่แบ่งชำระ</label>
-                                                                        <input
-                                                                            type="text"
-                                                                            className="form-control"
-                                                                            onChange={(e) => setPaySomeAmount(Number(e.target.value))}
-                                                                            value={paySomeAmount}
-                                                                        />
+                                                                        {product[0]?.Package[0]?.PACKAGETYPEID !== 1 ? (
+                                                                            <>
+                                                                                <label className="form-label required fw-bold fs-6">จำนวนเงินที่แบ่งชำระ</label>
+                                                                                <input
+                                                                                    type="text"
+                                                                                    className="form-control"
+                                                                                    onChange={(e) => setPaySomeAmount(Number(e.target.value))}
+                                                                                    value={paySomeAmount}
+                                                                                />
+                                                                            </>
+                                                                        ) : (
+                                                                            <>
+                                                                                <label className="form-label required fw-bold fs-6">จำนวนเงินที่ชำระ</label>
+                                                                                <input
+                                                                                    type="text"
+                                                                                    className="form-control"
+                                                                                    onChange={(e) => setPaySomeAmount(Number(e.target.value))}
+                                                                                    value={paySomeAmount}
+                                                                                />
+                                                                            </>
+                                                                        )}
                                                                     </div>
                                                                     <div className="mb-6">
                                                                         <label className="form-label fw-bold fs-6">จำนวนเงินที่เหลือ</label>
@@ -285,21 +398,21 @@ const CreateFirstBill: React.FC = () => {
                                                                                 className="form-check-input"
                                                                                 type="radio"
                                                                                 name="priceOption"
-                                                                            // checked={usePackagePricing}
-                                                                            // onChange={() => handleOptionChange(true)}
+                                                                                checked={priceOption === "CASH"}
+                                                                                onChange={() => handlePriceOptionChange("CASH")}
                                                                             />
                                                                             <label className="form-label fw-bold fs-6">เงินสด</label>
                                                                         </div>
-                                                                        <div className="form-check form-check-inline me-3">
+                                                                        {/* <div className="form-check form-check-inline me-3">
                                                                             <input
                                                                                 className="form-check-input"
                                                                                 type="radio"
                                                                                 name="priceOption"
-                                                                            // checked={!usePackagePricing}
-                                                                            // onChange={() => handleOptionChange(false)}
+                                                                                checked={priceOption === "CREDIT"}
+                                                                                onChange={() => handlePriceOptionChange("CREDIT")}
                                                                             />
                                                                             <label className="form-label fw-bold fs-6">บัตรเครดิต</label>
-                                                                        </div>
+                                                                        </div> */}
                                                                     </div>
                                                                 </>
                                                             )}
@@ -471,7 +584,7 @@ const CreateFirstBill: React.FC = () => {
 
                 </div>
 
-                <div className="d-none d-xl-flex justify-content-between align-items-center mt-5">
+                <div className="d-none d-xl-flex justify-content-between align-items-center mt-5 mb-10">
                     <button
                         className='btn btn-secondary w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'
                         onClick={() => navigate('/firstBill/overview', { state: item })}
@@ -480,9 +593,9 @@ const CreateFirstBill: React.FC = () => {
                     </button>
                     <button
                         className='btn btn-primary w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'
-                    // onClick={handleNextClick}
+                        onClick={onSubmit}
                     >
-                        ถัดไป
+                        บันทึก
                     </button>
                 </div>
 
@@ -505,9 +618,9 @@ const CreateFirstBill: React.FC = () => {
                     </button>
                     <button
                         className="btn btn-primary w-auto me-2"
-                    // onClick={handleNextClick}
+                        onClick={onSubmit}
                     >
-                        ถัดไป
+                        บันทึก
                     </button>
                 </div>
 

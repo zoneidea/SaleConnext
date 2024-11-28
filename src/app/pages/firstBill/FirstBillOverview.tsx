@@ -23,7 +23,9 @@ const FirstBillOverview: React.FC = () => {
   const SaleCode = auth?.data?.[0]?.SaleCode || '';
 
   const API_URL_GET_ALLCONTRACT = import.meta.env.VITE_APP_API_MONGO;
-  const FINISH_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=FINISH&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`;
+
+  // const FINISH_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=FINISH&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`;
+  const GET_PAYMENT_URL = `${API_URL_GET_ALLCONTRACT}/Payment/GetPaymentPeriod`;
 
   const { fetchCategory } = useFetchCategoryStore();
   // console.log(`fetchCategory: `, fetchCategory);
@@ -45,7 +47,7 @@ const FirstBillOverview: React.FC = () => {
   const getDataFinish = async () => {
     setIsLoadingFinish(true);
     try {
-      const response = await axios.get(FINISH_ALLCONTRACT_URL);
+      const response = await axios.get(GET_PAYMENT_URL);
       const data = Array.isArray(response.data.data) ? response.data.data : [];
       setFinish(data);
     } catch (error) {

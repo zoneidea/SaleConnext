@@ -6,12 +6,17 @@ interface StatusLabelProps {
 }
 
 const FirstBillItemNumber: React.FC<StatusLabelProps> = ({ item }) => {
-    let customer, product, productPackage, createdAt, statusTxt;
+    console.log(`item`, item);
+
+    let customer, telNo, product, productPackage, createdAt, statusTxt;
+
     if (item.CUSTOMERDETAIL.length > 0) {
         if (item.CUSTOMERDETAIL[0].CUSTOMERTYPE == 1) {
-            customer = <span className='text-gray-700 fw-semibold d-block'>{`ชื่อบริษัท: ${item.CUSTOMERDETAIL[0].CUSTOMERMD}`}</span>
+            customer = <span className='text-gray-700 fw-semibold d-block'>{`ชื่อบริษัท: ${item.CUSTOMERDETAIL[0].CUSTOMERNAME}`}</span>
+            telNo = <span className='text-gray-700 fw-semibold d-block'>{`เบอร์โทร: ${item.CUSTOMERDETAIL[0].CUSTOMERMOBILE}`}</span>
         } else {
             customer = <span className='text-gray-700 fw-semibold d-block'>{`ชื่อลูกค้า: ${item.CUSTOMERDETAIL[0].CUSTOMERNAME}`}</span>
+            telNo = <span className='text-gray-700 fw-semibold d-block'>{`เบอร์โทร: ${item.CUSTOMERDETAIL[0].CUSTOMERMOBILE}`}</span>
         }
     }
 
@@ -22,9 +27,9 @@ const FirstBillItemNumber: React.FC<StatusLabelProps> = ({ item }) => {
         }
     }
 
-    if (item.CONTRACT.length > 0) {
-        createdAt = <span className='text-gray-700 fw-semibold d-block'>{`วันที่ทำสัญญา: ${item.CONTRACT[0].createdAt}`}</span>
-    }
+    // if (item.CONTRACT.length > 0) {
+    //     createdAt = <span className='text-gray-700 fw-semibold d-block'>{`วันที่ทำสัญญา: ${item.CONTRACT[0].createdAt}`}</span>
+    // }
 
     if (item.STATUS === 'DRAFT') {
         statusTxt = <span className='text-warning fw-semibold d-block'>{`ร่าง`}</span>
@@ -50,6 +55,7 @@ const FirstBillItemNumber: React.FC<StatusLabelProps> = ({ item }) => {
                             {`REFNO: ${item.REFNO}`}
                         </div>
                         {customer}
+                        {telNo}
                         {product}
                         {productPackage}
                         {createdAt}

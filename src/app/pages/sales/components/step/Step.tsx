@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import axios from 'axios';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../../../modules/auth/core/Auth';
@@ -7,6 +7,7 @@ import { Content } from '../../../../../_metronic/layout/components/content'
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 
+import { ThreeDot } from 'react-loading-indicators';
 
 //useStore
 import {
@@ -36,6 +37,7 @@ interface ItemProps {
 const Step: React.FC = () => {
   const MySwal = withReactContent(Swal);
   const location = useLocation();
+  const navigate = useNavigate()
   const item = location.state as ItemProps || [];
   const [data, setData] = useState<any[]>([])
   const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
@@ -61,7 +63,10 @@ const Step: React.FC = () => {
     DepartGroup, setDepartGroup,
   } = useCategoryStore();
 
+  const [isLoadingFinish, setIsLoadingFinish] = useState<boolean>(false);
+
   const getData = async () => {
+    setIsLoadingFinish(true);
     try {
       const response = await axios.get(GET_CONTRACT_URL + '?refno=' + item.REFNO, {
         headers: {
@@ -73,6 +78,8 @@ const Step: React.FC = () => {
       console.log('Load data', data)
     } catch (error) {
       console.error('Error fetching DRAFT_ALLCONTRACT_URL:', error);
+    } finally {
+      setIsLoadingFinish(false);
     }
   };
 
@@ -212,7 +219,7 @@ const Step: React.FC = () => {
           confirmButtonText: 'ตกลง'
         });
       } else {
-        setToPhoto('../sale/photo')
+        navigate('../sale/photo', { state: { fromStep: true, data: data?.[0] } });
       }
     } else {
       setToPackage('')
@@ -306,6 +313,8 @@ const Step: React.FC = () => {
     }
   }
 
+  // console.log(`test`, data?.[0]?.PDPA);
+
   return (
     <>
       <Content>
@@ -328,214 +337,224 @@ const Step: React.FC = () => {
         </div>
 
         {/* Card Body */}
-        <div className='card mb-10'>
-          <div className='card-body d-flex align-items-center'>
-            <div className='flex-grow-1'>
-              <div className='text-gray-800 text-hover-primary fw-bold fs-4'>
-                {`REFNO: ${item?.REFNO}`}
+
+        {isLoadingFinish ? (
+          <div className="text-center my-10">
+            <ThreeDot />
+          </div>
+        ) : data.length > 0 && (
+          <>
+            <div className='card mb-10'>
+              <div className='card-body d-flex align-items-center'>
+                <div className='flex-grow-1'>
+                  <div className='text-gray-800 text-hover-primary fw-bold fs-4'>
+                    {`REFNO: ${item?.REFNO}`}
+                  </div>
+                  <span className={`${data?.[0]?.STATUS === 'DRAFT' ? 'text-warning' : 'text-danger'} fw-semibold d-block fs-6`}>{`สถานะ: ${data?.[0]?.STATUS === 'DRAFT' ? 'ยังไม่ได้ตรวจสอบ' : 'แก้ไข'}`}</span>
+                  {
+                    data?.[0]?.CHECKKERCOMMENT?.COMMENT && (
+                      <span className={`text-danger fw-semibold d-block fs-6`}>{`คอมเม้นท์: ${data?.[0]?.CHECKKERCOMMENT?.[0]?.COMMENT}`}</span>
+                    )
+                  }
+                </div>
               </div>
-              <span className={`${data?.[0]?.STATUS === 'DRAFT' ? 'text-warning' : 'text-danger'} fw-semibold d-block fs-6`}>{`สถานะ: ${data?.[0]?.STATUS === 'DRAFT' ? 'ยังไม่ได้ตรวจสอบ' : 'แก้ไข'}`}</span>
-              {
-                data?.[0]?.CHECKKERCOMMENT?.COMMENT && (
-                  <span className={`text-danger fw-semibold d-block fs-6`}>{`คอมเม้นท์: ${data?.[0]?.CHECKKERCOMMENT?.[0]?.COMMENT}`}</span>
-                )
-              }
+              <div className='card-body d-flex align-items-center py-5 pt-6'>
+                <div className='col-12'>
+                  <Link to={toPackage} state={data?.[0]} onClick={() => handleClick('updateSalePackage')}>
+                    <div className='d-flex align-items-center pb-8'>
+                      <span className={`bullet bullet-vertical h-40px ${data?.[0]?.PRODUCT?.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
+                      <div className='form-check form-check-custom form-check-solid mx-5'></div>
+                      <div className='flex-grow-1'>
+                        <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
+                          {`1. เลือกแพ็คเกจ`}
+                        </div>
+                        {
+                          data?.[0]?.PRODUCT?.length !== 0 && (
+                            <span className='text-gray-700 fw-semibold d-block'>{`สินค้า: ${data?.[0]?.PRODUCT?.[0]?.ItemDescription}`}</span>
+                          )
+                        }
+                        {
+                          data?.[0]?.PRODUCT?.length &&
+                          data?.[0]?.PRODUCT?.[0]?.Package.length && (
+                            <span className='text-gray-700 fw-semibold d-block'>{`แพ็คเกจ: ${data?.[0]?.PRODUCT?.[0]?.Package[0]?.PACKAGETITLE}`}</span>
+                          )
+                        }
+                      </div>
+                    </div>
+                  </Link>
+                  {/* <Link onClick={handleCheckCustStatus} to={''}> */}
+                  <a onClick={handleCheckCustStatus} style={{ cursor: 'pointer' }}>
+                    <div className='d-flex align-items-center pb-8'>
+                      <span className={`bullet bullet-vertical h-40px ${data?.[0]?.CUSTOMERSTATUS.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
+                      <div className='form-check form-check-custom form-check-solid mx-5'></div>
+                      <div className='flex-grow-1'>
+                        <div className='text-gray-800 fw-bold fs-2'>
+                          {`2. ตรวจสอบข้อมูลลูกค้า`}
+                        </div>
+                        {
+                          data?.[0]?.CUSTOMERSTATUS?.length !== 0 && (
+                            <span className='text-gray-700 fw-semibold d-block'>{`สถานะ: ${data?.[0]?.CUSTOMERSTATUS?.[2]}`}</span>
+                          )
+                        }
+                      </div>
+                    </div>
+                  </a>
+                  {/* </Link> */}
+                  <Link to={toDiscount} state={data?.[0]} onClick={() => handleClick('updateSaleDiscount')}>
+                    <div className='d-flex align-items-center pb-8'>
+                      <span className={`bullet bullet-vertical h-40px ${data?.[0]?.DISCOUNT.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
+                      <div className='form-check form-check-custom form-check-solid mx-5'> </div>
+                      <div className='flex-grow-1'>
+                        <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
+                          {`3. ส่วนลด/เครื่องเทิร์น/ของแถม`}
+                        </div>
+                        {
+                          data?.[0]?.DISCOUNT?.length !== 0 && (
+                            <span className='text-gray-700 fw-semibold d-block'>{`${data?.[0]?.DISCOUNT?.[0]?.TRADEIN?.HASTRADEIN === 0 ? 'ไม่มีเครื่องเทิร์น' : 'มีเครื่องเทิร์น'}`}</span>
+                          )
+                        }
+                        {
+                          data?.[0]?.DISCOUNT?.[0]?.TRADEIN?.HASTRADEIN === 1 && (
+                            <span className='text-gray-700 fw-semibold d-block'>{`แบรนด์: ${data?.[0]?.DISCOUNT?.[0]?.TRADEIN?.TRADEINBRANDNAME} รุ่น: ${data?.[0]?.DISCOUNT?.[0]?.TRADEIN?.TRADEINMODEL}`}</span>
+                          )
+                        }
+                      </div>
+                    </div>
+                  </Link>
+                  <Link to={toCustDetail} state={data?.[0]} onClick={() => handleClick('updateCustDetail')}>
+                    <div className='d-flex align-items-center pb-8'>
+                      <span className={`bullet bullet-vertical h-40px ${data?.[0]?.CUSTOMERDETAIL.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
+                      <div className='form-check form-check-custom form-check-solid mx-5'></div>
+                      <div className='flex-grow-1'>
+                        <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
+                          {`4. บันทึกข้อมูลลูกค้า`}
+                        </div>
+                        {
+                          data?.[0]?.CUSTOMERDETAIL?.length !== 0 && (
+                            <span className='text-gray-700 fw-semibold d-block'>{`ปะเภทลูกค้า: ${data?.[0]?.CUSTOMERDETAIL?.[0]?.CUSTOMERTYPENAME}`}</span>
+                          )
+                        }
+                        {
+                          data?.[0]?.CUSTOMERDETAIL?.length !== 0 && (
+                            data?.[0]?.CUSTOMERDETAIL?.CUSTOMERTYPE === 1 ?
+                              <span className='text-gray-700 fw-semibold d-block'>{`ชื่อบริษัท: ${data?.[0]?.CUSTOMERDETAIL?.[0]?.CUSTOMERNAME}`}</span>
+                              :
+                              <span className='text-gray-700 fw-semibold d-block'>{`ชื่อลูกค้า: ${data?.[0]?.CUSTOMERDETAIL?.[0]?.CUSTOMERNAME}`}</span>
+                          )
+                        }
+                      </div>
+                    </div>
+                  </Link>
+                  <Link to={toAddress} state={data?.[0]} onClick={() => handleClick('updateAddress')}>
+                    <div className='d-flex align-items-center pb-8'>
+                      <span className={`bullet bullet-vertical h-40px ${data?.[0]?.ADDRESS.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
+                      <div className='form-check form-check-custom form-check-solid mx-5'></div>
+                      <div className='flex-grow-1'>
+                        <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
+                          {`5. บันทึกที่อยู่ลูกค้า`}
+                        </div>
+                        {
+                          data?.[0]?.ADDRESS?.length !== 0 && (
+                            <span className='text-gray-700 fw-semibold d-block'>{`ที่อยู่ตามบัตรฯ: ${data?.[0]?.ADDRESS?.[0]?.ADDRESSCARD?.ADDRESSSUBDISTRICTNAME} ${data?.[0]?.ADDRESS?.[0]?.ADDRESSCARD?.ADDRESSDISTRICTNAME} ${data?.[0]?.ADDRESS?.[0]?.ADDRESSCARD?.ADDRESSPROVINCENAME} ${data?.[0]?.ADDRESS?.[0]?.ADDRESSCARD?.ADDRESSZIPCODE}`}</span>
+                          )
+                        }
+                        {
+                          data?.[0]?.ADDRESS?.length !== 0 && (
+                            <span className='text-gray-700 fw-semibold d-block'>{`ที่อยู่ติดตั้ง: ${data?.[0]?.ADDRESS?.[0]?.ADDRESSINSTALLATION?.ADDRESSSUBDISTRICTNAME} ${data?.[0]?.ADDRESS?.[0]?.ADDRESSINSTALLATION?.ADDRESSDISTRICTNAME} ${data?.[0]?.ADDRESS?.[0]?.ADDRESSINSTALLATION?.ADDRESSPROVINCENAME} ${data?.[0]?.ADDRESS?.[0]?.ADDRESSINSTALLATION?.ADDRESSZIPCODE}`}</span>
+                          )
+                        }
+                        {
+                          data?.[0]?.ADDRESS?.length !== 0 && (
+                            <span className='text-gray-700 fw-semibold d-block'>{`ที่อยู่เก็บเงิน: ${data?.[0]?.ADDRESS?.[0]?.ADDRESSPAYMENT?.ADDRESSSUBDISTRICTNAME} ${data?.[0]?.ADDRESS?.[0]?.ADDRESSPAYMENT?.ADDRESSDISTRICTNAME} ${data?.[0]?.ADDRESS?.[0]?.ADDRESSPAYMENT?.ADDRESSPROVINCENAME} ${data?.[0]?.ADDRESS?.[0]?.ADDRESSPAYMENT?.ADDRESSZIPCODE}`}</span>
+                          )
+                        }
+                      </div>
+                    </div>
+                  </Link>
+                  <Link to={toPDPA} state={data?.[0]} onClick={() => handleClick('UpdateSalesPDPA')}>
+                    <div className='d-flex align-items-center pb-8'>
+                      <span className={`bullet bullet-vertical h-40px ${data?.[0]?.PDPA.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
+                      <div className='form-check form-check-custom form-check-solid mx-5'></div>
+                      <div className='flex-grow-1'>
+                        <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
+                          {`6. PDPA`}
+                        </div>
+                        {
+                          data?.[0]?.PDPA?.length !== 0 && (
+                            <span className='text-gray-700 fw-semibold d-block'>{`การยืนยอมให้ใช้ข้อมูล: ${data?.[0]?.PDPA?.[0].CONSENTGIVEN ? 'ยินยอม' : 'ไม่ยินยอม'}`}</span>
+                          )
+                        }
+                      </div>
+                    </div>
+                  </Link>
+                  <Link to={toContract} state={data?.[0]} onClick={() => handleClick('UpdateSalesContract')}>
+                    <div className='d-flex align-items-center pb-8'>
+                      <span className={`bullet bullet-vertical h-40px ${data?.[0]?.CONTRACT.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
+                      <div className='form-check form-check-custom form-check-solid mx-5'></div>
+                      <div className='flex-grow-1'>
+                        <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
+                          {`7. รายละเอียดสัญญา`}
+                        </div>
+                        {
+                          data?.[0]?.CONTRACT?.length !== 0 && (
+                            <span className='text-gray-700 fw-semibold d-block'>{`วันที่ทำสัญญา: ${data?.[0]?.CONTRACT?.[0]?.createdAt ? `` : ``}`}</span>
+                          )
+                        }
+                      </div>
+                    </div>
+                  </Link>
+                  <button
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      padding: 0,
+                      color: 'inherit',
+                      cursor: 'pointer',
+                      fontSize: 'inherit',
+                    }}
+                    onClick={() => handleClick('photo')}
+                    type='button'
+                  >
+                    <div className='d-flex align-items-center pb-8'>
+                      <span className={`bullet bullet-vertical h-40px ${data?.[0]?.IMAGE.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
+                      <div className='form-check form-check-custom form-check-solid mx-5'></div>
+                      <div className='flex-grow-1'>
+                        <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
+                          {`8. ถ่ายรูป`}
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
-          <div className='card-body d-flex align-items-center py-5 pt-6'>
-            <div className='col-12'>
-              <Link to={toPackage} state={data?.[0]} onClick={() => handleClick('updateSalePackage')}>
-                <div className='d-flex align-items-center pb-8'>
-                  <span className={`bullet bullet-vertical h-40px ${data?.[0]?.PRODUCT?.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
-                  <div className='form-check form-check-custom form-check-solid mx-5'></div>
-                  <div className='flex-grow-1'>
-                    <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
-                      {`1. เลือกแพ็คเกจ`}
-                    </div>
-                    {
-                      data?.[0]?.PRODUCT?.length !== 0 && (
-                        <span className='text-gray-700 fw-semibold d-block'>{`สินค้า: ${data?.[0]?.PRODUCT?.[0]?.ItemDescription}`}</span>
-                      )
-                    }
-                    {
-                      data?.[0]?.PRODUCT?.length &&
-                      data?.[0]?.PRODUCT?.[0]?.Package.length && (
-                        <span className='text-gray-700 fw-semibold d-block'>{`แพ็คเกจ: ${data?.[0]?.PRODUCT?.[0]?.Package[0]?.PACKAGETITLE}`}</span>
-                      )
-                    }
-                  </div>
-                </div>
-              </Link>
-              {/* <Link onClick={handleCheckCustStatus} to={''}> */}
-              <a onClick={handleCheckCustStatus} style={{ cursor: 'pointer' }}>
-                <div className='d-flex align-items-center pb-8'>
-                  <span className={`bullet bullet-vertical h-40px ${data?.[0]?.CUSTOMERSTATUS.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
-                  <div className='form-check form-check-custom form-check-solid mx-5'></div>
-                  <div className='flex-grow-1'>
-                    <div className='text-gray-800 fw-bold fs-2'>
-                      {`2. ตรวจสอบข้อมูลลูกค้า`}
-                    </div>
-                    {
-                      data?.[0]?.CUSTOMERSTATUS?.length !== 0 && (
-                        <span className='text-gray-700 fw-semibold d-block'>{`สถานะ: ${data?.[0]?.CUSTOMERSTATUS?.[2]}`}</span>
-                      )
-                    }
-                  </div>
-                </div>
-              </a>
-              {/* </Link> */}
-              <Link to={toDiscount} state={data?.[0]} onClick={() => handleClick('updateSaleDiscount')}>
-                <div className='d-flex align-items-center pb-8'>
-                  <span className={`bullet bullet-vertical h-40px ${data?.[0]?.DISCOUNT.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
-                  <div className='form-check form-check-custom form-check-solid mx-5'> </div>
-                  <div className='flex-grow-1'>
-                    <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
-                      {`3. ส่วนลด/เครื่องเทิร์น/ของแถม`}
-                    </div>
-                    {
-                      data?.[0]?.DISCOUNT?.length !== 0 && (
-                        <span className='text-gray-700 fw-semibold d-block'>{`${data?.[0]?.DISCOUNT?.[0]?.TRADEIN?.HASTRADEIN === 0 ? 'ไม่มีเครื่องเทิร์น' : 'มีเครื่องเทิร์น'}`}</span>
-                      )
-                    }
-                    {
-                      data?.[0]?.DISCOUNT?.[0]?.TRADEIN?.HASTRADEIN === 1 && (
-                        <span className='text-gray-700 fw-semibold d-block'>{`แบรนด์: ${data?.[0]?.DISCOUNT?.[0]?.TRADEIN?.TRADEINBRANDNAME} รุ่น: ${data?.[0]?.DISCOUNT?.[0]?.TRADEIN?.TRADEINMODEL}`}</span>
-                      )
-                    }
-                  </div>
-                </div>
-              </Link>
-              <Link to={toCustDetail} state={data?.[0]} onClick={() => handleClick('updateCustDetail')}>
-                <div className='d-flex align-items-center pb-8'>
-                  <span className={`bullet bullet-vertical h-40px ${data?.[0]?.CUSTOMERDETAIL.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
-                  <div className='form-check form-check-custom form-check-solid mx-5'></div>
-                  <div className='flex-grow-1'>
-                    <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
-                      {`4. บันทึกข้อมูลลูกค้า`}
-                    </div>
-                    {
-                      data?.[0]?.CUSTOMERDETAIL?.length !== 0 && (
-                        <span className='text-gray-700 fw-semibold d-block'>{`ปะเภทลูกค้า: ${data?.[0]?.CUSTOMERDETAIL?.[0]?.CUSTOMERTYPENAME}`}</span>
-                      )
-                    }
-                    {
-                      data?.[0]?.CUSTOMERDETAIL?.length !== 0 && (
-                        data?.[0]?.CUSTOMERDETAIL?.CUSTOMERTYPE === 1 ?
-                          <span className='text-gray-700 fw-semibold d-block'>{`ชื่อบริษัท: ${data?.[0]?.CUSTOMERDETAIL?.[0]?.CUSTOMERNAME}`}</span>
-                          :
-                          <span className='text-gray-700 fw-semibold d-block'>{`ชื่อลูกค้า: ${data?.[0]?.CUSTOMERDETAIL?.[0]?.CUSTOMERNAME}`}</span>
-                      )
-                    }
-                  </div>
-                </div>
-              </Link>
-              <Link to={toAddress} state={data?.[0]} onClick={() => handleClick('updateAddress')}>
-                <div className='d-flex align-items-center pb-8'>
-                  <span className={`bullet bullet-vertical h-40px ${data?.[0]?.ADDRESS.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
-                  <div className='form-check form-check-custom form-check-solid mx-5'></div>
-                  <div className='flex-grow-1'>
-                    <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
-                      {`5. บันทึกที่อยู่ลูกค้า`}
-                    </div>
-                    {
-                      data?.[0]?.ADDRESS?.length !== 0 && (
-                        <span className='text-gray-700 fw-semibold d-block'>{`ที่อยู่ตามบัตรฯ: ${data?.[0]?.ADDRESS?.[0]?.ADDRESSCARD?.ADDRESSSUBDISTRICTNAME} ${data?.[0]?.ADDRESS?.[0]?.ADDRESSCARD?.ADDRESSDISTRICTNAME} ${data?.[0]?.ADDRESS?.[0]?.ADDRESSCARD?.ADDRESSPROVINCENAME} ${data?.[0]?.ADDRESS?.[0]?.ADDRESSCARD?.ADDRESSZIPCODE}`}</span>
-                      )
-                    }
-                    {
-                      data?.[0]?.ADDRESS?.length !== 0 && (
-                        <span className='text-gray-700 fw-semibold d-block'>{`ที่อยู่ติดตั้ง: ${data?.[0]?.ADDRESS?.[0]?.ADDRESSINSTALLATION?.ADDRESSSUBDISTRICTNAME} ${data?.[0]?.ADDRESS?.[0]?.ADDRESSINSTALLATION?.ADDRESSDISTRICTNAME} ${data?.[0]?.ADDRESS?.[0]?.ADDRESSINSTALLATION?.ADDRESSPROVINCENAME} ${data?.[0]?.ADDRESS?.[0]?.ADDRESSINSTALLATION?.ADDRESSZIPCODE}`}</span>
-                      )
-                    }
-                    {
-                      data?.[0]?.ADDRESS?.length !== 0 && (
-                        <span className='text-gray-700 fw-semibold d-block'>{`ที่อยู่เก็บเงิน: ${data?.[0]?.ADDRESS?.[0]?.ADDRESSPAYMENT?.ADDRESSSUBDISTRICTNAME} ${data?.[0]?.ADDRESS?.[0]?.ADDRESSPAYMENT?.ADDRESSDISTRICTNAME} ${data?.[0]?.ADDRESS?.[0]?.ADDRESSPAYMENT?.ADDRESSPROVINCENAME} ${data?.[0]?.ADDRESS?.[0]?.ADDRESSPAYMENT?.ADDRESSZIPCODE}`}</span>
-                      )
-                    }
-                  </div>
-                </div>
-              </Link>
-              <Link to={toPDPA} state={data?.[0]} onClick={() => handleClick('UpdateSalesPDPA')}>
-                <div className='d-flex align-items-center pb-8'>
-                  <span className={`bullet bullet-vertical h-40px ${data?.[0]?.PDPA.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
-                  <div className='form-check form-check-custom form-check-solid mx-5'></div>
-                  <div className='flex-grow-1'>
-                    <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
-                      {`6. PDPA`}
-                    </div>
-                    {
-                      data?.[0]?.PDPA?.length !== 0 && (
-                        <span className='text-gray-700 fw-semibold d-block'>{`การยืนยอมให้ใช้ข้อมูล: ${data?.[0]?.PDPA?.[0].CONSENTGIVEN ? 'ยินยอม' : 'ไม่ยินยอม'}`}</span>
-                      )
-                    }
-                  </div>
-                </div>
-              </Link>
-              <Link to={toContract} state={data?.[0]} onClick={() => handleClick('UpdateSalesContract')}>
-                <div className='d-flex align-items-center pb-8'>
-                  <span className={`bullet bullet-vertical h-40px ${data?.[0]?.CONTRACT.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
-                  <div className='form-check form-check-custom form-check-solid mx-5'></div>
-                  <div className='flex-grow-1'>
-                    <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
-                      {`7. รายละเอียดสัญญา`}
-                    </div>
-                    {
-                      data?.[0]?.CONTRACT?.length !== 0 && (
-                        <span className='text-gray-700 fw-semibold d-block'>{`วันที่ทำสัญญา: ${data?.[0]?.CONTRACT?.[0]?.createdAt}`}</span>
-                      )
-                    }
-                  </div>
-                </div>
-              </Link>
-              {/* <Link to='../sale/photo' state={data?.[0]}>
-                <div className='d-flex align-items-center pb-8'>
-                  <span className={`bullet bullet-vertical h-40px ${data?.[0]?.IMAGE.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
-                  <div className='form-check form-check-custom form-check-solid mx-5'></div>
-                  <div className='flex-grow-1'>
-                    <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
-                      {`8. ถ่ายรูป`}
-                    </div>
-                  </div>
-                </div>
-              </Link> */}
-              <Link to={toPhoto} state={{ fromStep: true, data: data?.[0] }} onClick={() => handleClick('photo')}>
-                <div className='d-flex align-items-center pb-8'>
-                  <span className={`bullet bullet-vertical h-40px ${data?.[0]?.IMAGE.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
-                  <div className='form-check form-check-custom form-check-solid mx-5'></div>
-                  <div className='flex-grow-1'>
-                    <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
-                      {`8. ถ่ายรูป`}
-                    </div>
-                  </div>
-                </div>
+
+            {/* End Card Body */}
+
+            <div className='d-none d-xl-flex justify-content-between align-items-center my-5'>
+              <Link to='/sale/overview' className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
+                ย้อนกลับ
               </Link>
             </div>
-          </div>
-        </div>
-        {/* End Card Body */}
 
-        <div className='d-none d-xl-flex justify-content-between align-items-center my-5'>
-          <Link to='/sale/overview' className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
-            ย้อนกลับ
-          </Link>
-        </div>
+            {/* ปุ่มในหน้าจอเล็ก */}
+            <div
+              className="d-flex d-xl-none justify-content-start align-items-center bg-light p-3 border-top"
+              style={{
+                position: "fixed",
+                bottom: 0,
+                left: 0,
+                right: 0,
+                zIndex: 1050,
+              }}
+            >
+              <Link to='/sale/overview' className='btn btn-secondary align-self-center mb-2 mb-md-0'>
+                ย้อนกลับ
+              </Link>
+            </div>
 
-        {/* ปุ่มในหน้าจอเล็ก */}
-        <div
-          className="d-flex d-xl-none justify-content-start align-items-center bg-light p-3 border-top"
-          style={{
-            position: "fixed",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            zIndex: 1050,
-          }}
-        >
-          <Link to='/sale/overview' className='btn btn-secondary align-self-center mb-2 mb-md-0'>
-            ย้อนกลับ
-          </Link>
-        </div>
-
+          </>
+        )}
       </Content>
     </>
   )

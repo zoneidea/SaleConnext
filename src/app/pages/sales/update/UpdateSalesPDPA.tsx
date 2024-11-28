@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import SignaturePad from 'react-signature-pad-wrapper';
 import { Content } from '../../../../_metronic/layout/components/content';
@@ -14,14 +14,14 @@ interface ContractState {
 }
 
 interface ItemProps {
-    REFNO: String,
-    CONTNO: String,
-    EMPID: String,
-    TEAMSALE: String,
-    SALECODE: String,
-    SUPEMPID: String,
-    SECEMPID: String,
-    STATUS: String,
+    REFNO: string,
+    CONTNO: string,
+    EMPID: string,
+    TEAMSALE: string,
+    SALECODE: string,
+    SUPEMPID: string,
+    SECEMPID: string,
+    STATUS: string,
     PRODUCT: [any],
     CUSTOMERSTATUS: [any],
     DISCOUNT: [any],
@@ -52,7 +52,7 @@ const UpdateSalesPDPA: React.FC = () => {
     const pdpaContract = item?.PDPA
     // console.log(`pdpaContract`, pdpaContract[0].SIGNATURE);
     const customer = item?.CUSTOMERDETAIL
-    console.log(`customer`, customer);
+    // console.log(`customer`, customer);
 
     const API_URL_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
     const SEND_SMS_API = `${API_URL_SALECONNEXT}/sendSMS/PDPA`;
@@ -63,10 +63,10 @@ const UpdateSalesPDPA: React.FC = () => {
 
     const { saveCustomerTypes } = useSaveCustomerStore()
 
-    const [consentGiven, setConsentGiven] = useState<boolean>(pdpaContract[0]?.CONSENTGIVEN || false); // ให้ความยินยอม
-    console.log(`consentGiven`, consentGiven);
+    const [consentGiven, setConsentGiven] = useState<boolean>(pdpaContract?.[0]?.CONSENTGIVEN || false); // ให้ความยินยอม
+    // console.log(`consentGiven`, consentGiven);
 
-    const [consentNotGiven, setConsentNotGiven] = useState<boolean>(!pdpaContract[0]?.CONSENTGIVEN || false); // ไม่ให้ความยินยอม
+    const [consentNotGiven, setConsentNotGiven] = useState<boolean>(!pdpaContract?.[0]?.CONSENTGIVEN || false); // ไม่ให้ความยินยอม
     // console.log(`consentNotGiven`, consentNotGiven);
 
     const [Alllow_Contract, setAlllow_Contract] = useState<number | undefined>();
@@ -75,7 +75,7 @@ const UpdateSalesPDPA: React.FC = () => {
 
     const signaturePadRef = useRef<any>(null);
     const [signatureDataURL, setSignatureDataURL] = useState<string | null>(null);
-    // console.log(`signatureDataURL`, signatureDataURL);
+    console.log(`signatureDataURL`, signatureDataURL);
 
     const [isSignatureSaved, setIsSignatureSaved] = useState<boolean>(false); // สถานะการเซ็นชื่อ
     const [inputOTP, setInputOTP] = useState<string>('');
@@ -84,8 +84,19 @@ const UpdateSalesPDPA: React.FC = () => {
     const [isOTPSent, setIsOTPSent] = useState<boolean>(false);
     const [responseCheckOTPSuccess, setResponseCheckOTPSuccess] = useState<boolean>(false);
 
-    const [contNo, setContNo] = useState<string>('');
-    console.log(`contNo`, contNo);
+    // State สำหรับเก็บ ContNo
+    const [contNo, setContNo] = useState<string | null>(item?.CONTNO || null);
+
+    // Memoized ContNo สำหรับการใช้งานใน component อื่น
+    const memoizedContNo = useMemo(() => {
+        // ตรวจสอบว่าค่าที่ได้มาจาก item.CONTNO หรือ contNo
+        if (!item?.CONTNO && contNo) {
+            return contNo;
+        }
+        return item?.CONTNO || null; // ใช้ค่า item.CONTNO ถ้ามีค่าอยู่แล้ว
+    }, [item?.CONTNO, contNo]);
+
+    console.log(`memoizedContNo`, memoizedContNo);
 
     // ตรวจสอบว่า `signaturePadRef` พร้อมใช้งานแล้ว
     useEffect(() => {
@@ -135,23 +146,26 @@ const UpdateSalesPDPA: React.FC = () => {
 
     const sendSMS = async () => {
         saveSignature()
+        setIsOTPSent(true)
         try {
             const responseSendSMS = await axios.post(SEND_SMS_API, {
                 RefNo: refno,
-                ContNo: "",
                 Alllow_Contract,
                 PDPA_Code,
-                TelMobile: customer[0]?.CUSTOMERMOBILE,
-                IDCard: customer[0]?.CUSTOMERID,
-                SignPath: pdpaContract[0]?.SIGNATURE,
+                TelMobile: customer?.[0]?.CUSTOMERMOBILE,
+                IDCard: customer?.[0]?.CUSTOMERID,
+                SignPath: pdpaContract?.[0]?.SIGNATURE || signatureDataURL,
             }, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
             console.log(`responseSendSMS: `, responseSendSMS.data);
-            setContNo(responseSendSMS.data.ContNo || '');
-            setIsOTPSent(true)
+            if (responseSendSMS.data.status === 200) {
+                if (!item?.CONTNO) {
+                    setContNo(responseSendSMS.data.ContNo);
+                }
+            }
         } catch (error) {
             console.error('Error responseSendSMS:', error);
         }
@@ -206,7 +220,7 @@ const UpdateSalesPDPA: React.FC = () => {
                 TEAMSALE: TeamSale,
                 FIELD: "PDPA",
                 CONTNO: contNo,
-                DATA: [{ CONSENTGIVEN: consentGiven, SIGNATURE: pdpaContract[0]?.SIGNATURE || signatureDataURL, OTP: inputOTP }]
+                DATA: [{ CONSENTGIVEN: consentGiven, SIGNATURE: pdpaContract?.[0]?.SIGNATURE || signatureDataURL, OTP: inputOTP }]
             }, {
                 headers: {
                     'Content-Type': 'application/json',
@@ -248,6 +262,20 @@ const UpdateSalesPDPA: React.FC = () => {
             MySwal.fire('เกิดข้อผิดพลาด', response.data.message, 'error');
         }
     }
+
+    // เช็คว่า data ใน item มีครบทุกขั้นตอน (ไม่เป็น array เปล่า) ใช่ไหม ถ้าเป็นจะ disabled ปุ่มส่งตรวจสอบ
+    const isDataComplete = useMemo(() => {
+        return (
+            Array.isArray(item.ADDRESS) && item.ADDRESS.length > 0 &&
+            Array.isArray(item.CUSTOMERDETAIL) && item.CUSTOMERDETAIL.length > 0 &&
+            Array.isArray(item.CUSTOMERSTATUS) && item.CUSTOMERSTATUS.length > 0 &&
+            Array.isArray(item.DISCOUNT) && item.DISCOUNT.length > 0 &&
+            Array.isArray(item.PDPA) && item.PDPA.length > 0 &&
+            Array.isArray(item.PRODUCT) && item.PRODUCT.length > 0
+        );
+    }, [item]);
+
+    console.log(`test`, pdpaContract?.[0]?.SIGNATURE);
 
     return (
         <>
@@ -366,7 +394,7 @@ const UpdateSalesPDPA: React.FC = () => {
                         <div className='col-12 text-center'>
                             {pdpaContract[0]?.SIGNATURE ? (
                                 <img
-                                    src={`data:image/png;base64,${pdpaContract[0]?.SIGNATURE}`}
+                                    src={`data:image/png;base64,${pdpaContract?.[0]?.SIGNATURE}`}
                                     alt="ลายเซ็น"
                                     style={{ width: '100%', maxWidth: '300px', height: 'auto', marginTop: '10px' }}
                                 />
@@ -395,8 +423,8 @@ const UpdateSalesPDPA: React.FC = () => {
 
                             <span className="fs-1">&nbsp;</span>
                             <span className="fs-6" >ลงชื่อ
-                                {pdpaContract[0]?.SIGNATURE && (
-                                    <img src={`data:image/png;base64,${pdpaContract[0]?.SIGNATURE}`} alt="ลายเซ็น"
+                                {pdpaContract?.[0]?.SIGNATURE && (
+                                    <img src={`data:image/png;base64,${pdpaContract?.[0]?.SIGNATURE}`} alt="ลายเซ็น"
                                         style={{ maxWidth: '100px', marginTop: '10px' }} />
                                 )}
                                 {signatureDataURL && (
@@ -407,13 +435,13 @@ const UpdateSalesPDPA: React.FC = () => {
                             </span>
                             <br />
                             <br />
-                            <span className="fs-6" >( {customer[0]?.CUSTOMERNAME} )</span>
+                            <span className="fs-6" >( {customer?.[0]?.CUSTOMERNAME} )</span>
                             <br />
                             <br />
-                            {customer[0]?.CUSTOMERTYPE === "1" ? (
-                                <span className="fs-6" >เลขประจำตัวผู้เสียภาษี {customer[0]?.CUSTOMERID} </span>
+                            {customer?.[0]?.CUSTOMERTYPE === "1" ? (
+                                <span className="fs-6" >เลขประจำตัวผู้เสียภาษี {customer?.[0]?.CUSTOMERID} </span>
                             ) : (
-                                <span className="fs-6" >เลขประจำตัวประชาชน {customer[0]?.CUSTOMERID} </span>
+                                <span className="fs-6" >เลขประจำตัวประชาชน {customer?.[0]?.CUSTOMERID} </span>
                             )}
                             <br />
                             <br />
@@ -474,7 +502,8 @@ const UpdateSalesPDPA: React.FC = () => {
                         </button>
                     )}
 
-                    <button className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
+                    <button className={`btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0 ${!isDataComplete ? `disabled` : ``}`}
+                        disabled={!isDataComplete}
                         type='button'
                         onClick={handleCheckerClick}
                     >
@@ -530,7 +559,8 @@ const UpdateSalesPDPA: React.FC = () => {
                         </button>
                     )}
 
-                    <button className="btn btn-primary w-auto me-2"
+                    <button className={`btn btn-primary w-auto me-2 ${!isDataComplete ? `disabled` : ``}`}
+                        disabled={!isDataComplete}
                         type='button'
                         onClick={handleCheckerClick}
                     >

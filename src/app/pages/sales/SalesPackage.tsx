@@ -9,6 +9,8 @@ import '/public/splash-screen.css';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 
+import { ThreeDot } from 'react-loading-indicators';
+
 //useStore
 import {
     useCategoryStore,
@@ -23,16 +25,17 @@ import { CardProduct } from './components/cards/CardProduct';
 import { CardPackage } from './components/cards/CardPackage';
 
 const SalesPackage: React.FC = () => {
+    // State สำหรับตรวจสอบสถานะการโหลด
+    const [loadingCategories, setLoadingCategories] = useState(true);
+    const [loadingProducts, setLoadingProducts] = useState(false)
+    const [loadingPackages, setLoadingPackages] = useState(true)
+
     const navigate = useNavigate(); // ใช้ useNavigate สำหรับการเปลี่ยนเส้นทาง
     const MySwal = withReactContent(Swal);
 
     const { REFNO } = useUUIDStore();
 
     const { auth } = useAuth();
-
-    // State สำหรับตรวจสอบสถานะการโหลด
-    const [loadingCategories, setLoadingCategories] = useState(true);
-    const [loadingProducts, setLoadingProducts] = useState(true)
 
     const { fetchCategory } = useFetchCategoryStore();
     console.log(`fetchCategory: `, fetchCategory);
@@ -178,10 +181,9 @@ const SalesPackage: React.FC = () => {
 
     // GET Product/GetStock?
     useEffect(() => {
-        const getData = async () => {
+        const fetchProducts = async () => {
             if (!selectedCategoryId) return;
-            setLoadingProducts(true);
-
+            setLoadingProducts(true); // เริ่มโหลดเมื่อเปลี่ยนหมวดหมู่สินค้า
             try {
                 const response = await axios.get(getProductUrl(), {
                     headers: {
@@ -190,15 +192,16 @@ const SalesPackage: React.FC = () => {
                     }
                 });
                 const data = Array.isArray(response.data.data) ? response.data.data : [];
-                setProduct(data);
+                setProduct(data); // บันทึกสินค้าใหม่
             } catch (error) {
-                console.error('Error fetching getProductUrl:', error);
+                console.error('Error fetching products:', error);
             } finally {
-                setLoadingProducts(false); // เปลี่ยนสถานะการโหลดเมื่อข้อมูลเสร็จ
+                setLoadingProducts(false); // หยุดโหลดเมื่อดึงข้อมูลเสร็จ
             }
         };
-        getData();
-    }, [selectedCategoryId, setProduct]);
+
+        fetchProducts();
+    }, [selectedCategoryId]); // ทำงานเมื่อ selectedCategoryId เปลี่ยนแปลง
 
     // GET GetPackage/PackageType
     useEffect(() => {
@@ -230,6 +233,7 @@ const SalesPackage: React.FC = () => {
     // POST GetPackage/PackageList
     useEffect(() => {
         const postData = async () => {
+            setLoadingPackages(true)
             try {
                 const response = await axios.post(POST_PACKAGE_URL,
                     { EmpId, DivisionId, DepartId, DepartGroup, TeamSale, ItemID, PackageTypeID }, {
@@ -242,6 +246,8 @@ const SalesPackage: React.FC = () => {
                 setPackageList(data);
             } catch (error) {
                 console.error('Error fetching POST_PACKAGE_URL:', error);
+            } finally {
+                setLoadingPackages(false)
             }
         };
         postData();
@@ -514,74 +520,89 @@ const SalesPackage: React.FC = () => {
                                             </div>
                                         </div>
 
-                                        {/* แสดง UI การโหลดสินค้า */}
-                                        {(loadingCategories || loadingProducts) && (
-                                            <div id="splash-screen" className="splash-screen">
-                                                <div className="loader-wrapper">
-                                                    <span className="loader"></span>
-                                                    <span className="loading-text">Loading...</span>
-                                                </div>
+                                        {/* แสดง Loading */}
+                                        {loadingProducts && (
+                                            <div className="text-center my-10">
+                                                <ThreeDot />
                                             </div>
                                         )}
-
-                                        {selectedCategoryId.length > 0 && product.length > 0 ? (
-                                            <label className='form-label required fw-bold fs-3 mt-7 mt-xl-10'>รายการสินค้า</label>
-                                        ) : ('')}
-                                        {selectedCategoryId.length > 0 && (
-                                            <div className='row '>
-                                                {product.map((item, index) => (
-                                                    <div
-                                                        className='col-6 col-md-4 mb-3 rounded'
-                                                        key={index}
-                                                        onClick={() => handleCardProductClick(index)}
-                                                        style={{ cursor: 'pointer' }}
-                                                    >
-                                                        <CardProduct
-                                                            DescriptionTH={item.DescriptionTH}
-                                                            ItemDescription={item.ItemDescription}
-                                                            ItemCode={item.ItemCode}
-                                                            SerialNo={item.SerialNo}
-                                                            isSelected={selectedProductIndex === index}
-                                                        />
-                                                    </div>
-                                                ))}
-
-                                                {/* หากไม่มีสินค้าให้แสดงข้อความนี้ */}
-                                                {product.length === 0 && !loadingProducts && (
-                                                    <div className='text-center my-7'>
-                                                        <h5>ไม่มีรายการสินค้า</h5>
-                                                    </div>
-                                                )}
-
-                                                {product.length !== 0 && (
-                                                    <div className='container my-10 my-xl-10'>
-                                                        <div className='row d-flex'>
-                                                            <label className='form-label required fw-bold fs-3'>ประเภทการชำระ</label>
-                                                            {packageType.map((item, index) => (
-                                                                <div className='col-6 col-md-auto mb-2 d-flex align-items-center'>
-                                                                    <div
-                                                                        key={item.PACKAGETYPEID}
-                                                                        className={`border rounded w-100 w-md-auto h-60px 
-                                                                            d-flex justify-content-center align-items-center fw-bold fs-6 px-5`}
-                                                                        style={{
-                                                                            backgroundColor: selectedPackageTypeId === item.PACKAGETYPEID ? '#ACE1AF' : '#fcfcfc',
-                                                                            transition: 'background-color 0.2s ease, color 0.2s ease',
-                                                                            cursor: 'pointer'
-                                                                        }}
-                                                                        onClick={() => handlePackageTypeClick(item.PACKAGETYPEID)}
-                                                                    >
-                                                                        {item.PACKAGETYPENAME}
-                                                                    </div>
-                                                                </div>
-                                                            ))}
+                                        <>
+                                            {selectedCategoryId.length > 0 && product.length > 0 ? (
+                                                <label className='form-label required fw-bold fs-3 mt-7 mt-xl-10'>รายการสินค้า</label>
+                                            ) : ('')}
+                                            {!loadingProducts && selectedCategoryId.length > 0 && (
+                                                <div className='row '>
+                                                    {product.map((item, index) => (
+                                                        <div
+                                                            className='col-6 col-md-4 mb-3 rounded'
+                                                            key={index}
+                                                            onClick={() => handleCardProductClick(index)}
+                                                            style={{ cursor: 'pointer' }}
+                                                        >
+                                                            <CardProduct
+                                                                DescriptionTH={item.DescriptionTH}
+                                                                ItemDescription={item.ItemDescription}
+                                                                ItemCode={item.ItemCode}
+                                                                SerialNo={item.SerialNo}
+                                                                isSelected={selectedProductIndex === index}
+                                                            />
                                                         </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
+                                                    ))}
+
+                                                    {/* หากไม่มีสินค้าให้แสดงข้อความนี้ */}
+                                                    {!loadingProducts && product.length === 0 && selectedCategoryId && (
+                                                        <div className='text-center my-7'>
+                                                            <h5>ไม่มีรายการสินค้า</h5>
+                                                        </div>
+                                                    )}
+
+                                                    {product.length !== 0 && (
+                                                        <div className='container my-10 my-xl-10'>
+                                                            <div className='row d-flex'>
+                                                                <label className='form-label required fw-bold fs-3'>ประเภทการชำระ</label>
+                                                                {packageType.map((item, index) => (
+                                                                    <div className='col-6 col-md-auto mb-2 d-flex align-items-center'>
+                                                                        <div
+                                                                            key={item.PACKAGETYPEID}
+                                                                            className={`border rounded w-100 w-md-auto h-60px 
+                                                                            d-flex justify-content-center align-items-center fw-bold fs-6 px-5`}
+                                                                            style={{
+                                                                                backgroundColor: selectedPackageTypeId === item.PACKAGETYPEID ? '#ACE1AF' : '#fcfcfc',
+                                                                                transition: 'background-color 0.2s ease, color 0.2s ease',
+                                                                                cursor: 'pointer'
+                                                                            }}
+                                                                            onClick={() => handlePackageTypeClick(item.PACKAGETYPEID)}
+                                                                        >
+                                                                            {item.PACKAGETYPENAME}
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* หากไม่มีแพ็คเกจให้แสดงข้อความนี้ */}
+                                                    {!loadingPackages && packageList.length === 0 && selectedCategoryId !== null && selectedProductIndex !== null && selectedPackageTypeId && (
+                                                        <div className='text-center my-7'>
+                                                            <h5>ไม่มีรายการแพ็คเกจ</h5>
+                                                        </div>
+                                                    )}
+
+                                                </div>
+                                            )}
+                                        </>
 
                                         {/* ส่วนของแพ็คเกจที่จะเลื่อนมาที่นี่ */}
-                                        {selectedPackageTypeId !== null && selectedCategoryId.length > 0 && product.length > 0 && packageList.length > 0 ? (
+
+                                        {/* แสดง Loading */}
+                                        {loadingPackages && (
+                                            <div className="text-center my-10">
+                                                <ThreeDot />
+                                            </div>
+                                        )}
+
+                                        {/* แสดงแพ็คเกจหากโหลดเสร็จ */}
+                                        {!loadingPackages && selectedPackageTypeId !== null && selectedCategoryId.length > 0 && product.length > 0 && packageList.length > 0 ? (
                                             <div className='my-10 my-xl-10' ref={packageSectionRef}>
                                                 <div className='row d-flex'>
                                                     <label className='form-label required fw-bold fs-3'>แพ็คเกจ</label>
