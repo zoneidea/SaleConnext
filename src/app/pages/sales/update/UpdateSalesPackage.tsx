@@ -8,6 +8,8 @@ import { useUUIDStore, useSaveProductStore } from '../../../modules/stores/steps
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 
+import { ThreeDot } from 'react-loading-indicators';
+
 //useStore
 import {
     useCategoryStore,
@@ -50,6 +52,7 @@ const UpdateSalesPackage: React.FC = () => {
 
     const refno = item?.REFNO
     const productContract = item?.PRODUCT
+    console.log(`productContract`, productContract);
 
     const { auth } = useAuth();
 
@@ -64,14 +67,17 @@ const UpdateSalesPackage: React.FC = () => {
     const [packageType, setPackageType] = useState<any[]>([]);
     // console.log(`packageType: `, packageType);
 
+    const [promotion, setPromotion] = useState<any[]>([]);
+    console.log(`promotion: `, promotion);
+
     const [packageList, setPackageList] = useState<any[]>([]);
     // console.log(`packageList: `, packageList);
 
     const [selectedCategoryId, setSelectedCategoryId] = useState<any>('');
-
     const [selectedProductIndex, setSelectedProductIndex] = useState<number | null>(null);
+    console.log(`selectedProductIndex`, selectedProductIndex);
     const [selectedItemCode, setSelectedItemCode] = useState<string | null>(null);
-    // console.log(`selectedItemCode: `, selectedItemCode);
+    const [selectedPromotion, setSelectedPromotion] = useState<string | number>('');
 
     const [selectedItemDescription, setSelectedItemDescription] = useState<string | null>(null);
     const [selectedDescriptionEN, setSelectedDescriptionEN] = useState<string | null>(null);
@@ -81,6 +87,7 @@ const UpdateSalesPackage: React.FC = () => {
     const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
     const [selectedTransDate, setSelectedTransDate] = useState<string | null>(null);
     const [productId, setProductId] = useState(null);  // สร้าง state สำหรับเก็บ _id
+    console.log(`productId`, productId);
 
     const [selectedPackageTypeId, setSelectedPackageTypeId] = useState<number | null>(null);
 
@@ -132,7 +139,8 @@ const UpdateSalesPackage: React.FC = () => {
             Status: selectedStatus || '',
             Branch: selectedBranch || '',
             TransDate: selectedTransDate || '',
-
+            Promotion: selectedPromotion,
+            ProductId: productId,
             Package: selectedPackageModel !== null ? [
                 {
                     MODEL: packageList[selectedPackageModel].MODEL,
@@ -153,10 +161,11 @@ const UpdateSalesPackage: React.FC = () => {
         },
     ], [EmpId, TeamSale, SaleCode, SupEmpId, SecEmpId, selectedItemCode, selectedItemDescription, selectedCategoryId,
         selectedDescriptionEN, selectedDescriptionTH, selectedSerialNo,
-        selectedStatus, selectedBranch, selectedTransDate, selectedPackageModel, packageList]);
+        selectedStatus, selectedBranch, selectedTransDate, selectedPromotion, selectedPackageModel, packageList]);
 
     const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
     const CATEGORIES_URL = `${API_SALECONNEXT}/GetProduct/Categories`;
+    const PROMOTION_URL = `${API_SALECONNEXT}/GetProduct/ProductPromotionList`;
     const PACKAGE_URL = `${API_SALECONNEXT}/GetPackage/PackageType`;
     const POST_PACKAGE_URL = `${API_SALECONNEXT}/GetPackage/PackageList`;
     const API_URL_POST_CONDITIONSCHECKHISTORY = `${API_SALECONNEXT}/ConditionsCheckHistory`;
@@ -188,6 +197,8 @@ const UpdateSalesPackage: React.FC = () => {
         setSelectedStatus(productContract?.[0]?.Status);
         setSelectedBranch(productContract?.[0]?.Branch);
         setSelectedTransDate(productContract?.[0]?.TransDate);
+        setSelectedPromotion(productContract?.[0]?.Promotion)
+        setProductId(productContract?.[0]?.ProductId)
 
         getPackageType()
 
@@ -202,6 +213,12 @@ const UpdateSalesPackage: React.FC = () => {
 
         getPackageList()
     }, [])
+
+    useEffect(() => {
+        if (selectedItemCode && productId) {
+            fetchPromotion(); // เรียกฟังก์ชันดึงข้อมูลโปรโมชั่น
+        }
+    }, [selectedItemCode, productId]);
 
     // POST GetProduct/Categories
     useEffect(() => {
@@ -227,10 +244,9 @@ const UpdateSalesPackage: React.FC = () => {
 
     // GET Product/GetStock?
     useEffect(() => {
-        const getData = async () => {
+        const fetchProducts = async () => {
             if (!selectedCategoryId) return;
-            setLoadingProducts(true); // ตั้งค่า state ให้เริ่มโหลดสินค้า
-
+            setLoadingProducts(true); // เริ่มโหลดเมื่อเปลี่ยนหมวดหมู่สินค้า
             try {
                 const response = await axios.get(getProductUrl(), {
                     headers: {
@@ -239,17 +255,64 @@ const UpdateSalesPackage: React.FC = () => {
                     }
                 });
                 const data = Array.isArray(response.data.data) ? response.data.data : [];
-                setProduct(data);
+                setProduct(data); // บันทึกสินค้าใหม่
             } catch (error) {
-                console.error('Error fetching getProductUrl:', error);
+                console.error('Error fetching products:', error);
             } finally {
-                setLoadingProducts(false); // เสร็จสิ้นการโหลดสินค้า
+                setLoadingProducts(false); // หยุดโหลดเมื่อดึงข้อมูลเสร็จ
             }
         };
-        getData();
-        let productIndex = product.findIndex(p => p.SerialNo == productContract?.[0]?.SerialNo)
-        setSelectedProductIndex(productIndex)
-    }, [categories, selectedCategoryId, setProduct]);
+
+        fetchProducts();
+    }, [selectedCategoryId, EmpId, DivisionId, DepartId, DepartGroup, TeamSale]); // ทำงานเมื่อ selectedCategoryId เปลี่ยนแปลง
+
+    // GetProduct/ProductPromotionList
+    const fetchPromotion = async () => {
+        if (!selectedItemCode && !productId) {
+            console.log("Missing parameters: selectedItemCode or productId");
+            return;
+        }
+        try {
+            console.log("Fetching promotions with parameters:", {
+                ProductID: productId,
+                EmpId,
+                DivisionId,
+                DepartId,
+                DepartGroup,
+                TeamSale,
+                ItemID: selectedItemCode,
+            });
+
+            const response = await axios.post(PROMOTION_URL, {
+                ProductID: productId,
+                EmpId,
+                DivisionId,
+                DepartId,
+                DepartGroup,
+                TeamSale,
+                ItemID: selectedItemCode,
+            }, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                }
+            });
+
+            const data = Array.isArray(response.data.data) ? response.data.data : [];
+            console.log("Fetched promotions:", data);
+
+            setPromotion(data);
+
+            // ตั้งค่าการเลือกโปรโมชั่นเริ่มต้น (ถ้ามี)
+            if (productContract && productContract.length > 0) {
+                const defaultPromotion = data.find(
+                    (p: any) => p.PROMOTIONID === productContract[0]?.PromotionId
+                );
+                setSelectedPromotion(defaultPromotion ? productContract[0]?.PromotionId : '');
+            }
+        } catch (error) {
+            console.error('Error fetching promotions:', error);
+        }
+    }
 
     const getPackageType = async () => {
         try {
@@ -293,8 +356,8 @@ const UpdateSalesPackage: React.FC = () => {
                 setSelectedPackageModel(null)
             }
 
-            console.log('Package model: ', productContract?.[0]?.Package?.[0].MODEL)
-            console.log('Package index: ', index)
+            // console.log('Package model: ', productContract?.[0]?.Package?.[0].MODEL)
+            // console.log('Package index: ', index)
         } catch (error) {
             console.error('Error fetching POST_PACKAGE_URL:', error);
         }
@@ -303,20 +366,6 @@ const UpdateSalesPackage: React.FC = () => {
     useEffect(() => {
         getPackageList()
     }, [EmpId, DivisionId, DepartId, DepartGroup, TeamSale, ItemID, PackageTypeID]);
-
-    // useEffect(() => {
-    //     // console.log("SaveProductData:", SaveProductData);
-    //     if (JSON.stringify(SaveProductData) !== JSON.stringify(PRODUCT)) {
-    //         // console.log("Updating product in store...");
-    //         SETPRODUCT(SaveProductData);
-    //     }
-    // }, [SaveProductData, PRODUCT, SETPRODUCT]);
-
-    // useEffect(() => {
-    //     if (selectedPackageTypeId !== null && packageSectionRef.current) {
-    //         packageSectionRef.current.scrollIntoView({ behavior: 'smooth' });
-    //     }
-    // }, [selectedPackageTypeId]);
 
     const handleCateOptionChange = (event: any) => {
         const value = event.target.value;
@@ -335,6 +384,7 @@ const UpdateSalesPackage: React.FC = () => {
         setSelectedProductIndex(index);
         setSelectedItemCode(product[index].ItemCode);
         setItemID(product[index].ItemCode)
+        setProductId(product[index].ProductID)
 
         setSelectedItemDescription(product[index].ItemDescription);
         setSelectedDescriptionEN(product[index].DescriptionEN);
@@ -378,9 +428,41 @@ const UpdateSalesPackage: React.FC = () => {
     };
 
     useEffect(() => {
+        // ตรวจสอบว่า productContract มีข้อมูลก่อน
+        if (productContract && productContract.length > 0) {
+            // ตรวจสอบว่าข้อมูลสินค้า (product) พร้อมใช้งาน
+            if (product && product.length > 0) {
+                const productIndex = product.findIndex(
+                    (p) => p.ItemCode === productContract[0]?.ItemCode
+                );
+
+                if (productIndex !== -1) {
+                    setSelectedProductIndex(productIndex); // ตั้งค่าดัชนีของสินค้า
+                    setSelectedItemCode(product[productIndex].ItemCode); // ตั้งค่า ItemCode
+                }
+            }
+
+            // ตั้งค่าโปรโมชั่นจาก productContract
+            if (productContract[0]?.Promotion) {
+                setSelectedPromotion(productContract[0]?.Promotion);
+            }
+        }
+    }, [product, productContract]);
+
+    useEffect(() => {
+        if (promotion.length > 0 && productContract?.[0]?.Promotion) {
+            const defaultPromotion = promotion.find(
+                (p) => p.PROMOTIONID === productContract[0]?.Promotion
+            );
+            setSelectedPromotion(defaultPromotion ? defaultPromotion.PROMOTIONID : '');
+        }
+    }, [promotion, productContract]);
+
+    useEffect(() => {
+        // อัปเดต Model เมื่อ packageList และ selectedPackageModel พร้อม
         if (selectedPackageModel !== null && packageList[selectedPackageModel]) {
             const selectedModel = packageList[selectedPackageModel].MODEL;
-            setModel(selectedModel); // อัปเดตค่า Model จาก packageList[selectedPackageModel]
+            setModel(selectedModel); // อัปเดตค่า Model
         }
     }, [selectedPackageModel, packageList, setModel]);
 
@@ -460,7 +542,7 @@ const UpdateSalesPackage: React.FC = () => {
             Array.isArray(item.PDPA) && item.PDPA.length > 0 &&
             Array.isArray(item.PRODUCT) && item.PRODUCT.length > 0
         );
-    }, [item]);    
+    }, [item]);
 
     return (
         <>
@@ -522,17 +604,26 @@ const UpdateSalesPackage: React.FC = () => {
                                                 </select>
                                             </div>
                                         </div>
-                                        {selectedCategoryId && product.length > 0 ? (
+
+                                        {/* แสดง Loading */}
+                                        {loadingProducts && (
+                                            <div className="text-center my-10">
+                                                <ThreeDot />
+                                            </div>
+                                        )}
+
+                                        {selectedCategoryId.length > 0 && product.length > 0 ? (
                                             <label className='form-label required fw-bold fs-3 mt-7 mt-xl-10'>รายการสินค้า</label>
                                         ) : ('')}
-                                        {selectedCategoryId && (
+                                        {!loadingProducts && selectedCategoryId.length > 0 && (
                                             <div className='row '>
                                                 {product.map((item, index) => (
                                                     <div
                                                         className='col-6 col-md-4 mb-3 rounded'
                                                         key={index}
                                                         onClick={() => handleCardProductClick(index)}
-                                                        style={{ cursor: 'pointer' }}>
+                                                        style={{ cursor: 'pointer' }}
+                                                    >
                                                         <CardProduct
                                                             DescriptionTH={item.DescriptionTH}
                                                             ItemDescription={item.ItemDescription}
@@ -542,7 +633,33 @@ const UpdateSalesPackage: React.FC = () => {
                                                         />
                                                     </div>
                                                 ))}
-                                                {product.length !== 0 ? (
+
+                                                {/* หากไม่มีสินค้าให้แสดงข้อความนี้ */}
+                                                {!loadingProducts && product.length === 0 && selectedCategoryId && (
+                                                    <div className='text-center my-7'>
+                                                        <h5>ไม่มีรายการสินค้า</h5>
+                                                    </div>
+                                                )}
+
+                                                <div className='row'>
+                                                    <div className='col-lg-6 my-7 my-xl-10'>
+                                                        <label className='form-label required fw-bold fs-3'>โปรโมชั่น</label>
+                                                        <select
+                                                            className="form-select"
+                                                            value={selectedPromotion}
+                                                            onChange={(e) => setSelectedPromotion(Number(e.target.value))}
+                                                        >
+                                                            <option value="">เลือกโปรโมชั่น...</option>
+                                                            {promotion.map((item, index) => (
+                                                                <option key={index} value={item?.PROMOTIONID}>
+                                                                    {item.PROMOTIONNAME}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                {product.length !== 0 && (
                                                     <div className='container my-10 my-xl-10'>
                                                         <div className='row d-flex'>
                                                             <label className='form-label required fw-bold fs-3'>ประเภทการชำระ</label>
@@ -563,10 +680,6 @@ const UpdateSalesPackage: React.FC = () => {
                                                                 </div>
                                                             ))}
                                                         </div>
-                                                    </div>
-                                                ) : (
-                                                    <div className='text-center my-7'>
-                                                        <h5>ไม่มีรายการสินค้า</h5>
                                                     </div>
                                                 )}
                                             </div>

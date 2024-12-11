@@ -224,169 +224,148 @@ const IdCardPhoto: React.FC = () => {
 
     return (
         <div>
-            {!isPC ? (
-                <>
-                    <div className='d-flex flex-column flex-md-row justify-content-between mt-10 mb-5 mx-5'>
-                        <label className='btn btn-primary w-100 w-md-auto align-self-center'
-                            htmlFor="camera-input"
-                            style={{ cursor: 'pointer', padding: '10px', border: '1px solid #ccc', display: 'inline-block' }}>
-                            เลือกรูปจากคลัง / ใช้กล้อง
-                        </label>
-                    </div>
-                    {error && (
-                        <div className='alert alert-danger mx-5'>
-                            {error}
-                        </div>
-                    )}
-                    <input
-                        id="camera-input"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileChange}
-                        style={{ display: 'none' }}
-                    />
-                </>
-            ) : (
-                <div className='alert alert-warning fw-semibold fs-6 my-10 mx-10'>
-                    ฟีเจอร์ถ่ายรูป ไม่สามารถใช้บนอุปกรณ์คอมพิวเตอร์ได้ โปรดใช้งานบนอุปกรณ์มือถือหรือแท็บเล็ต
+            <div className='d-flex flex-column flex-md-row justify-content-between mt-10 mb-5 mx-7'>
+                <label className='btn btn-success w-100 w-md-auto align-self-center'
+                    htmlFor="camera-input"
+                    style={{ cursor: 'pointer', padding: '10px', border: '1px solid #ccc', display: 'inline-block' }}>
+                    {isPC ? "เลือกรูปจากคลัง" : "เลือกรูปจากคลัง / ใช้กล้อง"}
+                </label>
+            </div>
+            {error && (
+                <div className='alert alert-danger mx-5'>
+                    {error}
                 </div>
             )}
+            <input
+                id="camera-input"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                style={{ display: 'none' }}
+            />
 
             <div>
-                {!isPC ? (
-                    <div>
-                        {(fromStep ? imageFromApi.length > 0 : imagesIdCard.length > 0) && (
-                            <div className='row mx-5'>
-                                {(fromStep ? imageFromApi : imagesIdCard)
-                                    .slice(0, 3) // แสดงรูปภาพสูงสุด 3 รูป
-                                    .map((image: string, index: number) => (
-                                        <div className='col-6 mb-3' key={index}>
-                                            <div className='border border-gray-500'>
+                {(fromStep ? imageFromApi.length > 0 : imagesIdCard.length > 0) && (
+                    <div className='row mx-5'>
+                        {(fromStep ? imageFromApi : imagesIdCard)
+                            .slice(0, 3) // แสดงรูปภาพสูงสุด 3 รูป
+                            .map((image: string, index: number) => (
+                                <div className='col-6 col-xl-4 mb-3' key={index}>
+                                    <div className='border border-gray-500'>
+                                        <img
+                                            src={image}
+                                            alt={`Captured ${index + 1}`}
+                                            style={{
+                                                width: '100%',
+                                                height: '200px',
+                                                objectFit: 'cover',
+                                            }}
+                                            onError={(e) => {
+                                                console.log('Error loading image:', image);
+                                                e.currentTarget.src = toAbsoluteUrl('media/placeholder.png'); // แสดง placeholder
+                                            }}
+                                        />
+
+                                        {!fromStep && (
+                                            <div className='d-flex justify-content-center mt-3 mb-2'>
                                                 <img
-                                                    src={image}
-                                                    alt={`Captured ${index + 1}`}
-                                                    style={{
-                                                        width: '100%',
-                                                        height: '150px',
-                                                        objectFit: 'cover',
-                                                    }}
-                                                    onError={(e) => {
-                                                        console.log('Error loading image:', image);
-                                                        e.currentTarget.src = toAbsoluteUrl('media/placeholder.png'); // แสดง placeholder
-                                                    }}
+                                                    className='h-30px theme-light-show'
+                                                    src={toAbsoluteUrl('media/settings/trash-svgrepo-com.svg')}
+                                                    alt='ลบรูป'
+                                                    onClick={() => handleDeleteImage(image)}
+                                                    style={{ cursor: 'pointer' }}
                                                 />
-
-                                                {!fromStep && (
-                                                    <div className='d-flex justify-content-center mt-3 mb-2'>
-                                                        <img
-                                                            className='h-30px theme-light-show'
-                                                            src={toAbsoluteUrl('media/settings/trash-svgrepo-com.svg')}
-                                                            alt='ลบรูป'
-                                                            onClick={() => handleDeleteImage(image)}
-                                                            style={{ cursor: 'pointer' }}
-                                                        />
-                                                    </div>
-                                                )}
                                             </div>
-                                        </div>
-                                    ))}
-                            </div>
-                        )}
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                    </div>
+                )}
 
-                        {/* แสดงปุ่มเมื่อมาจาก Step */}
-                        {fromStep ? (
-                            <div className='d-none d-xl-flex justify-content-between align-items-center mt-5'>
-                                <button
-                                    className='btn btn-secondary w-100 w-md-auto align-self-center h-50px'
-                                    onClick={() => navigate('/sale/step', { state: item })}
-                                >
-                                    ย้อนกลับ
-                                </button>
-                                <button
-                                    className='btn btn-warning w-100 w-md-auto align-self-center mb-2 mb-md-0'
-                                    type='button'
-                                    onClick={handleNextClick}
-                                >
-                                    อัพเดทข้อมูล
-                                </button>
-                            </div>
-                        ) : (
-                            <div className='d-none d-xl-flex justify-content-between align-items-center my-5'>
-                                <button
-                                    className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'
-                                    onClick={() => navigate('/sale/photo')}
-                                >
-                                    ย้อนกลับ
-                                </button>
-                                <button
-                                    className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
-                                    type='button'
-                                    onClick={handleNextClick}
-                                >
-                                    บันทึกรูปภาพลงระบบ
-                                </button>
-                            </div>
-                        )}
-
-                        {/* ปุ่มในหน้าจอเล็ก */}
-                        {/* แสดงปุ่มเมื่อมาจาก Step */}
-                        {fromStep ? (
-                            <div
-                                className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
-                                style={{
-                                    position: "fixed",
-                                    bottom: 0,
-                                    left: 0,
-                                    right: 0,
-                                    zIndex: 1050,
-                                }}
-                            >
-                                <button
-                                    className="btn btn-secondary w-auto me-2"
-                                    onClick={() => navigate('/sale/step', { state: item })}
-                                >
-                                    ย้อนกลับ
-                                </button>
-                                <button
-                                    className="btn btn-warning w-auto me-2"
-                                    onClick={handleNextClick}
-                                >
-                                    อัพเดทข้อมูล
-                                </button>
-                            </div>
-                        ) : (
-                            <div
-                                className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
-                                style={{
-                                    position: "fixed",
-                                    bottom: 0,
-                                    left: 0,
-                                    right: 0,
-                                    zIndex: 1050,
-                                }}
-                            >
-                                <button
-                                    className="btn btn-secondary w-auto me-2"
-                                    onClick={() => navigate('/sale/photo')}
-                                >
-                                    ย้อนกลับ
-                                </button>
-                                <button
-                                    className="btn btn-primary w-auto me-2"
-                                    onClick={handleNextClick}
-                                >
-                                    บันทึกรูปภาพลงระบบ
-                                </button>
-                            </div>
-                        )}
+                {/* แสดงปุ่มเมื่อมาจาก Step */}
+                {fromStep ? (
+                    <div className='d-none d-xl-flex justify-content-between align-items-center mt-5'>
+                        <button
+                            className='btn btn-secondary w-100 w-md-auto align-self-center h-50px'
+                            onClick={() => navigate('/sale/step', { state: item })}
+                        >
+                            ย้อนกลับ
+                        </button>
+                        <button
+                            className='btn btn-warning w-100 w-md-auto align-self-center mb-2 mb-md-0'
+                            type='button'
+                            onClick={handleNextClick}
+                        >
+                            อัพเดทข้อมูล
+                        </button>
                     </div>
                 ) : (
-                    <div>
+                    <div className='d-none d-xl-flex justify-content-between align-items-center my-5 mx-7'>
                         <button
-                            className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0 mx-lg-10 mx-5'
+                            className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'
                             onClick={() => navigate('/sale/photo')}
                         >
                             ย้อนกลับ
+                        </button>
+                        <button
+                            className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
+                            type='button'
+                            onClick={handleNextClick}
+                        >
+                            บันทึกรูปภาพลงระบบ
+                        </button>
+                    </div>
+                )}
+
+                {/* ปุ่มในหน้าจอเล็ก */}
+                {/* แสดงปุ่มเมื่อมาจาก Step */}
+                {fromStep ? (
+                    <div
+                        className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
+                        style={{
+                            position: "fixed",
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            zIndex: 1050,
+                        }}
+                    >
+                        <button
+                            className="btn btn-secondary w-auto me-2"
+                            onClick={() => navigate('/sale/step', { state: item })}
+                        >
+                            ย้อนกลับ
+                        </button>
+                        <button
+                            className="btn btn-warning w-auto me-2"
+                            onClick={handleNextClick}
+                        >
+                            อัพเดทข้อมูล
+                        </button>
+                    </div>
+                ) : (
+                    <div
+                        className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
+                        style={{
+                            position: "fixed",
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            zIndex: 1050,
+                        }}
+                    >
+                        <button
+                            className="btn btn-secondary w-auto me-2"
+                            onClick={() => navigate('/sale/photo')}
+                        >
+                            ย้อนกลับ
+                        </button>
+                        <button
+                            className="btn btn-primary w-auto me-2"
+                            onClick={handleNextClick}
+                        >
+                            บันทึกรูปภาพลงระบบ
                         </button>
                     </div>
                 )}

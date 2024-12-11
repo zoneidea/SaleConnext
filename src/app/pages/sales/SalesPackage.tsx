@@ -38,10 +38,13 @@ const SalesPackage: React.FC = () => {
     const { auth } = useAuth();
 
     const { fetchCategory } = useFetchCategoryStore();
-    console.log(`fetchCategory: `, fetchCategory);
+    // console.log(`fetchCategory: `, fetchCategory);
 
     const [categories, setCategories] = useState<any[]>([]);
-    console.log(`categories`, categories);
+    // console.log(`categories`, categories);
+
+    const [promotion, setPromotion] = useState<any[]>([]);
+    console.log(`promotion`, promotion);
 
     const [packageType, setPackageType] = useState<any[]>([]);
     // console.log(`packageType: `, packageType);
@@ -52,6 +55,8 @@ const SalesPackage: React.FC = () => {
     const [selectedCategoryId, setSelectedCategoryId] = useState<any>('');
 
     const [selectedProductIndex, setSelectedProductIndex] = useState<number | null>(null);
+    console.log(`selectedProductIndex: `, selectedProductIndex);
+
     const [selectedItemCode, setSelectedItemCode] = useState<string | null>(null);
     // console.log(`selectedItemCode: `, selectedItemCode);
 
@@ -63,11 +68,14 @@ const SalesPackage: React.FC = () => {
     const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
     const [selectedTransDate, setSelectedTransDate] = useState<string | null>(null);
     const [productId, setProductId] = useState(null);  // สร้าง state สำหรับเก็บ _id
+    console.log(`productId: `, productId);
 
     const [selectedPackageTypeId, setSelectedPackageTypeId] = useState<number | null>(null);
-
     const [selectedPackageModel, setSelectedPackageModel] = useState<number | null>(null);
-    // console.log(`selectedPackageModel: `, selectedPackageModel);
+    const [selectedProductId, setSelectedProductId] = useState<any>('');
+    console.log(`selectedProductId`, selectedProductId);
+    const [selectedPromotion, setSelectedPromotion] = useState<string | number>('');
+    console.log(`selectedPromotion`, selectedPromotion);
 
     const [checktype, setChecktype] = useState<number | null>(null);
     // console.log(`checktype`, checktype);
@@ -92,11 +100,9 @@ const SalesPackage: React.FC = () => {
     // const parseGetCategoryLocal = getCategoryLocal ? JSON.parse(getCategoryLocal) : null;
 
     const { product, setProduct } = useProductStore();
-    // console.log(`product: `, product);
+    console.log(`product: `, product);
 
     const { ItemID, setItemID, PackageTypeID, setPackageTypeID } = usePackageStore();
-    // console.log(`ItemID: `, ItemID);
-    // console.log(`PackageTypeID: `, PackageTypeID);
 
     const { Model, setModel } = useConditionsCheckHistoryStore();
 
@@ -116,6 +122,8 @@ const SalesPackage: React.FC = () => {
             Status: selectedStatus || '',
             Branch: selectedBranch || '',
             TransDate: selectedTransDate || '',
+            PromotionId: selectedPromotion,
+            ProductId: productId,
             Package: selectedPackageModel !== null ? [
                 {
                     MODEL: packageList[selectedPackageModel].MODEL,
@@ -136,11 +144,12 @@ const SalesPackage: React.FC = () => {
         },
     ], [EmpId, TeamSale, SaleCode, SupEmpId, SecEmpId, selectedItemCode, selectedItemDescription, selectedCategoryId,
         selectedDescriptionEN, selectedDescriptionTH, selectedSerialNo,
-        selectedStatus, selectedBranch, selectedTransDate, selectedPackageModel, packageList]);
+        selectedStatus, selectedBranch, selectedTransDate, selectedPromotion, selectedPackageModel, packageList]);
 
     const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
     const CATEGORIES_URL = `${API_SALECONNEXT}/GetProduct/Categories`;
     const PACKAGE_URL = `${API_SALECONNEXT}/GetPackage/PackageType`;
+    const PROMOTION_URL = `${API_SALECONNEXT}/GetProduct/ProductPromotionList`;
     const POST_PACKAGE_URL = `${API_SALECONNEXT}/GetPackage/PackageList`;
     const API_URL_POST_CONDITIONSCHECKHISTORY = `${API_SALECONNEXT}/ConditionsCheckHistory`;
 
@@ -168,6 +177,7 @@ const SalesPackage: React.FC = () => {
                     { EmpId, DivisionId, DepartId, DepartGroup, TeamSale }, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
+                        'Accept': 'multipart/form-data',
                     },
                 });
                 const data = Array.isArray(response.data.data) ? response.data.data : [];
@@ -203,6 +213,35 @@ const SalesPackage: React.FC = () => {
         fetchProducts();
     }, [selectedCategoryId]); // ทำงานเมื่อ selectedCategoryId เปลี่ยนแปลง
 
+    // GetProduct/ProductPromotionList
+    useEffect(() => {
+        const fetchPromotion = async () => {
+            if (selectedProductIndex === null) return;
+            try {
+                const response = await axios.post(PROMOTION_URL, {
+                    ProductID: productId,
+                    EmpId,
+                    DivisionId,
+                    DepartId,
+                    DepartGroup,
+                    TeamSale,
+                    ItemID: selectedItemCode
+                }, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                        'Accept': 'multipart/form-data',
+                    }
+                });
+                const data = Array.isArray(response.data.data) ? response.data.data : [];
+                setPromotion(data);
+            } catch (error) {
+                console.error('Error fetching promotion:', error);
+            }
+        };
+
+        fetchPromotion();
+    }, [selectedProductIndex]);
+
     // GET GetPackage/PackageType
     useEffect(() => {
         const getData = async () => {
@@ -210,6 +249,7 @@ const SalesPackage: React.FC = () => {
                 const response = await axios.get(PACKAGE_URL, {
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json',
                     }
                 });
                 const data = Array.isArray(response.data.data) ? response.data.data : [];
@@ -284,6 +324,7 @@ const SalesPackage: React.FC = () => {
         setSelectedProductIndex(index);
         setSelectedItemCode(product[index].ItemCode);
         setItemID(product[index].ItemCode)
+        setProductId(product[index].ProductID)
 
         setSelectedItemDescription(product[index].ItemDescription);
         setSelectedDescriptionEN(product[index].DescriptionEN);
@@ -320,6 +361,7 @@ const SalesPackage: React.FC = () => {
         setSelectedPackageModel(index);
         if (packageList[index] && packageList[index].MODEL) {
             setModel(packageList[index].MODEL); // กำหนดค่าให้กับ Model จาก packageList[selectedPackageModel]
+            setSelectedProductId(packageList[index].PRODUCTID)
         }
         if (selectedCategoryId === null) {
             setSelectedPackageModel(null);
@@ -437,9 +479,15 @@ const SalesPackage: React.FC = () => {
                     },
                 });
                 console.log(`updateContract CUSTOMERSTATUS: `, updateContract.data);
+                MySwal.fire({
+                    icon: 'success',
+                    title: 'สำเร็จ!',
+                    text: 'บันทึกข้อมูลสินค้าเรียบร้อยแล้ว',
+                    confirmButtonText: 'ตกลง'
+                });
             } catch (error) {
                 console.error('Error updating contract:', error);
-                MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถอัปเดตข้อมูลได้', 'error');
+                MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้', 'error');
             }
         } catch (error) {
             console.error('Error saving product package:', error);
@@ -555,6 +603,26 @@ const SalesPackage: React.FC = () => {
                                                             <h5>ไม่มีรายการสินค้า</h5>
                                                         </div>
                                                     )}
+
+                                                    <div className='row'>
+                                                        <div className='col-lg-6 my-7 my-xl-10'>
+                                                            <label className='form-label required fw-bold fs-3'>โปรโมชั่น</label>
+                                                            <select
+                                                                className='form-select'
+                                                                onChange={(e) => {
+                                                                    setSelectedPromotion(Number(e.target.value)); // แปลงค่า string เป็น number
+                                                                }}
+                                                                value={selectedPromotion ?? ''} // ใช้ nullish coalescing เพื่อป้องกันค่าที่เป็น null
+                                                            >
+                                                                <option value=''>เลือกโปรโมชั่น...</option>
+                                                                {promotion.map((item: any, index: number) => (
+                                                                    <option key={index} value={item?.PROMOTIONID}>
+                                                                        {item.PROMOTIONNAME}
+                                                                    </option>
+                                                                ))}
+                                                            </select>
+                                                        </div>
+                                                    </div>
 
                                                     {product.length !== 0 && (
                                                         <div className='container my-10 my-xl-10'>

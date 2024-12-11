@@ -7,8 +7,12 @@ import { useAuth } from '../../modules/auth/core/Auth';
 import { useUUIDStore, useSaveProductStore } from '../../modules/stores/stepsStore';
 import { useSaveDiscountStore } from '../../modules/stores/stepsStore';
 
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+
 const SalesDiscount: React.FC = () => {
     const navigate = useNavigate();
+    const MySwal = withReactContent(Swal);
 
     const { auth } = useAuth();
     const EmpId = auth?.data?.[0]?.EmpId || '';
@@ -42,15 +46,15 @@ const SalesDiscount: React.FC = () => {
 
     // ตรวจสอบว่ามีข้อมูล PRODUCT หรือไม่ก่อนที่จะดึงข้อมูลจากมัน
     const hasTradeIn = PRODUCT?.[0]?.Package?.[0]?.HASTRADEIN ?? null;
-    console.log(`hasTradeIn`, hasTradeIn);
+    // console.log(`hasTradeIn`, hasTradeIn);
 
     const totalPrice = PRODUCT?.[0]?.Package?.[0]?.TOTALPRICE ?? 0;
     const discountPrice = PRODUCT?.[0]?.Package?.[0]?.DISCOUNTPRICE ?? 0;
-    console.log(`discountPrice`, discountPrice);
+    // console.log(`discountPrice`, discountPrice);
 
     const sequence = PRODUCT?.[0]?.Package?.[0]?.SEQUENCE ?? 0;
     const freeGift = PRODUCT?.[0]?.Package?.[0]?.FREEGIFT ?? [];
-    console.log(`freeGift`, freeGift);
+    // console.log(`freeGift`, freeGift);
 
     // console.log(`selectedGift`, freeGift[selectedGiftId-1]?.GIFTCODE);
 
@@ -76,6 +80,70 @@ const SalesDiscount: React.FC = () => {
         }
     }, [selectedTurnId, tradeInBrand]);
 
+    // State ที่เกี่ยวข้อง
+    const [discountInput, setDiscountInput] = useState<number | null>(null);
+    // console.log(`discountInput`, discountInput);
+    const [discountValidationMessage, setDiscountValidationMessage] = useState<{
+        message: string;
+        type: "success" | "danger";
+    } | null>(null);
+    const [isDiscountValid, setIsDiscountValid] = useState<boolean>(true);
+
+    // ฟังก์ชันจัดการเมื่อมีการเปลี่ยนแปลงในฟิลด์ส่วนลด
+    const handleDiscountChange = (value: string) => {
+        const inputNumber = Number(value.replace(/,/g, "")); // แปลงค่าที่กรอกเป็นตัวเลข
+
+        if (isNaN(inputNumber)) {
+            setDiscountValidationMessage({
+                message: "กรุณากรอกตัวเลขที่ถูกต้อง",
+                type: "danger",
+            });
+            setIsDiscountValid(false); // กรอกค่าผิด
+            return;
+        }
+
+        setDiscountInput(inputNumber); // อัปเดตส่วนลด
+        validateDiscount(inputNumber); // เรียกฟังก์ชัน validateDiscount เพื่อเช็คค่า
+    };
+
+    // ฟังก์ชันตรวจสอบค่าที่กรอก
+    const validateDiscount = (inputNumber: number) => {
+        if (discountPrice === 0) {
+            setDiscountValidationMessage(null);
+            setIsDiscountValid(true); // ไม่มีส่วนลด ไม่ต้องแสดงข้อความ
+            return;
+        }
+
+        if (discountPrice !== undefined && sequence !== undefined) {
+            let validationMessage = "";
+
+            if (inputNumber <= discountPrice) {
+                if (inputNumber % sequence === 0) {
+                    validationMessage = "";
+                    setIsDiscountValid(true); // ส่วนลดถูกต้อง
+                    setDiscountValidationMessage({
+                        message: validationMessage,
+                        type: "success",
+                    });
+                } else {
+                    validationMessage = `กรอกส่วนลดผิด ต้องลดหรือเพิ่มได้ทีละ ${sequence} บาท`;
+                    setIsDiscountValid(false); // ส่วนลดไม่ถูกต้อง
+                    setDiscountValidationMessage({
+                        message: validationMessage,
+                        type: "danger",
+                    });
+                }
+            } else {
+                validationMessage = `ส่วนลดต้องไม่เกิน ${discountPrice} บาท`;
+                setIsDiscountValid(false); // ส่วนลดไม่ถูกต้อง
+                setDiscountValidationMessage({
+                    message: validationMessage,
+                    type: "danger",
+                });
+            }
+        }
+    };
+
     // เก็บข้อมูลส่วนลดใน state และ store
     const SaveDiscountData = useMemo(() => {
         if (!PRODUCT?.[0]?.Package?.[0]) {
@@ -91,7 +159,7 @@ const SalesDiscount: React.FC = () => {
                     TRADEINMODEL: tradeInModel,
                     TRADEINSERIAL: tradeInSerial,
                 },
-                DISCOUNTAMOUNT: currentSequence,
+                DISCOUNTAMOUNT: discountInput,
                 GIFT: {
                     GIFTID: selectedGiftId,
                     GIFTCODE: freeGift[selectedGiftId - 1]?.GIFTCODE,
@@ -101,7 +169,7 @@ const SalesDiscount: React.FC = () => {
                 },
             },
         ];
-    }, [PRODUCT, selectedTurnId, tradeInModel, tradeInSerial, currentSequence, selectedGiftId, selectedTradeInBrandName]);
+    }, [PRODUCT, selectedTurnId, tradeInModel, tradeInSerial, discountInput , selectedGiftId, selectedTradeInBrandName]);
 
     // อัปเดตข้อมูลส่วนลดใน store
     useEffect(() => {
@@ -147,30 +215,36 @@ const SalesDiscount: React.FC = () => {
                 },
             });
             console.log(`updateContract DISCOUNT: `, updateContract.data);
-            // หลังจากทำการส่งข้อมูลสำเร็จ นำทางไปยังหน้า /sale/createcust
+            MySwal.fire({
+                icon: 'success',
+                title: 'สำเร็จ!',
+                text: 'บันทึกข้อมูลสินค้าเรียบร้อยแล้ว',
+                confirmButtonText: 'ตกลง'
+            });
             navigate('/sale/createcust');
         } catch (error) {
             console.error('Error fetching UPDATECONTACT:', error);
+            MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้', 'error');
         }
     };
 
     // Handle increment and decrement functions
-    const handleDecrement = () => {
-        setCurrentSequence((prev) => Math.max(0, prev - step)); // ลดค่า step แต่ไม่ให้ต่ำกว่า 0
-    };
+    // const handleDecrement = () => {
+    //     setCurrentSequence((prev) => Math.max(0, prev - step)); // ลดค่า step แต่ไม่ให้ต่ำกว่า 0
+    // };
 
-    const handleIncrement = () => {
-        setCurrentSequence((prev) => {
-            if (prev + step <= discountPrice) {
-                return prev + step;
-            } else {
-                return prev;
-            }
-        });
-    };
+    // const handleIncrement = () => {
+    //     setCurrentSequence((prev) => {
+    //         if (prev + step <= discountPrice) {
+    //             return prev + step;
+    //         } else {
+    //             return prev;
+    //         }
+    //     });
+    // };
 
     // คำนวณราคาหลังหักส่วนลด
-    const finalPrice = Math.max(0, totalPriceSafe - currentSequence)
+    const finalPrice = Math.max(0, totalPriceSafe - (discountInput ?? 0));
 
     // Handle option changes
     const handleTurnOptionChange = (event: any) => {
@@ -308,7 +382,7 @@ const SalesDiscount: React.FC = () => {
                                                         {(finalPrice).toLocaleString()}
                                                     </p>
                                                 </div>
-                                                <div className='col-lg-6 mb-3'>
+                                                {/* <div className='col-lg-6 mb-3'>
                                                     <label className='form-label fw-bold fs-6'>ส่วนลด</label>
                                                     <div className='d-flex align-items-center'>
                                                         <button className='btn btn-light-primary' type='button' onClick={handleDecrement}>
@@ -321,6 +395,21 @@ const SalesDiscount: React.FC = () => {
                                                             +
                                                         </button>
                                                     </div>
+                                                </div> */}
+                                                <div className='col-lg-6 mb-3'>
+                                                    <label className='form-label fw-bold fs-6'>ส่วนลด</label>
+                                                    <div className='d-flex align-items-center'>
+                                                        <input
+                                                            type="text"
+                                                            className={`form-control`}
+                                                            onChange={(e) => handleDiscountChange(e.target.value)}
+                                                        />
+                                                    </div>
+                                                    {discountValidationMessage && (
+                                                        <div className={`mt-2 text-${discountValidationMessage.type}`}>
+                                                            {discountValidationMessage.message}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>

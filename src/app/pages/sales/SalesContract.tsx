@@ -361,7 +361,7 @@ const SalesContract: React.FC = () => {
         </div>
         {/* End Card Body */}
 
-        <div className='d-none d-xl-flex justify-content-between align-items-center mt-5'>
+        <div className='d-none d-xl-flex justify-content-end align-items-center mt-5 mb-10'>
           <button
             className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
             type='button'

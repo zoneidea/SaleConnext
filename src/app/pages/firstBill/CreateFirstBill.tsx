@@ -41,9 +41,13 @@ interface ItemProps {
     CONTRACT: [any],
     IMAGE: [any],
     CHECKERCOMMENT: [any]
+    TRANSACTION: [any]
 }
 
 const CreateFirstBill: React.FC = () => {
+    const API_URL_GET_ALLCONTRACT = import.meta.env.VITE_APP_API_MONGO;
+    const POST_PAYMENT_TRANSACTION_URL = `${API_URL_GET_ALLCONTRACT}/Payment/UpdatePaymentTransaction`;
+
     const navigate = useNavigate()
     const location = useLocation();
     const MySwal = withReactContent(Swal);
@@ -61,13 +65,17 @@ const CreateFirstBill: React.FC = () => {
     const product = item?.PRODUCT
     const contNo = item?.CONTNO
     const customerDetail = item?.CUSTOMERDETAIL
+    const discountAmount = item?.DISCOUNT[0]?.DISCOUNTAMOUNT || 0;
+    const transaction = item?.TRANSACTION
 
-    const API_URL_GET_ALLCONTRACT = import.meta.env.VITE_APP_API_MONGO;
-    const POST_PAYMENT_TRANSACTION_URL = `${API_URL_GET_ALLCONTRACT}/Payment/UpdatePaymentTransaction`;
+    const paymentPeriodDetailId = product[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTPERIODDETAILID
+    const paymentPeriodNumber = product[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTPERIODNUMBER
+    const periodAmount = product[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTAMOUNT
+    const paymentAmount = product[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTAMOUNT
 
     const totalPrice = product[0]?.Package[0]?.TOTALPRICE || 0;
-    const discountAmount = item?.DISCOUNT[0]?.DISCOUNTAMOUNT || 0;
     const netPrice = totalPrice - discountAmount;
+    // console.log(`netPrice`, netPrice);
 
     // ชำระเงินทันที หรือ นัดชำระ
     const [payQuick, setPayQuick] = useState<boolean>(true);
@@ -83,10 +91,16 @@ const CreateFirstBill: React.FC = () => {
     // ประเภทการชำระเงิน
     const [paymentChannel, setPaymentChannel] = useState<string>("CASH");
 
-    const remainingAmount = netPrice - paySomeAmount
+    // const remainingAmount = transaction[0]?.AMOUNT - paySomeAmount
+    const remainingAmount = Math.max(
+        0,
+        (product[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTAMOUNT || 0) - discountAmount - paySomeAmount
+    );
 
     const [valueCalendarInstall, setValueCalendarInstall] = useState<Date | null>(null);
     const dueDate = dayjs(valueCalendarInstall).format("YYYY-MM-DD");
+
+    const [errorMessage, setErrorMessage] = useState<string>("");
 
     const handlePayQuickChange = (isPayQuick: boolean) => {
         setPayQuick(isPayQuick);
@@ -98,7 +112,7 @@ const CreateFirstBill: React.FC = () => {
     const handlePayFullAmountChange = (value: boolean) => {
         setPayFullAmount(value);
         setPaymentChoice(value ? "FULL" : "SOME"); // อัปเดต PAYMENTCHOICE
-    
+
         // เปลี่ยน status เป็น SCHEDULE เมื่อชำระบางส่วน / เกินจำนวน
         if (!value) {
             setStatus("SCHEDULE");
@@ -106,7 +120,7 @@ const CreateFirstBill: React.FC = () => {
             setStatus("PAID");
         }
     };
-    
+
     const handleDateChangeInstall = (date: Date | null) => {
         setValueCalendarInstall(date);
     };
@@ -119,21 +133,57 @@ const CreateFirstBill: React.FC = () => {
         setPriceOption(option);
     };
 
+    const handleSomeAmountChange = (value: string) => {
+        // หากผู้ใช้พิมพ์ "0" โดยตรง
+        if (value === "0") {
+            setPaySomeAmount(0); // ตั้งค่าตรงๆ
+            setErrorMessage(""); // ไม่มีข้อความแจ้งเตือน
+            return;
+        }
+
+        // หากผู้ใช้ลบข้อความทั้งหมด
+        if (value === "") {
+            setErrorMessage(""); // ไม่มีข้อความแจ้งเตือน
+            return;
+        }
+
+        const number = Number(value); // แปลงค่าเป็นตัวเลข
+        if (isNaN(number) || number < 0) {
+            setErrorMessage("กรุณากรอกจำนวนเงินที่ถูกต้อง");
+        } else if (number > netPrice) {
+            setPaySomeAmount(number); // เก็บค่าที่กรอก
+            setErrorMessage(`ห้ามชำระเกินราคาสุทธิ ${netPrice.toLocaleString()} บาท`);
+        } else {
+            setPaySomeAmount(number); // เก็บค่าที่ถูกต้อง
+            setErrorMessage(""); // ล้างข้อความแจ้งเตือน
+        }
+    };
+
     const allData = {
         REFNO: refno,
         EMPID: EmpId,
         STATUS: status,
-        DUEDATE: dueDate,
-        PAYMENTPERIODDETAILID: product[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTPERIODDETAILID,
-        PAYMENTPERIODNUMBER: product[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTPERIODNUMBER,
+        DUEDATE: status === "SCHEDULE"
+            ? dueDate
+            : (paymentChoice === "FULL" || paySomeAmount >= paymentAmount - discountAmount
+                ? ""
+                : dueDate),
+        PAYMENTPERIODDETAILID: paymentPeriodDetailId,
+        PAYMENTPERIODNUMBER: paymentPeriodNumber,
         PAYMENTCHANNEL: paymentChannel,
         PAYMENTCHOICE: paymentChoice,
-        AMOUNT: paySomeAmount,
-        PERIODAMOUNT: product[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTAMOUNT - discountAmount,
-    }
+        AMOUNT: status === "SCHEDULE" && paymentChoice === "NONE"
+            ? ""
+            : (paymentChoice === "FULL"
+                ? paymentAmount - discountAmount
+                : paySomeAmount),
+        PERIODAMOUNT: periodAmount - discountAmount,
+        DISCOUNT: discountAmount
+    };
+
+    console.log("All Data to Submit:", allData)
 
     const onSubmit = async (data: any) => {
-        console.log("All Data to Submit:", allData);
         try {
             const response = await axios.post(POST_PAYMENT_TRANSACTION_URL, allData, {
                 headers: {
@@ -143,7 +193,7 @@ const CreateFirstBill: React.FC = () => {
 
             if (response.status === 200) {
                 Swal.fire("สำเร็จ", "บันทึกธุรกรรมการชำระเงินสำเร็จ", "success");
-                navigate("/order/overview")
+                navigate("/firstBill/overview")
             } else {
                 Swal.fire("เกิดข้อผิดพลาด", response.data.message || "ไม่สามารถบันทึกข้อมูลได้", "error");
             }
@@ -154,7 +204,7 @@ const CreateFirstBill: React.FC = () => {
     };
 
     // console.log(`test`, status);
-    
+
     return (
         <>
             <Content>
@@ -250,25 +300,48 @@ const CreateFirstBill: React.FC = () => {
                                                                         checked={!payFullAmount}
                                                                         onChange={() => handlePayFullAmountChange(false)}
                                                                     />
-                                                                    <label className="form-label fw-bold fs-6">ชำระบางส่วน / เกินจำนวน</label>
+                                                                    <label className="form-label fw-bold fs-6">
+                                                                        {product[0]?.Package[0]?.PACKAGETYPEID === 1 ? (
+                                                                            <span>ชำระบางส่วน</span>
+                                                                        ) : (
+                                                                            <span>ชำระบางส่วน / เกินจำนวน</span>
+                                                                        )}
+                                                                    </label>
                                                                 </div>
                                                             </div>
 
                                                             {/* Start ชำระเต็ม */}
                                                             {payFullAmount && (
                                                                 <>
-                                                                    <div className="mb-6">
-                                                                        <label className="form-label fw-bold fs-6">จำนวนเงินที่ต้องชำระ</label>
-                                                                        <input
-                                                                            type="text"
-                                                                            className="form-control"
-                                                                            readOnly
-                                                                            style={{
-                                                                                backgroundColor: '#d7dbde',
-                                                                            }}
-                                                                            value={netPrice}
-                                                                        />
-                                                                    </div>
+                                                                    {product[0].Package.PACKAGETYPEID === 1 ? (
+                                                                        <div className="mb-6">
+                                                                            <label className="form-label fw-bold fs-6">จำนวนเงินที่ต้องชำระ</label>
+                                                                            <input
+                                                                                type="text"
+                                                                                className="form-control"
+                                                                                readOnly
+                                                                                style={{
+                                                                                    backgroundColor: '#d7dbde',
+                                                                                }}
+                                                                                value={paymentAmount}
+                                                                            // value={transaction[0]?.AMOUNT}
+                                                                            />
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div className="mb-6">
+                                                                            <label className="form-label fw-bold fs-6">จำนวนเงินที่ต้องชำระ</label>
+                                                                            <input
+                                                                                type="text"
+                                                                                className="form-control"
+                                                                                readOnly
+                                                                                style={{
+                                                                                    backgroundColor: '#d7dbde',
+                                                                                }}
+                                                                                value={paymentAmount - discountAmount}
+                                                                            // value={transaction[0]?.AMOUNT}
+                                                                            />
+                                                                        </div>
+                                                                    )}
                                                                     <div className="d-flex mb-6 mt-10">
                                                                         <div className="form-check form-check-inline me-3">
                                                                             <input
@@ -298,7 +371,7 @@ const CreateFirstBill: React.FC = () => {
                                                             {/* Start ชำระบางส่วน / เกินจำนวน */}
                                                             {!payFullAmount && (
                                                                 <>
-                                                                    {product[0]?.Package[0]?.PACKAGETYPEID !== 1 && (
+                                                                    {/* {product[0]?.Package[0]?.PACKAGETYPEID !== 1 && (
                                                                         <div className="mb-6">
                                                                             <label className="form-label fw-bold fs-6">ราคาสุทธิ</label>
                                                                             <input
@@ -311,7 +384,7 @@ const CreateFirstBill: React.FC = () => {
                                                                                 value={netPrice}
                                                                             />
                                                                         </div>
-                                                                    )}
+                                                                    )} */}
                                                                     <div className="mb-6">
                                                                         {product[0]?.Package[0]?.PACKAGETYPEID !== 1 ? (
                                                                             <>
@@ -323,7 +396,8 @@ const CreateFirstBill: React.FC = () => {
                                                                                     style={{
                                                                                         backgroundColor: '#d7dbde',
                                                                                     }}
-                                                                                    value={product[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTAMOUNT - discountAmount}
+                                                                                    value={paymentAmount - discountAmount}
+                                                                                // value={transaction[0]?.AMOUNT}
                                                                                 />
                                                                             </>
                                                                         ) : (
@@ -349,7 +423,7 @@ const CreateFirstBill: React.FC = () => {
                                                                                 <input
                                                                                     type="text"
                                                                                     className="form-control"
-                                                                                    onChange={(e) => setPaySomeAmount(Number(e.target.value))}
+                                                                                    onChange={(e) => handleSomeAmountChange(e.target.value)}
                                                                                     value={paySomeAmount}
                                                                                 />
                                                                             </>
@@ -358,15 +432,19 @@ const CreateFirstBill: React.FC = () => {
                                                                                 <label className="form-label required fw-bold fs-6">จำนวนเงินที่ชำระ</label>
                                                                                 <input
                                                                                     type="text"
-                                                                                    className="form-control"
-                                                                                    onChange={(e) => setPaySomeAmount(Number(e.target.value))}
-                                                                                    value={paySomeAmount}
+                                                                                    className={`form-control ${errorMessage ? "is-invalid" : ""}`}
+                                                                                    onChange={(e) => handleSomeAmountChange(e.target.value)}
+                                                                                    value={paySomeAmount === 0 ? "0" : paySomeAmount} // ใช้ "0" เพื่อให้พิมพ์ได้
+                                                                                    min="0" // ป้องกันค่าติดลบ
                                                                                 />
+                                                                                {errorMessage && (
+                                                                                    <div className="text-danger mt-1">{errorMessage}</div>
+                                                                                )}
                                                                             </>
                                                                         )}
                                                                     </div>
                                                                     <div className="mb-6">
-                                                                        <label className="form-label fw-bold fs-6">จำนวนเงินที่เหลือ</label>
+                                                                        <label className="form-label fw-bold fs-6">จำนวนเงินที่เหลืองวดที่ 1</label>
                                                                         <input
                                                                             type="text"
                                                                             className="form-control"
@@ -374,24 +452,29 @@ const CreateFirstBill: React.FC = () => {
                                                                             style={{
                                                                                 backgroundColor: '#d7dbde',
                                                                             }}
-                                                                            value={remainingAmount}
+                                                                            value={isNaN(remainingAmount) ? 0 : remainingAmount}
                                                                         />
                                                                     </div>
-                                                                    <div className="col-lg-12 mb-6">
-                                                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                                            <label className="form-label required fw-bold fs-6">วันที่สะดวกชำระ</label>
-                                                                            <DatePicker
-                                                                                selected={valueCalendarInstall}
-                                                                                onChange={handleDateChangeInstall}
-                                                                                className="form-control mb-3 mb-lg-0"
-                                                                                showYearDropdown
-                                                                                showMonthDropdown
-                                                                                dropdownMode="select"
-                                                                                isClearable
-                                                                                dateFormat="yyyy/MM/dd"
-                                                                            />
+                                                                    {/* ถ้าชำระมากกว่าหรือเท่ากับ ไม่ต้องโชว์ */}
+                                                                    {/* {paySomeAmount < transaction[0]?.AMOUNT && ( */}
+                                                                    {paySomeAmount < paymentAmount - discountAmount && (
+                                                                        <div className="col-lg-12 mb-6">
+                                                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                                                <label className="form-label required fw-bold fs-6">วันที่สะดวกชำระส่วนที่เหลือ</label>
+                                                                                <DatePicker
+                                                                                    selected={valueCalendarInstall}
+                                                                                    onChange={handleDateChangeInstall}
+                                                                                    className="form-control mb-3 mb-lg-0"
+                                                                                    showYearDropdown
+                                                                                    showMonthDropdown
+                                                                                    dropdownMode="select"
+                                                                                    isClearable
+                                                                                    dateFormat="yyyy/MM/dd"
+                                                                                />
+                                                                            </div>
                                                                         </div>
-                                                                    </div>
+                                                                    )}
+                                                                    {/* )} */}
                                                                     <div className="d-flex mb-6 mt-10">
                                                                         <div className="form-check form-check-inline me-3">
                                                                             <input
@@ -539,7 +622,7 @@ const CreateFirstBill: React.FC = () => {
                                         <div className='row mb-7'>
                                             <label className='col-5 col-md-4 fw-bold text-muted'>ส่วนลด</label>
                                             <div className='col-7 col-md-8 d-flex align-items-center justify-content-between'>
-                                                <span className='fw-bold fs-6'>{item?.DISCOUNT[0]?.DISCOUNTAMOUNT}</span>
+                                                <span className='fw-bold fs-6'>{discountAmount}</span>
                                                 <span className='badge badge-light-success'>บาท</span>
                                             </div>
                                         </div>

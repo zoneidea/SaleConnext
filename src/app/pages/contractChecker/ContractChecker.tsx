@@ -30,70 +30,20 @@ const ContractChecker: React.FC = () => {
     const SupEmpId = auth?.data?.[0]?.SupEmp || '';
     const SecEmpId = auth?.data?.[0]?.SecEmp || '';
 
-    // const { REFNO } = useUUIDStore();
-
-    // const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
-    // const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
-
-    // const currentDate = new Date();
-    // const formattedDate = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate()}`;
-
-    // const { PRODUCT } = useSaveProductStore()
-    // // console.log(`PRODUCT`, PRODUCT[0].Package[0].PACKAGETYPEID);
-
-    // const { DISCOUNT } = useSaveDiscountStore()
-    // // console.log(`DISCOUNT`, DISCOUNT);
-
-    // const { saveCustomerTypes } = useSaveCustomerStore()
-    // // console.log(`saveCustomerTypes`, saveCustomerTypes);
-
-    // const { addressCard, addressInstallation, addressPayment } = useSaveAddressStore()
-    // // console.log(`addressCard`, addressCard)
-    // // console.log(`addressInstallation`, addressInstallation)
-    // // console.log(`addressPayment`, addressPayment)
-
-    // const totalPrice = PRODUCT[0]?.Package[0]?.TOTALPRICE || 0;
-    // const discountAmount = DISCOUNT[0]?.DISCOUNTAMOUNT || 0;
-    // const netPrice = totalPrice - discountAmount;
-
-    // const handleNextClick = async () => {
-    //     try {
-    //         const updateContract = await axios.post(UPDATECONTACT, {
-    //             REFNO,
-    //             EMPID: EmpId,
-    //             TEAMSALE: TeamSale,
-    //             SALECODE: SaleCode,
-    //             SUPEMPID: SupEmpId,
-    //             SECEMPID: SecEmpId,
-    //             FIELD: "CONTRACT",
-    //             DATA: { createdAt: formattedDate }
-    //         }, {
-    //             headers: {
-    //                 'Content-Type': 'application/json',
-    //             },
-    //         });
-    //         console.log(`updateContract CONTRACT: `, updateContract.data);
-    //         navigate('/sale/photo');
-    //     } catch (error) {
-    //         console.error('Error fetching CONTRACT:', error);
-    //     }
-    // };
-
     const API_URL_GET_ALLCONTRACT = import.meta.env.VITE_APP_API_MONGO;
     const PENDING_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetContractForCheck?supemp=${SupEmpId}&secemp=${SecEmpId}`;
 
     const [pending, setPending] = useState<any[]>([]); // กำหนดให้ state เป็น array เพื่อรองรับ map()
-
-    const [isLoadingFinish, setIsLoadingFinish] = useState<boolean>(false);
-    const [searchRefNo, setSearchRefNo] = useState<string>(''); // State สำหรับค้นหา
+    const [isLoadingPending, setIsLoadingPending] = useState<boolean>(false);
+    const [search, setSearch] = useState<string>(''); // State สำหรับค้นหา
 
     // Pagination states
     const [entries, setEntries] = useState<number>(10); // Default entries per page
-    const [currentPageFinish, setCurrentPageFinish] = useState<number>(1);
+    const [currentPagePending, setCurrentPagePending] = useState<number>(1);
 
     useEffect(() => {
         const getDataPending = async () => {
-            setIsLoadingFinish(true);
+            setIsLoadingPending(true);
             try {
                 const response = await axios.get(PENDING_ALLCONTRACT_URL, {
                     headers: {
@@ -105,20 +55,27 @@ const ContractChecker: React.FC = () => {
             } catch (error) {
                 console.error('Error fetching PENDING_ALLCONTRACT_URL:', error);
             } finally {
-                setIsLoadingFinish(false);
+                setIsLoadingPending(false);
             }
         };
         getDataPending();
     }, []);
 
-    // กรองข้อมูลตาม REFNO
-    const filteredFinish = pending.filter((item) =>
-        item.REFNO?.toLowerCase().includes(searchRefNo.toLowerCase())
-    );
+    // กรองข้อมูลตาม search
+    const searchLower = search.toLowerCase();
+
+    const filteredPending = search
+        ? pending.filter((item) =>
+            (item.CUSTOMERDETAIL?.[0]?.CUSTOMERNAME || "").toLowerCase().includes(searchLower) ||
+            (item.PRODUCT?.[0]?.Package?.[0]?.PACKAGETITLE || "").toLowerCase().includes(searchLower) ||
+            (item.PRODUCT?.[0]?.ItemDescription || "").toLowerCase().includes(searchLower) ||
+            (item.PRODUCT?.[0]?.SerialNo || "").toLowerCase().includes(searchLower)
+        )
+        : pending;
 
     // Pagination logic for Finish
-    const finishStartIndex = (currentPageFinish - 1) * entries;
-    const finishDisplayedData = filteredFinish.slice(finishStartIndex, finishStartIndex + entries);
+    const pendingStartIndex = (currentPagePending - 1) * entries;
+    const pendingDisplayedData = filteredPending.slice(pendingStartIndex, pendingStartIndex + entries);
 
     return (
         <>
@@ -149,32 +106,32 @@ const ContractChecker: React.FC = () => {
                         <div className='col-12'>
 
                             {/* ช่องค้นหา */}
-                            <div className="mb-5 col-xl-4">
+                            <div className="mb-5 col-xl-6">
                                 <input
                                     type="text"
                                     className="form-control"
-                                    placeholder="ค้นหาจาก REFNO"
-                                    value={searchRefNo}
-                                    onChange={(e) => setSearchRefNo(e.target.value)}
+                                    placeholder="ค้นหาจาก ชื่อสินค้า, แพ็คเกจ, Serial Number, ชื่อลูกค้า"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
                                 />
                             </div>
 
-                            {isLoadingFinish ? (
+                            {isLoadingPending ? (
                                 <div className="text-center my-10">
                                     <ThreeDot />
                                 </div>
                             ) : pending.length > 0 ? (
                                 <>
-                                    {pending.map((item, index) => (
+                                    {pendingDisplayedData.map((item, index) => (
                                         <SalesItemNumber key={index} status="PENDING" item={item} />
                                     ))}
 
                                     <div className='d-none d-xl-flex justify-content-end align-items-center mt-5'>
                                         <PaginationTable
-                                            totalData={filteredFinish.length}
+                                            totalData={filteredPending.length}
                                             entries={entries}
-                                            currentPage={currentPageFinish}
-                                            onPageChange={setCurrentPageFinish}
+                                            currentPage={currentPagePending}
+                                            onPageChange={setCurrentPagePending}
                                         />
                                     </div>
 
@@ -190,10 +147,10 @@ const ContractChecker: React.FC = () => {
                                         }}
                                     >
                                         <PaginationTable
-                                            totalData={filteredFinish.length}
+                                            totalData={filteredPending.length}
                                             entries={entries}
-                                            currentPage={currentPageFinish}
-                                            onPageChange={setCurrentPageFinish}
+                                            currentPage={currentPagePending}
+                                            onPageChange={setCurrentPagePending}
                                         />
                                     </div>
                                 </>

@@ -25,6 +25,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 
 const SalesCreateCust: React.FC = () => {
     const navigate = useNavigate()
+    const MySwal = withReactContent(Swal);
 
     const { auth } = useAuth();
     const EmpId = auth?.data?.[0]?.EmpId || '';
@@ -1190,16 +1191,17 @@ const SalesCreateCust: React.FC = () => {
                     "Content-Type": "application/json",
                 },
             });
-
-            if (response.status === 200) {
-                Swal.fire("สำเร็จ", "บันทึกใบสั่งซื้อสำเร็จ", "success");
-                navigate("/sale/pdpa")
-            } else {
-                Swal.fire("เกิดข้อผิดพลาด", response.data.message || "ไม่สามารถบันทึกข้อมูลได้", "error");
-            }
+            console.log(`updateContract DISCOUNT: `, response.data);
+            MySwal.fire({
+                icon: 'success',
+                title: 'สำเร็จ!',
+                text: 'บันทึกข้อมูลลูกค้าเรียบร้อยแล้ว',
+                confirmButtonText: 'ตกลง'
+            });
+            navigate("/sale/pdpa")
         } catch (error) {
             console.error("Error saving data:", error);
-            Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถส่งข้อมูลได้", "error");
+            MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้', 'error');
         }
     };
     {/*-------------------- End บันทึกข้อมูล --------------------*/ }

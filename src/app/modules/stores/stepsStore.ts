@@ -39,6 +39,8 @@ interface SaveProduct {
     Status: string;
     Branch: string;
     TransDate: string;
+    PromotionId: string | number;
+    ProductId: any
     Package: SavePackage[];
 }
 
@@ -97,7 +99,7 @@ interface SaveGift {
 
 interface SaveDiscount {
     TRADEIN: SaveTradeIn;
-    DISCOUNTAMOUNT: number;
+    DISCOUNTAMOUNT: number | null;
     GIFT: SaveGift;
 }
 

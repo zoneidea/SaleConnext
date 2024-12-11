@@ -8,7 +8,7 @@ interface StatusLabelProps {
 const FirstBillItemNumber: React.FC<StatusLabelProps> = ({ item }) => {
     console.log(`item`, item);
 
-    let customer, telNo, product, productPackage, createdAt, statusTxt;
+    let customer, telNo, product, productPackage, serialNumber, createdAt, statusTxt, dueDate;
 
     if (item.CUSTOMERDETAIL.length > 0) {
         if (item.CUSTOMERDETAIL[0].CUSTOMERTYPE == 1) {
@@ -22,6 +22,7 @@ const FirstBillItemNumber: React.FC<StatusLabelProps> = ({ item }) => {
 
     if (item.PRODUCT.length > 0) {
         product = <span className='text-gray-700 fw-semibold d-block'>{`สินค้า: ${item.PRODUCT[0].ItemDescription}`}</span>
+        serialNumber = <span className='text-gray-700 fw-semibold d-block'>{`Serial Number: ${item.PRODUCT[0].SerialNo}`}</span>
         if (item.PRODUCT[0].Package.length > 0) {
             productPackage = <span className='text-gray-700 fw-semibold d-block'>{`แพ็คเกจ: ${item.PRODUCT[0].Package[0].PACKAGETITLE}`}</span>
         }
@@ -58,6 +59,7 @@ const FirstBillItemNumber: React.FC<StatusLabelProps> = ({ item }) => {
                         {telNo}
                         {product}
                         {productPackage}
+                        {serialNumber}
                         {createdAt}
                         {statusTxt}
                     </div>

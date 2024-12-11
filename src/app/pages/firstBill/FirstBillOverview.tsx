@@ -34,7 +34,8 @@ const FirstBillOverview: React.FC = () => {
   // console.log(`finish`, finish);
 
   const [isLoadingFinish, setIsLoadingFinish] = useState<boolean>(false);
-  const [searchRefNo, setSearchRefNo] = useState<string>(''); // State สำหรับค้นหา
+
+  const [search, setSearch] = useState<string>(''); // State สำหรับค้นหา
 
   // Pagination states
   const [entries, setEntries] = useState<number>(10); // Default entries per page
@@ -57,10 +58,17 @@ const FirstBillOverview: React.FC = () => {
     }
   };
 
-  // กรองข้อมูลตาม REFNO
-  const filteredFinish = finish.filter((item) =>
-    item.REFNO?.toLowerCase().includes(searchRefNo.toLowerCase())
-  );
+  // กรองข้อมูลตาม search
+  const searchLower = search.toLowerCase();
+  
+  const filteredFinish = search
+    ? finish.filter((item) =>
+      (item.CUSTOMERDETAIL?.[0]?.CUSTOMERNAME || "").toLowerCase().includes(searchLower) ||
+      (item.PRODUCT?.[0]?.Package?.[0]?.PACKAGETITLE || "").toLowerCase().includes(searchLower) ||
+      (item.PRODUCT?.[0]?.ItemDescription || "").toLowerCase().includes(searchLower) ||
+      (item.PRODUCT?.[0]?.SerialNo || "").toLowerCase().includes(searchLower)
+    )
+    : finish;
 
   // Pagination logic for Finish
   const finishStartIndex = (currentPageFinish - 1) * entries;
@@ -93,13 +101,13 @@ const FirstBillOverview: React.FC = () => {
             <div className='col-12'>
 
               {/* ช่องค้นหา */}
-              <div className="mb-5 col-xl-4">
+              <div className="mb-5 col-xl-6">
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="ค้นหาจาก REFNO"
-                  value={searchRefNo}
-                  onChange={(e) => setSearchRefNo(e.target.value)}
+                  placeholder="ค้นหาจาก ชื่อสินค้า, แพ็คเกจ, Serial Number, ชื่อลูกค้า"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
                 />
               </div>
 

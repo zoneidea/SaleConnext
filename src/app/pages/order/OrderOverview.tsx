@@ -68,6 +68,20 @@ const OrderOverview: React.FC = () => {
     navigate('/order/OrderCreateBooking'); // Navigate to the package page
   };
 
+  const formatDate = (dateString: any) => {
+    const date = new Date(dateString);
+    const day = date.getDate();
+    const month = date.getMonth();
+    const year = date.getFullYear();
+
+    const thaiMonths = [
+      "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+      "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+    ];
+
+    return `${day} ${thaiMonths[month]} ${year + 543}`;
+  };
+
   return (
     <>
       <Content>
@@ -137,7 +151,11 @@ const OrderOverview: React.FC = () => {
                                 <td>{booking?.CUSTOMER?.PREFIXNAME} {booking?.CUSTOMER?.CUSTOMERNAME}</td>
                                 <td>{booking?.ADDRESS[0]?.AddressInstall?.TELMOBILE}</td>
                                 <td>{booking?.PRODUCT?.PRODUCTNAME}</td>
-                                <td>{booking?.APPOINTMENT?.APPOINT_DATE}</td>
+                                <td>
+                                  {booking?.APPOINTMENT?.APPOINT_DATE
+                                    ? formatDate(booking.APPOINTMENT.APPOINT_DATE)
+                                    : "-"}
+                                </td>
                                 <td>{booking.from_data}</td>
                                 <td>
                                   <button

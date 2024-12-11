@@ -14,7 +14,7 @@ const SalesOverview: React.FC = () => {
   const [isLoadingFinish, setIsLoadingFinish] = useState<boolean>(false);
   const [draft, setDraft] = useState<any[]>([]);
   const [finish, setFinish] = useState<any[]>([]);
-  const [searchRefNo, setSearchRefNo] = useState<string>(''); // State สำหรับค้นหา
+  const [search, setSearch] = useState<string>(''); // State สำหรับค้นหา
 
   // Pagination states
   const [entries, setEntries] = useState<number>(10); // Default entries per page
@@ -68,13 +68,26 @@ const SalesOverview: React.FC = () => {
     navigate('/sale/package');
   };
 
-  // กรองข้อมูลตาม REFNO
-  const filteredDraft = draft.filter((item) =>
-    item.REFNO?.toLowerCase().includes(searchRefNo.toLowerCase())
-  );
-  const filteredFinish = finish.filter((item) =>
-    item.REFNO?.toLowerCase().includes(searchRefNo.toLowerCase())
-  );
+  // กรองข้อมูลตาม search
+  const searchLower = search.toLowerCase();
+
+  const filteredDraft = search
+    ? draft.filter((item) =>
+      (item.CUSTOMERDETAIL?.[0]?.CUSTOMERNAME || "").toLowerCase().includes(searchLower) ||
+      (item.PRODUCT?.[0]?.Package?.[0]?.PACKAGETITLE || "").toLowerCase().includes(searchLower) ||
+      (item.PRODUCT?.[0]?.ItemDescription || "").toLowerCase().includes(searchLower) ||
+      (item.PRODUCT?.[0]?.SerialNo || "").toLowerCase().includes(searchLower)
+    )
+    : draft;
+
+  const filteredFinish = search
+    ? finish.filter((item) =>
+      (item.CUSTOMERDETAIL?.[0]?.CUSTOMERNAME || "").toLowerCase().includes(searchLower) ||
+      (item.PRODUCT?.[0]?.Package?.[0]?.PACKAGETITLE || "").toLowerCase().includes(searchLower) ||
+      (item.PRODUCT?.[0]?.ItemDescription || "").toLowerCase().includes(searchLower) ||
+      (item.PRODUCT?.[0]?.SerialNo || "").toLowerCase().includes(searchLower)
+    )
+    : finish;
 
   // Pagination logic for Draft
   const draftStartIndex = (currentPageDraft - 1) * entries;
@@ -129,13 +142,13 @@ const SalesOverview: React.FC = () => {
 
           <div className="tab-content">
             {/* ช่องค้นหา */}
-            <div className="mb-5 col-xl-4">
+            <div className="mb-5 col-xl-6">
               <input
                 type="text"
                 className="form-control"
-                placeholder="ค้นหาจาก REFNO"
-                value={searchRefNo}
-                onChange={(e) => setSearchRefNo(e.target.value)}
+                placeholder="ค้นหาจาก ชื่อสินค้า, แพ็คเกจ, Serial Number, ชื่อลูกค้า"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
               />
             </div>
 

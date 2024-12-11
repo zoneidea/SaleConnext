@@ -7,7 +7,22 @@ interface StatusLabelProps {
 }
 
 const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item }) => {
-  let customer, product, productPackage, createdAt, statusTxt;
+
+  const formatDate = (dateString: any) => {
+    const date = new Date(dateString);
+    const day = date.getDate();
+    const month = date.getMonth();
+    const year = date.getFullYear();
+
+    const thaiMonths = [
+      "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+      "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+    ];
+
+    return `${day} ${thaiMonths[month]} ${year + 543}`;
+  };
+
+  let customer, product, productPackage, serialNumber, createdAt, statusTxt;
   if (item.CUSTOMERDETAIL.length > 0) {
     if (item.CUSTOMERDETAIL[0].CUSTOMERTYPE == 1) {
       customer = <span className='text-gray-700 fw-semibold d-block'>{`ชื่อบริษัท: ${item.CUSTOMERDETAIL[0].CUSTOMERMD}`}</span>
@@ -20,11 +35,12 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item }) => {
     product = <span className='text-gray-700 fw-semibold d-block'>{`สินค้า: ${item.PRODUCT[0].ItemDescription}`}</span>
     if (item.PRODUCT[0].Package.length > 0) {
       productPackage = <span className='text-gray-700 fw-semibold d-block'>{`แพ็คเกจ: ${item.PRODUCT[0].Package[0].PACKAGETITLE}`}</span>
+      serialNumber = <span className='text-gray-700 fw-semibold d-block'>{`Serial Number: ${item.PRODUCT[0].SerialNo}`}</span>
     }
   }
 
   if (item.CONTRACT.length > 0) {
-    createdAt = <span className='text-gray-700 fw-semibold d-block'>{`วันที่ทำสัญญา: ${item.CONTRACT[0].createdAt}`}</span>
+    createdAt = <span className='text-gray-700 fw-semibold d-block'>{`วันที่ทำสัญญา: ${item.CONTRACT[0].createdAt && formatDate(item.CONTRACT[0].createdAt)}`}</span>
   }
 
   if (item.STATUS === 'DRAFT') {
@@ -55,6 +71,7 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item }) => {
                 {customer}
                 {product}
                 {productPackage}
+                {serialNumber}
                 {createdAt}
                 {statusTxt}
               </div>
@@ -73,6 +90,7 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item }) => {
                 {customer}
                 {product}
                 {productPackage}
+                {serialNumber}
                 {createdAt}
                 {statusTxt}
               </div>
@@ -90,6 +108,7 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item }) => {
                   {customer}
                   {product}
                   {productPackage}
+                  {serialNumber}
                   {createdAt}
                   {statusTxt}
                 </div>

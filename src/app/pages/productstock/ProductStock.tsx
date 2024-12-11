@@ -15,20 +15,23 @@ import {
 
 import { CardProduct } from '../sales/components/cards/CardProduct';
 
+import { ThreeDot } from 'react-loading-indicators';
+
 const SalesProductStock: React.FC = () => {
     const navigate = useNavigate(); // ใช้ useNavigate สำหรับการเปลี่ยนเส้นทาง
 
     const { auth } = useAuth();
 
-    const [loadingCategories, setLoadingCategories] = useState(true); // เพิ่ม state สำหรับการโหลดหมวดหมู่
-    const [loadingProducts, setLoadingProducts] = useState(false); // เพิ่ม state สำหรับการโหลดสินค้า
+    // State สำหรับตรวจสอบสถานะการโหลด
+    const [loadingCategories, setLoadingCategories] = useState(true);
+    const [loadingProducts, setLoadingProducts] = useState(false)
 
     const { fetchCategory } = useFetchCategoryStore();
     // console.log(`fetchCategory: `, fetchCategory);
-
     const [categories, setCategories] = useState<any[]>([]);
 
     const { product, setProduct } = useProductStore();
+    console.log(`product: `, product);
     const [selectedCategoryId, setSelectedCategoryId] = useState<any>('');
     const [selectedProductIndex, setSelectedProductIndex] = useState<number | null>(null);
 
@@ -105,7 +108,7 @@ const SalesProductStock: React.FC = () => {
             }
         };
         getData();
-    }, [categories, selectedCategoryId, setProduct]);
+    }, [selectedCategoryId, setProduct]);
 
     const getProductData = async () => {
         setLoadingProducts(true); // ตั้งค่า state ให้เริ่มโหลดสินค้า
@@ -184,25 +187,45 @@ const SalesProductStock: React.FC = () => {
                                                 </select>
                                             </div>
                                         </div>
-                                        {selectedCategoryId.length > 0 && product.length > 0 ? (
-                                            <label className='form-label fw-bold fs-3 mt-7 mt-xl-10'>รายการสินค้า</label>
-                                        ) : ('')}
-                                        <div className='row '>
-                                            {product.map((item, index) => (
-                                                <div
-                                                    className='col-6 col-md-4 mb-3 rounded'
-                                                    key={index}
-                                                    style={{ cursor: 'pointer' }} >
-                                                    <CardProduct
-                                                        DescriptionTH={item.DescriptionTH}
-                                                        ItemDescription={item.ItemDescription}
-                                                        ItemCode={item.ItemCode}
-                                                        SerialNo={item.SerialNo}
-                                                        isSelected={selectedProductIndex === index} />
+
+                                        {/* แสดง Loading */}
+                                        {loadingProducts && (
+                                            <div className="text-center my-10">
+                                                <ThreeDot />
+                                            </div>
+                                        )}
+
+                                        <div>
+                                            {selectedCategoryId.length > 0 && product.length > 0 ? (
+                                                <label className='form-label required fw-bold fs-3 mt-7 mt-xl-10'>รายการสินค้า</label>
+                                            ) : ('')}
+                                            {!loadingProducts && selectedCategoryId.length > 0 && (
+                                                <div className='row '>
+                                                    {product.map((item, index) => (
+                                                        <div
+                                                            className='col-6 col-md-4 mb-3 rounded'
+                                                            key={index}
+                                                            style={{ cursor: 'pointer' }} >
+                                                            <CardProduct
+                                                                DescriptionTH={item.DescriptionTH}
+                                                                ItemDescription={item.ItemDescription}
+                                                                ItemCode={item.ItemCode}
+                                                                SerialNo={item.SerialNo}
+                                                                isSelected={selectedProductIndex === index} />
+                                                        </div>
+                                                    ))}
+                                                    {/* หากไม่มีสินค้าให้แสดงข้อความนี้ */}
+                                                    {!loadingProducts && product.length === 0 && selectedCategoryId && (
+                                                        <div className='text-center my-7'>
+                                                            <h5>ไม่มีรายการสินค้า</h5>
+                                                        </div>
+                                                    )}
+
                                                 </div>
-                                            ))}
+                                            )}
                                         </div>
                                     </div>
+
                                 </form>
                             </div>
                         </div>
