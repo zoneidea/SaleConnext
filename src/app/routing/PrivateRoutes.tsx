@@ -76,6 +76,14 @@ const PrivateRoutes = () => {
   const CustomerPhoto = lazy(() => import('../pages/sales/components/photo/CustomerPhoto'))
   const EquipmentPhoto = lazy(() => import('../pages/sales/components/photo/EquipmentPhoto'))
 
+  const IdCardPhotoGallery = lazy(() => import('../pages/sales/components/photo/gallery/IdCardPhotoGallery'))
+  const CustomerPhotoGallery = lazy(() => import('../pages/sales/components/photo/gallery/CustomerPhotoGallery'))
+  const DrawingMapPhotoGallery = lazy(() => import('../pages/sales/components/photo/gallery/DrawingMapPhotoGallery'))
+  const EquipmentPhotoGallery = lazy(() => import('../pages/sales/components/photo/gallery/EquipmentPhotoGallery'))
+  const HomeCustomerPhotoGallery = lazy(() => import('../pages/sales/components/photo/gallery/HomeCustomerPhotoGallery'))
+  const InstallationPhotoGallery = lazy(() => import('../pages/sales/components/photo/gallery/InstallationPhotoGallery'))
+  const TurnPhotoGallery = lazy(() => import('../pages/sales/components/photo/gallery/TurnPhotoGallery'))
+
   //หัวข้อ สินค้าในสต๊อก
   const ProductStock = lazy(() => import('../pages/productstock/ProductStock'))
 
@@ -294,6 +302,63 @@ const PrivateRoutes = () => {
           element={
             <SuspensedView>
               <EquipmentPhoto />
+            </SuspensedView>
+          }
+        />
+
+        <Route
+          path='sale/photo/gallery/idcard'
+          element={
+            <SuspensedView>
+              <IdCardPhotoGallery />
+            </SuspensedView>
+          }
+        />
+         <Route
+          path='sale/photo/gallery/customer'
+          element={
+            <SuspensedView>
+              <CustomerPhotoGallery />
+            </SuspensedView>
+          }
+        />
+         <Route
+          path='sale/photo/gallery/customerHome'
+          element={
+            <SuspensedView>
+              <HomeCustomerPhotoGallery />
+            </SuspensedView>
+          }
+        />
+         <Route
+          path='sale/photo/gallery/drawingMap'
+          element={
+            <SuspensedView>
+              <DrawingMapPhotoGallery />
+            </SuspensedView>
+          }
+        />
+         <Route
+          path='sale/photo/gallery/equipment'
+          element={
+            <SuspensedView>
+              <EquipmentPhotoGallery />
+            </SuspensedView>
+          }
+        />
+         <Route
+          path='sale/photo/gallery/installation'
+          element={
+            <SuspensedView>
+              <InstallationPhotoGallery />
+            </SuspensedView>
+          }
+        />
+         <Route
+          path='sale/photo/gallery/turn'
+          element={
+            <SuspensedView>
+              <TurnPhotoGallery />
             </SuspensedView>
           }
         />

@@ -752,7 +752,7 @@ const UpdateSalesPackage: React.FC = () => {
                 >
                     <button
                         className="btn btn-secondary w-auto me-2"
-                        onClick={() => navigate('/sale/overview')}
+                        onClick={() => navigate('/sale/step', { state: item })}
                     >
                         ย้อนกลับ
                     </button>

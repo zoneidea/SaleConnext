@@ -77,16 +77,26 @@ const IdCardPhoto: React.FC = () => {
     const isPC: boolean = !isIOS && !isAndroid && !isTablet;
 
     const [imageFromApi, setImageFromApi] = useState<string[]>([]); // ตัวแปรเก็บภาพจาก API
-    // console.log(`imageFromApi`, imageFromApi);
+    console.log(`imageFromApi`, imageFromApi);
 
     // โหลดภาพจาก API ถ้า fromStep เป็น true
     useEffect(() => {
-        if (fromStep && item.IMAGE?.[0]?.IMAGECARD) {
-            const formattedImages = item.IMAGE[0].IMAGECARD.map((image: string) => {
-                return `data:${image.trim()}`;
+        if (fromStep && Array.isArray(item.IMAGE?.[0]?.IMAGECARD)) {
+            const formattedImages = item.IMAGE?.[0]?.IMAGECARD.map((image: string) => {
+                // ลบ prefix ซ้ำทั้งหมด
+                const cleanedImage = image.replace(/^(data:image\/(jpeg|png|webp);base64,)+/, '');
+                // ตรวจสอบประเภทของรูป
+                if (image.includes('webp') || image.startsWith('data:image/webp;')) {
+                    return `data:image/webp;base64,${cleanedImage.trim()}`; // เพิ่ม prefix ที่ถูกต้องสำหรับ webp
+                }
+                return `data:image/jpeg;base64,${cleanedImage.trim()}`; // ค่าเริ่มต้นใช้ jpeg
             });
 
+            console.log('Formatted Images:', formattedImages);
             setImageFromApi(formattedImages);
+        } else {
+            console.warn('IMAGECARD is not an array or does not exist.');
+            setImageFromApi([]);
         }
     }, [fromStep, item]);
 
@@ -98,11 +108,6 @@ const IdCardPhoto: React.FC = () => {
     }, [fromStep, loadImages]);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (imagesIdCard.length >= 3) {
-            setError('คุณสามารถเลือกรูปได้สูงสุด 3 รูปเท่านั้น');
-            return;
-        }
-
         const file = event.target.files?.[0];
         if (file) {
             if (file.size > 3 * 1024 * 1024) {
@@ -117,7 +122,14 @@ const IdCardPhoto: React.FC = () => {
         const reader = new FileReader();
         reader.onload = () => {
             if (reader.result) {
-                addImage(reader.result as string);
+                const imageData = reader.result as string;
+                const cleanedImage = imageData.replace(/^(data:image\/(jpeg|png|webp);base64,)+/, '');
+                const fileType = file.type; // ประเภทของไฟล์
+                const formattedImage = fileType.includes('webp')
+                    ? `data:image/webp;base64,${cleanedImage.trim()}`
+                    : `data:image/jpeg;base64,${cleanedImage.trim()}`; // ค่าเริ่มต้นเป็น jpeg
+
+                addImage(formattedImage);
                 setError(null);
             }
         };
@@ -171,14 +183,9 @@ const IdCardPhoto: React.FC = () => {
     // POST Contract/updateContract
     const handleNextClick = async () => {
         try {
-            // ตัดส่วน 'data:image/jpeg;base64,' หรือ 'data:image/png;base64,' ออก
-            const cleanedImagesIdCard = imagesIdCard.map(image => image.replace(/^data:/, ''));
-            const cleanedImagesDrawingMap = imagesDrawingMap.map(image => image.replace(/^data:/, ''));
-            const cleanedImagesTurn = imagesTurn.map(image => image.replace(/^data:/, ''));
-            const cleanedImagesInstallation = imagesInstallation.map(image => image.replace(/^data:/, ''));
-            const cleanedImagesHomeCustomer = imagesHomeCustomer.map(image => image.replace(/^data:/, ''));
-            const cleanedImagesCustomer = imagesCustomer.map(image => image.replace(/^data:/, ''));
-            const cleanedImagesEquipment = imagesEquipment.map(image => image.replace(/^data:/, ''));
+            const cleanedImagesIdCard = imagesIdCard?.map((image) => {
+                return image.replace(/^data:image\/(jpeg|png|webp);base64,/, ''); // ลบ prefix ก่อนส่ง
+            });
 
             const updateContract = await axios.post(UPDATECONTACT, {
                 REFNO: refno,
@@ -191,12 +198,12 @@ const IdCardPhoto: React.FC = () => {
                 DATA: [{
                     "IMAGECARD": cleanedImagesIdCard,
                     "IMAGEGPS": [],
-                    "IMAGEMAP": cleanedImagesDrawingMap,
-                    "IMAGETRADEIN": cleanedImagesTurn,
-                    "IMAGEINSTALLATION": cleanedImagesInstallation,
-                    "IMAGECUSTOMERHOME": cleanedImagesHomeCustomer,
-                    "IMAGECUSTOMER": cleanedImagesCustomer,
-                    "IMAGETDS": cleanedImagesEquipment,
+                    "IMAGEMAP": [],
+                    "IMAGETRADEIN": [],
+                    "IMAGEINSTALLATION": [],
+                    "IMAGECUSTOMERHOME": [],
+                    "IMAGECUSTOMER": [],
+                    "IMAGETDS": [],
                 }]
             }, {
                 headers: {
@@ -205,7 +212,6 @@ const IdCardPhoto: React.FC = () => {
             });
 
             console.log(`updateContract IMAGE: `, updateContract.data);
-            // แสดง SweetAlert เมื่อบันทึกสำเร็จ
             Swal.fire({
                 icon: 'success',
                 title: 'สำเร็จ!',
@@ -213,7 +219,6 @@ const IdCardPhoto: React.FC = () => {
             });
         } catch (error) {
             console.error('Error fetching UPDATECONTACT IMAGE:', error);
-            // แสดง SweetAlert เมื่อเกิดข้อผิดพลาด
             Swal.fire({
                 icon: 'error',
                 title: 'เกิดข้อผิดพลาด!',
@@ -222,14 +227,42 @@ const IdCardPhoto: React.FC = () => {
         }
     };
 
+    const handleViewGallery = () => {
+        const updatedItem = {
+            ...item,
+            IMAGE: [
+                {
+                    ...item.IMAGE?.[0],
+                    IMAGECARD: [...imagesIdCard] // เพิ่มข้อมูลจาก `imagesIdCard`
+                }
+            ]
+        };
+
+        navigate("/sale/photo/gallery/idcard", { state: { data: updatedItem, fromStep } });
+    };
+
     return (
         <div>
-            <div className='d-flex flex-column flex-md-row justify-content-between mt-10 mb-5 mx-7'>
-                <label className='btn btn-success w-100 w-md-auto align-self-center'
+
+            <div className='d-flex align-items-center mt-10 mb-5 mx-7 gap-3'>
+                <label
+                    className='btn btn-success w-100 w-md-auto align-self-center'
                     htmlFor="camera-input"
-                    style={{ cursor: 'pointer', padding: '10px', border: '1px solid #ccc', display: 'inline-block' }}>
+                    style={{
+                        cursor: 'pointer',
+                        padding: '10px',
+                        border: '1px solid #ccc',
+                        display: 'inline-block',
+                    }}
+                >
                     {isPC ? "เลือกรูปจากคลัง" : "เลือกรูปจากคลัง / ใช้กล้อง"}
                 </label>
+                <button
+                    className="btn btn-primary w-100 w-md-auto align-self-center"
+                    onClick={handleViewGallery}
+                >
+                    ดูรูปภาพที่บันทึก
+                </button>
             </div>
             {error && (
                 <div className='alert alert-danger mx-5'>
@@ -245,10 +278,9 @@ const IdCardPhoto: React.FC = () => {
             />
 
             <div>
-                {(fromStep ? imageFromApi.length > 0 : imagesIdCard.length > 0) && (
+                {imagesIdCard.length > 0 && (
                     <div className='row mx-5'>
-                        {(fromStep ? imageFromApi : imagesIdCard)
-                            .slice(0, 3) // แสดงรูปภาพสูงสุด 3 รูป
+                        {(imagesIdCard)
                             .map((image: string, index: number) => (
                                 <div className='col-6 col-xl-4 mb-3' key={index}>
                                     <div className='border border-gray-500'>
@@ -261,22 +293,21 @@ const IdCardPhoto: React.FC = () => {
                                                 objectFit: 'cover',
                                             }}
                                             onError={(e) => {
-                                                console.log('Error loading image:', image);
-                                                e.currentTarget.src = toAbsoluteUrl('media/placeholder.png'); // แสดง placeholder
+                                                console.error('Error loading image:', image);
+                                                // e.currentTarget.src = toAbsoluteUrl('media/placeholder.png'); // แสดง placeholder
                                             }}
                                         />
 
-                                        {!fromStep && (
-                                            <div className='d-flex justify-content-center mt-3 mb-2'>
-                                                <img
-                                                    className='h-30px theme-light-show'
-                                                    src={toAbsoluteUrl('media/settings/trash-svgrepo-com.svg')}
-                                                    alt='ลบรูป'
-                                                    onClick={() => handleDeleteImage(image)}
-                                                    style={{ cursor: 'pointer' }}
-                                                />
-                                            </div>
-                                        )}
+                                        <div className='d-flex justify-content-center mt-3 mb-2'>
+                                            <img
+                                                className='h-30px theme-light-show'
+                                                src={toAbsoluteUrl('media/settings/trash-svgrepo-com.svg')}
+                                                alt='ลบรูป'
+                                                onClick={() => handleDeleteImage(image)}
+                                                style={{ cursor: 'pointer' }}
+                                            />
+                                        </div>
+
                                     </div>
                                 </div>
                             ))}
@@ -285,10 +316,10 @@ const IdCardPhoto: React.FC = () => {
 
                 {/* แสดงปุ่มเมื่อมาจาก Step */}
                 {fromStep ? (
-                    <div className='d-none d-xl-flex justify-content-between align-items-center mt-5'>
+                    <div className='d-none d-xl-flex justify-content-between align-items-center my-5 mx-7'>
                         <button
-                            className='btn btn-secondary w-100 w-md-auto align-self-center h-50px'
-                            onClick={() => navigate('/sale/step', { state: item })}
+                            className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'
+                            onClick={() => navigate('/sale/photo', { state: { data: item, fromStep } })}
                         >
                             ย้อนกลับ
                         </button>
@@ -333,7 +364,7 @@ const IdCardPhoto: React.FC = () => {
                     >
                         <button
                             className="btn btn-secondary w-auto me-2"
-                            onClick={() => navigate('/sale/step', { state: item })}
+                            onClick={() => navigate('/sale/photo', { state: { data: item, fromStep } })}
                         >
                             ย้อนกลับ
                         </button>

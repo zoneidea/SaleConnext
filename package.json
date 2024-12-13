@@ -105,7 +105,7 @@
     "rtlcss-webpack-plugin": "4.0.7",
     "sass": "1.55.0",
     "sass-loader": "13.2.0",
-    "vite": "^4.5.3",
+    "vite": "^4.5.5",
     "webpack-rtl-plugin": "^2.0.0"
   }
 }

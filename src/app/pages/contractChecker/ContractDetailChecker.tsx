@@ -65,6 +65,8 @@ const SalesPackage: React.FC = () => {
     const [cbxRejectSelected, setRejectSelected] = useState(false);
     const [cbxCancelSelected, setCancelSelected] = useState(false);
 
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
     // const [image, setImage] = useState([
     //     { image: 1 }, { image: 2 }, { image: 3 }
     // ])
@@ -796,7 +798,7 @@ const SalesPackage: React.FC = () => {
                                 รูปภาพ
                             </h3>
                         </h2>
-                        <div className='card-body d-flex align-items-center mb-4'>
+                        <div className='card-body d-flex align-items-center mb-4 mt-10 mx-7'>
                             <div className='flex-grow-1'>
                                 <div className='text-gray-800 fw-bold fs-4'>
                                     ภาพถ่ายบัตรประชาชน
@@ -806,22 +808,31 @@ const SalesPackage: React.FC = () => {
                         <div className='d-flex flex-column flex-md-row mx-5 mb-5'>
                             {
                                 Array.isArray(image?.[0]?.IMAGECARD) && image?.[0]?.IMAGECARD.length > 0 ? (
-                                    image?.[0]?.IMAGECARD?.map((image: string, index: number) => (
-                                        <div className='m-5' key={index}>
-                                            <div className='d-flex justify-content-between mb-3'>
-                                                <img
-                                                    src={`data:${image}`}
-                                                    style={{
-                                                        width: '200px',
-                                                        height: 'auto',
-                                                    }}
-                                                    alt={`ID Card ${index + 1}`}
-                                                />
+                                    image?.[0]?.IMAGECARD.map((img: string, index: number) => {
+                                        // ตรวจสอบและเพิ่ม prefix หากจำเป็น
+                                        const prefixedImage = img.startsWith('data:image/')
+                                            ? img
+                                            : `data:image/jpeg;base64,${img}`;
+
+                                        return (
+                                            <div className='m-5' key={index}>
+                                                <div className='d-flex justify-content-between mb-3'>
+                                                    <img
+                                                        src={prefixedImage}
+                                                        style={{
+                                                            width: '200px',
+                                                            height: 'auto',
+                                                            cursor: 'pointer',
+                                                        }}
+                                                        alt={`ID Card ${index + 1}`}
+                                                        onClick={() => setSelectedImage(prefixedImage)}
+                                                    />
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))
+                                        );
+                                    })
                                 ) : (
-                                    <div className='text-center my-7'>
+                                    <div className='text-center my-7 mx-10'>
                                         <h5>ไม่มีรูปภาพบัตรประชาชนลูกค้า</h5>
                                     </div>
                                 )
@@ -829,7 +840,7 @@ const SalesPackage: React.FC = () => {
                         </div>
                         <hr />
 
-                        <div className='card-body d-flex align-items-center mb-4'>
+                        <div className='card-body d-flex align-items-center mb-4 mx-7'>
                             <div className='flex-grow-1'>
                                 <div className='text-gray-800 fw-bold fs-4'>
                                     รูปแผนที่ GPS
@@ -839,28 +850,39 @@ const SalesPackage: React.FC = () => {
                         <div className='d-flex flex-column flex-md-row mx-5'>
                             {
                                 Array.isArray(image?.[0]?.IMAGEGPS) && image?.[0]?.IMAGEGPS.length > 0 ? (
-                                    image?.[0]?.IMAGEGPS?.map((image: any, index: Key | null | undefined) => (
-                                        <div className='m-5' key={index}>
-                                            <div className='d-flex justify-content-between mb-3'>
-                                                <img
-                                                    src={`data:${image}`}
-                                                    style={{
-                                                        width: '200px', height: 'auto',
-                                                    }}
-                                                />
+                                    image?.[0]?.IMAGEGPS.map((img: string, index: number) => {
+                                        // ตรวจสอบและเพิ่ม prefix หากจำเป็น
+                                        const prefixedImage = img.startsWith('data:image/')
+                                            ? img
+                                            : `data:image/jpeg;base64,${img}`;
+
+                                        return (
+                                            <div className='m-5' key={index}>
+                                                <div className='d-flex justify-content-between mb-3'>
+                                                    <img
+                                                        src={prefixedImage}
+                                                        style={{
+                                                            width: '200px',
+                                                            height: 'auto',
+                                                            cursor: 'pointer',
+                                                        }}
+                                                        alt={`ID Card ${index + 1}`}
+                                                        onClick={() => setSelectedImage(prefixedImage)}
+                                                    />
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))
+                                        );
+                                    })
                                 ) : (
-                                    <div className='text-center my-7'>
-                                        <h5>ไม่มีรุปภาพบันทึกหน้าจอ GPS</h5>
+                                    <div className='text-center my-7 mx-10'>
+                                        <h5>ไม่มีรูปภาพบันทึกหน้าจอ GPS</h5>
                                     </div>
                                 )
                             }
                         </div>
                         <hr />
 
-                        <div className='card-body d-flex align-items-center mb-4'>
+                        <div className='card-body d-flex align-items-center mb-4 mx-7'>
                             <div className='flex-grow-1'>
                                 <div className='text-gray-800 fw-bold fs-4'>
                                     รูปวาดแผนที่
@@ -870,28 +892,39 @@ const SalesPackage: React.FC = () => {
                         <div className='d-flex flex-column flex-md-row mx-5'>
                             {
                                 Array.isArray(image?.[0]?.IMAGEMAP) && image?.[0]?.IMAGEMAP.length > 0 ? (
-                                    image?.[0]?.IMAGEMAP?.map((image: any, index: Key | null | undefined) => (
-                                        <div className='m-5' key={index}>
-                                            <div className='d-flex justify-content-between mb-3'>
-                                                <img
-                                                    src={`data:${image}`}
-                                                    style={{
-                                                        width: '200px', height: 'auto',
-                                                    }}
-                                                />
+                                    image?.[0]?.IMAGEMAP.map((img: string, index: number) => {
+                                        // ตรวจสอบและเพิ่ม prefix หากจำเป็น
+                                        const prefixedImage = img.startsWith('data:image/')
+                                            ? img
+                                            : `data:image/jpeg;base64,${img}`;
+
+                                        return (
+                                            <div className='m-5' key={index}>
+                                                <div className='d-flex justify-content-between mb-3'>
+                                                    <img
+                                                        src={prefixedImage}
+                                                        style={{
+                                                            width: '200px',
+                                                            height: 'auto',
+                                                            cursor: 'pointer',
+                                                        }}
+                                                        alt={`ID Card ${index + 1}`}
+                                                        onClick={() => setSelectedImage(prefixedImage)}
+                                                    />
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))
+                                        );
+                                    })
                                 ) : (
-                                    <div className='text-center my-7'>
-                                        <h5>ไม่มีรุปภาพแผนที่</h5>
+                                    <div className='text-center my-7 mx-10'>
+                                        <h5>ไม่มีรูปภาพแผนที่</h5>
                                     </div>
                                 )
                             }
                         </div>
                         <hr />
 
-                        <div className='card-body d-flex align-items-center mb-4'>
+                        <div className='card-body d-flex align-items-center mb-4 mx-7'>
                             <div className='flex-grow-1'>
                                 <div className='text-gray-800 fw-bold fs-4'>
                                     รูปเครื่องเทิร์น
@@ -901,28 +934,39 @@ const SalesPackage: React.FC = () => {
                         <div className='d-flex flex-column flex-md-row mx-5'>
                             {
                                 Array.isArray(image?.[0]?.IMAGETRADEIN) && image?.[0]?.IMAGETRADEIN.length > 0 ? (
-                                    image?.[0]?.IMAGETRADEIN?.map((image: string | undefined, index: Key | null | undefined) => (
-                                        <div className='m-5' key={index}>
-                                            <div className='d-flex justify-content-between mb-3'>
-                                                <img
-                                                    src={`data:${image}`}
-                                                    style={{
-                                                        width: '200px', height: 'auto',
-                                                    }}
-                                                />
+                                    image?.[0]?.IMAGETRADEIN.map((img: string, index: number) => {
+                                        // ตรวจสอบและเพิ่ม prefix หากจำเป็น
+                                        const prefixedImage = img.startsWith('data:image/')
+                                            ? img
+                                            : `data:image/jpeg;base64,${img}`;
+
+                                        return (
+                                            <div className='m-5' key={index}>
+                                                <div className='d-flex justify-content-between mb-3'>
+                                                    <img
+                                                        src={prefixedImage}
+                                                        style={{
+                                                            width: '200px',
+                                                            height: 'auto',
+                                                            cursor: 'pointer',
+                                                        }}
+                                                        alt={`ID Card ${index + 1}`}
+                                                        onClick={() => setSelectedImage(prefixedImage)}
+                                                    />
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))
+                                        );
+                                    })
                                 ) : (
-                                    <div className='text-center my-7'>
-                                        <h5>ไม่มีรุปภาพเครื่องเทิร์น</h5>
+                                    <div className='text-center my-7 mx-10'>
+                                        <h5>ไม่มีรูปภาพเครื่องเทิร์น</h5>
                                     </div>
                                 )
                             }
                         </div>
                         <hr />
 
-                        <div className='card-body d-flex align-items-center mb-4'>
+                        <div className='card-body d-flex align-items-center mb-4 mx-7'>
                             <div className='flex-grow-1'>
                                 <div className='text-gray-800 fw-bold fs-4'>
                                     รูปติดตั้งเครื่อง
@@ -932,28 +976,39 @@ const SalesPackage: React.FC = () => {
                         <div className='d-flex flex-column flex-md-row mx-5'>
                             {
                                 Array.isArray(image?.[0]?.IMAGEINSTALLATION) && image?.[0]?.IMAGEINSTALLATION.length > 0 ? (
-                                    image?.[0]?.IMAGEINSTALLATION?.map((image: any, index: Key | null | undefined) => (
-                                        <div className='m-5' key={index}>
-                                            <div className='d-flex justify-content-between mb-3'>
-                                                <img
-                                                    src={`data:${image}`}
-                                                    style={{
-                                                        width: '200px', height: 'auto',
-                                                    }}
-                                                />
+                                    image?.[0]?.IMAGEINSTALLATION.map((img: string, index: number) => {
+                                        // ตรวจสอบและเพิ่ม prefix หากจำเป็น
+                                        const prefixedImage = img.startsWith('data:image/')
+                                            ? img
+                                            : `data:image/jpeg;base64,${img}`;
+
+                                        return (
+                                            <div className='m-5' key={index}>
+                                                <div className='d-flex justify-content-between mb-3'>
+                                                    <img
+                                                        src={prefixedImage}
+                                                        style={{
+                                                            width: '200px',
+                                                            height: 'auto',
+                                                            cursor: 'pointer',
+                                                        }}
+                                                        alt={`ID Card ${index + 1}`}
+                                                        onClick={() => setSelectedImage(prefixedImage)}
+                                                    />
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))
+                                        );
+                                    })
                                 ) : (
-                                    <div className='text-center my-7'>
-                                        <h5>ไม่มีรุปภาพการติดตั้งเครื่อง</h5>
+                                    <div className='text-center my-7 mx-10'>
+                                        <h5>ไม่มีรูปภาพการติดตั้งเครื่อง</h5>
                                     </div>
                                 )
                             }
                         </div>
                         <hr />
 
-                        <div className='card-body d-flex align-items-center mb-4'>
+                        <div className='card-body d-flex align-items-center mb-4 mx-7'>
                             <div className='flex-grow-1'>
                                 <div className='text-gray-800 fw-bold fs-4'>
                                     รูปบ้านลูกค้า
@@ -963,28 +1018,39 @@ const SalesPackage: React.FC = () => {
                         <div className='d-flex flex-column flex-md-row mx-5'>
                             {
                                 Array.isArray(image?.[0]?.IMAGECUSTOMERHOME) && image?.[0]?.IMAGECUSTOMERHOME.length > 0 ? (
-                                    image?.[0]?.IMAGECUSTOMERHOME.map((image: any, index: Key | null | undefined) => (
-                                        <div className='m-5' key={index}>
-                                            <div className='d-flex justify-content-between mb-3'>
-                                                <img
-                                                    src={`data:${image}`}
-                                                    style={{
-                                                        width: '200px', height: 'auto',
-                                                    }}
-                                                />
+                                    image?.[0]?.IMAGECUSTOMERHOME.map((img: string, index: number) => {
+                                        // ตรวจสอบและเพิ่ม prefix หากจำเป็น
+                                        const prefixedImage = img.startsWith('data:image/')
+                                            ? img
+                                            : `data:image/jpeg;base64,${img}`;
+
+                                        return (
+                                            <div className='m-5' key={index}>
+                                                <div className='d-flex justify-content-between mb-3'>
+                                                    <img
+                                                        src={prefixedImage}
+                                                        style={{
+                                                            width: '200px',
+                                                            height: 'auto',
+                                                            cursor: 'pointer',
+                                                        }}
+                                                        alt={`ID Card ${index + 1}`}
+                                                        onClick={() => setSelectedImage(prefixedImage)}
+                                                    />
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))
+                                        );
+                                    })
                                 ) : (
-                                    <div className='text-center my-7'>
-                                        <h5>ไม่มีรุปภาพบ้านลูกค้า</h5>
+                                    <div className='text-center my-7 mx-10'>
+                                        <h5>ไม่มีรูปภาพบ้านลูกค้า</h5>
                                     </div>
                                 )
                             }
                         </div>
                         <hr />
 
-                        <div className='card-body d-flex align-items-center mb-4'>
+                        <div className='card-body d-flex align-items-center mb-4 mx-7'>
                             <div className='flex-grow-1'>
                                 <div className='text-gray-800 fw-bold fs-4'>
                                     รูปลูกค้า
@@ -994,28 +1060,39 @@ const SalesPackage: React.FC = () => {
                         <div className='d-flex flex-column flex-md-row mx-5'>
                             {
                                 Array.isArray(image?.[0]?.IMAGECUSTOMER) && image?.[0]?.IMAGECUSTOMER.length > 0 ? (
-                                    image?.[0]?.IMAGECUSTOMER.map((image: any, index: Key | null | undefined) => (
-                                        <div className='m-5' key={index}>
-                                            <div className='d-flex justify-content-between mb-3'>
-                                                <img
-                                                    src={`data:${image}`}
-                                                    style={{
-                                                        width: '200px', height: 'auto',
-                                                    }}
-                                                />
+                                    image?.[0]?.IMAGECUSTOMER.map((img: string, index: number) => {
+                                        // ตรวจสอบและเพิ่ม prefix หากจำเป็น
+                                        const prefixedImage = img.startsWith('data:image/')
+                                            ? img
+                                            : `data:image/jpeg;base64,${img}`;
+
+                                        return (
+                                            <div className='m-5' key={index}>
+                                                <div className='d-flex justify-content-between mb-3'>
+                                                    <img
+                                                        src={prefixedImage}
+                                                        style={{
+                                                            width: '200px',
+                                                            height: 'auto',
+                                                            cursor: 'pointer',
+                                                        }}
+                                                        alt={`ID Card ${index + 1}`}
+                                                        onClick={() => setSelectedImage(prefixedImage)}
+                                                    />
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))
+                                        );
+                                    })
                                 ) : (
-                                    <div className='text-center my-7'>
-                                        <h5>ไม่มีรุปภาพลูกค้า</h5>
+                                    <div className='text-center my-7 mx-10'>
+                                        <h5>ไม่มีรูปภาพลูกค้า</h5>
                                     </div>
                                 )
                             }
                         </div>
                         <hr />
 
-                        <div className='card-body d-flex align-items-center mb-4'>
+                        <div className='card-body d-flex align-items-center mb-4 mx-7'>
                             <div className='flex-grow-1'>
                                 <div className='text-gray-800 fw-bold fs-4'>
                                     รูปอุปกรณ์วัดค่าน้ำ
@@ -1025,21 +1102,32 @@ const SalesPackage: React.FC = () => {
                         <div className='d-flex flex-column flex-md-row mx-5'>
                             {
                                 Array.isArray(image?.[0]?.IMAGETDS) && image?.[0]?.IMAGETDS.length > 0 ? (
-                                    image?.[0]?.IMAGETDS.map((image: any, index: Key | null | undefined) => (
-                                        <div className='m-5' key={index}>
-                                            <div className='d-flex justify-content-between mb-3'>
-                                                <img
-                                                    src={`data:${image}`}
-                                                    style={{
-                                                        width: '200px', height: 'auto',
-                                                    }}
-                                                />
+                                    image?.[0]?.IMAGETDS.map((img: string, index: number) => {
+                                        // ตรวจสอบและเพิ่ม prefix หากจำเป็น
+                                        const prefixedImage = img.startsWith('data:image/')
+                                            ? img
+                                            : `data:image/jpeg;base64,${img}`;
+
+                                        return (
+                                            <div className='m-5' key={index}>
+                                                <div className='d-flex justify-content-between mb-3'>
+                                                    <img
+                                                        src={prefixedImage}
+                                                        style={{
+                                                            width: '200px',
+                                                            height: 'auto',
+                                                            cursor: 'pointer',
+                                                        }}
+                                                        alt={`ID Card ${index + 1}`}
+                                                        onClick={() => setSelectedImage(prefixedImage)}
+                                                    />
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))
+                                        );
+                                    })
                                 ) : (
-                                    <div className='text-center my-7'>
-                                        <h5>ไม่มีรุปภาพอุปกรณ์วัดค่าน้ำ</h5>
+                                    <div className='text-center my-7 mx-10'>
+                                        <h5>ไม่มีรูปภาพอุปกรณ์วัดค่าน้ำ</h5>
                                     </div>
                                 )
                             }
@@ -1047,6 +1135,35 @@ const SalesPackage: React.FC = () => {
                         <hr />
                     </div>
                 </div>
+
+                {/* Modal สำหรับแสดงรูปภาพขยาย */}
+                {selectedImage && (
+                    <div
+                        style={{
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            width: '100vw',
+                            height: '100vh',
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            zIndex: 1000,
+                        }}
+                        onClick={() => setSelectedImage(null)}
+                    >
+                        <img
+                            src={selectedImage}
+                            alt="Selected"
+                            style={{
+                                maxWidth: '90%',
+                                maxHeight: '90%',
+                                border: '2px solid white',
+                            }}
+                        />
+                    </div>
+                )}
 
                 <div className='row mb-6'>
                     <div className='col-lg-4 mb-3'>

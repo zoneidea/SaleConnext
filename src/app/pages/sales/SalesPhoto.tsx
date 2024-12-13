@@ -145,9 +145,9 @@ const SalesPhoto: React.FC = () => {
                             }}
                             onClick={() => navigate('/sale/photo/idcard', { state: { fromStep, data: item } })}
                         >
-                            <div className='mb-10'>
+                            <div className='mb-10 mt-7'>
                                 <div className='fw-bold text-gray-800 text-center'>
-                                    <span className='mt-8 position-relative d-inline-block text-dangeropacity-75-hover fs-lg-2 fs-28'>
+                                    <span className='position-relative d-inline-block text-dangeropacity-75-hover fs-lg-2 fs-28'>
                                         รูปบัตรประชาชน
                                     </span>
                                 </div>
@@ -163,11 +163,18 @@ const SalesPhoto: React.FC = () => {
 
                     {/* Card Body */}
                     <div className='card col-lg-3 col-6'>
-                        <Link className='card-body d-flex flex-column justify-content-between 
-                        bgi-no-repeat bgi-size-cover bgi-position-x-center pb-0'
-                            to='/sale/photo/gallery-gps'
+                        <button
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                padding: 0,
+                                color: 'inherit',
+                                cursor: 'pointer',
+                                fontSize: 'inherit',
+                            }}
+                            onClick={() => navigate('/sale/photo/gallery-gps', { state: { fromStep, data: item } })}
                         >
-                            <div className='mb-10'>
+                            <div className='mb-10 mt-7'>
                                 <div className='fw-bold text-gray-800 text-center'>
                                     <span className='position-relative d-inline-block text-dangeropacity-75-hover fs-lg-2 fs-28'>
                                         รูปแผนที่ GPS
@@ -179,17 +186,24 @@ const SalesPhoto: React.FC = () => {
                                 src={toAbsoluteUrl('media/take-a-pic/map-gps-svgrepo-com.svg')}
                                 alt=''
                             />
-                        </Link>
+                        </button>
                     </div>
                     {/* End Card Body */}
 
                     {/* Card Body */}
                     <div className='card col-lg-3 col-6'>
-                        <Link
-                            className='card-body d-flex flex-column justify-content-between bgi-no-repeat bgi-size-cover bgi-position-x-center pb-0'
-                            to='/sale/photo/drawing-map'
+                        <button
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                padding: 0,
+                                color: 'inherit',
+                                cursor: 'pointer',
+                                fontSize: 'inherit',
+                            }}
+                            onClick={() => navigate('/sale/photo/drawing-map', { state: { fromStep, data: item } })}
                         >
-                            <div className='mb-10'>
+                            <div className='mb-10 mt-7'>
                                 <div className='fw-bold text-gray-800 text-center'>
                                     <span className='position-relative d-inline-block text-dangeropacity-75-hover fs-lg-2 fs-28'>
                                         รูปวาดแผนที่
@@ -201,17 +215,24 @@ const SalesPhoto: React.FC = () => {
                                 src={toAbsoluteUrl('media/take-a-pic/map-svgrepo-com.svg')}
                                 alt=''
                             />
-                        </Link>
+                        </button>
                     </div>
                     {/* End Card Body */}
 
                     {/* Card Body */}
                     <div className='card col-lg-3 col-6'>
-                        <Link className='card-body d-flex flex-column justify-content-between 
-                        bgi-no-repeat bgi-size-cover bgi-position-x-center pb-0'
-                            to='/sale/photo/turn'
+                        <button
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                padding: 0,
+                                color: 'inherit',
+                                cursor: 'pointer',
+                                fontSize: 'inherit',
+                            }}
+                            onClick={() => navigate('/sale/photo/turn', { state: { fromStep, data: item } })}
                         >
-                            <div className='mb-10'>
+                            <div className='mb-10 mt-7'>
                                 <div className='fw-bold text-gray-800 text-center'>
                                     <span className='position-relative d-inline-block text-dangeropacity-75-hover fs-lg-2 fs-28'>
                                         รูปเครื่องเทิร์น
@@ -223,7 +244,7 @@ const SalesPhoto: React.FC = () => {
                                 src={toAbsoluteUrl('media/take-a-pic/water-svgrepo-com.svg')}
                                 alt=''
                             />
-                        </Link>
+                        </button>
                     </div>
                     {/* End Card Body */}
                 </div>
@@ -231,11 +252,18 @@ const SalesPhoto: React.FC = () => {
                 <div className='row mb-6'>
                     {/* Card Body */}
                     <div className='card col-lg-3 col-6'>
-                        <Link className='card-body d-flex flex-column justify-content-between 
-                        bgi-no-repeat bgi-size-cover bgi-position-x-center pb-0'
-                            to='/sale/photo/installation'
+                        <button
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                padding: 0,
+                                color: 'inherit',
+                                cursor: 'pointer',
+                                fontSize: 'inherit',
+                            }}
+                            onClick={() => navigate('/sale/photo/installation', { state: { fromStep, data: item } })}
                         >
-                            <div className='mb-10'>
+                            <div className='mb-10 mt-7'>
                                 <div className='fw-bold text-gray-800 text-center'>
                                     <span className='position-relative d-inline-block text-dangeropacity-75-hover fs-lg-2 fs-28'>
                                         รูปติดตั้งเครื่อง
@@ -247,17 +275,24 @@ const SalesPhoto: React.FC = () => {
                                 src={toAbsoluteUrl('media/take-a-pic/setting-configuration-gear-svgrepo-com.svg')}
                                 alt=''
                             />
-                        </Link>
+                        </button>
                     </div>
                     {/* End Card Body */}
 
                     {/* Card Body */}
                     <div className='card col-lg-3 col-6'>
-                        <Link className='card-body d-flex flex-column justify-content-between 
-                        bgi-no-repeat bgi-size-cover bgi-position-x-center pb-0'
-                            to='/sale/photo/home-customer'
+                        <button
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                padding: 0,
+                                color: 'inherit',
+                                cursor: 'pointer',
+                                fontSize: 'inherit',
+                            }}
+                            onClick={() => navigate('/sale/photo/home-customer', { state: { fromStep, data: item } })}
                         >
-                            <div className='mb-10'>
+                            <div className='mb-10 mt-7'>
                                 <div className='fw-bold text-gray-800 text-center'>
                                     <span className='position-relative d-inline-block text-dangeropacity-75-hover fs-lg-2 fs-28'>
                                         รูปบ้านลูกค้า
@@ -269,17 +304,24 @@ const SalesPhoto: React.FC = () => {
                                 src={toAbsoluteUrl('media/take-a-pic/home-house-svgrepo-com.svg')}
                                 alt=''
                             />
-                        </Link>
+                        </button>
                     </div>
                     {/* End Card Body */}
 
                     {/* Card Body */}
                     <div className='card col-lg-3 col-6'>
-                        <Link className='card-body d-flex flex-column justify-content-between 
-                        bgi-no-repeat bgi-size-cover bgi-position-x-center pb-0'
-                            to='/sale/photo/customer'
+                        <button
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                padding: 0,
+                                color: 'inherit',
+                                cursor: 'pointer',
+                                fontSize: 'inherit',
+                            }}
+                            onClick={() => navigate('/sale/photo/customer', { state: { fromStep, data: item } })}
                         >
-                            <div className='mb-10'>
+                           <div className='mb-10 mt-7'>
                                 <div className='fw-bold text-gray-800 text-center'>
                                     <span className='position-relative d-inline-block text-dangeropacity-75-hover fs-lg-2 fs-28'>
                                         รูปลูกค้า
@@ -291,17 +333,24 @@ const SalesPhoto: React.FC = () => {
                                 src={toAbsoluteUrl('media/take-a-pic/person-boy-svgrepo-com.svg')}
                                 alt=''
                             />
-                        </Link>
+                        </button>
                     </div>
                     {/* End Card Body */}
 
                     {/* Card Body */}
                     <div className='card col-lg-3 col-6'>
-                        <Link className='card-body d-flex flex-column justify-content-between 
-                        bgi-no-repeat bgi-size-cover bgi-position-x-center pb-0'
-                            to='/sale/photo/equipment'
+                        <button
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                padding: 0,
+                                color: 'inherit',
+                                cursor: 'pointer',
+                                fontSize: 'inherit',
+                            }}
+                            onClick={() => navigate('/sale/photo/equipment', { state: { fromStep, data: item } })}
                         >
-                            <div className='mb-10'>
+                           <div className='mb-10 mt-7'>
                                 <div className='fw-bold text-gray-800 text-center'>
                                     <span className='position-relative d-inline-block text-dangeropacity-75-hover fs-lg-2 fs-28'>
                                         รูปอุปกรณ์วัดค่าน้ำ
@@ -313,7 +362,7 @@ const SalesPhoto: React.FC = () => {
                                 src={toAbsoluteUrl('media/take-a-pic/water-water-svgrepo-com.svg')}
                                 alt=''
                             />
-                        </Link>
+                        </button>
                     </div>
                     {/* End Card Body */}
                 </div>

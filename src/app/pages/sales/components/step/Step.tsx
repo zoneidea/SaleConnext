@@ -381,7 +381,7 @@ const Step: React.FC = () => {
                         }
                       </div>
                     </div>
-                  </Link>
+                  </Link>               
                   {/* <Link onClick={handleCheckCustStatus} to={''}> */}
                   <a onClick={handleCheckCustStatus} style={{ cursor: 'pointer' }}>
                     <div className='d-flex align-items-center pb-8'>
@@ -503,6 +503,22 @@ const Step: React.FC = () => {
                       </div>
                     </div>
                   </Link>
+                  {/* <Link to={toContract} state={data?.[0]} onClick={() => handleClick('photo')}>
+                    <div className='d-flex align-items-center pb-8'>
+                      <span className={`bullet bullet-vertical h-40px ${data?.[0]?.IMAGE.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
+                      <div className='form-check form-check-custom form-check-solid mx-5'></div>
+                      <div className='flex-grow-1'>
+                        <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
+                          {`8. ถ่ายรูป`}
+                        </div>
+                        {
+                          data?.[0]?.IMAGE?.length !== 0 && (
+                            <span className='text-gray-700 fw-semibold d-block'>{`วันที่ทำสัญญา: ${data?.[0]?.IMAGE?.[0]?.createdAt ? `` : ``}`}</span>
+                          )
+                        }
+                      </div>
+                    </div>
+                  </Link> */}
                   <button
                     style={{
                       background: 'none',
