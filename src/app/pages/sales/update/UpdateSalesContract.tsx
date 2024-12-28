@@ -344,15 +344,17 @@ const UpdateSalesContract: React.FC = () => {
                             </div>
                         )}
 
-                        {product[0]?.Package[0]?.TOTALPRICE && (
-                            <div className='row align-items-center mb-10'>
-                                <label className='col-lg-4 fw-bold text-muted mb-0'>ราคาสินค้า</label>
-                                <div className='col-lg-8 d-flex justify-content-between'>
-                                    <span className='fw-bold fs-6'>{(product[0]?.Package[0]?.TOTALPRICE).toLocaleString()}</span>
-                                    <span className='badge badge-light-success'>บาท</span>
-                                </div>
+                        <div className='row align-items-center mb-10'>
+                            <label className='col-lg-4 fw-bold text-muted mb-0'>ราคาสินค้า</label>
+                            <div className='col-lg-8 d-flex justify-content-between'>
+                                <span className='fw-bold fs-6'>
+                                    {product[0]?.Package[0]?.TOTALPRICE !== undefined
+                                        ? product[0]?.Package[0]?.TOTALPRICE.toLocaleString()
+                                        : '0'}
+                                </span>
+                                <span className='badge badge-light-success'>บาท</span>
                             </div>
-                        )}
+                        </div>
 
                         {item?.DISCOUNT[0]?.TRADEIN?.HASTRADEIN != 0 && (
                             <div className='row align-items-center mb-10'>
@@ -363,26 +365,30 @@ const UpdateSalesContract: React.FC = () => {
                             </div>
                         )}
 
-                        {item?.DISCOUNT[0]?.DISCOUNTAMOUNT != 0 && (
-                            <div className='row align-items-center mb-10'>
-                                <label className='col-lg-4 fw-bold text-muted mb-0'>ส่วนลด</label>
-                                <div className='col-lg-8 d-flex justify-content-between'>
-                                    <span className='fw-bold fs-6'>{(item?.DISCOUNT[0]?.DISCOUNTAMOUNT).toLocaleString()}</span>
-                                    <span className='badge badge-light-success'>บาท</span>
-                                </div>
+                        <div className='row align-items-center mb-10'>
+                            <label className='col-lg-4 fw-bold text-muted mb-0'>ส่วนลด</label>
+                            <div className='col-lg-8 d-flex justify-content-between'>
+                                <span className='fw-bold fs-6'>
+                                    {item?.DISCOUNT[0]?.DISCOUNTAMOUNT !== undefined
+                                        ? item?.DISCOUNT[0]?.DISCOUNTAMOUNT.toLocaleString()
+                                        : '0'}
+                                </span>
+                                <span className='badge badge-light-success'>บาท</span>
                             </div>
-                        )}
+                        </div>
 
                         <div className='row align-items-center mb-10'>
                             <label className='col-lg-4 fw-bold text-muted mb-0'>ราคาสุทธิ</label>
                             <div className='col-lg-8 d-flex justify-content-between'>
-                                <span className='fw-bold fs-6'>{(netPrice).toLocaleString()}</span>
+                                <span className='fw-bold fs-6'>
+                                    {netPrice !== undefined ? netPrice.toLocaleString() : '0'}
+                                </span>
                                 <span className='badge badge-light-success'>บาท</span>
                             </div>
                         </div>
 
                         {/* ถ้าเป็นเงินสดไม่ต้องแสดง */}
-                        {product[0]?.Package[0]?.PACKAGETYPEID !== 1 && (
+                        {product[0]?.Package[0]?.PERIODDETAILS?.[0]?.PAYMENTAMOUNT !== undefined && (
                             <>
                                 <div className='row align-items-center mb-10'>
                                     <label className='col-lg-4 fw-bold text-muted mb-0'>งวดที่ 1 ที่ต้องชำระ</label>

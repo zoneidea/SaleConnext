@@ -49,8 +49,10 @@ const GalleryGoogleMapGPS: React.FC = () => {
         IMAGE: [any],
         CHECKERCOMMENT: [any]
     }
+
     const location = useLocation() as any;
     const navigate = useNavigate()
+    
     const fromStep = location.state?.fromStep || false;
     console.log(`fromStep`, fromStep);
 
@@ -87,9 +89,9 @@ const GalleryGoogleMapGPS: React.FC = () => {
 
     return (
         <div>
-            <div className='d-flex flex-column flex-md-row justify-content-between mt-10 mb-5'>
+            <div className='d-flex flex-column flex-md-row justify-content-between mt-10 mb-5 mx-7'>
                 <button
-                    className="btn btn-primary w-100 w-md-auto align-self-center mx-7"
+                    className="btn btn-primary w-100 w-md-auto align-self-center"
                     onClick={() => navigate("/sale/photo/gps/", { state: { data: item, fromStep } })}
                 >
                     ใช้งานแผนที่
@@ -129,7 +131,7 @@ const GalleryGoogleMapGPS: React.FC = () => {
                         ))}
                     </div>
                 ) : (
-                    <p>ไม่มีภาพ GPS</p>
+                    <p className='mx-10'>ไม่มีภาพ GPS</p>
                 )}
 
                 <div className='d-none d-xl-flex justify-content-between align-items-center my-5 mx-7'>

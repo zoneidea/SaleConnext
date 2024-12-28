@@ -44,7 +44,7 @@ const SalesPackage: React.FC = () => {
     // console.log(`categories`, categories);
 
     const [promotion, setPromotion] = useState<any[]>([]);
-    console.log(`promotion`, promotion);
+    // console.log(`promotion`, promotion);
 
     const [packageType, setPackageType] = useState<any[]>([]);
     // console.log(`packageType: `, packageType);
@@ -55,7 +55,7 @@ const SalesPackage: React.FC = () => {
     const [selectedCategoryId, setSelectedCategoryId] = useState<any>('');
 
     const [selectedProductIndex, setSelectedProductIndex] = useState<number | null>(null);
-    console.log(`selectedProductIndex: `, selectedProductIndex);
+    // console.log(`selectedProductIndex: `, selectedProductIndex);
 
     const [selectedItemCode, setSelectedItemCode] = useState<string | null>(null);
     // console.log(`selectedItemCode: `, selectedItemCode);
@@ -68,14 +68,14 @@ const SalesPackage: React.FC = () => {
     const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
     const [selectedTransDate, setSelectedTransDate] = useState<string | null>(null);
     const [productId, setProductId] = useState(null);  // สร้าง state สำหรับเก็บ _id
-    console.log(`productId: `, productId);
+    // console.log(`productId: `, productId);
 
     const [selectedPackageTypeId, setSelectedPackageTypeId] = useState<number | null>(null);
     const [selectedPackageModel, setSelectedPackageModel] = useState<number | null>(null);
     const [selectedProductId, setSelectedProductId] = useState<any>('');
-    console.log(`selectedProductId`, selectedProductId);
+    // console.log(`selectedProductId`, selectedProductId);
     const [selectedPromotion, setSelectedPromotion] = useState<string | number>('');
-    console.log(`selectedPromotion`, selectedPromotion);
+    // console.log(`selectedPromotion`, selectedPromotion);
 
     const [checktype, setChecktype] = useState<number | null>(null);
     // console.log(`checktype`, checktype);
@@ -100,7 +100,7 @@ const SalesPackage: React.FC = () => {
     // const parseGetCategoryLocal = getCategoryLocal ? JSON.parse(getCategoryLocal) : null;
 
     const { product, setProduct } = useProductStore();
-    console.log(`product: `, product);
+    // console.log(`product: `, product);
 
     const { ItemID, setItemID, PackageTypeID, setPackageTypeID } = usePackageStore();
 
@@ -170,6 +170,25 @@ const SalesPackage: React.FC = () => {
     // console.log('selectedPackageModel: ', selectedPackageModel);
 
     // POST GetProduct/Categories
+    // useEffect(() => {
+    //     const postData = async () => {
+    //         try {
+    //             const response = await axios.post(CATEGORIES_URL,
+    //                 { EmpId, DivisionId, DepartId, DepartGroup, TeamSale }, {
+    //                 headers: {
+    //                     'Content-Type': 'multipart/form-data',
+    //                     'Accept': 'multipart/form-data',
+    //                 },
+    //             });
+    //             const data = Array.isArray(response.data.data) ? response.data.data : [];
+    //             setCategories(data);
+    //         } catch (error) {
+    //             console.error('Error fetching CATEGORIES_URL:', error);
+    //         }
+    //     };
+    //     postData();
+    // }, [EmpId, TeamSale, SaleCode, SupEmpId, SecEmpId, DivisionId, DepartId, DepartGroup, auth, setCategories, fetchCategory]);
+
     useEffect(() => {
         const postData = async () => {
             try {
@@ -187,7 +206,7 @@ const SalesPackage: React.FC = () => {
             }
         };
         postData();
-    }, [EmpId, TeamSale, SaleCode, SupEmpId, SecEmpId, DivisionId, DepartId, DepartGroup, auth, setCategories, fetchCategory]);
+    });
 
     // GET Product/GetStock?
     useEffect(() => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import html2canvas from 'html2canvas';
 import { useAuth } from '../../../../../modules/auth/core/Auth';
 import { useUUIDStore } from '../../../../../modules/stores/stepsStore';
@@ -17,8 +17,32 @@ import {
 } from '../../../../../modules/stores/sales/photoStore/photoStore';
 
 import Swal from 'sweetalert2';
+import { log } from 'node:console';
 
 const API_KEY_GOOGLE_MAP = import.meta.env.VITE_APP_GOOGLE_MAP_KEY as string;
+const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
+const GET_CONTRACT_URL = `${API_URL_MONGO}/Contract/GetContractSummary`;
+
+// อัพเดท
+interface ItemProps {
+  REFNO: string,
+  CONTNO: string,
+  EMPID: string,
+  TEAMSALE: string,
+  SALECODE: string,
+  SUPEMPID: string,
+  SECEMPID: string,
+  STATUS: string,
+  PRODUCT: [any],
+  CUSTOMERSTATUS: [any],
+  DISCOUNT: [any],
+  CUSTOMERDETAIL: [any],
+  ADDRESS: [any],
+  PDPA: [any],
+  CONTRACT: [any],
+  IMAGE: [any],
+  CHECKERCOMMENT: [any]
+}
 
 interface ItemProps {
   IMAGEGPS: [any],
@@ -90,8 +114,41 @@ const LocationFinder: React.FC = () => {
 };
 
 const GoogleMapComponent: React.FC<{ position: Position }> = ({ position }) => {
-  const location = useLocation();
-  const item = location.state as ItemProps || [];
+
+  const navigate = useNavigate();
+  const location = useLocation() as { state?: { data: ItemProps; fromStep?: boolean } };
+
+  const item = location?.state?.data as ItemProps || [];
+  console.log(`item`, item);
+
+  const fromStep = location?.state?.fromStep || false;
+  console.log(`fromStep`, fromStep);
+
+  const [isLoadingFinish, setIsLoadingFinish] = useState<boolean>(false);
+  const [data, setData] = useState<any[]>([])
+  console.log(`data`, data);
+
+  const getData = async () => {
+    setIsLoadingFinish(true);
+    try {
+      const response = await axios.get(GET_CONTRACT_URL + '?refno=' + REFNO, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = Array.isArray(response.data.data) ? response.data.data : [];
+      setData(data);
+      console.log('Load data', data)
+    } catch (error) {
+      console.error('Error fetching DRAFT_ALLCONTRACT_URL:', error);
+    } finally {
+      setIsLoadingFinish(false);
+    }
+  };
+
+  useEffect(() => {
+    getData()
+  })
 
   const { REFNO } = useUUIDStore();
   const { auth } = useAuth();
@@ -138,6 +195,7 @@ const GoogleMapComponent: React.FC<{ position: Position }> = ({ position }) => {
         // ดึงข้อมูลภาพที่ถูกปรับขนาด
         const resizedDataUrl = resizedCanvas.toDataURL('image/png');
         const cleanedDataUrl = resizedDataUrl.replace(/^data:image\/(?:jpeg|png);base64,/, '');
+        console.log(`cleanedDataUrl`, cleanedDataUrl);
 
         await handleNextClick(cleanedDataUrl); // ส่งข้อมูลที่ปรับขนาดแล้ว
 
@@ -149,54 +207,64 @@ const GoogleMapComponent: React.FC<{ position: Position }> = ({ position }) => {
 
   const handleNextClick = async (cleanedDataUrl: string) => {
     try {
+      // ตรวจสอบและดึงข้อมูล IMAGEGPS เดิม
+      const existingImages = item?.IMAGE?.[0]?.IMAGEGPS || [];
+
+      // ตรวจสอบว่า existingImages เป็นอาร์เรย์ และรวมภาพใหม่
+      const updatedImages = Array.isArray(existingImages)
+        ? [...existingImages, cleanedDataUrl] // รวมภาพเก่ากับภาพใหม่
+        : [cleanedDataUrl]; // หากไม่มีภาพเดิม ให้สร้างอาร์เรย์ใหม่
+
       // บันทึกภาพ GPS ลงใน store โดยใช้ addImage
       addImage(cleanedDataUrl);
 
-      const updateContract = await axios.post(UPDATECONTACT, {
-        REFNO,
-        EMPID: EmpId,
-        TEAMSALE: TeamSale,
-        SALECODE: SaleCode,
-        SUPEMPID: SupEmpId,
-        SECEMPID: SecEmpId,
-        FIELD: "IMAGEGPS",
-        DATA: cleanedDataUrl // ส่งข้อมูลภาพที่ปรับขนาดแล้ว
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
+      // ส่งข้อมูลอัปเดตไปยัง API
+      const updateContract = await axios.post(
+        UPDATECONTACT,
+        {
+          REFNO,
+          EMPID: EmpId,
+          TEAMSALE: TeamSale,
+          SALECODE: SaleCode,
+          SUPEMPID: SupEmpId,
+          SECEMPID: SecEmpId,
+          FIELD: "IMAGE",
+          DATA: [{
+            "IMAGECARD": data[0]?.IMAGE?.[0]?.IMAGECARD || [],
+            "IMAGEGPS": updatedImages, // ใช้ภาพที่อัปเดตใหม่
+            "IMAGEMAP": data[0]?.IMAGE?.[0]?.IMAGEMAP || [],
+            "IMAGETRADEIN": data[0]?.IMAGE?.[0]?.IMAGETRADEIN || [],
+            "IMAGEINSTALLATION": data[0]?.IMAGE?.[0]?.IMAGEINSTALLATION || [],
+            "IMAGECUSTOMERHOME": data[0]?.IMAGE?.[0]?.IMAGECUSTOMERHOME || [],
+            "IMAGECUSTOMER": data[0]?.IMAGE?.[0]?.IMAGECUSTOMER || [],
+            "IMAGETDS": data[0]?.IMAGE?.[0]?.IMAGETDS || [],
+          }],
         },
-      });
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       console.log(`updateContract IMAGE GPS: `, updateContract.data);
       Swal.fire({
-        icon: 'success',
-        title: 'สำเร็จ!',
-        text: 'บันทึกรูปภาพลงระบบเรียบร้อยแล้ว',
+        icon: "success",
+        title: "สำเร็จ!",
+        text: "บันทึกรูปภาพลงระบบเรียบร้อยแล้ว",
       });
     } catch (error) {
-      console.error('Error fetching UPDATECONTACT IMAGE GPS:', error);
+      console.error("Error fetching UPDATECONTACT IMAGE GPS:", error);
       Swal.fire({
-        icon: 'error',
-        title: 'เกิดข้อผิดพลาด!',
-        text: 'ไม่สามารถบันทึกรูปภาพได้ กรุณาลองใหม่อีกครั้ง',
+        icon: "error",
+        title: "เกิดข้อผิดพลาด!",
+        text: "ไม่สามารถบันทึกรูปภาพได้ กรุณาลองใหม่อีกครั้ง",
       });
     }
   };
 
   return (
     <>
-      <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-10 mx-lg-10 mx-5'>
-        <Link to='/sale/photo/gallery-gps' className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
-          ย้อนกลับ
-        </Link>
-        <button
-          onClick={captureMap}
-          className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
-        >
-          บันทึกรูปภาพแผนที่ลงระบบ
-        </button>
-      </div>
-
       <LoadScript googleMapsApiKey={API_KEY_GOOGLE_MAP}>
         <div ref={mapRef} style={containerStyle}>
           <GoogleMap
@@ -208,6 +276,59 @@ const GoogleMapComponent: React.FC<{ position: Position }> = ({ position }) => {
           </GoogleMap>
         </div>
       </LoadScript>
+
+      {/* <div className='d-flex flex-column flex-md-row justify-content-between mb-5 mt-5 mx-lg-10 mx-5'>
+        <Link to='/sale/photo/gallery-gps' className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
+          ย้อนกลับ
+        </Link>
+        <button
+          onClick={captureMap}
+          className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
+        >
+          บันทึกรูปภาพแผนที่ลงระบบ
+        </button>
+      </div> */}
+
+      <div className='d-none d-xl-flex justify-content-between align-items-center my-5 mx-7'>
+        <button
+          className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'
+          onClick={() => navigate('/sale/photo/gallery-gps', { state: { data: item, fromStep } })}
+        >
+          ย้อนกลับ
+        </button>
+        <button
+          onClick={captureMap}
+          className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
+        >
+          บันทึกรูปภาพแผนที่ลงระบบ
+        </button>
+      </div>
+
+      {/* ปุ่มในหน้าจอเล็ก */}
+      <div
+        className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 1050,
+        }}
+      >
+        <button
+          className="btn btn-secondary w-auto me-2"
+          onClick={() => navigate('/sale/photo/gallery-gps', { state: { data: item, fromStep } })}
+        >
+          ย้อนกลับ
+        </button>
+        <button
+          className="btn btn-primary w-auto me-2"
+          onClick={captureMap}
+        >
+          บันทึกรูปภาพแผนที่ลงระบบ
+        </button>
+      </div>
+
     </>
   );
 };

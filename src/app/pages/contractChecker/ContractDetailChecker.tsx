@@ -59,6 +59,7 @@ const SalesPackage: React.FC = () => {
     const address = item?.ADDRESS
     const image = item?.IMAGE
     console.log(`item`, item);
+    // console.log(`image`, image[0].IMAGEGPS);
 
     const [comment, setComment] = useState('')
     const [cbxApproveSelected, setApproveSelected] = useState(true);
@@ -854,7 +855,7 @@ const SalesPackage: React.FC = () => {
                                         // ตรวจสอบและเพิ่ม prefix หากจำเป็น
                                         const prefixedImage = img.startsWith('data:image/')
                                             ? img
-                                            : `data:image/jpeg;base64,${img}`;
+                                            : `data:image/jpeg;base64,${img}`;                                      
 
                                         return (
                                             <div className='m-5' key={index}>
