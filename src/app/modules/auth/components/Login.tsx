@@ -19,8 +19,8 @@ const loginSchema = Yup.object().shape({
 })
 
 const initialValues = {
-  username: '077486',
-  password: 'Aa11223344',
+  username: '058488',
+  password: 'Bb1234567',
 }
 
 export function Login() {
@@ -236,7 +236,7 @@ export function Login() {
       ) : (
         <div className='mb-10 bg-light-info p-8 rounded'>
           <div className='text-info'>
-            Use username <strong>077486</strong> and password <strong>Aa11223344</strong> to continue.
+            Use username <strong>058488</strong> and password <strong>Bb1234567</strong> to continue.
           </div>
         </div>
       )}

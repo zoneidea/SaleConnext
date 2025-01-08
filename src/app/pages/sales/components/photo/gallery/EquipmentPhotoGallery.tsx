@@ -1,8 +1,29 @@
 import React, { useState, useEffect } from 'react';
+import { toAbsoluteUrl } from '../../../../../../_metronic/helpers';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../../../modules/auth/core/Auth';
+import { useUUIDStore } from '../../../../../modules/stores/stepsStore';
+import axios from 'axios';
+import { ThreeDot } from 'react-loading-indicators';
 
 interface ItemProps {
+    REFNO: string;
+    CONTNO: string;
+    EMPID: string;
+    TEAMSALE: string;
+    SALECODE: string;
+    SUPEMPID: string;
+    SECEMPID: string;
+    STATUS: string;
+    PRODUCT: [any];
+    CUSTOMERSTATUS: [any];
+    DISCOUNT: [any];
+    CUSTOMERDETAIL: [any];
+    ADDRESS: [any];
+    PDPA: [any];
+    CONTRACT: [any];
     IMAGE: [any];
+    CHECKERCOMMENT: [any];
 }
 
 interface LocationState {
@@ -15,83 +36,88 @@ function EquipmentPhotoGallery() {
     const navigate = useNavigate();
 
     // ตรวจสอบชนิดของ location.state
-    const { data: item = { IMAGE: [] }, fromStep = false } = (location.state as LocationState) || {};
-
-    console.log(`Item:`, item);
-    console.log(`FromStep:`, fromStep);
+    const { data: item, fromStep = false } = (location.state as LocationState) || {};
 
     const [images, setImages] = useState<string[]>([]);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [loading, setLoading] = useState<boolean>(true); // เพิ่ม state สำหรับ loading
 
-    console.log(`Images:`, images);
+    // สร้างใหม่
+    const { REFNO } = useUUIDStore();
 
-    // ฟังก์ชันแปลง WebP เป็น JPEG หรือ PNG
-    const convertWebPToJpegOrPng = (
-        webpDataUrl: string,
-        outputFormat: 'image/jpeg' | 'image/png' = 'image/jpeg'
-    ): Promise<string> => {
-        return new Promise((resolve, reject) => {
-            const img = new Image();
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
+    const { auth } = useAuth();
+    const EmpId = auth?.data?.[0]?.EmpId || '';
+    const TeamSale = auth?.data?.[0]?.TeamSale || '';
+    const SaleCode = auth?.data?.[0]?.SaleCode || '';
+    const SupEmpId = auth?.data?.[0]?.SupEmp || '';
+    const SecEmpId = auth?.data?.[0]?.SecEmp || '';
 
-                const ctx = canvas.getContext('2d');
-                if (ctx) {
-                    ctx.drawImage(img, 0, 0);
-                    const convertedDataUrl = canvas.toDataURL(outputFormat, 1.0);
-                    resolve(convertedDataUrl);
-                } else {
-                    reject(new Error('Canvas context is not available.'));
-                }
-            };
-            img.onerror = (err) => reject(err);
-            img.src = webpDataUrl;
-        });
-    };
+    // กำหนด REFNO
+    const refno = fromStep ? item?.REFNO : REFNO;
 
+    const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
+    const GETSUMMARYCONTACT = `${API_URL_MONGO}/Contract/GetContractSummary?refno=${refno}`;
+
+    const [getSummaryContract, setGetSummaryContract] = useState<any[]>([]);
+    const imageFromSummary = getSummaryContract[0]?.IMAGE;
+
+    // โหลด summary contract
     useEffect(() => {
-        const getData = async () => {
+        const fetchContractSummary = async () => {
             try {
-                if (item?.IMAGE && item?.IMAGE.length > 0 && item?.IMAGE[0]?.IMAGETDS) {
-                    const data = item?.IMAGE[0]?.IMAGETDS;
-                    console.log('Raw image data:', data);
-
-                    const processedImages = await Promise.all(
-                        data.map(async (image: string) => {
-                            if (image.startsWith('data:image/webp;')) {
-                                try {
-                                    return await convertWebPToJpegOrPng(image); // แปลง WebP เป็น JPEG
-                                } catch (err) {
-                                    console.error('Error converting WebP:', err);
-                                    return image; // ใช้รูป WebP เดิมหากแปลงไม่ได้
-                                }
-                            }
-                            return image; // คืนค่ารูป JPEG/PNG เดิม
-                        })
-                    );
-
-                    console.log('Processed images:', processedImages);
-                    setImages(processedImages);
-                } else {
-                    console.log('No image data available');
-                    setImages([]);
-                }
+                const response = await axios.get(GETSUMMARYCONTACT, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json',
+                    },
+                });
+                const data = Array.isArray(response.data.data) ? response.data.data : [];
+                setGetSummaryContract(data);
             } catch (error) {
-                console.error('Error processing images:', error);
+                console.error('Error fetching contract summary:', error);
+            } finally {
+                setLoading(false); // หยุด loading เมื่อดึงข้อมูลเสร็จ
             }
         };
 
-        getData();
-    }, [item]);
+        fetchContractSummary();
+    }, [refno]);
+
+    useEffect(() => {
+        const getDataFromSummary = async () => {
+            try {
+                if (imageFromSummary && imageFromSummary.length > 0 && imageFromSummary[0]?.IMAGETDS) {
+                    const data = imageFromSummary[0]?.IMAGETDS;
+
+                    const processedImages = data.map((image: string) => {
+                        const prefix = 'data:image/jpeg;base64,';
+                        return `${prefix}${image.trim()}`;
+                    });
+
+                    setImages(processedImages);
+                } else {
+                    setImages([]);
+                }
+            } catch (error) {
+                console.error('Error processing images from summary:', error);
+            }
+        };
+
+        getDataFromSummary();
+    }, [imageFromSummary]);
 
     return (
-        <div className="row mx-5">
-            {images.length > 0 ? (
+        <div className="row mx-5 mt-10">
+            {loading ? (
+                <div className="text-center w-100">
+                    {/* แสดง ThreeDot ขณะกำลังโหลด */}
+                    {/* <ThreeDot color="#3B82F6" size="large" /> */}
+                    <ThreeDot />
+                </div>
+            ) : images.length > 0 ? (
                 images.map((base64Image, index) => (
                     <div className="col-6 col-xl-4 mb-3" key={index}>
-                        <div className="border border-gray-500">
+                        <div className="border border-gray-500 position-relative">
                             <img
                                 src={base64Image}
                                 alt={`Captured ${index + 1}`}
@@ -102,16 +128,31 @@ function EquipmentPhotoGallery() {
                                     cursor: 'pointer',
                                 }}
                                 onClick={() => setSelectedImage(base64Image)}
-                                onError={(e) => {
-                                    console.error(`Error loading image at index ${index}:`, base64Image);
-                                }}
                             />
+                            {/* Overlay */}
+                            <div
+                                className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+                                style={{
+                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                    opacity: 0,
+                                    transition: 'opacity 0.3s ease-in-out',
+                                }}
+                                onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                                onMouseLeave={(e) => (e.currentTarget.style.opacity = '0')}
+                            >
+                                <img
+                                    src={toAbsoluteUrl('media/settings/eye-svgrepo-com.png')}
+                                    alt="ดูภาพ"
+                                    style={{ width: '30px', height: '30px', cursor: 'pointer' }}
+                                    onClick={() => setSelectedImage(base64Image)}
+                                />
+                            </div>
                         </div>
                     </div>
                 ))
             ) : (
-                <div className="text-center">
-                    <p>ไม่มีรูปภาพที่จะแสดง</p>
+                <div className="text-center w-100">
+                    <h3>ยังไม่มีรูปภาพในระบบ</h3>
                 </div>
             )}
 
@@ -149,7 +190,8 @@ function EquipmentPhotoGallery() {
                 <button
                     className="btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0"
                     onClick={() =>
-                        navigate('/sale/photo/equipment', { state: { data: item, fromStep } })}
+                        navigate('/sale/photo/idcard', { state: { data: item, fromStep } })
+                    }
                 >
                     ย้อนกลับ
                 </button>
@@ -159,7 +201,7 @@ function EquipmentPhotoGallery() {
             <div
                 className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
                 style={{
-                    position: "fixed",
+                    position: 'fixed',
                     bottom: 0,
                     left: 0,
                     right: 0,
@@ -168,12 +210,11 @@ function EquipmentPhotoGallery() {
             >
                 <button
                     className="btn btn-secondary w-auto me-2"
-                    onClick={() => navigate('/sale/photo/equipment',  { state: { data: item, fromStep } })}
+                    onClick={() => navigate('/sale/photo/equipment', { state: { data: item, fromStep } })}
                 >
                     ย้อนกลับ
                 </button>
             </div>
-
         </div>
     );
 }

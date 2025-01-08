@@ -2,30 +2,25 @@ import { FC } from 'react'
 import clsx from 'clsx'
 import { Link } from 'react-router-dom'
 import { useLocation } from 'react-router'
-import { checkIsActive, KTIcon, WithChildren } from '../../../../helpers'
-import { useLayout } from '../../../core'
+import { checkIsActive, WithChildren } from '../../../../helpers'
 
 type Props = {
   to: string
   title: string
-  icon?: string
-  fontIcon?: string
+  imageSrc?: string // สำหรับไอคอนแบบรูปภาพ
   hasBullet?: boolean
 }
 
 const SidebarMenuItem: FC<Props & WithChildren> = ({
-  children,
   to,
   title,
-  icon,
-  fontIcon,
+  imageSrc,
   hasBullet = false,
 }) => {
   const { pathname } = useLocation()
   const isActive = checkIsActive(pathname, to)
-  const { config } = useLayout()
-  const { app } = config
-
+  // console.log(`imageSrc`, imageSrc);
+  
   return (
     <div className='menu-item'>
       <Link className={clsx('menu-link without-sub', { active: isActive })} to={to}>
@@ -34,18 +29,13 @@ const SidebarMenuItem: FC<Props & WithChildren> = ({
             <span className='bullet bullet-dot'></span>
           </span>
         )}
-        {icon && app?.sidebar?.default?.menu?.iconType === 'svg' && (
-          <span className='menu-icon'>
-            {' '}
-            <KTIcon iconName={icon} className='fs-2' />
+        {imageSrc && (
+          <span className='menu-icon px-7'>
+            <img src={imageSrc} alt={title} style={{ width: 25, height: 25 }} />
           </span>
-        )}
-        {fontIcon && app?.sidebar?.default?.menu?.iconType === 'font' && (
-          <i className={clsx('bi fs-3', fontIcon)}></i>
         )}
         <span className='menu-title'>{title}</span>
       </Link>
-      {children}
     </div>
   )
 }

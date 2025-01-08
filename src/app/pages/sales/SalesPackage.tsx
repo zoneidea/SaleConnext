@@ -717,12 +717,12 @@ const SalesPackage: React.FC = () => {
                 </div>
 
                 {/* ปุ่มในหน้าจอใหญ่ */}
-                <div className="d-none d-xl-flex justify-content-between align-items-center mt-5">
+                <div className="d-none d-xl-flex justify-content-between align-items-center mt-5 mb-10">
                     <button
                         className="btn btn-secondary w-auto me-2"
                         onClick={() => navigate('/sale/overview')}
                     >
-                        ย้อนกลับ
+                        กลับหน้าแรก
                     </button>
                     <button
                         className={`btn btn-primary w-auto 
@@ -749,7 +749,7 @@ const SalesPackage: React.FC = () => {
                         className="btn btn-secondary w-auto me-2"
                         onClick={() => navigate('/sale/overview')}
                     >
-                        ย้อนกลับ
+                        กลับหน้าแรก
                     </button>
                     <button
                         className={`btn btn-primary w-auto 

@@ -358,8 +358,8 @@ const SalesPDPA: React.FC = () => {
         </div>
 
         <div className='d-none d-xl-flex justify-content-between align-items-center mt-5'>
-          <button onClick={() => navigate('/sale/createcust')} className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
-            ย้อนกลับ
+          <button onClick={() => navigate('/sale/overview')} className='btn btn-secondary w-100 w-md-auto align-self-center mb-10'>
+            กลับหน้าแรก
           </button>
 
           {!showSaveButton && (
@@ -394,9 +394,9 @@ const SalesPDPA: React.FC = () => {
         >
           <button
             className="btn btn-secondary w-auto me-2"
-            onClick={() => navigate('/sale/createcust')}
+            onClick={() => navigate('/sale/overview')}
           >
-            ย้อนกลับ
+            กลับหน้าแรก
           </button>
 
           {!showSaveButton && (

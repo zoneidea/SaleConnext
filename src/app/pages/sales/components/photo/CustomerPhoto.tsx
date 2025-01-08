@@ -57,7 +57,7 @@ const CustomerPhoto: React.FC = () => {
     console.log(`fromStep`, fromStep);
 
     const item = location.state?.data as ItemProps || [];
-    console.log(`item`, item);
+    // console.log(`item`, item);
 
     // กำหนด REFNO
     const refno = fromStep ? item.REFNO : REFNO;

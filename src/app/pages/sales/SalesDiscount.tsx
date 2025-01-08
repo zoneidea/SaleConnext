@@ -472,12 +472,12 @@ const SalesDiscount: React.FC = () => {
                     </div>
                 )}
 
-                <div className='d-none d-xl-flex justify-content-between align-items-center mt-5'>
+                <div className='d-none d-xl-flex justify-content-between align-items-center mt-5 mb-10'>
                     <button
                         className="btn btn-secondary w-auto me-2"
-                        onClick={() => navigate('/sale/package')}
+                        onClick={() => navigate('/sale/overview')}
                     >
-                        ย้อนกลับ
+                        กลับหน้าแรก
                     </button>
                     <button
                         className='btn btn-primary w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'
@@ -502,7 +502,7 @@ const SalesDiscount: React.FC = () => {
                         className="btn btn-secondary w-auto me-2"
                         onClick={() => navigate('/sale/overview')}
                     >
-                        ย้อนกลับ
+                        กลับหน้าแรก
                     </button>
                     <button
                         className={`btn btn-primary w-auto`}

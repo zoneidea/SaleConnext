@@ -2528,13 +2528,13 @@ const SalesCreateCust: React.FC = () => {
 
                     {showCustomerAddress && (
                         <>
-                            <div className='d-none d-xl-flex justify-content-between align-items-center mt-5'>
+                            <div className='d-none d-xl-flex justify-content-between align-items-center mt-5 mb-10'>
                                 <button
-                                    onClick={() => navigate('/sale/discount')}
+                                    onClick={() => navigate('/sale/overview')}
                                     className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'
                                     type='button'
                                 >
-                                    ย้อนกลับ
+                                    กลับหน้าแรก
                                 </button>
                                 <button
                                     onClick={handleSubmit(onSubmit)}
@@ -2558,10 +2558,10 @@ const SalesCreateCust: React.FC = () => {
                             >
                                 <button
                                     className="btn btn-secondary w-auto me-2"
-                                    onClick={() => navigate('/sale/discount')}
+                                    onClick={() => navigate('/sale/overview')}
                                     type='button'
                                 >
-                                    ย้อนกลับ
+                                    กลับหน้าแรก
                                 </button>
                                 <button
                                     className={`btn btn-primary w-auto`}

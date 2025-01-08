@@ -162,7 +162,7 @@ const EmpStructure: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="d-none d-xl-flex justify-content-between align-items-center mt-5">
+                <div className="d-none d-xl-flex justify-content-between align-items-center mt-5 mb-10">
                     <Link to='/' className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'>
                         ย้อนกลับ
                     </Link>

@@ -6,6 +6,7 @@ interface photoIdCardStore {
   addImage: (image: string) => void;
   removeImage: (image: string) => void;
   loadImages: () => void;
+  clearImages: () => void;
 }
 
 export const usePhotoIdCardStore = create<photoIdCardStore>((set) => ({
@@ -29,6 +30,13 @@ export const usePhotoIdCardStore = create<photoIdCardStore>((set) => ({
   loadImages: () => {
     const savedImages = localStorage.getItem('IdCardImages');
     set({ imagesIdCard: savedImages ? JSON.parse(savedImages) : [] });
+  },
+  clearImages: () => {
+    set(() => {
+      localStorage.removeItem('IdCardImages'); // ลบข้อมูลใน localStorage
+      console.log('Images cleared'); // Log ข้อมูลหลังล้างรูป
+      return { imagesIdCard: [] };
+    });
   },
 }));
 

@@ -369,7 +369,7 @@ const SalesPhoto: React.FC = () => {
 
                 {/* แสดงปุ่มเมื่อมาจาก Step */}
                 {fromStep ? (
-                    <div className='d-none d-xl-flex justify-content-between align-items-center mt-5'>
+                    <div className='d-none d-xl-flex justify-content-between align-items-center mt-5 mb-10'>
                         <button
                             className='btn btn-secondary w-100 w-md-auto align-self-center h-50px'
                             onClick={() => navigate('/sale/step', { state: item })}
@@ -384,7 +384,7 @@ const SalesPhoto: React.FC = () => {
                         </button>
                     </div>
                 ) : (
-                    <div className='d-none d-xl-flex justify-content-between align-items-center mt-5'>
+                    <div className='d-none d-xl-flex justify-content-between align-items-center mt-5 mb-10'>
                         <button
                             className='btn btn-secondary w-100 w-md-auto align-self-center h-50px'
                             onClick={() => navigate('/sale/overview')}
