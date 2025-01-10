@@ -1,40 +1,58 @@
 import { create } from 'zustand';
 
 // รูปบัตรปชช
-interface photoIdCardStore {
-  imagesIdCard: string[];
-  addImage: (image: string) => void;
-  removeImage: (image: string) => void;
+interface Photo {
+  file: File | null; // เก็บไฟล์จริง
+  preview: string; // เก็บ URL สำหรับ preview
+}
+
+interface PhotoIdCardStore {
+  imagesIdCard: Photo[];
+  addImage: (image: Photo) => void;
+  removeImage: (preview: string) => void;
   loadImages: () => void;
   clearImages: () => void;
 }
 
-export const usePhotoIdCardStore = create<photoIdCardStore>((set) => ({
-  imagesIdCard: JSON.parse(localStorage.getItem('IdCardImages') || '[]'),
+export const usePhotoIdCardStore = create<PhotoIdCardStore>((set) => ({
+  imagesIdCard: JSON.parse(localStorage.getItem("IdCardImages") || "[]"),
   addImage: (image) => {
     set((state) => {
       const newImages = [...state.imagesIdCard, image];
-      localStorage.setItem('IdCardImages', JSON.stringify(newImages));
-      console.log('Images after add:', newImages); // เพิ่ม log เพื่อตรวจสอบข้อมูลใน state
+      // เก็บเฉพาะ preview URL ลงใน localStorage
+      localStorage.setItem(
+        "IdCardImages",
+        JSON.stringify(newImages.map((img) => ({ preview: img.preview })))
+      );
+      console.log("Images after add:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
       return { imagesIdCard: newImages };
     });
   },
-  removeImage: (image) => {
+  removeImage: (preview) => {
     set((state) => {
-      const newImages = state.imagesIdCard.filter((img) => img !== image);
-      localStorage.setItem('IdCardImages', JSON.stringify(newImages));
-      console.log('Images after remove:', newImages); // เพิ่ม log เพื่อตรวจสอบข้อมูลใน state
+      const newImages = state.imagesIdCard.filter((img) => img.preview !== preview);
+      // อัปเดต localStorage หลังลบ
+      localStorage.setItem(
+        "IdCardImages",
+        JSON.stringify(newImages.map((img) => ({ preview: img.preview })))
+      );
+      console.log("Images after remove:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
       return { imagesIdCard: newImages };
     });
   },
   loadImages: () => {
-    const savedImages = localStorage.getItem('IdCardImages');
-    set({ imagesIdCard: savedImages ? JSON.parse(savedImages) : [] });
+    const savedImages = JSON.parse(localStorage.getItem("IdCardImages") || "[]");
+    // เพิ่ม `null` ใน file เพื่อให้สอดคล้องกับโครงสร้าง `Photo`
+    const formattedImages = savedImages.map((img: { preview: string }) => ({
+      file: null,
+      preview: img.preview,
+    }));
+    set({ imagesIdCard: formattedImages });
   },
   clearImages: () => {
     set(() => {
-      localStorage.removeItem('IdCardImages'); // ลบข้อมูลใน localStorage
-      console.log('Images cleared'); // Log ข้อมูลหลังล้างรูป
+      localStorage.removeItem("IdCardImages"); // ลบข้อมูลใน localStorage
+      console.log("Images cleared"); // Log ข้อมูลหลังล้างรูป
       return { imagesIdCard: [] };
     });
   },
