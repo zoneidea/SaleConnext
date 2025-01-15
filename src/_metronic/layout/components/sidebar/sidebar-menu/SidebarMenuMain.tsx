@@ -125,7 +125,7 @@ const SidebarMenuMain = () => {
             padding: '0px 5px',
           }}
         >
-          รายงานระบบขาย
+          รายงานการขายประจำวัน
         </span>
       </Link>
     </>

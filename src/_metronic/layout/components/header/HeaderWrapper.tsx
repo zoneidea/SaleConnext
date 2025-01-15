@@ -168,7 +168,7 @@ export function HeaderWrapper() {
               <div className='d-flex align-items-center d-lg-none ms-n2 me-2' title='Show sidebar menu'>
                 <div
                   className={clsx(
-                    'btn btn-icon btn-active-color-primary w-35px h-35px', 
+                    'btn btn-icon btn-active-color-primary w-35px h-35px',
                     { active: isSidebarActive } // เพิ่ม class 'active' เมื่อ isSidebarActive เป็น true
                   )}
                   id='kt_app_sidebar_mobile_toggle'
@@ -176,7 +176,8 @@ export function HeaderWrapper() {
                 >
                   <KTIcon iconName='abstract-14' className='fs-1' />
                 </div>
-                <div className='d-flex align-items-center flex-grow-1 flex-lg-grow-0'>
+                <div
+                  className='d-flex align-items-center flex-grow-1 flex-lg-grow-0'>
                   <Link to='/dashboard' className='d-lg-none'>
                     <img
                       alt='Logo'
@@ -191,7 +192,8 @@ export function HeaderWrapper() {
         )}
 
         {!(config.layoutType === 'dark-sidebar' || config.layoutType === 'light-sidebar') && (
-          <div className='d-flex align-items-center flex-grow-1 flex-lg-grow-0 me-lg-15'>
+          <div
+            className='d-flex align-items-center flex-grow-1 flex-lg-grow-0 me-lg-15'>
             <Link to='/dashboard'>
               {config.layoutType === 'dark-header' ? (
                 <img

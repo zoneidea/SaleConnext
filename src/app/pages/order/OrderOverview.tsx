@@ -25,7 +25,7 @@ const OrderOverview: React.FC = () => {
   const GETBOOKINGLIST_URL = `${API_SALECONNEXT}/GetBookinglist`;
 
   const [allBookingList, setAllBookingList] = useState<any[]>([]); // กำหนดให้ state เป็น array เพื่อรองรับ map()
-  // console.log(`allBookingList`, allBookingList);
+  console.log(`allBookingList`, allBookingList);
 
   // แสดง Show entries
   const [entries, setEntries] = useState<number>(10); // ค่าเริ่มต้นของจำนวนรายการ
@@ -36,7 +36,8 @@ const OrderOverview: React.FC = () => {
   // คำนวณข้อมูลที่แสดงในหน้าปัจจุบัน
   const startIndex = (currentPage - 1) * entries;
   const displayedData = allBookingList.slice(startIndex, startIndex + entries);
-
+  console.log(`displayedData`, displayedData);
+  
   const [isLoading, setIsLoading] = useState<boolean>(false); // สถานะการโหลด
 
   // พนักงานขาย
@@ -54,6 +55,8 @@ const OrderOverview: React.FC = () => {
           },
         });
         const data = Array.isArray(response.data.data) ? response.data.data : [];
+        console.log(`data`, data);
+        
         setAllBookingList(data);
       } catch (error) {
         console.error('Error fetching GETBOOKINGLIST_URL:', error);

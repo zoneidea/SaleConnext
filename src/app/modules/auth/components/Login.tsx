@@ -18,10 +18,16 @@ const loginSchema = Yup.object().shape({
   password: Yup.string().required('Password is required'),
 })
 
+// const initialValues = {
+//   username: '058488',
+//   password: 'Bb1234567',
+// }
+
 const initialValues = {
-  username: '058488',
-  password: 'Bb1234567',
+  username: '',
+  password: '',
 }
+
 
 export function Login() {
   const API_URL_POST_CATEGORIES = import.meta.env.VITE_APP_API_SALECONNEXT

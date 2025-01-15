@@ -86,7 +86,7 @@ const ReportSale: React.FC = () => {
                     <div className="d-flex justify-content-between align-items-center mb-5">
                         <div className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
                             <h1 className="page-heading d-flex text-gray-900 fw-bold fs-3 my-0 flex-column justify-content-center">
-                                รายงานระบบขาย
+                                รายงานการขายประจำวัน
                             </h1>
                             <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
                                 <li className="breadcrumb-item text-muted">
@@ -95,7 +95,7 @@ const ReportSale: React.FC = () => {
                                 <li className="breadcrumb-item">
                                     <span className="bullet bg-gray-500 w-5px h-2px"></span>
                                 </li>
-                                <li className="breadcrumb-item text-gray-900">รายงานระบบขาย</li>
+                                <li className="breadcrumb-item text-gray-900">รายงานการขายประจำวัน</li>
                             </ul>
                         </div>
                     </div>
@@ -155,7 +155,7 @@ const ReportSale: React.FC = () => {
                                     <div style={{ overflowX: "auto", width: "100%" }}>
                                         <table className="table table-rounded table-row-bordered border table-striped gs-7 mt-3">
                                             <thead>
-                                                <tr>
+                                                <tr className="fw-bold">
                                                     <th>ContNo</th>
                                                     <th>สินค้า</th>
                                                     <th>แพ็คเกจ</th>
