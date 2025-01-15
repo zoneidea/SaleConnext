@@ -684,15 +684,15 @@ const OrderCreateBooking: React.FC = () => {
 
     const handleDateChange = (date: Date | null) => {
         if (date) {
-            const formattedDate = date.toISOString().split('T')[0]; // แปลงวันที่เป็นรูปแบบ yyyy-MM-dd
-            setValueCalendar(formattedDate); // เก็บค่าเป็น string
+            const formattedDate = dayjs(date).format('YYYY-MM-DD'); // ใช้ dayjs เพื่อให้รองรับ timezone
+            setValueCalendar(formattedDate); // เก็บค่าในรูปแบบ yyyy-MM-dd
             const calculatedAge = dayjs().diff(dayjs(date), 'year'); // คำนวณอายุ
             setValueAge(calculatedAge);
         } else {
             setValueCalendar(null); // หากไม่มีวันที่ ให้ตั้งค่าเป็น null
             setValueAge(null); // ตั้งค่าอายุเป็น null
         }
-    };
+    };    
 
     {/*-------------------- End ข้อมูลลูกค้า --------------------*/ }
 
@@ -2539,6 +2539,7 @@ const OrderCreateBooking: React.FC = () => {
                                                             dropdownMode="select"
                                                             isClearable
                                                             dateFormat="yyyy-MM-dd"
+                                                            withPortal
                                                         />
                                                     </div>
                                                 </div>
