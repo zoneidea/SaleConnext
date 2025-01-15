@@ -1480,19 +1480,19 @@ const OrderCreateBooking: React.FC = () => {
                             <div className='col-12'>
 
                                 {/* Start ปุ่มค้นหาลูกค้า */}
-                                {/* {auth.data[0].HascustomerSearch === "true" && (
+                                {auth.data[0].HascustomerSearch === "true" && (
                                     <>
                                         < ModalTrigger handleShow={handleShow} />
                                         <SerchCustomerModal show={showModal} handleClose={handleClose} />
                                         <hr className='my-10' style={{ borderTop: '1px dotted black' }} />
                                     </>
-                                )} */}
+                                )}
 
-                                <>
+                                {/* <>
                                     < ModalTrigger handleShow={handleShow} />
                                     <SerchCustomerModal show={showModal} handleClose={handleClose} />
                                     <hr className='my-10' style={{ borderTop: '1px dotted black' }} />
-                                </>
+                                </> */}
 
                                 {/* End ปุ่มค้นหาลูกค้า */}
 
