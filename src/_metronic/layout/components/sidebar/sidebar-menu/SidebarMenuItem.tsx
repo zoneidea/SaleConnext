@@ -9,6 +9,8 @@ type Props = {
   title: string
   imageSrc?: string // สำหรับไอคอนแบบรูปภาพ
   hasBullet?: boolean
+  onMouseEnter?: (event: React.MouseEvent<HTMLDivElement>) => void;
+  onMouseLeave?: (event: React.MouseEvent<HTMLDivElement>) => void;
 }
 
 const SidebarMenuItem: FC<Props & WithChildren> = ({
@@ -16,13 +18,18 @@ const SidebarMenuItem: FC<Props & WithChildren> = ({
   title,
   imageSrc,
   hasBullet = false,
+  onMouseEnter,
+  onMouseLeave
 }) => {
   const { pathname } = useLocation()
   const isActive = checkIsActive(pathname, to)
   // console.log(`imageSrc`, imageSrc);
-  
+
   return (
-    <div className='menu-item'>
+    <div className='menu-item'
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
       <Link className={clsx('menu-link without-sub', { active: isActive })} to={to}>
         {hasBullet && (
           <span className='menu-bullet'>

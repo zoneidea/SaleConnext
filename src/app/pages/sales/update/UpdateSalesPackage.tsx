@@ -52,7 +52,7 @@ const UpdateSalesPackage: React.FC = () => {
 
     const refno = item?.REFNO
     const productContract = item?.PRODUCT
-    console.log(`productContract`, productContract);
+    // console.log(`productContract`, productContract);
 
     const { auth } = useAuth();
 
@@ -68,14 +68,14 @@ const UpdateSalesPackage: React.FC = () => {
     // console.log(`packageType: `, packageType);
 
     const [promotion, setPromotion] = useState<any[]>([]);
-    console.log(`promotion: `, promotion);
+    // console.log(`promotion: `, promotion);
 
     const [packageList, setPackageList] = useState<any[]>([]);
     // console.log(`packageList: `, packageList);
 
     const [selectedCategoryId, setSelectedCategoryId] = useState<any>('');
     const [selectedProductIndex, setSelectedProductIndex] = useState<number | null>(null);
-    console.log(`selectedProductIndex`, selectedProductIndex);
+    // console.log(`selectedProductIndex`, selectedProductIndex);
     const [selectedItemCode, setSelectedItemCode] = useState<string | null>(null);
     const [selectedPromotion, setSelectedPromotion] = useState<string | number>('');
 
@@ -87,7 +87,7 @@ const UpdateSalesPackage: React.FC = () => {
     const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
     const [selectedTransDate, setSelectedTransDate] = useState<string | null>(null);
     const [productId, setProductId] = useState(null);  // สร้าง state สำหรับเก็บ _id
-    console.log(`productId`, productId);
+    // console.log(`productId`, productId);
 
     const [selectedPackageTypeId, setSelectedPackageTypeId] = useState<number | null>(null);
 
@@ -273,15 +273,15 @@ const UpdateSalesPackage: React.FC = () => {
             return;
         }
         try {
-            console.log("Fetching promotions with parameters:", {
-                ProductID: productId,
-                EmpId,
-                DivisionId,
-                DepartId,
-                DepartGroup,
-                TeamSale,
-                ItemID: selectedItemCode,
-            });
+            // console.log("Fetching promotions with parameters:", {
+            //     ProductID: productId,
+            //     EmpId,
+            //     DivisionId,
+            //     DepartId,
+            //     DepartGroup,
+            //     TeamSale,
+            //     ItemID: selectedItemCode,
+            // });
 
             const response = await axios.post(PROMOTION_URL, {
                 ProductID: productId,
@@ -298,7 +298,7 @@ const UpdateSalesPackage: React.FC = () => {
             });
 
             const data = Array.isArray(response.data.data) ? response.data.data : [];
-            console.log("Fetched promotions:", data);
+            // console.log("Fetched promotions:", data);
 
             setPromotion(data);
 
@@ -482,9 +482,9 @@ const UpdateSalesPackage: React.FC = () => {
                 },
             });
 
-            console.log("Pacakage data: ", SaveProductData)
+            // console.log("Pacakage data: ", SaveProductData)
 
-            console.log('Update package: ', response)
+            // console.log('Update package: ', response)
             if (response.status === 200) {
                 if (!response.data.data) {
                     MySwal.fire('เกิดข้อผิดพลาด', 'ปรับปรุงข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
@@ -518,7 +518,7 @@ const UpdateSalesPackage: React.FC = () => {
             },
         });
 
-        console.log(response)
+        // console.log(response)
 
         if (response.status === 200) {
             if (!response.data.data) {

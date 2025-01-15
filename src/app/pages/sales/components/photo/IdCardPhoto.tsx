@@ -1,1014 +1,3 @@
-// import React, { useState, useEffect } from 'react';
-// import { Link, useLocation, useNavigate } from 'react-router-dom';
-// import { toAbsoluteUrl } from '../../../../../_metronic/helpers';
-// import { useAuth } from '../../../../modules/auth/core/Auth';
-// import { useUUIDStore } from '../../../../modules/stores/stepsStore';
-// import axios from 'axios';
-// import {
-//     usePhotoIdCardStore,
-//     usePhotoDrawingMapStore,
-//     usePhotoTurnStore,
-//     usePhotoInstallationStore,
-//     usePhotoHomeCustomerStore,
-//     usePhotoCustomerStore,
-//     usePhotoEquipmentStore
-// } from '../../../../modules/stores/sales/photoStore/photoStore';
-
-// import Swal from 'sweetalert2';
-// import withReactContent from 'sweetalert2-react-content';
-
-// // อัพเดท
-// interface ItemProps {
-//     REFNO: string,
-//     CONTNO: string,
-//     EMPID: string,
-//     TEAMSALE: string,
-//     SALECODE: string,
-//     SUPEMPID: string,
-//     SECEMPID: string,
-//     STATUS: string,
-//     PRODUCT: [any],
-//     CUSTOMERSTATUS: [any],
-//     DISCOUNT: [any],
-//     CUSTOMERDETAIL: [any],
-//     ADDRESS: [any],
-//     PDPA: [any],
-//     CONTRACT: [any],
-//     IMAGE: [any],
-//     CHECKERCOMMENT: [any]
-// }
-
-// const IdCardPhoto: React.FC = () => {
-//     // สร้างใหม่
-//     const { REFNO } = useUUIDStore();
-
-//     const { auth } = useAuth();
-//     const EmpId = auth?.data?.[0]?.EmpId || '';
-//     const TeamSale = auth?.data?.[0]?.TeamSale || '';
-//     const SaleCode = auth?.data?.[0]?.SaleCode || '';
-//     const SupEmpId = auth?.data?.[0]?.SupEmp || '';
-//     const SecEmpId = auth?.data?.[0]?.SecEmp || '';
-
-//     const location = useLocation() as any;
-//     const navigate = useNavigate()
-//     const fromStep = location.state?.fromStep || false;
-//     // console.log(`fromStep`, fromStep);
-
-//     const item = location.state?.data as ItemProps || [];
-//     // console.log(`item`, item);
-
-//     // กำหนด REFNO
-//     const refno = fromStep ? item.REFNO : REFNO;
-//     // console.log(`refno`, refno);
-
-//     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
-//     const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
-//     const GETSUMMARYCONTACT = `${API_URL_MONGO}/Contract/GetContractSummary?refno=${refno}`;
-
-//     const [getSummaryContract, setGetSummaryContract] = useState<any[]>([])
-//     // console.log(`getSummaryContract`, getSummaryContract);
-//     const imageFromSummary = getSummaryContract[0]?.IMAGE
-//     // console.log(`imageFromSummary`, imageFromSummary);
-
-//     const { imagesIdCard, addImage, removeImage, loadImages, clearImages } = usePhotoIdCardStore();
-//     const { imagesDrawingMap } = usePhotoDrawingMapStore();
-//     const { imagesTurn } = usePhotoTurnStore();
-//     const { imagesInstallation } = usePhotoInstallationStore();
-//     const { imagesHomeCustomer } = usePhotoHomeCustomerStore();
-//     const { imagesCustomer } = usePhotoCustomerStore();
-//     const { imagesEquipment } = usePhotoEquipmentStore();
-
-//     const [error, setError] = useState<string | null>(null);
-
-//     const isIOS: boolean = /iPad|iPhone|iPod/.test(navigator.userAgent);
-//     const isAndroid: boolean = /Android/.test(navigator.userAgent);
-//     const isTablet: boolean = /Tablet|iPad/.test(navigator.userAgent);
-//     const isPC: boolean = !isIOS && !isAndroid && !isTablet;
-
-//     const [selectedImage, setSelectedImage] = useState<string | null>(null);
-
-//     // โหลด summary contract
-//     useEffect(() => {
-//         const fetchContractSummary = async () => {
-//             try {
-//                 const response = await axios.get(GETSUMMARYCONTACT, {
-//                     headers: {
-//                         'Content-Type': 'application/json',
-//                         'Accept': 'application/json',
-//                     }
-//                 });
-//                 const data = Array.isArray(response.data.data) ? response.data.data : [];
-//                 setGetSummaryContract(data); // บันทึกสินค้าใหม่
-//             } catch (error) {
-//                 console.error('Error fetching products:', error);
-//             }
-//         };
-
-//         fetchContractSummary();
-//     });
-
-//     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-//         const file = event.target.files?.[0];
-//         if (file) {
-//             if (file.size > 3 * 1024 * 1024) {
-//                 resizeImage(file);
-//             } else {
-//                 readImageFile(file);
-//             }
-//         }
-//     };
-
-//     const readImageFile = (file: File) => {
-//         const reader = new FileReader();
-//         reader.onload = () => {
-//             if (reader.result) {
-//                 const imageData = reader.result as string;
-//                 const cleanedImage = imageData.replace(/^(data:image\/(jpeg|png|webp);base64,)+/, '');
-//                 const fileType = file.type; // ประเภทของไฟล์
-//                 const formattedImage = fileType.includes('webp')
-//                     ? `data:image/webp;base64,${cleanedImage.trim()}`
-//                     : `data:image/jpeg;base64,${cleanedImage.trim()}`; // ค่าเริ่มต้นเป็น jpeg
-
-//                 addImage(formattedImage);
-//                 setError(null);
-//             }
-//         };
-//         reader.readAsDataURL(file);
-//     };
-
-//     const resizeImage = (file: File) => {
-//         const reader = new FileReader();
-//         reader.onload = (e) => {
-//             const img = new Image();
-//             img.onload = () => {
-//                 const canvas = document.createElement('canvas');
-//                 const ctx = canvas.getContext('2d');
-
-//                 const maxSize = 1024;
-//                 let width = img.width;
-//                 let height = img.height;
-
-//                 if (width > height) {
-//                     if (width > maxSize) {
-//                         height *= maxSize / width;
-//                         width = maxSize;
-//                     }
-//                 } else {
-//                     if (height > maxSize) {
-//                         width *= maxSize / height;
-//                         height = maxSize;
-//                     }
-//                 }
-
-//                 canvas.width = width;
-//                 canvas.height = height;
-//                 ctx?.drawImage(img, 0, 0, width, height);
-
-//                 // ตรวจสอบประเภทของไฟล์ก่อนบีบอัด
-//                 const fileType = file.type; // "image/jpeg" หรือ "image/png"
-//                 const resizedDataUrl = canvas.toDataURL(fileType === 'image/png' ? 'image/png' : 'image/jpeg', 0.7); // ใช้ type ของไฟล์ที่ถูกอัปโหลด
-
-//                 addImage(resizedDataUrl);
-//                 setError(null);
-//             };
-//             img.src = e.target?.result as string;
-//         };
-//         reader.readAsDataURL(file);
-//     };
-
-//     const handleDeleteImage = (image: string) => {
-//         Swal.fire({
-//             title: 'คุณแน่ใจหรือไม่?',
-//             text: 'คุณต้องการลบรูปภาพนี้หรือไม่?',
-//             icon: 'warning',
-//             showCancelButton: true,
-//             confirmButtonColor: '#d33',
-//             cancelButtonColor: '#3085d6',
-//             confirmButtonText: 'ลบ',
-//             cancelButtonText: 'ยกเลิก',
-//         }).then((result) => {
-//             if (result.isConfirmed) {
-//                 removeImage(image); // ลบรูปภาพออก
-//                 Swal.fire({
-//                     title: 'ลบสำเร็จ!',
-//                     text: 'รูปภาพถูกลบเรียบร้อยแล้ว',
-//                     icon: 'success',
-//                     confirmButtonColor: '#3085d6',
-//                 });
-//             }
-//         });
-//     };
-
-//     // POST Contract/updateContract
-//     const handleNextClick = async () => {
-//         try {
-//             const cleanedImagesIdCard = imagesIdCard?.map((image) => {
-//                 return image.replace(/^data:image\/(jpeg|png|webp);base64,/, ''); // ลบ prefix ก่อนส่ง
-//             });
-
-//             const updateContract = await axios.post(UPDATECONTACT, {
-//                 REFNO: refno,
-//                 EMPID: EmpId,
-//                 TEAMSALE: TeamSale,
-//                 SALECODE: SaleCode,
-//                 SUPEMPID: SupEmpId,
-//                 SECEMPID: SecEmpId,
-//                 FIELD: "IMAGE",
-//                 DATA: [{
-//                     "IMAGECARD": cleanedImagesIdCard,
-//                     "IMAGEGPS": imageFromSummary[0]?.IMAGEGPS,
-//                     "IMAGEMAP": imageFromSummary[0]?.IMAGEMAP,
-//                     "IMAGETRADEIN": imageFromSummary[0]?.IMAGETRADEIN,
-//                     "IMAGEINSTALLATION": imageFromSummary[0]?.IMAGEINSTALLATION,
-//                     "IMAGECUSTOMERHOME": imageFromSummary[0]?.IMAGECUSTOMERHOME,
-//                     "IMAGECUSTOMER": imageFromSummary[0]?.IMAGECUSTOMER,
-//                     "IMAGETDS": imageFromSummary[0]?.IMAGETDS,
-//                 }]
-//             }, {
-//                 headers: {
-//                     'Content-Type': 'application/json',
-//                 },
-//             });
-
-//             console.log(`updateContract IMAGE: `, updateContract.data);
-//             Swal.fire({
-//                 icon: 'success',
-//                 title: 'สำเร็จ!',
-//                 text: 'บันทึกรูปภาพลงระบบเรียบร้อยแล้ว',
-//             });
-
-//             // ล้างรูปภาพหลังบันทึกสำเร็จ
-//             // clearImages();
-//         } catch (error) {
-//             console.error('Error fetching UPDATECONTACT IMAGE:', error);
-//             Swal.fire({
-//                 icon: 'error',
-//                 title: 'เกิดข้อผิดพลาด!',
-//                 text: 'ไม่สามารถบันทึกรูปภาพได้ กรุณาลองใหม่อีกครั้ง',
-//             });
-//         }
-//     };
-
-//     const handleViewGallery = () => {
-//         const updatedItem = {
-//             ...item,
-//         };
-//         navigate("/sale/photo/gallery/idcard", { state: { data: updatedItem, fromStep } });
-//     };
-
-//     return (
-//         <div>
-//             <div className='d-flex align-items-center mt-10 mb-5 mx-7 gap-3'>
-//                 <label
-//                     className='btn btn-success w-100 w-md-auto align-self-center'
-//                     htmlFor="camera-input"
-//                     style={{
-//                         cursor: 'pointer',
-//                         padding: '10px',
-//                         border: '1px solid #ccc',
-//                         display: 'inline-block',
-//                     }}
-//                 >
-//                     {isPC ? "เลือกรูปจากคลัง" : "เลือกรูปจากคลัง / ใช้กล้อง"}
-//                 </label>
-//                 <button
-//                     className="btn btn-primary w-100 w-md-auto align-self-center"
-//                     onClick={handleViewGallery}
-//                 >
-//                     ดูรูปภาพที่บันทึกในระบบ
-//                 </button>
-//             </div>
-//             {error && (
-//                 <div className='alert alert-danger mx-5'>
-//                     {error}
-//                 </div>
-//             )}
-//             <input
-//                 id="camera-input"
-//                 type="file"
-//                 accept="image/*"
-//                 onChange={handleFileChange}
-//                 style={{ display: 'none' }}
-//             />
-
-//             <div>
-//                 {imagesIdCard.length > 0 && (
-//                     <div className='row mx-5'>
-//                         {imagesIdCard.map((image: string, index: number) => (
-//                             <div
-//                                 className='col-6 col-xl-4 mb-3 position-relative'
-//                                 key={index}
-//                                 style={{ cursor: 'pointer', overflow: 'hidden' }}
-//                             >
-//                                 <div className='border border-gray-500 position-relative'>
-//                                     <img
-//                                         src={image}
-//                                         alt={`Captured ${index + 1}`}
-//                                         style={{
-//                                             width: '100%',
-//                                             height: '200px',
-//                                             objectFit: 'cover',
-//                                             cursor: 'pointer',
-//                                         }}
-//                                     />
-//                                     {/* Overlay */}
-//                                     <div
-//                                         className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-//                                         style={{
-//                                             backgroundColor: 'rgba(0, 0, 0, 0.8)',
-//                                             opacity: 0,
-//                                             transition: 'opacity 0.3s ease-in-out',
-//                                         }}
-//                                         onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
-//                                         onMouseLeave={(e) => (e.currentTarget.style.opacity = '0')}
-//                                     >
-//                                         {/* Icon View */}
-//                                         <img
-//                                             src={toAbsoluteUrl('media/settings/eye-svgrepo-com.png')}
-//                                             alt="ดูภาพ"
-//                                             className="me-5"
-//                                             style={{ width: '30px', height: '30px', cursor: 'pointer' }}
-//                                             onClick={() => setSelectedImage(image)}
-//                                         />
-//                                         {/* Icon Delete */}
-//                                         <img
-//                                             src={toAbsoluteUrl('media/settings/trash-svgrepo-com.png')}
-//                                             alt="ลบรูป"
-//                                             style={{ width: '30px', height: '30px', cursor: 'pointer' }}
-//                                             onClick={() => handleDeleteImage(image)}
-//                                         />
-//                                     </div>
-//                                 </div>
-//                             </div>
-//                         ))}
-//                     </div>
-//                 )}
-
-//                 {/* Modal สำหรับแสดงรูปภาพขยาย */}
-//                 {selectedImage && (
-//                     <div
-//                         style={{
-//                             position: 'fixed',
-//                             top: 0,
-//                             left: 0,
-//                             width: '100vw',
-//                             height: '100vh',
-//                             backgroundColor: 'rgba(0, 0, 0, 0.8)',
-//                             display: 'flex',
-//                             justifyContent: 'center',
-//                             alignItems: 'center',
-//                             zIndex: 1000,
-//                         }}
-//                         onClick={() => setSelectedImage(null)}
-//                     >
-//                         <img
-//                             src={selectedImage}
-//                             alt="Selected"
-//                             style={{
-//                                 maxWidth: '90%',
-//                                 maxHeight: '90%',
-//                                 border: '2px solid white',
-//                             }}
-//                         />
-//                     </div>
-//                 )}
-
-//                 {/* แสดงปุ่มเมื่อมาจาก Step */}
-//                 {fromStep ? (
-//                     <div className='d-none d-xl-flex justify-content-between align-items-center my-5 mx-7'>
-//                         <button
-//                             className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'
-//                             onClick={() => navigate('/sale/photo', { state: { data: item, fromStep } })}
-//                         >
-//                             ย้อนกลับ
-//                         </button>
-//                         <button
-//                             className='btn btn-warning w-100 w-md-auto align-self-center mb-2 mb-md-0'
-//                             type='button'
-//                             onClick={handleNextClick}
-//                         >
-//                             อัพเดทข้อมูล
-//                         </button>
-//                     </div>
-//                 ) : (
-//                     <div className='d-none d-xl-flex justify-content-between align-items-center my-5 mx-7'>
-//                         <button
-//                             className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'
-//                             onClick={() => navigate('/sale/photo')}
-//                         >
-//                             ย้อนกลับ
-//                         </button>
-//                         <button
-//                             className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
-//                             type='button'
-//                             onClick={handleNextClick}
-//                         >
-//                             บันทึกรูปภาพลงระบบ
-//                         </button>
-//                     </div>
-//                 )}
-
-//                 {/* ปุ่มในหน้าจอเล็ก */}
-//                 {/* แสดงปุ่มเมื่อมาจาก Step */}
-//                 {fromStep ? (
-//                     <div
-//                         className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
-//                         style={{
-//                             position: "fixed",
-//                             bottom: 0,
-//                             left: 0,
-//                             right: 0,
-//                             zIndex: 1050,
-//                         }}
-//                     >
-//                         <button
-//                             className="btn btn-secondary w-auto me-2"
-//                             onClick={() => navigate('/sale/photo', { state: { data: item, fromStep } })}
-//                         >
-//                             ย้อนกลับ
-//                         </button>
-//                         <button
-//                             className="btn btn-warning w-auto me-2"
-//                             onClick={handleNextClick}
-//                         >
-//                             อัพเดทข้อมูล
-//                         </button>
-//                     </div>
-//                 ) : (
-//                     <div
-//                         className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
-//                         style={{
-//                             position: "fixed",
-//                             bottom: 0,
-//                             left: 0,
-//                             right: 0,
-//                             zIndex: 1050,
-//                         }}
-//                     >
-//                         <button
-//                             className="btn btn-secondary w-auto me-2"
-//                             onClick={() => navigate('/sale/photo')}
-//                         >
-//                             ย้อนกลับ
-//                         </button>
-//                         <button
-//                             className="btn btn-primary w-auto me-2"
-//                             onClick={handleNextClick}
-//                         >
-//                             บันทึกรูปภาพลงระบบ
-//                         </button>
-//                     </div>
-//                 )}
-//             </div>
-//         </div>
-//     );
-// };
-
-// export default IdCardPhoto;
-
-
-
-
-// import React, { useState, useEffect } from 'react';
-// import { Link, useLocation, useNavigate } from 'react-router-dom';
-// import { toAbsoluteUrl } from '../../../../../_metronic/helpers';
-// import { useAuth } from '../../../../modules/auth/core/Auth';
-// import { useUUIDStore } from '../../../../modules/stores/stepsStore';
-// import axios from 'axios';
-// import {
-//     usePhotoIdCardStore,
-//     usePhotoDrawingMapStore,
-//     usePhotoTurnStore,
-//     usePhotoInstallationStore,
-//     usePhotoHomeCustomerStore,
-//     usePhotoCustomerStore,
-//     usePhotoEquipmentStore
-// } from '../../../../modules/stores/sales/photoStore/photoStore';
-
-// import Swal from 'sweetalert2';
-// import withReactContent from 'sweetalert2-react-content';
-// import { log } from 'console';
-
-// // อัพเดท
-// interface ItemProps {
-//     REFNO: string,
-//     CONTNO: string,
-//     EMPID: string,
-//     TEAMSALE: string,
-//     SALECODE: string,
-//     SUPEMPID: string,
-//     SECEMPID: string,
-//     STATUS: string,
-//     PRODUCT: [any],
-//     CUSTOMERSTATUS: [any],
-//     DISCOUNT: [any],
-//     CUSTOMERDETAIL: [any],
-//     ADDRESS: [any],
-//     PDPA: [any],
-//     CONTRACT: [any],
-//     IMAGE: [any],
-//     CHECKERCOMMENT: [any]
-// }
-
-// const IdCardPhoto: React.FC = () => {
-//     // สร้างใหม่
-//     const { REFNO } = useUUIDStore();
-
-//     const { auth } = useAuth();
-//     const EmpId = auth?.data?.[0]?.EmpId || '';
-//     const TeamSale = auth?.data?.[0]?.TeamSale || '';
-//     const SaleCode = auth?.data?.[0]?.SaleCode || '';
-//     const SupEmpId = auth?.data?.[0]?.SupEmp || '';
-//     const SecEmpId = auth?.data?.[0]?.SecEmp || '';
-
-//     const location = useLocation() as any;
-//     const navigate = useNavigate()
-//     const fromStep = location.state?.fromStep || false;
-//     // console.log(`fromStep`, fromStep);
-
-//     const item = location.state?.data as ItemProps || [];
-//     // console.log(`item`, item);
-
-//     // กำหนด REFNO
-//     const refno = fromStep ? item.REFNO : REFNO;
-//     // console.log(`refno`, refno);
-
-//     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
-//     const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
-//     const GETSUMMARYCONTACT = `${API_URL_MONGO}/Contract/GetContractSummary?refno=${refno}`;
-
-//     const [getSummaryContract, setGetSummaryContract] = useState<any[]>([])
-//     // console.log(`getSummaryContract`, getSummaryContract);
-//     const imageFromSummary = getSummaryContract[0]?.IMAGE
-//     // console.log(`imageFromSummary`, imageFromSummary);
-
-//     const { imagesIdCard, addImage, removeImage, loadImages, clearImages } = usePhotoIdCardStore();
-//     const { imagesDrawingMap } = usePhotoDrawingMapStore();
-//     const { imagesTurn } = usePhotoTurnStore();
-//     const { imagesInstallation } = usePhotoInstallationStore();
-//     const { imagesHomeCustomer } = usePhotoHomeCustomerStore();
-//     const { imagesCustomer } = usePhotoCustomerStore();
-//     const { imagesEquipment } = usePhotoEquipmentStore();
-
-//     const [error, setError] = useState<string | null>(null);
-
-//     const isIOS: boolean = /iPad|iPhone|iPod/.test(navigator.userAgent);
-//     const isAndroid: boolean = /Android/.test(navigator.userAgent);
-//     const isTablet: boolean = /Tablet|iPad/.test(navigator.userAgent);
-//     const isPC: boolean = !isIOS && !isAndroid && !isTablet;
-
-//     const [selectedImage, setSelectedImage] = useState<string | null>(null);
-
-//     const [files, setFiles] = useState<File[]>([])
-//     // console.log(`files`, files);
-
-//     // โหลด summary contract
-//     useEffect(() => {
-//         const fetchContractSummary = async () => {
-//             try {
-//                 const response = await axios.get(GETSUMMARYCONTACT, {
-//                     headers: {
-//                         'Content-Type': 'application/json',
-//                         'Accept': 'application/json',
-//                     }
-//                 });
-//                 const data = Array.isArray(response.data.data) ? response.data.data : [];
-//                 setGetSummaryContract(data); // บันทึกสินค้าใหม่
-//             } catch (error) {
-//                 console.error('Error fetching products:', error);
-//             }
-//         };
-
-//         fetchContractSummary();
-//     });
-
-//     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-//         if (event.target.files) {
-//             const selectedFiles = Array.from(event.target.files)
-//             setFiles((prevFiles) => [...prevFiles, ...selectedFiles])
-//         }
-//     }
-
-//     // const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-//     //     const file = event.target.files?.[0];
-//     //     console.log(`file`, file);
-
-//     //     if (file) {
-//     //         if (file.size > 3 * 1024 * 1024) {
-//     //             resizeImage(file);
-//     //         } else {
-//     //             readImageFile(file);
-//     //         }
-//     //     }
-//     // };
-
-//     // const readImageFile = (file: File) => {
-//     //     const reader = new FileReader();
-//     //     reader.onload = () => {
-//     //         if (reader.result) {
-//     //             const imageData = reader.result as string;
-//     //             const cleanedImage = imageData.replace(/^(data:image\/(jpeg|png|webp);base64,)+/, '');
-//     //             const fileType = file.type; // ประเภทของไฟล์
-//     //             const formattedImage = fileType.includes('webp')
-//     //                 ? `data:image/webp;base64,${cleanedImage.trim()}`
-//     //                 : `data:image/jpeg;base64,${cleanedImage.trim()}`; // ค่าเริ่มต้นเป็น jpeg
-
-//     //             addImage(formattedImage);
-//     //             setError(null);
-//     //         }
-//     //     };
-//     //     reader.readAsDataURL(file);
-//     // };
-
-//     const resizeImage = (file: File) => {
-//         const reader = new FileReader();
-//         reader.onload = (e) => {
-//             const img = new Image();
-//             img.onload = () => {
-//                 const canvas = document.createElement('canvas');
-//                 const ctx = canvas.getContext('2d');
-
-//                 const maxSize = 1024;
-//                 let width = img.width;
-//                 let height = img.height;
-
-//                 if (width > height) {
-//                     if (width > maxSize) {
-//                         height *= maxSize / width;
-//                         width = maxSize;
-//                     }
-//                 } else {
-//                     if (height > maxSize) {
-//                         width *= maxSize / height;
-//                         height = maxSize;
-//                     }
-//                 }
-
-//                 canvas.width = width;
-//                 canvas.height = height;
-//                 ctx?.drawImage(img, 0, 0, width, height);
-
-//                 // ตรวจสอบประเภทของไฟล์ก่อนบีบอัด
-//                 const fileType = file.type; // "image/jpeg" หรือ "image/png"
-//                 const resizedDataUrl = canvas.toDataURL(fileType === 'image/png' ? 'image/png' : 'image/jpeg', 0.7); // ใช้ type ของไฟล์ที่ถูกอัปโหลด
-
-//                 addImage(resizedDataUrl);
-//                 setError(null);
-//             };
-//             img.src = e.target?.result as string;
-//         };
-//         reader.readAsDataURL(file);
-//     };
-
-//     const handleDeleteImage = (image: string) => {
-//         Swal.fire({
-//             title: 'คุณแน่ใจหรือไม่?',
-//             text: 'คุณต้องการลบรูปภาพนี้หรือไม่?',
-//             icon: 'warning',
-//             showCancelButton: true,
-//             confirmButtonColor: '#d33',
-//             cancelButtonColor: '#3085d6',
-//             confirmButtonText: 'ลบ',
-//             cancelButtonText: 'ยกเลิก',
-//         }).then((result) => {
-//             if (result.isConfirmed) {
-//                 removeImage(image); // ลบรูปภาพออก
-//                 Swal.fire({
-//                     title: 'ลบสำเร็จ!',
-//                     text: 'รูปภาพถูกลบเรียบร้อยแล้ว',
-//                     icon: 'success',
-//                     confirmButtonColor: '#3085d6',
-//                 });
-//             }
-//         });
-//     };
-
-//     // // POST Contract/updateContract
-//     // const handleNextClick = async () => {
-//     //     try {
-//     //         const cleanedImagesIdCard = imagesIdCard?.map((image) => {
-//     //             return image.replace(/^data:image\/(jpeg|png|webp);base64,/, ''); // ลบ prefix ก่อนส่ง
-//     //         });
-
-//     //         const updateContract = await axios.post(UPDATECONTACT, {
-//     //             REFNO: refno,
-//     //             EMPID: EmpId,
-//     //             TEAMSALE: TeamSale,
-//     //             SALECODE: SaleCode,
-//     //             SUPEMPID: SupEmpId,
-//     //             SECEMPID: SecEmpId,
-//     //             FIELD: "IMAGE",
-//     //             DATA: [{
-//     //                 "IMAGECARD": cleanedImagesIdCard,
-//     //                 "IMAGEGPS": imageFromSummary[0]?.IMAGEGPS,
-//     //                 "IMAGEMAP": imageFromSummary[0]?.IMAGEMAP,
-//     //                 "IMAGETRADEIN": imageFromSummary[0]?.IMAGETRADEIN,
-//     //                 "IMAGEINSTALLATION": imageFromSummary[0]?.IMAGEINSTALLATION,
-//     //                 "IMAGECUSTOMERHOME": imageFromSummary[0]?.IMAGECUSTOMERHOME,
-//     //                 "IMAGECUSTOMER": imageFromSummary[0]?.IMAGECUSTOMER,
-//     //                 "IMAGETDS": imageFromSummary[0]?.IMAGETDS,
-//     //             }]
-//     //         }, {
-//     //             headers: {
-//     //                 'Content-Type': 'application/json',
-//     //             },
-//     //         });
-
-//     //         console.log(`updateContract IMAGE: `, updateContract.data);
-//     //         Swal.fire({
-//     //             icon: 'success',
-//     //             title: 'สำเร็จ!',
-//     //             text: 'บันทึกรูปภาพลงระบบเรียบร้อยแล้ว',
-//     //         });
-
-//     //         // ล้างรูปภาพหลังบันทึกสำเร็จ
-//     //         // clearImages();
-//     //     } catch (error) {
-//     //         console.error('Error fetching UPDATECONTACT IMAGE:', error);
-//     //         Swal.fire({
-//     //             icon: 'error',
-//     //             title: 'เกิดข้อผิดพลาด!',
-//     //             text: 'ไม่สามารถบันทึกรูปภาพได้ กรุณาลองใหม่อีกครั้ง',
-//     //         });
-//     //     }
-//     // };
-
-//     const handleNextClick = async () => {
-//         if (files.length === 0) {
-//             console.error('No files selected');
-//             Swal.fire({
-//                 icon: 'error',
-//                 title: 'เกิดข้อผิดพลาด',
-//                 text: 'กรุณาเลือกรูปภาพก่อนบันทึก',
-//             });
-//             return;
-//         }
-
-//         const formData = new FormData();
-
-//         formData.append('REFNO', refno)
-
-//         // เพิ่มไฟล์ทั้งหมดลงใน FormData โดยใช้ key "images"
-//         files.forEach((file) => {
-//             formData.append('IMAGECARD', file); // ใช้ key เดียวกัน "images"
-//         });
-
-//         // ตรวจสอบ FormData
-//         console.log('FormData Content:');
-//         for (let pair of formData.entries()) {
-//             console.log(pair[0], pair[1]);
-//         }
-
-//         try {
-//             // ส่งข้อมูลไปยัง API
-//             const response = await axios.post(
-//                 `${API_URL_MONGO}/Contract/SaveContractImage`,
-//                 formData,
-//                 {
-//                     headers: {
-//                         'Content-Type': 'multipart/form-data',
-//                     },
-//                 }
-//             );
-
-//             console.log('Upload success:', response.data);
-//             Swal.fire({
-//                 icon: 'success',
-//                 title: 'สำเร็จ!',
-//                 text: 'บันทึกรูปภาพลงระบบเรียบร้อยแล้ว',
-//             });
-
-//             // ล้าง state ของไฟล์หลังจากบันทึกสำเร็จ
-//             setFiles([]);
-//         } catch (error) {
-//             console.error('Upload error:', error);
-//             Swal.fire({
-//                 icon: 'error',
-//                 title: 'เกิดข้อผิดพลาด',
-//                 text: 'ไม่สามารถบันทึกรูปภาพได้ กรุณาลองใหม่อีกครั้ง',
-//             });
-//         }
-//     };    
-
-//     const handleViewGallery = () => {
-//         const updatedItem = {
-//             ...item,
-//         };
-//         navigate("/sale/photo/gallery/idcard", { state: { data: updatedItem, fromStep } });
-//     };
-
-//     return (
-//         <div>
-//             <div className='d-flex align-items-center mt-10 mb-5 mx-7 gap-3'>
-//                 <label
-//                     className='btn btn-success w-100 w-md-auto align-self-center'
-//                     htmlFor="camera-input"
-//                     style={{
-//                         cursor: 'pointer',
-//                         padding: '10px',
-//                         border: '1px solid #ccc',
-//                         display: 'inline-block',
-//                     }}
-//                 >
-//                     {isPC ? "เลือกรูปจากคลัง" : "เลือกรูปจากคลัง / ใช้กล้อง"}
-//                 </label>
-//                 <button
-//                     className="btn btn-primary w-100 w-md-auto align-self-center"
-//                     onClick={handleViewGallery}
-//                 >
-//                     ดูรูปภาพที่บันทึกในระบบ
-//                 </button>
-//             </div>
-//             {error && (
-//                 <div className='alert alert-danger mx-5'>
-//                     {error}
-//                 </div>
-//             )}
-//             <input
-//                 id="camera-input"
-//                 type="file"
-//                 accept="image/*"
-//                 onChange={handleFileChange}
-//                 style={{ display: 'none' }}
-//             />
-
-//             <div>
-//                 {imagesIdCard.length > 0 && (
-//                     <div className='row mx-5'>
-//                         {imagesIdCard.map((image: string, index: number) => (
-//                             <div
-//                                 className='col-6 col-xl-4 mb-3 position-relative'
-//                                 key={index}
-//                                 style={{ cursor: 'pointer', overflow: 'hidden' }}
-//                             >
-//                                 <div className='border border-gray-500 position-relative'>
-//                                     <img
-//                                         src={image}
-//                                         alt={`Captured ${index + 1}`}
-//                                         style={{
-//                                             width: '100%',
-//                                             height: '200px',
-//                                             objectFit: 'cover',
-//                                             cursor: 'pointer',
-//                                         }}
-//                                     />
-//                                     {/* Overlay */}
-//                                     <div
-//                                         className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-//                                         style={{
-//                                             backgroundColor: 'rgba(0, 0, 0, 0.8)',
-//                                             opacity: 0,
-//                                             transition: 'opacity 0.3s ease-in-out',
-//                                         }}
-//                                         onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
-//                                         onMouseLeave={(e) => (e.currentTarget.style.opacity = '0')}
-//                                     >
-//                                         {/* Icon View */}
-//                                         <img
-//                                             src={toAbsoluteUrl('media/settings/eye-svgrepo-com.png')}
-//                                             alt="ดูภาพ"
-//                                             className="me-5"
-//                                             style={{ width: '30px', height: '30px', cursor: 'pointer' }}
-//                                             onClick={() => setSelectedImage(image)}
-//                                         />
-//                                         {/* Icon Delete */}
-//                                         <img
-//                                             src={toAbsoluteUrl('media/settings/trash-svgrepo-com.png')}
-//                                             alt="ลบรูป"
-//                                             style={{ width: '30px', height: '30px', cursor: 'pointer' }}
-//                                             onClick={() => handleDeleteImage(image)}
-//                                         />
-//                                     </div>
-//                                 </div>
-//                             </div>
-//                         ))}
-//                     </div>
-//                 )}
-
-//                 {/* Modal สำหรับแสดงรูปภาพขยาย */}
-//                 {selectedImage && (
-//                     <div
-//                         style={{
-//                             position: 'fixed',
-//                             top: 0,
-//                             left: 0,
-//                             width: '100vw',
-//                             height: '100vh',
-//                             backgroundColor: 'rgba(0, 0, 0, 0.8)',
-//                             display: 'flex',
-//                             justifyContent: 'center',
-//                             alignItems: 'center',
-//                             zIndex: 1000,
-//                         }}
-//                         onClick={() => setSelectedImage(null)}
-//                     >
-//                         <img
-//                             src={selectedImage}
-//                             alt="Selected"
-//                             style={{
-//                                 maxWidth: '90%',
-//                                 maxHeight: '90%',
-//                                 border: '2px solid white',
-//                             }}
-//                         />
-//                     </div>
-//                 )}
-
-//                 {/* แสดงปุ่มเมื่อมาจาก Step */}
-//                 {fromStep ? (
-//                     <div className='d-none d-xl-flex justify-content-between align-items-center my-5 mx-7'>
-//                         <button
-//                             className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'
-//                             onClick={() => navigate('/sale/photo', { state: { data: item, fromStep } })}
-//                         >
-//                             ย้อนกลับ
-//                         </button>
-//                         <button
-//                             className='btn btn-warning w-100 w-md-auto align-self-center mb-2 mb-md-0'
-//                             type='button'
-//                             onClick={handleNextClick}
-//                         >
-//                             อัพเดทข้อมูล
-//                         </button>
-//                     </div>
-//                 ) : (
-//                     <div className='d-none d-xl-flex justify-content-between align-items-center my-5 mx-7'>
-//                         <button
-//                             className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'
-//                             onClick={() => navigate('/sale/photo')}
-//                         >
-//                             ย้อนกลับ
-//                         </button>
-//                         <button
-//                             className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
-//                             type='button'
-//                             onClick={handleNextClick}
-//                         >
-//                             บันทึกรูปภาพลงระบบ
-//                         </button>
-//                     </div>
-//                 )}
-
-//                 {/* ปุ่มในหน้าจอเล็ก */}
-//                 {/* แสดงปุ่มเมื่อมาจาก Step */}
-//                 {fromStep ? (
-//                     <div
-//                         className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
-//                         style={{
-//                             position: "fixed",
-//                             bottom: 0,
-//                             left: 0,
-//                             right: 0,
-//                             zIndex: 1050,
-//                         }}
-//                     >
-//                         <button
-//                             className="btn btn-secondary w-auto me-2"
-//                             onClick={() => navigate('/sale/photo', { state: { data: item, fromStep } })}
-//                         >
-//                             ย้อนกลับ
-//                         </button>
-//                         <button
-//                             className="btn btn-warning w-auto me-2"F
-//                             onClick={handleNextClick}
-//                         >
-//                             อัพเดทข้อมูล
-//                         </button>
-//                     </div>
-//                 ) : (
-//                     <div
-//                         className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
-//                         style={{
-//                             position: "fixed",
-//                             bottom: 0,
-//                             left: 0,
-//                             right: 0,
-//                             zIndex: 1050,
-//                         }}
-//                     >
-//                         <button
-//                             className="btn btn-secondary w-auto me-2"
-//                             onClick={() => navigate('/sale/photo')}
-//                         >
-//                             ย้อนกลับ
-//                         </button>
-//                         <button
-//                             className="btn btn-primary w-auto me-2"
-//                             onClick={handleNextClick}
-//                         >
-//                             บันทึกรูปภาพลงระบบ
-//                         </button>
-//                     </div>
-//                 )}
-//             </div>
-//         </div>
-//     );
-// };
-
-// export default IdCardPhoto;
-
-
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { toAbsoluteUrl } from '../../../../../_metronic/helpers';
@@ -1108,41 +97,40 @@ const IdCardPhoto: React.FC = () => {
         // โหลดรูปภาพและไฟล์จาก Local Storage ตาม REFNO
         const savedFiles = localStorage.getItem(`files_${refno}`);
         const savedPreviewImages = localStorage.getItem(`previewImages_${refno}`);
-    
+
         if (savedFiles) {
             setFiles(JSON.parse(savedFiles));
         }
-    
+
         if (savedPreviewImages) {
             setPreviewImages(JSON.parse(savedPreviewImages));
         }
-    }, [refno]);    
-    
+    }, [refno]);
+
     useEffect(() => {
         // อัปเดตข้อมูลไฟล์และรูปภาพลงใน Local Storage
         localStorage.setItem(`files_${refno}`, JSON.stringify(files));
         localStorage.setItem(`previewImages_${refno}`, JSON.stringify(previewImages));
-    }, [files, previewImages, refno]);    
+    }, [files, previewImages, refno]);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files) {
             const selectedFiles = Array.from(event.target.files);
-
+    
             selectedFiles.forEach((file) => {
                 const reader = new FileReader();
                 reader.onload = () => {
                     if (reader.result) {
                         const img = new Image();
                         img.onload = () => {
-                            // สร้าง canvas สำหรับการบีบอัดภาพ
                             const canvas = document.createElement("canvas");
                             const ctx = canvas.getContext("2d");
-
+    
                             // กำหนดขนาดสูงสุดของภาพ
-                            const maxSize = 1024; // ขนาดสูงสุด 1024px
+                            const maxSize = 1024;
                             let width = img.width;
                             let height = img.height;
-
+    
                             if (width > height) {
                                 if (width > maxSize) {
                                     height *= maxSize / width;
@@ -1154,21 +142,18 @@ const IdCardPhoto: React.FC = () => {
                                     height = maxSize;
                                 }
                             }
-
-                            // ปรับขนาดภาพใน canvas
+    
                             canvas.width = width;
                             canvas.height = height;
                             ctx?.drawImage(img, 0, 0, width, height);
-
-                            // แปลงภาพใน canvas เป็น base64 และบีบอัด
-                            const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7); // ลดคุณภาพเป็น 70%
-
-                            // เพิ่มภาพเข้า previewImages
+    
+                            const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
+    
                             const newPreview = {
                                 file,
-                                preview: compressedBase64, // ใช้ base64 ที่บีบอัดแล้ว
+                                preview: compressedBase64,
                             };
-
+    
                             setPreviewImages((prevPreviews) => [...prevPreviews, newPreview]);
                         };
                         img.src = reader.result as string;
@@ -1176,36 +161,23 @@ const IdCardPhoto: React.FC = () => {
                 };
                 reader.readAsDataURL(file);
             });
-
+    
             setFiles((prevFiles) => [...prevFiles, ...selectedFiles]);
+    
+            // รีเซ็ตค่า input
+            event.target.value = '';
         }
     };
-
-    // Handle การลบรูป
+    
     const handleDeleteImage = (image: string, isFromSystem: boolean) => {
-        Swal.fire({
-            title: 'คุณแน่ใจหรือไม่?',
-            text: 'คุณต้องการลบรูปภาพนี้หรือไม่?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'ลบ',
-            cancelButtonText: 'ยกเลิก',
-        }).then((result) => {
-            if (result.isConfirmed) {
-                if (!isFromSystem) {
-                    // ลบรูปจาก previewImages และอัปเดต state files
-                    setPreviewImages((prevPreviews) => {
-                        const updatedPreviews = prevPreviews.filter((img) => img.preview !== image);
-                        const updatedFiles = updatedPreviews.map((img) => img.file);
-                        setFiles(updatedFiles);
-                        return updatedPreviews;
-                    });
-                }
-                Swal.fire('ลบสำเร็จ!', 'รูปภาพถูกลบเรียบร้อยแล้ว', 'success');
-            }
-        });
+        if (!isFromSystem) {
+            setPreviewImages((prevPreviews) => {
+                const updatedPreviews = prevPreviews.filter((img) => img.preview !== image);
+                const updatedFiles = updatedPreviews.map((img) => img.file);
+                setFiles(updatedFiles);
+                return updatedPreviews;
+            });
+        }
     };    
 
     // Handle การอัปโหลดไฟล์
@@ -1218,23 +190,29 @@ const IdCardPhoto: React.FC = () => {
             });
             return;
         }
-    
+
         const formData = new FormData();
         formData.append('REFNO', refno);
         files.forEach((file) => {
             formData.append('IMAGECARD', file); // ส่งเฉพาะไฟล์ใน state files
         });
-    
+        // console.log(`files`, files);
+
         try {
             const response = await axios.post(`${API_URL_MONGO}/Contract/SaveContractImage`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
-            console.log('Upload success:', response.data);
-    
-            // เก็บข้อมูลไฟล์ใน Local Storage หลังอัปโหลด
-            localStorage.setItem(`files_${refno}`, JSON.stringify(files));
-            localStorage.setItem(`previewImages_${refno}`, JSON.stringify(previewImages));
-    
+            // console.log('Upload success:', response.data);
+
+            // ล้างรูปภาพและไฟล์ใน local state หลังจากบันทึกสำเร็จ
+            setPreviewImages([]);
+            setFiles([]);
+            clearImages();
+
+            // ล้างข้อมูลไฟล์ใน Local Storage
+            localStorage.removeItem(`files_${refno}`);
+            localStorage.removeItem(`previewImages_${refno}`);
+
             Swal.fire({
                 icon: 'success',
                 title: 'สำเร็จ!',
@@ -1248,37 +226,41 @@ const IdCardPhoto: React.FC = () => {
                 text: 'ไม่สามารถบันทึกรูปภาพได้ กรุณาลองใหม่อีกครั้ง',
             });
         }
-    };    
-
-    const handleViewGallery = () => {
-        const updatedItem = {
-            ...item,
-        };
-        navigate("/sale/photo/gallery/idcard", { state: { data: updatedItem, fromStep } });
     };
 
     return (
         <div>
-            <div className='d-flex align-items-center mt-10 mb-5 mx-7 gap-3'>
+            <div
+                className="d-flex justify-content-center align-items-center my-5 mx-7"
+                style={{
+                    border: "1px solid #ccc",
+                    borderRadius: "10px",
+                    padding: "10px",
+                    backgroundColor: "#f9f9f9",
+                }}
+            >
                 <label
-                    className='btn btn-success w-100 w-md-auto align-self-center'
+                    className="btn btn-success px-5"
                     htmlFor="camera-input"
                     style={{
-                        cursor: 'pointer',
-                        padding: '10px',
-                        border: '1px solid #ccc',
-                        display: 'inline-block',
+                        cursor: "pointer",
+                        borderRadius: "10px",
+                        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
                     }}
                 >
-                    {isPC ? "เลือกรูปจากคลัง" : "เลือกรูปจากคลัง / ใช้กล้อง"}
+                    เลือกรูปจากคลัง
                 </label>
-                <button
-                    className="btn btn-primary w-100 w-md-auto align-self-center"
-                    onClick={handleViewGallery}
-                >
-                    ดูรูปภาพที่บันทึกในระบบ
-                </button>
             </div>
+
+            {/* Input hidden สำหรับการอัปโหลดไฟล์ */}
+            <input
+                id="camera-input"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                style={{ display: "none" }}
+            />
+
             {error && (
                 <div className='alert alert-danger mx-5'>
                     {error}
@@ -1379,7 +361,7 @@ const IdCardPhoto: React.FC = () => {
                     <div className='d-none d-xl-flex justify-content-between align-items-center my-5 mx-7'>
                         <button
                             className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'
-                            onClick={() => navigate('/sale/photo', { state: { data: item, fromStep } })}
+                            onClick={() => navigate('/sale/photo/gallery/idcard', { state: { data: item, fromStep } })}
                         >
                             ย้อนกลับ
                         </button>
@@ -1395,7 +377,7 @@ const IdCardPhoto: React.FC = () => {
                     <div className='d-none d-xl-flex justify-content-between align-items-center my-5 mx-7'>
                         <button
                             className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'
-                            onClick={() => navigate('/sale/photo')}
+                            onClick={() => navigate('/sale/photo/gallery/idcard')}
                         >
                             ย้อนกลับ
                         </button>
@@ -1424,7 +406,7 @@ const IdCardPhoto: React.FC = () => {
                     >
                         <button
                             className="btn btn-secondary w-auto me-2"
-                            onClick={() => navigate('/sale/photo', { state: { data: item, fromStep } })}
+                            onClick={() => navigate('/sale/photo/gallery/idcard', { state: { data: item, fromStep } })}
                         >
                             ย้อนกลับ
                         </button>
@@ -1448,7 +430,7 @@ const IdCardPhoto: React.FC = () => {
                     >
                         <button
                             className="btn btn-secondary w-auto me-2"
-                            onClick={() => navigate('/sale/photo')}
+                            onClick={() => navigate('/sale/photo/gallery/idcard')}
                         >
                             ย้อนกลับ
                         </button>

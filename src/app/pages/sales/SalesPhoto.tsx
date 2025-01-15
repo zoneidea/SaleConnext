@@ -46,9 +46,9 @@ const SalesPhoto: React.FC = () => {
     }
     const location = useLocation() as any;
     const fromStep = location.state?.fromStep || false;
-    console.log(`fromStep`, fromStep);
+    // console.log(`fromStep`, fromStep);
     const item = location.state?.data as ItemProps || [];
-    console.log(`item`, item);
+    // console.log(`item`, item);
 
     // กำหนด REFNO
     const refno = fromStep ? item.REFNO : REFNO;
@@ -67,7 +67,7 @@ const SalesPhoto: React.FC = () => {
             },
         });
 
-        console.log(response)
+        // console.log(response)
 
         if (response.status === 200) {
             if (!response.data.data) {
@@ -95,7 +95,7 @@ const SalesPhoto: React.FC = () => {
             },
         });
 
-        console.log(response)
+        // console.log(response)
 
         if (response.status === 200) {
             if (!response.data.data) {
@@ -143,7 +143,7 @@ const SalesPhoto: React.FC = () => {
                                 cursor: 'pointer',
                                 fontSize: 'inherit',
                             }}
-                            onClick={() => navigate('/sale/photo/idcard', { state: { fromStep, data: item } })}
+                            onClick={() => navigate('/sale/photo/gallery/idcard', { state: { fromStep, data: item } })}
                         >
                             <div className='mb-10 mt-7'>
                                 <div className='fw-bold text-gray-800 text-center'>
@@ -201,7 +201,7 @@ const SalesPhoto: React.FC = () => {
                                 cursor: 'pointer',
                                 fontSize: 'inherit',
                             }}
-                            onClick={() => navigate('/sale/photo/drawing-map', { state: { fromStep, data: item } })}
+                            onClick={() => navigate('/sale/photo/gallery/drawingMap', { state: { fromStep, data: item } })}
                         >
                             <div className='mb-10 mt-7'>
                                 <div className='fw-bold text-gray-800 text-center'>
@@ -230,7 +230,7 @@ const SalesPhoto: React.FC = () => {
                                 cursor: 'pointer',
                                 fontSize: 'inherit',
                             }}
-                            onClick={() => navigate('/sale/photo/turn', { state: { fromStep, data: item } })}
+                            onClick={() => navigate('/sale/photo/gallery/turn', { state: { fromStep, data: item } })}
                         >
                             <div className='mb-10 mt-7'>
                                 <div className='fw-bold text-gray-800 text-center'>
@@ -261,7 +261,7 @@ const SalesPhoto: React.FC = () => {
                                 cursor: 'pointer',
                                 fontSize: 'inherit',
                             }}
-                            onClick={() => navigate('/sale/photo/installation', { state: { fromStep, data: item } })}
+                            onClick={() => navigate('/sale/photo/gallery/installation', { state: { fromStep, data: item } })}
                         >
                             <div className='mb-10 mt-7'>
                                 <div className='fw-bold text-gray-800 text-center'>
@@ -290,7 +290,7 @@ const SalesPhoto: React.FC = () => {
                                 cursor: 'pointer',
                                 fontSize: 'inherit',
                             }}
-                            onClick={() => navigate('/sale/photo/home-customer', { state: { fromStep, data: item } })}
+                            onClick={() => navigate('/sale/photo/gallery/customerHome', { state: { fromStep, data: item } })}
                         >
                             <div className='mb-10 mt-7'>
                                 <div className='fw-bold text-gray-800 text-center'>
@@ -319,7 +319,7 @@ const SalesPhoto: React.FC = () => {
                                 cursor: 'pointer',
                                 fontSize: 'inherit',
                             }}
-                            onClick={() => navigate('/sale/photo/customer', { state: { fromStep, data: item } })}
+                            onClick={() => navigate('/sale/photo/gallery/customer', { state: { fromStep, data: item } })}
                         >
                            <div className='mb-10 mt-7'>
                                 <div className='fw-bold text-gray-800 text-center'>
@@ -348,7 +348,7 @@ const SalesPhoto: React.FC = () => {
                                 cursor: 'pointer',
                                 fontSize: 'inherit',
                             }}
-                            onClick={() => navigate('/sale/photo/equipment', { state: { fromStep, data: item } })}
+                            onClick={() => navigate('/sale/photo/gallery/equipment', { state: { fromStep, data: item } })}
                         >
                            <div className='mb-10 mt-7'>
                                 <div className='fw-bold text-gray-800 text-center'>

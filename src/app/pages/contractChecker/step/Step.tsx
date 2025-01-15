@@ -14,6 +14,7 @@ interface ItemProps {
   PRODUCT: [],
   CUSTOMERSTATUS: [],
   DISCOUNT: [],
+  SALEEMPLOYEE: [],
   CUSTOMERDETAIL: [],
   ADDRESS: [],
   PDPA: [],
@@ -143,11 +144,27 @@ const Step: React.FC = () => {
               </Link>
               <Link to=''>
                 <div className='d-flex align-items-center pb-8'>
+                  <span className={`bullet bullet-vertical h-40px ${data?.[0]?.SALEEMPLOYEE.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
+                  <div className='form-check form-check-custom form-check-solid mx-5'></div>
+                  <div className='flex-grow-1'>
+                    <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
+                      {`4. ตรวจสอบพนักงานขายที่เลือก`}
+                    </div>
+                    {
+                      data?.[0]?.SALEEMPLOYEE?.length !== 0 && (
+                        <span className='text-gray-700 fw-semibold d-block'>{`สถานะ: ${data?.[0]?.SALEEMPLOYEE?.[2]}`}</span>
+                      )
+                    }
+                  </div>
+                </div>
+              </Link>
+              <Link to=''>
+                <div className='d-flex align-items-center pb-8'>
                   <span className={`bullet bullet-vertical h-40px ${data?.[0]?.CUSTOMERDETAIL.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
                   <div className='form-check form-check-custom form-check-solid mx-5'></div>
                   <div className='flex-grow-1'>
                     <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
-                      {`4. บันทึกข้อมูลลูกค้า`}
+                      {`5. บันทึกข้อมูลลูกค้า`}
                     </div>
                     {
                       data?.[0]?.CUSTOMERDETAIL?.length !== 0 && (
@@ -168,7 +185,7 @@ const Step: React.FC = () => {
                   <div className='form-check form-check-custom form-check-solid mx-5'></div>
                   <div className='flex-grow-1'>
                     <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
-                      {`5. บันทึกที่อยู่ลูกค้า`}
+                      {`6. บันทึกที่อยู่ลูกค้า`}
                     </div>
                     {
                       data?.[0]?.ADDRESS?.length !== 0 && (
@@ -194,7 +211,7 @@ const Step: React.FC = () => {
                   <div className='form-check form-check-custom form-check-solid mx-5'></div>
                   <div className='flex-grow-1'>
                     <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
-                      {`6. PDPA`}
+                      {`7. PDPA`}
                     </div>
                     {
                       data?.[0]?.PDPA?.length !== 0 && (
@@ -210,7 +227,7 @@ const Step: React.FC = () => {
                   <div className='form-check form-check-custom form-check-solid mx-5'></div>
                   <div className='flex-grow-1'>
                     <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
-                      {`7. รายละเอียดสัญญา`}
+                      {`8. รายละเอียดสัญญา`}
                     </div>
                     {
                       data?.[0]?.PDPA?.length !== 0 && (

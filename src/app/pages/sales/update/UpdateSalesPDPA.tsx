@@ -46,7 +46,7 @@ const UpdateSalesPDPA: React.FC = () => {
 
     const location = useLocation();
     const item = location.state as ItemProps || [];
-    console.log(`item`, item);
+    // console.log(`item`, item);
 
     const refno = item?.REFNO
     const pdpaContract = item?.PDPA
@@ -75,11 +75,11 @@ const UpdateSalesPDPA: React.FC = () => {
 
     const signaturePadRef = useRef<any>(null);
     const [signatureDataURL, setSignatureDataURL] = useState<string | null>(null);
-    console.log(`signatureDataURL`, signatureDataURL);
+    // console.log(`signatureDataURL`, signatureDataURL);
 
     const [isSignatureSaved, setIsSignatureSaved] = useState<boolean>(false); // สถานะการเซ็นชื่อ
     const [inputOTP, setInputOTP] = useState<string>('');
-    console.log(`inputOTP`, inputOTP);
+    // console.log(`inputOTP`, inputOTP);
 
     const [isOTPSent, setIsOTPSent] = useState<boolean>(false);
     const [responseCheckOTPSuccess, setResponseCheckOTPSuccess] = useState<boolean>(false);
@@ -96,7 +96,7 @@ const UpdateSalesPDPA: React.FC = () => {
         return item?.CONTNO || null; // ใช้ค่า item.CONTNO ถ้ามีค่าอยู่แล้ว
     }, [item?.CONTNO, contNo]);
 
-    console.log(`memoizedContNo`, memoizedContNo);
+    // console.log(`memoizedContNo`, memoizedContNo);
 
     // ตรวจสอบว่า `signaturePadRef` พร้อมใช้งานแล้ว
     useEffect(() => {
@@ -160,7 +160,7 @@ const UpdateSalesPDPA: React.FC = () => {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            console.log(`responseSendSMS: `, responseSendSMS.data);
+            // console.log(`responseSendSMS: `, responseSendSMS.data);
             if (responseSendSMS.data.status === 200) {
                 if (!item?.CONTNO) {
                     setContNo(responseSendSMS.data.ContNo);
@@ -226,7 +226,7 @@ const UpdateSalesPDPA: React.FC = () => {
                     'Content-Type': 'application/json',
                 },
             });
-            console.log(`updateContract PDPA: `, updateContract.data);
+            // console.log(`updateContract PDPA: `, updateContract.data);
             if (updateContract.data.message === "Update contract successfully.") {
                 MySwal.fire('สำเร็จ', 'ปรับปรุงข้อมูล PDPA แล้ว', 'success');
             } else {
@@ -250,7 +250,7 @@ const UpdateSalesPDPA: React.FC = () => {
             },
         });
 
-        console.log(response)
+        // console.log(response)
 
         if (response.status === 200) {
             if (!response.data.data) {
@@ -275,7 +275,7 @@ const UpdateSalesPDPA: React.FC = () => {
         );
     }, [item]);
 
-    console.log(`test`, pdpaContract?.[0]?.SIGNATURE);
+    // console.log(`test`, pdpaContract?.[0]?.SIGNATURE);
 
     return (
         <>
@@ -476,7 +476,7 @@ const UpdateSalesPDPA: React.FC = () => {
                         <>
                             {isOTPSent ? (
                                 <button
-                                    className='btn btn-warning w-100 w-md-auto align-self-center mb-2 mb-md-0'
+                                    className='btn btn-success w-100 w-md-auto align-self-center mb-2 mb-md-0'
                                     type='button'
                                     onClick={checkOTP}
                                 >

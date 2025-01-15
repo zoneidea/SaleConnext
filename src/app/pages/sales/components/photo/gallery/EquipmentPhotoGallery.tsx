@@ -31,95 +31,75 @@ interface LocationState {
     fromStep?: boolean;
 }
 
-function EquipmentPhotoGallery() {
+const EquipmentPhotoGallery: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
-
-    // ตรวจสอบชนิดของ location.state
     const { data: item, fromStep = false } = (location.state as LocationState) || {};
 
     const [images, setImages] = useState<string[]>([]);
+    // console.log(`images`, images);
+
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
-    const [loading, setLoading] = useState<boolean>(true); // เพิ่ม state สำหรับ loading
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
 
-    // สร้างใหม่
     const { REFNO } = useUUIDStore();
-
-    const { auth } = useAuth();
-    const EmpId = auth?.data?.[0]?.EmpId || '';
-    const TeamSale = auth?.data?.[0]?.TeamSale || '';
-    const SaleCode = auth?.data?.[0]?.SaleCode || '';
-    const SupEmpId = auth?.data?.[0]?.SupEmp || '';
-    const SecEmpId = auth?.data?.[0]?.SecEmp || '';
-
-    // กำหนด REFNO
     const refno = fromStep ? item?.REFNO : REFNO;
 
     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
-    const GETSUMMARYCONTACT = `${API_URL_MONGO}/Contract/GetContractSummary?refno=${refno}`;
+    const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage`;
 
-    const [getSummaryContract, setGetSummaryContract] = useState<any[]>([]);
-    const imageFromSummary = getSummaryContract[0]?.IMAGE;
+    const isIOS: boolean = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isAndroid: boolean = /Android/.test(navigator.userAgent);
+    const isTablet: boolean = /Tablet|iPad/.test(navigator.userAgent);
+    const isPC: boolean = !isIOS && !isAndroid && !isTablet;
 
-    // โหลด summary contract
     useEffect(() => {
-        const fetchContractSummary = async () => {
+        const fetchImages = async () => {
+            setLoading(true);
+            setError(null);
+
             try {
-                const response = await axios.get(GETSUMMARYCONTACT, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Accept: 'application/json',
-                    },
+                const response = await axios.get(GET_IMAGES_API, {
+                    params: { REFNO: refno },
                 });
-                const data = Array.isArray(response.data.data) ? response.data.data : [];
-                setGetSummaryContract(data);
-            } catch (error) {
-                console.error('Error fetching contract summary:', error);
-            } finally {
-                setLoading(false); // หยุด loading เมื่อดึงข้อมูลเสร็จ
-            }
-        };
 
-        fetchContractSummary();
-    }, [refno]);
+                const data = response.data;
+                // console.log(data); // ตรวจสอบข้อมูล
 
-    useEffect(() => {
-        const getDataFromSummary = async () => {
-            try {
-                if (imageFromSummary && imageFromSummary.length > 0 && imageFromSummary[0]?.IMAGETDS) {
-                    const data = imageFromSummary[0]?.IMAGETDS;
-
-                    const processedImages = data.map((image: string) => {
-                        const prefix = 'data:image/jpeg;base64,';
-                        return `${prefix}${image.trim()}`;
-                    });
-
-                    setImages(processedImages);
+                if (data?.IMAGETDS) {
+                    // ใช้ข้อมูล Base64 ที่ได้โดยตรง
+                    setImages(data.IMAGETDS);
                 } else {
                     setImages([]);
                 }
-            } catch (error) {
-                console.error('Error processing images from summary:', error);
+            } catch (err) {
+                console.error('Error fetching images:', err);
+                setError('ไม่สามารถโหลดรูปภาพได้ กรุณาลองใหม่');
+            } finally {
+                setLoading(false);
             }
         };
 
-        getDataFromSummary();
-    }, [imageFromSummary]);
+        fetchImages();
+    }, [refno]);
 
     return (
         <div className="row mx-5 mt-10">
             {loading ? (
                 <div className="text-center w-100">
-                    {/* แสดง ThreeDot ขณะกำลังโหลด */}
-                    {/* <ThreeDot color="#3B82F6" size="large" /> */}
                     <ThreeDot />
+                </div>
+            ) : error ? (
+                <div className="text-center w-100 text-danger">
+                    <h3>{error}</h3>
                 </div>
             ) : images.length > 0 ? (
                 images.map((base64Image, index) => (
                     <div className="col-6 col-xl-4 mb-3" key={index}>
                         <div className="border border-gray-500 position-relative">
                             <img
-                                src={base64Image}
+                                src={`data:image/jpeg;base64,${base64Image}`} // ใช้ Base64
                                 alt={`Captured ${index + 1}`}
                                 style={{
                                     width: '100%',
@@ -127,7 +107,7 @@ function EquipmentPhotoGallery() {
                                     objectFit: 'cover',
                                     cursor: 'pointer',
                                 }}
-                                onClick={() => setSelectedImage(base64Image)}
+                                onClick={() => setSelectedImage(`data:image/jpeg;base64,${base64Image}`)}
                             />
                             {/* Overlay */}
                             <div
@@ -144,7 +124,7 @@ function EquipmentPhotoGallery() {
                                     src={toAbsoluteUrl('media/settings/eye-svgrepo-com.png')}
                                     alt="ดูภาพ"
                                     style={{ width: '30px', height: '30px', cursor: 'pointer' }}
-                                    onClick={() => setSelectedImage(base64Image)}
+                                    onClick={() => setSelectedImage(`data:image/jpeg;base64,${base64Image}`)}
                                 />
                             </div>
                         </div>
@@ -184,24 +164,25 @@ function EquipmentPhotoGallery() {
                     />
                 </div>
             )}
-
-            {/* ปุ่มย้อนกลับ */}
-            <div className="d-none d-xl-flex justify-content-between align-items-center my-5">
+            <div className='d-none d-xl-flex justify-content-between align-items-center my-5'>
                 <button
-                    className="btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0"
-                    onClick={() =>
-                        navigate('/sale/photo/idcard', { state: { data: item, fromStep } })
-                    }
+                    className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'
+                    onClick={() => navigate('/sale/photo', { state: { data: item, fromStep } })}
                 >
                     ย้อนกลับ
                 </button>
+                <button
+                    className="btn btn-primary w-100 w-md-auto align-self-center"
+                    onClick={() => navigate('/sale/photo/equipment')}
+                >
+                    {isPC ? "เพิ่มรูปภาพ" : "แกลอรี่ / ถ่ายรูป"}
+                </button>
             </div>
-
             {/* ปุ่มในหน้าจอเล็ก */}
             <div
                 className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
                 style={{
-                    position: 'fixed',
+                    position: "fixed",
                     bottom: 0,
                     left: 0,
                     right: 0,
@@ -210,13 +191,19 @@ function EquipmentPhotoGallery() {
             >
                 <button
                     className="btn btn-secondary w-auto me-2"
-                    onClick={() => navigate('/sale/photo/equipment', { state: { data: item, fromStep } })}
+                    onClick={() => navigate('/sale/photo', { state: { data: item, fromStep } })}
                 >
                     ย้อนกลับ
+                </button>
+                <button
+                    className="btn btn-primary w-auto me-2"
+                    onClick={() => navigate('/sale/photo/equipment')}
+                >
+                    {isPC ? "เพิ่มรูปภาพ" : "แกลอรี่ / ถ่ายรูป"}
                 </button>
             </div>
         </div>
     );
-}
+};
 
 export default EquipmentPhotoGallery;

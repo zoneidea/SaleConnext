@@ -1,8 +1,29 @@
 import React, { useState, useEffect } from 'react';
+import { toAbsoluteUrl } from '../../../../../../_metronic/helpers';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../../../modules/auth/core/Auth';
+import { useUUIDStore } from '../../../../../modules/stores/stepsStore';
+import axios from 'axios';
+import { ThreeDot } from 'react-loading-indicators';
 
 interface ItemProps {
+    REFNO: string;
+    CONTNO: string;
+    EMPID: string;
+    TEAMSALE: string;
+    SALECODE: string;
+    SUPEMPID: string;
+    SECEMPID: string;
+    STATUS: string;
+    PRODUCT: [any];
+    CUSTOMERSTATUS: [any];
+    DISCOUNT: [any];
+    CUSTOMERDETAIL: [any];
+    ADDRESS: [any];
+    PDPA: [any];
+    CONTRACT: [any];
     IMAGE: [any];
+    CHECKERCOMMENT: [any];
 }
 
 interface LocationState {
@@ -10,90 +31,75 @@ interface LocationState {
     fromStep?: boolean;
 }
 
-function InstallationPhotoGallery() {
+const InstallationPhotoGallery: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
-
-    // ตรวจสอบชนิดของ location.state
-    const { data: item = { IMAGE: [] }, fromStep = false } = (location.state as LocationState) || {};
-
-    console.log(`Item:`, item);
-    console.log(`FromStep:`, fromStep);
+    const { data: item, fromStep = false } = (location.state as LocationState) || {};
 
     const [images, setImages] = useState<string[]>([]);
+    // console.log(`images`, images);
+
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
 
-    console.log(`Images:`, images);
+    const { REFNO } = useUUIDStore();
+    const refno = fromStep ? item?.REFNO : REFNO;
 
-    // ฟังก์ชันแปลง WebP เป็น JPEG หรือ PNG
-    const convertWebPToJpegOrPng = (
-        webpDataUrl: string,
-        outputFormat: 'image/jpeg' | 'image/png' = 'image/jpeg'
-    ): Promise<string> => {
-        return new Promise((resolve, reject) => {
-            const img = new Image();
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
+    const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
+    const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage`;
 
-                const ctx = canvas.getContext('2d');
-                if (ctx) {
-                    ctx.drawImage(img, 0, 0);
-                    const convertedDataUrl = canvas.toDataURL(outputFormat, 1.0);
-                    resolve(convertedDataUrl);
-                } else {
-                    reject(new Error('Canvas context is not available.'));
-                }
-            };
-            img.onerror = (err) => reject(err);
-            img.src = webpDataUrl;
-        });
-    };
+    const isIOS: boolean = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isAndroid: boolean = /Android/.test(navigator.userAgent);
+    const isTablet: boolean = /Tablet|iPad/.test(navigator.userAgent);
+    const isPC: boolean = !isIOS && !isAndroid && !isTablet;
 
     useEffect(() => {
-        const getData = async () => {
+        const fetchImages = async () => {
+            setLoading(true);
+            setError(null);
+
             try {
-                if (item?.IMAGE && item?.IMAGE.length > 0 && item?.IMAGE[0]?.IMAGEINSTALLATION) {
-                    const data = item?.IMAGE[0]?.IMAGEINSTALLATION;
-                    console.log('Raw image data:', data);
+                const response = await axios.get(GET_IMAGES_API, {
+                    params: { REFNO: refno },
+                });
 
-                    const processedImages = await Promise.all(
-                        data.map(async (image: string) => {
-                            if (image.startsWith('data:image/webp;')) {
-                                try {
-                                    return await convertWebPToJpegOrPng(image); // แปลง WebP เป็น JPEG
-                                } catch (err) {
-                                    console.error('Error converting WebP:', err);
-                                    return image; // ใช้รูป WebP เดิมหากแปลงไม่ได้
-                                }
-                            }
-                            return image; // คืนค่ารูป JPEG/PNG เดิม
-                        })
-                    );
+                const data = response.data;
+                // console.log(data); // ตรวจสอบข้อมูล
 
-                    console.log('Processed images:', processedImages);
-                    setImages(processedImages);
+                if (data?.IMAGEINSTALLATION) {
+                    // ใช้ข้อมูล Base64 ที่ได้โดยตรง
+                    setImages(data.IMAGEINSTALLATION);
                 } else {
-                    console.log('No image data available');
                     setImages([]);
                 }
-            } catch (error) {
-                console.error('Error processing images:', error);
+            } catch (err) {
+                console.error('Error fetching images:', err);
+                setError('ไม่สามารถโหลดรูปภาพได้ กรุณาลองใหม่');
+            } finally {
+                setLoading(false);
             }
         };
 
-        getData();
-    }, [item]);
+        fetchImages();
+    }, [refno]);
 
     return (
-        <div className="row mx-5">
-            {images.length > 0 ? (
+        <div className="row mx-5 mt-10">
+            {loading ? (
+                <div className="text-center w-100">
+                    <ThreeDot />
+                </div>
+            ) : error ? (
+                <div className="text-center w-100 text-danger">
+                    <h3>{error}</h3>
+                </div>
+            ) : images.length > 0 ? (
                 images.map((base64Image, index) => (
                     <div className="col-6 col-xl-4 mb-3" key={index}>
-                        <div className="border border-gray-500">
+                        <div className="border border-gray-500 position-relative">
                             <img
-                                src={base64Image}
+                                src={`data:image/jpeg;base64,${base64Image}`} // ใช้ Base64
                                 alt={`Captured ${index + 1}`}
                                 style={{
                                     width: '100%',
@@ -101,17 +107,32 @@ function InstallationPhotoGallery() {
                                     objectFit: 'cover',
                                     cursor: 'pointer',
                                 }}
-                                onClick={() => setSelectedImage(base64Image)}
-                                onError={(e) => {
-                                    console.error(`Error loading image at index ${index}:`, base64Image);
-                                }}
+                                onClick={() => setSelectedImage(`data:image/jpeg;base64,${base64Image}`)}
                             />
+                            {/* Overlay */}
+                            <div
+                                className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+                                style={{
+                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                    opacity: 0,
+                                    transition: 'opacity 0.3s ease-in-out',
+                                }}
+                                onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                                onMouseLeave={(e) => (e.currentTarget.style.opacity = '0')}
+                            >
+                                <img
+                                    src={toAbsoluteUrl('media/settings/eye-svgrepo-com.png')}
+                                    alt="ดูภาพ"
+                                    style={{ width: '30px', height: '30px', cursor: 'pointer' }}
+                                    onClick={() => setSelectedImage(`data:image/jpeg;base64,${base64Image}`)}
+                                />
+                            </div>
                         </div>
                     </div>
                 ))
             ) : (
-                <div className="text-center">
-                    <p>ไม่มีรูปภาพที่จะแสดง</p>
+                <div className="text-center w-100">
+                    <h3>ยังไม่มีรูปภาพในระบบ</h3>
                 </div>
             )}
 
@@ -143,18 +164,20 @@ function InstallationPhotoGallery() {
                     />
                 </div>
             )}
-
-            {/* ปุ่มย้อนกลับ */}
-            <div className="d-none d-xl-flex justify-content-between align-items-center my-5">
+            <div className='d-none d-xl-flex justify-content-between align-items-center my-5'>
                 <button
-                    className="btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0"
-                    onClick={() =>
-                        navigate('/sale/photo/installation', { state: { data: item, fromStep } })}
+                    className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'
+                    onClick={() => navigate('/sale/photo', { state: { data: item, fromStep } })}
                 >
                     ย้อนกลับ
                 </button>
+                <button
+                    className="btn btn-primary w-100 w-md-auto align-self-center"
+                    onClick={() => navigate('/sale/photo/installation')}
+                >
+                    {isPC ? "เพิ่มรูปภาพ" : "แกลอรี่ / ถ่ายรูป"}
+                </button>
             </div>
-
             {/* ปุ่มในหน้าจอเล็ก */}
             <div
                 className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
@@ -168,14 +191,19 @@ function InstallationPhotoGallery() {
             >
                 <button
                     className="btn btn-secondary w-auto me-2"
-                    onClick={() => navigate('/sale/photo/installation',  { state: { data: item, fromStep } })}
+                    onClick={() => navigate('/sale/photo', { state: { data: item, fromStep } })}
                 >
                     ย้อนกลับ
                 </button>
+                <button
+                    className="btn btn-primary w-auto me-2"
+                    onClick={() => navigate('/sale/photo/installation')}
+                >
+                    {isPC ? "เพิ่มรูปภาพ" : "แกลอรี่ / ถ่ายรูป"}
+                </button>
             </div>
-
         </div>
     );
-}
+};
 
 export default InstallationPhotoGallery;

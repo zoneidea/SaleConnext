@@ -13,7 +13,7 @@ const SalesOverview: React.FC = () => {
   const [isLoadingDraft, setIsLoadingDraft] = useState<boolean>(false);
   const [isLoadingFinish, setIsLoadingFinish] = useState<boolean>(false);
   const [draft, setDraft] = useState<any[]>([]);
-  console.log(`draft`, draft);
+  // console.log(`draft`, draft);
   
   const [finish, setFinish] = useState<any[]>([]);
   const [search, setSearch] = useState<string>(''); // State สำหรับค้นหา

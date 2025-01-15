@@ -53,7 +53,7 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item }) => {
     statusTxt = <span className='text-danger fw-semibold d-block'>{`รอตรวจสอบ`}</span>
   }
 
-  console.log(`${status} item: `, item)
+  // console.log(`${status} item: `, item)
 
   return (
     <>

@@ -45,11 +45,11 @@ const UpdateSaleAddress: React.FC = () => {
 
     const location = useLocation();
     const item = location.state as ItemProps || [];
-    console.log(`item`, item);
+    // console.log(`item`, item);
 
     const refno = item?.REFNO
     const custAddr = item?.ADDRESS
-    console.log(`custAddr`, custAddr);
+    // console.log(`custAddr`, custAddr);
 
     const { auth } = useAuth();
     const EmpId = auth?.data?.[0]?.EmpId || '';
@@ -1066,7 +1066,7 @@ const UpdateSaleAddress: React.FC = () => {
                     'Content-Type': 'application/json',
                 },
             });
-            console.log(`updateContract CUSTOMERDETAIL: `, updateContract.data);
+            // console.log(`updateContract CUSTOMERDETAIL: `, updateContract.data);
             if (updateContract.status === 200) {
                 if (!updateContract.data.data) {
                     MySwal.fire('เกิดข้อผิดพลาด', 'ปรับปรุงข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
@@ -1094,7 +1094,7 @@ const UpdateSaleAddress: React.FC = () => {
             },
         });
 
-        console.log(response)
+        // console.log(response)
 
         if (response.status === 200) {
             if (!response.data.data) {
@@ -1120,7 +1120,7 @@ const UpdateSaleAddress: React.FC = () => {
         );
     }, [item]);
 
-    console.log(isDataComplete);
+    // console.log(isDataComplete);
     
     return (
         <>

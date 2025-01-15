@@ -13,8 +13,9 @@ import {
 } from '../../../modules/stores/stepsStore';
 
 import dayjs, { Dayjs } from 'dayjs';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import styles from "../../../../public/style.module.css";
 
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
@@ -48,7 +49,7 @@ const UpdateSaleCustDetail: React.FC = () => {
 
     const refno = item?.REFNO
     const customerDetail = item?.CUSTOMERDETAIL
-    console.log(`customerDetail`, customerDetail);
+    // console.log(`customerDetail`, customerDetail);
 
     let customerStatus = item?.CUSTOMERSTATUS
     // console.log(`customerStatus`, customerStatus);
@@ -227,7 +228,7 @@ const UpdateSaleCustDetail: React.FC = () => {
 
         let updateData;
 
-        console.log(conditionCheckResponse)
+        // console.log(conditionCheckResponse)
 
         setChecktype(conditionCheckResponse.data.checktype);
         if (conditionCheckResponse.data.status == 200) {
@@ -260,7 +261,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                         }
                     }
                 }).then(async (result) => {
-                    console.log(result)
+                    // console.log(result)
                     if (result.isDismissed) {
                         navigate('/sale/step', { state: item })
                     } else if (result.isDenied) {
@@ -279,7 +280,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                             confirmButtonText: 'ตกลง'
                         });
 
-                        console.log(apiResponse)
+                        // console.log(apiResponse)
 
                         if (Customerstatus) {
                             navigate('/sale/step', { state: item })
@@ -396,7 +397,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                     'Content-Type': 'application/json',
                 },
             });
-            console.log(`updateContract CUSTOMERDETAIL: `, updateContract.data);
+            // console.log(`updateContract CUSTOMERDETAIL: `, updateContract.data);
 
             if (updateContract.status === 200) {
                 if (!updateContract.data.data) {
@@ -425,7 +426,7 @@ const UpdateSaleCustDetail: React.FC = () => {
             },
         });
 
-        console.log(response)
+        // console.log(response)
 
         if (response.status === 200) {
             if (!response.data.data) {
@@ -454,7 +455,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                 email,
                 mobile
             };
-            console.log('Submitting form data:', formData);
+            // console.log('Submitting form data:', formData);
         } else {
             console.log('Form has errors');
         }
@@ -610,13 +611,14 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                     <DatePicker
                                                                         selected={valueCalendar}
                                                                         onChange={handleDateChange}
-                                                                        className="form-control mb-3 mb-lg-0"
+                                                                        className="form-control custom-datepicker"
                                                                         placeholderText="วันเดือนปีเกิด"
                                                                         showYearDropdown
                                                                         showMonthDropdown
                                                                         dropdownMode="select"
                                                                         isClearable
                                                                         dateFormat="yyyy/MM/dd"
+                                                                        withPortal
                                                                     />
                                                                 </div>
                                                             </div>

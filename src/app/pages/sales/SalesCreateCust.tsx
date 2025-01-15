@@ -13,8 +13,9 @@ import {
 } from '../../modules/stores/stepsStore';
 
 import dayjs, { Dayjs } from 'dayjs';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import styles from "../../../../public/style.module.css";
 
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
@@ -1121,7 +1122,7 @@ const SalesCreateCust: React.FC = () => {
                     'Content-Type': 'application/json',
                 },
             });
-            console.log(`updateContract CUSTOMERDETAIL: `, updateContract.data);
+            // console.log(`updateContract CUSTOMERDETAIL: `, updateContract.data);
         } catch (error) {
             console.error('Error fetching UPDATECONTACT:', error);
         }
@@ -1191,7 +1192,7 @@ const SalesCreateCust: React.FC = () => {
                     "Content-Type": "application/json",
                 },
             });
-            console.log(`updateContract DISCOUNT: `, response.data);
+            // console.log(`updateContract DISCOUNT: `, response.data);
             MySwal.fire({
                 icon: 'success',
                 title: 'สำเร็จ!',
@@ -1361,12 +1362,13 @@ const SalesCreateCust: React.FC = () => {
                                                                     <DatePicker
                                                                         selected={valueCalendar}
                                                                         onChange={handleDateChange}
-                                                                        className="form-control mb-3 mb-lg-0"
+                                                                        className="form-control custom-datepicker"
                                                                         showYearDropdown
                                                                         showMonthDropdown
                                                                         dropdownMode="select"
                                                                         isClearable
                                                                         dateFormat="yyyy/MM/dd"
+                                                                        withPortal
                                                                     />
                                                                 </div>
                                                             </div>

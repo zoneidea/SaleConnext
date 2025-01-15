@@ -428,6 +428,7 @@ const SalesPackage: React.FC = () => {
             });
 
             setChecktype(conditionCheckResponse.data.checktype); // อัปเดตค่า checktype ใน state
+            // console.log(`test`, conditionCheckResponse.data.checktype);
 
             let updateData;
 
@@ -475,7 +476,7 @@ const SalesPackage: React.FC = () => {
                         confirmButtonText: 'ตกลง'
                     });
 
-                    updateData = [idCard, conditionCheckResponse.data.checktype, message];
+                    updateData = [idCard, conditionCheckResponse.data.checktype, Customerstatus, message];
                     navigate(destination); // นำทางไปยังหน้าที่ต้องการ
                 }
             } else {

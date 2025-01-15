@@ -61,10 +61,10 @@ const UpdateSalesContract: React.FC = () => {
     const { REFNO } = useUUIDStore();
 
     const item = location.state as ItemProps || [];
-    console.log(`item`, item);
+    // console.log(`item`, item);
     const refno = item?.REFNO
     const product = item?.PRODUCT
-    console.log(`product`, product);
+    // console.log(`product`, product);
     const contNo = item?.CONTNO
     // console.log(`contNo`, contNo);
     const customerDetail = item?.CUSTOMERDETAIL
@@ -111,7 +111,7 @@ const UpdateSalesContract: React.FC = () => {
                 },
             });
 
-            console.log(`updateContract CONTRACT: `, updateContract.data);
+            // console.log(`updateContract CONTRACT: `, updateContract.data);
 
             // แสดง SweetAlert2 หลังจากบันทึกสำเร็จ
             Swal.fire({
@@ -146,7 +146,7 @@ const UpdateSalesContract: React.FC = () => {
             },
         });
 
-        console.log(response)
+        // console.log(response)
 
         if (response.status === 200) {
             if (!response.data.data) {
@@ -356,7 +356,7 @@ const UpdateSalesContract: React.FC = () => {
                             </div>
                         </div>
 
-                        {item?.DISCOUNT[0]?.TRADEIN?.HASTRADEIN != 0 && (
+                        {item?.DISCOUNT[0] && item?.DISCOUNT[0]?.TRADEIN?.HASTRADEIN !== 0 && (
                             <div className='row align-items-center mb-10'>
                                 <label className='col-lg-4 fw-bold text-muted mb-0'>เครื่องเทิร์น</label>
                                 <div className='col-lg-8 d-flex justify-content-between'>
@@ -369,8 +369,8 @@ const UpdateSalesContract: React.FC = () => {
                             <label className='col-lg-4 fw-bold text-muted mb-0'>ส่วนลด</label>
                             <div className='col-lg-8 d-flex justify-content-between'>
                                 <span className='fw-bold fs-6'>
-                                    {item?.DISCOUNT[0]?.DISCOUNTAMOUNT !== undefined
-                                        ? item?.DISCOUNT[0]?.DISCOUNTAMOUNT.toLocaleString()
+                                    {typeof item?.DISCOUNT?.[0]?.DISCOUNTAMOUNT === 'number'
+                                        ? item?.DISCOUNT?.[0]?.DISCOUNTAMOUNT.toLocaleString()
                                         : '0'}
                                 </span>
                                 <span className='badge badge-light-success'>บาท</span>

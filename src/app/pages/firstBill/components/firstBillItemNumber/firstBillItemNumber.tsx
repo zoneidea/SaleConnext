@@ -6,7 +6,7 @@ interface StatusLabelProps {
 }
 
 const FirstBillItemNumber: React.FC<StatusLabelProps> = ({ item }) => {
-    console.log(`item`, item);
+    // console.log(`item`, item);
 
     let customer, telNo, product, productPackage, serialNumber, createdAt, statusTxt, dueDate;
 
@@ -42,7 +42,7 @@ const FirstBillItemNumber: React.FC<StatusLabelProps> = ({ item }) => {
         statusTxt = <span className='text-danger fw-semibold d-block'>{`รอตรวจสอบ`}</span>
     }
 
-    console.log(`item: `, item)
+    // console.log(`item: `, item)
 
     return (
         <>

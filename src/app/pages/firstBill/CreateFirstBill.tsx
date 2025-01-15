@@ -60,7 +60,7 @@ const CreateFirstBill: React.FC = () => {
     const SecEmpId = auth?.data?.[0]?.SecEmp || '';
 
     const item = location.state as ItemProps || [];
-    console.log(`item`, item);
+    // console.log(`item`, item);
     const refno = item?.REFNO
     const product = item?.PRODUCT
     const contNo = item?.CONTNO
@@ -181,7 +181,7 @@ const CreateFirstBill: React.FC = () => {
         DISCOUNT: discountAmount
     };
 
-    console.log("All Data to Submit:", allData)
+    // console.log("All Data to Submit:", allData)
 
     const onSubmit = async (data: any) => {
         try {

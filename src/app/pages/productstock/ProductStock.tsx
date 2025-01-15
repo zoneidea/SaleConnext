@@ -31,7 +31,7 @@ const SalesProductStock: React.FC = () => {
     const [categories, setCategories] = useState<any[]>([]);
 
     const { product, setProduct } = useProductStore();
-    console.log(`product: `, product);
+    // console.log(`product: `, product);
     const [selectedCategoryId, setSelectedCategoryId] = useState<any>('');
     const [selectedProductIndex, setSelectedProductIndex] = useState<number | null>(null);
 

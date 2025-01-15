@@ -1,5 +1,7 @@
 import axios from 'axios'
 import { useState, useEffect } from 'react'
+import clsx from 'clsx'
+import { Link } from 'react-router-dom'
 import { toAbsoluteUrl } from '../../../../../_metronic/helpers'
 import { SidebarMenuItem } from './SidebarMenuItem'
 
@@ -9,8 +11,8 @@ const SidebarMenuMain = () => {
 
   // เก็บข้อมูลเมนูเป็น array
   const [menu, setMenu] = useState<any[]>([])
-  console.log(`menu`, menu);
-  
+  // console.log(`menu`, menu);
+
   // GET GetMenu
   useEffect(() => {
     const getData = async () => {
@@ -52,6 +54,15 @@ const SidebarMenuMain = () => {
     }
   }
 
+  const handleMouseEnter = (event: React.MouseEvent<HTMLDivElement>) => {
+    event.currentTarget.style.backgroundColor = '#1b1b28';
+    event.currentTarget.style.borderRadius = '7px';
+  };
+
+  const handleMouseLeave = (event: React.MouseEvent<HTMLDivElement>) => {
+    event.currentTarget.style.backgroundColor = 'transparent';
+  };
+
   return (
     <>
       {menu.map((item) => (
@@ -60,8 +71,63 @@ const SidebarMenuMain = () => {
           to={item.MENU_OBJECT}
           title={item.MENU_NAME}
           imageSrc={getCustomMenuIcon(item.MENU_NAME)}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+
         />
       ))}
+
+      <hr
+        style={{
+          border: 'none',
+          borderTop: '2px dashed white',
+          margin: '20px',
+        }}
+      />
+
+      <Link
+        className={clsx('menu-link without-sub')}
+        to={'report/sale'}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          padding: '10px 25px',
+          color: '#b5b5c3',
+          textDecoration: 'none',
+          transition: 'all 0.3s ease-in-out',
+          backgroundColor: 'transparent',
+        }}
+        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#1b1b28')}
+        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+      >
+        <span
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginRight: '10px',
+          }}
+        >
+          <img
+            src={'/media/iconSidebar/report-linechart-svgrepo-com.png'}
+            alt="icon"
+            style={{
+              width: '25px',
+              height: '25px',
+            }}
+          />
+        </span>
+        <span
+          style={{
+            fontSize: '14px',
+            fontWeight: 500,
+            color: 'inherit',
+            padding: '0px 5px',
+          }}
+        >
+          รายงานระบบขาย
+        </span>
+      </Link>
     </>
   )
 }

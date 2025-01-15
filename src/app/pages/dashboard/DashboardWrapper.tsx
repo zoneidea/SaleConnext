@@ -225,7 +225,7 @@ const DashboardWrapper: FC = () => {
       });
       const data = Array.isArray(response.data.data) ? response.data.data : [];
       setPending(data); // บันทึกข้อมูล finish
-      console.log('Finish: ', data)
+      // console.log('Finish: ', data)
     } catch (error) {
       console.error('Error fetching FINISH_ALLCONTRACT_URL:', error);
     }

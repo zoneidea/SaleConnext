@@ -52,7 +52,7 @@ const EmpStructure: React.FC = () => {
                 });
                 const data = Array.isArray(response.data.data) ? response.data.data : [];
                 setAdviser(data);
-                console.log(data)
+                // console.log(data)
             } catch (error) {
                 console.error('Error fetching ADVISER_URL:', error);
                 setAdviser([]); // กำหนดค่าเป็น array ว่าง หากเกิดข้อผิดพลาด

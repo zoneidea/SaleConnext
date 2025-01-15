@@ -100,7 +100,7 @@ const SalesContract: React.FC = () => {
         },
       });
 
-      console.log(`updateContract CONTRACT: `, updateContract.data);
+      // console.log(`updateContract CONTRACT: `, updateContract.data);
 
       // แสดง SweetAlert2 หลังจากบันทึกสำเร็จ
       Swal.fire({
@@ -307,7 +307,7 @@ const SalesContract: React.FC = () => {
               </div>
             )}
 
-            {DISCOUNT[0]?.TRADEIN?.TRADEINBRANDNAME && (
+            {DISCOUNT[0] && DISCOUNT[0]?.TRADEIN?.TRADEINBRANDNAME && (
               <div className='row align-items-center mb-10'>
                 <label className='col-lg-4 fw-bold text-muted mb-0'>เครื่องเทิร์น</label>
                 <div className='col-lg-8 d-flex justify-content-between'>

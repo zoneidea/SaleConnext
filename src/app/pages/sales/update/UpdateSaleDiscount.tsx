@@ -36,7 +36,7 @@ const UpdateSalesDiscount: React.FC = () => {
 
     const location = useLocation();
     const item = location.state as ItemProps || [];
-    console.log(`item`, item);
+    // console.log(`item`, item);
 
     const refno = item?.REFNO
     const productContract = item?.PRODUCT
@@ -63,7 +63,7 @@ const UpdateSalesDiscount: React.FC = () => {
     const [selectedTurnId, setSelectedTurnId] = useState<any>('');
     // console.log(`selectedTurnId`, selectedTurnId);
     const [selectedTradeInBrandName, setSelectedTradeInBrandName] = useState<string>('');
-    console.log(`selectedTradeInBrandName`, selectedTradeInBrandName);
+    // console.log(`selectedTradeInBrandName`, selectedTradeInBrandName);
     const [tradeInModel, setTradeInModel] = useState<any>('');
     const [tradeInSerial, setTradeInSerial] = useState<any>('');
     const [selectedGiftId, setSelectedGiftId] = useState<any>('');
@@ -146,7 +146,7 @@ const UpdateSalesDiscount: React.FC = () => {
 
     // อัปเดต selectedTradeInBrandName เมื่อ selectedTurnId หรือ tradeInBrand เปลี่ยน
     useEffect(() => {
-        console.log("Selected TradeIn ID:", selectedTurnId);
+        // console.log("Selected TradeIn ID:", selectedTurnId);
         // console.log("TradeIn Brand List:", tradeInBrand);
 
         const selectedTradeInBrand = tradeInBrand.find(
@@ -245,7 +245,7 @@ const UpdateSalesDiscount: React.FC = () => {
                     'Content-Type': 'application/json',
                 },
             });
-            console.log(`updateContract DISCOUNT: `, updateContract.data);
+            // console.log(`updateContract DISCOUNT: `, updateContract.data);
             if (updateContract.status === 200) {
                 if (!updateContract.data.data) {
                     MySwal.fire('เกิดข้อผิดพลาด', 'ปรับปรุงข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
@@ -312,7 +312,7 @@ const UpdateSalesDiscount: React.FC = () => {
             },
         });
 
-        console.log(response)
+        // console.log(response)
 
         if (response.status === 200) {
             if (!response.data.data) {

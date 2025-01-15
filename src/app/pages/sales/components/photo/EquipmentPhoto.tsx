@@ -16,6 +16,7 @@ import {
 
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
+import { log } from 'console';
 
 // อัพเดท
 interface ItemProps {
@@ -76,7 +77,7 @@ const EquipmentPhoto: React.FC = () => {
     const { imagesInstallation } = usePhotoInstallationStore();
     const { imagesHomeCustomer } = usePhotoHomeCustomerStore();
     const { imagesCustomer } = usePhotoCustomerStore();
-    const { imagesEquipment, addImage, removeImage, loadImages, } = usePhotoEquipmentStore();
+    const { imagesEquipment, addImage, removeImage, loadImages, clearImages } = usePhotoEquipmentStore();
 
     const [error, setError] = useState<string | null>(null);
 
@@ -85,168 +86,143 @@ const EquipmentPhoto: React.FC = () => {
     const isTablet: boolean = /Tablet|iPad/.test(navigator.userAgent);
     const isPC: boolean = !isIOS && !isAndroid && !isTablet;
 
-    const [imageFromApi, setImageFromApi] = useState<string[]>([]); // ตัวแปรเก็บภาพจาก API
-    // console.log(`imageFromApi`, imageFromApi);
-
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-    // โหลด summary contract
-    useEffect(() => {
-        const fetchContractSummary = async () => {
-            try {
-                const response = await axios.get(GETSUMMARYCONTACT, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                    }
-                });
-                const data = Array.isArray(response.data.data) ? response.data.data : [];
-                setGetSummaryContract(data); // บันทึกสินค้าใหม่
-            } catch (error) {
-                console.error('Error fetching products:', error);
-            }
-        };
+    // States
+    const [previewImages, setPreviewImages] = useState<{ file: File; preview: string }[]>([]);
+    const [imagesFromSystem, setImagesFromSystem] = useState<string[]>([]); // รูปภาพจากระบบ
+    const [files, setFiles] = useState<File[]>([]); // เก็บไฟล์ที่อัปโหลดใหม่
 
-        fetchContractSummary();
-    });
+    useEffect(() => {
+        // โหลดรูปภาพและไฟล์จาก Local Storage ตาม REFNO
+        const savedFiles = localStorage.getItem(`files_${refno}`);
+        const savedPreviewImages = localStorage.getItem(`previewImages_${refno}`);
+
+        if (savedFiles) {
+            setFiles(JSON.parse(savedFiles));
+        }
+
+        if (savedPreviewImages) {
+            setPreviewImages(JSON.parse(savedPreviewImages));
+        }
+    }, [refno]);
+
+    useEffect(() => {
+        // อัปเดตข้อมูลไฟล์และรูปภาพลงใน Local Storage
+        localStorage.setItem(`files_${refno}`, JSON.stringify(files));
+        localStorage.setItem(`previewImages_${refno}`, JSON.stringify(previewImages));
+    }, [files, previewImages, refno]);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            if (file.size > 3 * 1024 * 1024) {
-                resizeImage(file);
-            } else {
-                readImageFile(file);
-            }
+        if (event.target.files) {
+            const selectedFiles = Array.from(event.target.files);
+    
+            selectedFiles.forEach((file) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    if (reader.result) {
+                        const img = new Image();
+                        img.onload = () => {
+                            const canvas = document.createElement("canvas");
+                            const ctx = canvas.getContext("2d");
+    
+                            // กำหนดขนาดสูงสุดของภาพ
+                            const maxSize = 1024;
+                            let width = img.width;
+                            let height = img.height;
+    
+                            if (width > height) {
+                                if (width > maxSize) {
+                                    height *= maxSize / width;
+                                    width = maxSize;
+                                }
+                            } else {
+                                if (height > maxSize) {
+                                    width *= maxSize / height;
+                                    height = maxSize;
+                                }
+                            }
+    
+                            canvas.width = width;
+                            canvas.height = height;
+                            ctx?.drawImage(img, 0, 0, width, height);
+    
+                            const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
+    
+                            const newPreview = {
+                                file,
+                                preview: compressedBase64,
+                            };
+    
+                            setPreviewImages((prevPreviews) => [...prevPreviews, newPreview]);
+                        };
+                        img.src = reader.result as string;
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+    
+            setFiles((prevFiles) => [...prevFiles, ...selectedFiles]);
+    
+            // รีเซ็ตค่า input
+            event.target.value = '';
         }
     };
+    
+    const handleDeleteImage = (image: string, isFromSystem: boolean) => {
+        if (!isFromSystem) {
+            setPreviewImages((prevPreviews) => {
+                const updatedPreviews = prevPreviews.filter((img) => img.preview !== image);
+                const updatedFiles = updatedPreviews.map((img) => img.file);
+                setFiles(updatedFiles);
+                return updatedPreviews;
+            });
+        }
+    };    
 
-    const readImageFile = (file: File) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-            if (reader.result) {
-                const imageData = reader.result as string;
-                const cleanedImage = imageData.replace(/^(data:image\/(jpeg|png|webp);base64,)+/, '');
-                const fileType = file.type; // ประเภทของไฟล์
-                const formattedImage = fileType.includes('webp')
-                    ? `data:image/webp;base64,${cleanedImage.trim()}`
-                    : `data:image/jpeg;base64,${cleanedImage.trim()}`; // ค่าเริ่มต้นเป็น jpeg
-
-                addImage(formattedImage);
-                setError(null);
-            }
-        };
-        reader.readAsDataURL(file);
-    };
-
-    const resizeImage = (file: File) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const img = new Image();
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                const ctx = canvas.getContext('2d');
-
-                const maxSize = 1024;
-                let width = img.width;
-                let height = img.height;
-
-                if (width > height) {
-                    if (width > maxSize) {
-                        height *= maxSize / width;
-                        width = maxSize;
-                    }
-                } else {
-                    if (height > maxSize) {
-                        width *= maxSize / height;
-                        height = maxSize;
-                    }
-                }
-
-                canvas.width = width;
-                canvas.height = height;
-                ctx?.drawImage(img, 0, 0, width, height);
-
-                // ตรวจสอบประเภทของไฟล์ก่อนบีบอัด
-                const fileType = file.type; // "image/jpeg" หรือ "image/png"
-                const resizedDataUrl = canvas.toDataURL(fileType === 'image/png' ? 'image/png' : 'image/jpeg', 0.7); // ใช้ type ของไฟล์ที่ถูกอัปโหลด
-
-                addImage(resizedDataUrl);
-                setError(null);
-            };
-            img.src = e.target?.result as string;
-        };
-        reader.readAsDataURL(file);
-    };
-
-    const handleDeleteImage = (image: string) => {
-        Swal.fire({
-            title: 'คุณแน่ใจหรือไม่?',
-            text: 'คุณต้องการลบรูปภาพนี้หรือไม่?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'ลบ',
-            cancelButtonText: 'ยกเลิก',
-        }).then((result) => {
-            if (result.isConfirmed) {
-                removeImage(image); // ลบรูปภาพออก
-                Swal.fire({
-                    title: 'ลบสำเร็จ!',
-                    text: 'รูปภาพถูกลบเรียบร้อยแล้ว',
-                    icon: 'success',
-                    confirmButtonColor: '#3085d6',
-                });
-            }
-        });
-    };
-
-    // POST Contract/updateContract
+    // Handle การอัปโหลดไฟล์
     const handleNextClick = async () => {
+        if (files.length === 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'เกิดข้อผิดพลาด',
+                text: 'กรุณาเลือกรูปภาพก่อนบันทึก',
+            });
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('REFNO', refno);
+        files.forEach((file) => {
+            formData.append('IMAGETDS', file); // ส่งเฉพาะไฟล์ใน state files
+        });
+
+
         try {
-            const cleanedImagesEquipment = imagesEquipment?.map((image) => {
-                return image.replace(/^data:image\/(jpeg|png|webp);base64,/, ''); // ลบ prefix ก่อนส่ง
+            const response = await axios.post(`${API_URL_MONGO}/Contract/SaveContractImage`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
             });
+            // console.log('Upload success:', response.data);
 
-            const updateContract = await axios.post(UPDATECONTACT, {
-                REFNO: refno,
-                EMPID: EmpId,
-                TEAMSALE: TeamSale,
-                SALECODE: SaleCode,
-                SUPEMPID: SupEmpId,
-                SECEMPID: SecEmpId,
-                FIELD: "IMAGE",
-                DATA: [{
-                    "IMAGECARD": imageFromSummary[0]?.IMAGECARD,
-                    "IMAGEGPS": imageFromSummary[0]?.IMAGEGPS,
-                    "IMAGEMAP": imageFromSummary[0]?.IMAGEMAP,
-                    "IMAGETRADEIN": imageFromSummary[0]?.IMAGETRADEIN,
-                    "IMAGEINSTALLATION": imageFromSummary[0]?.IMAGEINSTALLATION,
-                    "IMAGECUSTOMERHOME": imageFromSummary[0]?.IMAGECUSTOMERHOME,
-                    "IMAGECUSTOMER": imageFromSummary[0]?.IMAGECUSTOMER,
-                    "IMAGETDS": cleanedImagesEquipment,
-                }]
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
+            // ล้างรูปภาพและไฟล์ใน local state หลังจากบันทึกสำเร็จ
+            setPreviewImages([]);
+            setFiles([]);
+            clearImages();
 
-            console.log(`updateContract IMAGE: `, updateContract.data);
+            // ล้างข้อมูลไฟล์ใน Local Storage
+            localStorage.removeItem(`files_${refno}`);
+            localStorage.removeItem(`previewImages_${refno}`);
+
             Swal.fire({
                 icon: 'success',
                 title: 'สำเร็จ!',
                 text: 'บันทึกรูปภาพลงระบบเรียบร้อยแล้ว',
             });
-
-            // ล้างรูปภาพหลังบันทึกสำเร็จ
-            // clearImages();
         } catch (error) {
-            console.error('Error fetching UPDATECONTACT IMAGE:', error);
+            console.error('Upload error:', error);
             Swal.fire({
                 icon: 'error',
-                title: 'เกิดข้อผิดพลาด!',
+                title: 'เกิดข้อผิดพลาด',
                 text: 'ไม่สามารถบันทึกรูปภาพได้ กรุณาลองใหม่อีกครั้ง',
             });
         }
@@ -261,26 +237,37 @@ const EquipmentPhoto: React.FC = () => {
 
     return (
         <div>
-            <div className='d-flex align-items-center mt-10 mb-5 mx-7 gap-3'>
+            <div
+                className="d-flex justify-content-center align-items-center my-5 mx-7"
+                style={{
+                    border: "1px solid #ccc",
+                    borderRadius: "10px",
+                    padding: "10px",
+                    backgroundColor: "#f9f9f9",
+                }}
+            >
                 <label
-                    className='btn btn-success w-100 w-md-auto align-self-center'
+                    className="btn btn-success px-5"
                     htmlFor="camera-input"
                     style={{
-                        cursor: 'pointer',
-                        padding: '10px',
-                        border: '1px solid #ccc',
-                        display: 'inline-block',
+                        cursor: "pointer",
+                        borderRadius: "10px",
+                        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
                     }}
                 >
-                    {isPC ? "เลือกรูปจากคลัง" : "เลือกรูปจากคลัง / ใช้กล้อง"}
+                    เลือกรูปจากคลัง
                 </label>
-                <button
-                    className="btn btn-primary w-100 w-md-auto align-self-center"
-                    onClick={handleViewGallery}
-                >
-                    ดูรูปภาพที่บันทึกในระบบ
-                </button>
             </div>
+
+            {/* Input hidden สำหรับการอัปโหลดไฟล์ */}
+            <input
+                id="camera-input"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                style={{ display: "none" }}
+            />
+
             {error && (
                 <div className='alert alert-danger mx-5'>
                     {error}
@@ -295,9 +282,9 @@ const EquipmentPhoto: React.FC = () => {
             />
 
             <div>
-                {imagesEquipment.length > 0 && (
+                {previewImages.length > 0 && (
                     <div className='row mx-5'>
-                        {imagesEquipment.map((image: string, index: number) => (
+                        {previewImages.map((image, index) => (
                             <div
                                 className='col-6 col-xl-4 mb-3 position-relative'
                                 key={index}
@@ -305,7 +292,7 @@ const EquipmentPhoto: React.FC = () => {
                             >
                                 <div className='border border-gray-500 position-relative'>
                                     <img
-                                        src={image}
+                                        src={image.preview}
                                         alt={`Captured ${index + 1}`}
                                         style={{
                                             width: '100%',
@@ -331,14 +318,14 @@ const EquipmentPhoto: React.FC = () => {
                                             alt="ดูภาพ"
                                             className="me-5"
                                             style={{ width: '30px', height: '30px', cursor: 'pointer' }}
-                                            onClick={() => setSelectedImage(image)}
+                                            onClick={() => setSelectedImage(image.preview)}
                                         />
                                         {/* Icon Delete */}
                                         <img
                                             src={toAbsoluteUrl('media/settings/trash-svgrepo-com.png')}
                                             alt="ลบรูป"
                                             style={{ width: '30px', height: '30px', cursor: 'pointer' }}
-                                            onClick={() => handleDeleteImage(image)}
+                                            onClick={() => handleDeleteImage(image.preview, false)}
                                         />
                                     </div>
                                 </div>
@@ -381,7 +368,7 @@ const EquipmentPhoto: React.FC = () => {
                     <div className='d-none d-xl-flex justify-content-between align-items-center my-5 mx-7'>
                         <button
                             className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'
-                            onClick={() => navigate('/sale/photo', { state: { data: item, fromStep } })}
+                            onClick={() => navigate('/sale/photo/gallery/equipment', { state: { data: item, fromStep } })}
                         >
                             ย้อนกลับ
                         </button>
@@ -397,7 +384,7 @@ const EquipmentPhoto: React.FC = () => {
                     <div className='d-none d-xl-flex justify-content-between align-items-center my-5 mx-7'>
                         <button
                             className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'
-                            onClick={() => navigate('/sale/photo')}
+                            onClick={() => navigate('/sale/photo/gallery/equipment')}
                         >
                             ย้อนกลับ
                         </button>
@@ -426,7 +413,7 @@ const EquipmentPhoto: React.FC = () => {
                     >
                         <button
                             className="btn btn-secondary w-auto me-2"
-                            onClick={() => navigate('/sale/photo', { state: { data: item, fromStep } })}
+                            onClick={() => navigate('/sale/photo/gallery/equipment', { state: { data: item, fromStep } })}
                         >
                             ย้อนกลับ
                         </button>
@@ -450,7 +437,7 @@ const EquipmentPhoto: React.FC = () => {
                     >
                         <button
                             className="btn btn-secondary w-auto me-2"
-                            onClick={() => navigate('/sale/photo')}
+                            onClick={() => navigate('/sale/photo/gallery/equipment')}
                         >
                             ย้อนกลับ
                         </button>

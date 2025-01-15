@@ -27,6 +27,9 @@ const SalesDiscount: React.FC = () => {
     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
     const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
 
+    const API_URL_TSR = import.meta.env.VITE_APP_API_THIENSURAT;
+    const EMP_IN_TEAM_URL = `${API_URL_TSR}/Employee_Structure`;
+
     const { REFNO } = useUUIDStore();
     const { PRODUCT } = useSaveProductStore();
     // console.log(`PRODUCT`, PRODUCT)
@@ -61,6 +64,10 @@ const SalesDiscount: React.FC = () => {
     const [step, setStep] = useState<number>(100);
     const [currentSequence, setCurrentSequence] = useState<number>(sequence);
     const totalPriceSafe = totalPrice; // ตั้งค่า TOTALPRICE เป็น 0 ถ้าเป็น null
+
+    // EmpInTeam
+    const [empInTeam, setEmpInTeam] = useState<any[]>([]);
+    // console.log(`empInTeam`, empInTeam)
 
     // อัปเดต selectedTradeInBrandName เมื่อ selectedTurnId หรือ tradeInBrand เปลี่ยน
     useEffect(() => {
@@ -169,7 +176,7 @@ const SalesDiscount: React.FC = () => {
                 },
             },
         ];
-    }, [PRODUCT, selectedTurnId, tradeInModel, tradeInSerial, discountInput , selectedGiftId, selectedTradeInBrandName]);
+    }, [PRODUCT, selectedTurnId, tradeInModel, tradeInSerial, discountInput, selectedGiftId, selectedTradeInBrandName]);
 
     // อัปเดตข้อมูลส่วนลดใน store
     useEffect(() => {
@@ -196,35 +203,123 @@ const SalesDiscount: React.FC = () => {
         getData();
     }, []);
 
+    // GET EmpInTeam
+    useEffect(() => {
+        const getEmpInTeam = async () => {
+            try {
+                const response = await axios.post(EMP_IN_TEAM_URL, { EmpId }, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                        'Accept': 'multipart/form-data',
+                    },
+                });
+                const data = Array.isArray(response.data.data) ? response.data.data : [];
+                setEmpInTeam(data);
+            } catch (error) {
+                console.error('Error fetching EMP_IN_TEAM_URL:', error);
+            }
+        };
+        getEmpInTeam();
+    }, []);
+
     // POST Contract/updateContract
     const handleNextClick = async () => {
         try {
-            // POST Contract/updateContract
-            const updateContract = await axios.post(UPDATECONTACT, {
-                REFNO,
-                EMPID: EmpId,
-                TEAMSALE: TeamSale,
-                SALECODE: SaleCode,
-                SUPEMPID: SupEmpId,
-                SECEMPID: SecEmpId,
-                FIELD: "DISCOUNT",
-                DATA: SaveDiscountData
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+            // สร้าง inputOptions จาก empInTeam
+            const empOptions = empInTeam.reduce((options, emp) => {
+                const fullName = `${emp.FName} ${emp.LName}`; // รวม FName และ LName
+                options[emp.SaleEmp] = fullName; // ใช้ SaleEmp เป็น key
+                return options;
+            }, {});
+
+            // แสดง popup ให้ผู้ใช้เลือกพนักงาน
+            const { value: selectedEmpId } = await MySwal.fire({
+                title: 'เลือกพนักงานขาย',
+                input: 'select',
+                inputOptions: empOptions,
+                inputPlaceholder: 'กรุณาเลือกพนักงานขาย...',
+                showCancelButton: true,
+                confirmButtonText: 'ตกลง',
+                cancelButtonText: 'ยกเลิก',
             });
-            console.log(`updateContract DISCOUNT: `, updateContract.data);
-            MySwal.fire({
-                icon: 'success',
-                title: 'สำเร็จ!',
-                text: 'บันทึกข้อมูลสินค้าเรียบร้อยแล้ว',
-                confirmButtonText: 'ตกลง'
-            });
-            navigate('/sale/createcust');
+
+            // หากผู้ใช้ยืนยันและเลือกพนักงาน
+            if (selectedEmpId) {
+                // ดึงข้อมูลพนักงานที่เลือกจาก empInTeam
+                const selectedEmployee = empInTeam.find((emp) => emp.SaleEmp === selectedEmpId);
+
+                // POST Contract/updateContract (สำหรับข้อมูลพนักงานที่เลือก)
+                await axios.post(UPDATECONTACT, {
+                    REFNO,
+                    EMPID: EmpId,
+                    TEAMSALE: TeamSale,
+                    FIELD: 'SALEEMPLOYEE', // ฟิลด์สำหรับอัปเดตพนักงาน
+                    DATA: selectedEmployee, // ส่งข้อมูลพนักงานทั้งก้อน
+                }, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                // console.log('Payload to API:', {
+                //     DATA: selectedEmployee,
+                // });
+
+                // แสดง popup ว่าข้อมูลพนักงานถูกบันทึกแล้ว
+                await MySwal.fire({
+                    icon: 'success',
+                    title: 'บันทึกสำเร็จ!',
+                    text: `ข้อมูลพนักงาน "${selectedEmployee.FName} ${selectedEmployee.LName}" ถูกบันทึกเรียบร้อยแล้ว`,
+                    confirmButtonText: 'ตกลง',
+                });
+
+                // POST Contract/updateContract (สำหรับส่วนลด)
+                const discountUpdateResponse = await axios.post(UPDATECONTACT, {
+                    REFNO,
+                    EMPID: EmpId,
+                    TEAMSALE: TeamSale,
+                    SALECODE: SaleCode,
+                    SUPEMPID: SupEmpId,
+                    SECEMPID: SecEmpId,
+                    FIELD: 'DISCOUNT',
+                    DATA: SaveDiscountData,
+                }, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                // ใช้งาน response เพื่อตรวจสอบผลลัพธ์
+                if (discountUpdateResponse.status === 200) {
+                    console.log('ส่วนลดบันทึกสำเร็จ:', discountUpdateResponse.data);
+                } else {
+                    console.log('เกิดข้อผิดพลาดในการบันทึกส่วนลด:', discountUpdateResponse.status);
+                }
+
+                // แสดง popup สำเร็จสำหรับส่วนลด
+                await MySwal.fire({
+                    icon: 'success',
+                    title: 'บันทึกสำเร็จ!',
+                    text: 'ข้อมูลส่วนลดถูกบันทึกเรียบร้อยแล้ว',
+                    confirmButtonText: 'ตกลง',
+                });
+
+                // นำทางไปยังหน้าอื่น (เช่น /sale/createcust)
+                navigate('/sale/createcust');
+            } else {
+                // ผู้ใช้กดยกเลิก
+                MySwal.fire('ยกเลิก!', 'การดำเนินการถูกยกเลิก', 'info');
+            }
         } catch (error) {
             console.error('Error fetching UPDATECONTACT:', error);
-            MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถบันทึกข้อมูลได้', 'error');
+
+            // แสดง popup ข้อผิดพลาด
+            MySwal.fire({
+                icon: 'error',
+                title: 'เกิดข้อผิดพลาด!',
+                text: 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง',
+                confirmButtonText: 'ตกลง',
+            });
         }
     };
 
@@ -483,7 +578,7 @@ const SalesDiscount: React.FC = () => {
                         className='btn btn-primary w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'
                         onClick={handleNextClick}
                     >
-                        ถัดไป
+                        บันทึก
                     </button>
                 </div>
 

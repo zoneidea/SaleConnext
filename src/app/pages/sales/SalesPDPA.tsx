@@ -36,7 +36,7 @@ const SalesPDPA: React.FC = () => {
   const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
 
   const { saveCustomerTypes } = useSaveCustomerStore()
-  console.log(`saveCustomerTypes`, saveCustomerTypes);
+  // console.log(`saveCustomerTypes`, saveCustomerTypes);
 
   const [consentGiven, setConsentGiven] = useState<boolean>(false); // ให้ความยินยอม
   const [consentNotGiven, setConsentNotGiven] = useState<boolean>(false); // ไม่ให้ความยินยอม
@@ -118,7 +118,7 @@ const SalesPDPA: React.FC = () => {
           'Content-Type': 'multipart/form-data',
         },
       });
-      console.log(`responseSendSMS: `, responseSendSMS.data);
+      // console.log(`responseSendSMS: `, responseSendSMS.data);
       setContNo(responseSendSMS.data.ContNo || '');
     } catch (error) {
       console.error('Error responseSendSMS:', error);
@@ -181,7 +181,7 @@ const SalesPDPA: React.FC = () => {
           'Content-Type': 'application/json',
         },
       });
-      console.log(`updateContract PDPA: `, updateContract.data);
+      // console.log(`updateContract PDPA: `, updateContract.data);
       navigate("/sale/contract", { state: { contNo } });
     } catch (error) {
       console.error('Error fetching PDPA:', error);

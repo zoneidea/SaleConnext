@@ -105,8 +105,12 @@ const PrivateRoutes = () => {
 
   //หัวข้อ ระบบเก็บเงินงวดแรก
   const CreateFirstBill = lazy(() => import('../pages/firstBill/CreateFirstBill'))
+
   // โครงสร้างพนักงาน
   const EmpStructure = lazy(() => import('../pages/employee/EmpStructure'))
+
+  // โครงสร้างพนักงาน
+  const ReportSale = lazy(() => import('../pages/report/ReportSale'))
 
   return (
     <Routes>
@@ -314,7 +318,7 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
-         <Route
+        <Route
           path='sale/photo/gallery/customer'
           element={
             <SuspensedView>
@@ -322,7 +326,7 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
-         <Route
+        <Route
           path='sale/photo/gallery/customerHome'
           element={
             <SuspensedView>
@@ -330,7 +334,7 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
-         <Route
+        <Route
           path='sale/photo/gallery/drawingMap'
           element={
             <SuspensedView>
@@ -338,7 +342,7 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
-         <Route
+        <Route
           path='sale/photo/gallery/equipment'
           element={
             <SuspensedView>
@@ -346,7 +350,7 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
-         <Route
+        <Route
           path='sale/photo/gallery/installation'
           element={
             <SuspensedView>
@@ -354,7 +358,7 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
-         <Route
+        <Route
           path='sale/photo/gallery/turn'
           element={
             <SuspensedView>
@@ -472,7 +476,7 @@ const PrivateRoutes = () => {
         />
         {/* End ระบบเก็บเงินงวดแรก */}
 
-        {/* โครงสร้างพนักงาน */}
+        {/* Start โครงสร้างพนักงาน */}
         <Route
           path='employee/EmpStructure'
           element={
@@ -481,6 +485,18 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
+        {/* End โครงสร้างพนักงาน */}
+
+        {/* Start รายงานระบบขาย */}
+        <Route
+          path='report/sale'
+          element={
+            <SuspensedView>
+              <ReportSale />
+            </SuspensedView>
+          }
+        />
+        {/* End รายงานระบบขาย */}
 
         {/* Page Not Found */}
         <Route path='*' element={<Navigate to='/error/404' />} />

@@ -1267,7 +1267,7 @@ const OrderCreateBooking: React.FC = () => {
     };
 
     useEffect(() => {
-        console.log(`Formatted DateForAppointment: ${formattedDate}`);
+        // console.log(`Formatted DateForAppointment: ${formattedDate}`);
     }, [formattedDate]);
 
     const handleShippingChange = (shippingId: string) => {
@@ -1431,7 +1431,7 @@ const OrderCreateBooking: React.FC = () => {
     ]
 
     const onSubmit = async (data: any) => {
-        console.log("All Data to Submit:", allData);
+        // console.log("All Data to Submit:", allData);
         try {
             const response = await axios.post(SAVEDATA_URL, allData, {
                 headers: {
@@ -1480,13 +1480,20 @@ const OrderCreateBooking: React.FC = () => {
                             <div className='col-12'>
 
                                 {/* Start ปุ่มค้นหาลูกค้า */}
-                                {auth.data[0].HascustomerSearch === "true" && (
+                                {/* {auth.data[0].HascustomerSearch === "true" && (
                                     <>
                                         < ModalTrigger handleShow={handleShow} />
                                         <SerchCustomerModal show={showModal} handleClose={handleClose} />
                                         <hr className='my-10' style={{ borderTop: '1px dotted black' }} />
                                     </>
-                                )}
+                                )} */}
+
+                                <>
+                                    < ModalTrigger handleShow={handleShow} />
+                                    <SerchCustomerModal show={showModal} handleClose={handleClose} />
+                                    <hr className='my-10' style={{ borderTop: '1px dotted black' }} />
+                                </>
+
                                 {/* End ปุ่มค้นหาลูกค้า */}
 
                                 <label className='form-label fw-bold fs-3 mb-10'>ข้อมูลพนักงานขาย</label>
