@@ -3590,6 +3590,7 @@ const OrderCreateBooking: React.FC = () => {
                                                             dropdownMode="select"
                                                             isClearable
                                                             dateFormat="yyyy/MM/dd"
+                                                            withPortal
                                                         />
                                                     )}
                                                 />
