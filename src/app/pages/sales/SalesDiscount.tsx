@@ -270,7 +270,8 @@ const SalesDiscount: React.FC = () => {
                     icon: 'success',
                     title: 'บันทึกสำเร็จ!',
                     text: `ข้อมูลพนักงาน "${selectedEmployee.FName} ${selectedEmployee.LName}" ถูกบันทึกเรียบร้อยแล้ว`,
-                    confirmButtonText: 'ตกลง',
+                    timer: 2000, // แสดงผล 3 วินาที
+                    showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
                 });
 
                 // POST Contract/updateContract (สำหรับส่วนลด)
@@ -301,7 +302,8 @@ const SalesDiscount: React.FC = () => {
                     icon: 'success',
                     title: 'บันทึกสำเร็จ!',
                     text: 'ข้อมูลส่วนลดถูกบันทึกเรียบร้อยแล้ว',
-                    confirmButtonText: 'ตกลง',
+                    timer: 2000, // แสดงผล 3 วินาที
+                    showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
                 });
 
                 // นำทางไปยังหน้าอื่น (เช่น /sale/createcust)

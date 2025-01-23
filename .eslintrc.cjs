@@ -14,5 +14,6 @@ module.exports = {
       'warn',
       { allowConstantExport: true },
     ],
+    'no-restricted-globals': 'off', // ปิดการแจ้งเตือน no-restricted-globals
   },
-}
+};

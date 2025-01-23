@@ -93,6 +93,8 @@ const EquipmentPhoto: React.FC = () => {
     const [imagesFromSystem, setImagesFromSystem] = useState<string[]>([]); // รูปภาพจากระบบ
     const [files, setFiles] = useState<File[]>([]); // เก็บไฟล์ที่อัปโหลดใหม่
 
+    const [isLoading, setIsLoading] = useState<boolean>(false); // State สำหรับควบคุมปุ่ม
+
     useEffect(() => {
         // โหลดรูปภาพและไฟล์จาก Local Storage ตาม REFNO
         const savedFiles = localStorage.getItem(`files_${refno}`);
@@ -116,7 +118,7 @@ const EquipmentPhoto: React.FC = () => {
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files) {
             const selectedFiles = Array.from(event.target.files);
-    
+
             selectedFiles.forEach((file) => {
                 const reader = new FileReader();
                 reader.onload = () => {
@@ -125,12 +127,12 @@ const EquipmentPhoto: React.FC = () => {
                         img.onload = () => {
                             const canvas = document.createElement("canvas");
                             const ctx = canvas.getContext("2d");
-    
+
                             // กำหนดขนาดสูงสุดของภาพ
                             const maxSize = 1024;
                             let width = img.width;
                             let height = img.height;
-    
+
                             if (width > height) {
                                 if (width > maxSize) {
                                     height *= maxSize / width;
@@ -142,18 +144,18 @@ const EquipmentPhoto: React.FC = () => {
                                     height = maxSize;
                                 }
                             }
-    
+
                             canvas.width = width;
                             canvas.height = height;
                             ctx?.drawImage(img, 0, 0, width, height);
-    
+
                             const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
-    
+
                             const newPreview = {
                                 file,
                                 preview: compressedBase64,
                             };
-    
+
                             setPreviewImages((prevPreviews) => [...prevPreviews, newPreview]);
                         };
                         img.src = reader.result as string;
@@ -161,14 +163,14 @@ const EquipmentPhoto: React.FC = () => {
                 };
                 reader.readAsDataURL(file);
             });
-    
+
             setFiles((prevFiles) => [...prevFiles, ...selectedFiles]);
-    
+
             // รีเซ็ตค่า input
             event.target.value = '';
         }
     };
-    
+
     const handleDeleteImage = (image: string, isFromSystem: boolean) => {
         if (!isFromSystem) {
             setPreviewImages((prevPreviews) => {
@@ -178,7 +180,7 @@ const EquipmentPhoto: React.FC = () => {
                 return updatedPreviews;
             });
         }
-    };    
+    };
 
     // Handle การอัปโหลดไฟล์
     const handleNextClick = async () => {
@@ -199,6 +201,7 @@ const EquipmentPhoto: React.FC = () => {
 
 
         try {
+            setIsLoading(true); // Disable ปุ่ม
             const response = await axios.post(`${API_URL_MONGO}/Contract/SaveContractImage`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
@@ -217,7 +220,12 @@ const EquipmentPhoto: React.FC = () => {
                 icon: 'success',
                 title: 'สำเร็จ!',
                 text: 'บันทึกรูปภาพลงระบบเรียบร้อยแล้ว',
+                timer: 2000, // แสดงผล 3 วินาที
+                showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
             });
+
+            navigate('/sale/photo/gallery/equipment', { state: { data: item, fromStep } });
+
         } catch (error) {
             console.error('Upload error:', error);
             Swal.fire({
@@ -225,6 +233,8 @@ const EquipmentPhoto: React.FC = () => {
                 title: 'เกิดข้อผิดพลาด',
                 text: 'ไม่สามารถบันทึกรูปภาพได้ กรุณาลองใหม่อีกครั้ง',
             });
+        } finally {
+            setIsLoading(false); // เปิดการใช้งานปุ่ม
         }
     };
 
@@ -237,28 +247,6 @@ const EquipmentPhoto: React.FC = () => {
 
     return (
         <div>
-            <div
-                className="d-flex justify-content-center align-items-center my-5 mx-7"
-                style={{
-                    border: "1px solid #ccc",
-                    borderRadius: "10px",
-                    padding: "10px",
-                    backgroundColor: "#f9f9f9",
-                }}
-            >
-                <label
-                    className="btn btn-success px-5"
-                    htmlFor="camera-input"
-                    style={{
-                        cursor: "pointer",
-                        borderRadius: "10px",
-                        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                    }}
-                >
-                    เลือกรูปจากคลัง
-                </label>
-            </div>
-
             {/* Input hidden สำหรับการอัปโหลดไฟล์ */}
             <input
                 id="camera-input"
@@ -266,6 +254,7 @@ const EquipmentPhoto: React.FC = () => {
                 accept="image/*"
                 onChange={handleFileChange}
                 style={{ display: "none" }}
+                disabled={isLoading}
             />
 
             {error && (
@@ -369,6 +358,7 @@ const EquipmentPhoto: React.FC = () => {
                         <button
                             className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'
                             onClick={() => navigate('/sale/photo/gallery/equipment', { state: { data: item, fromStep } })}
+                            disabled={isLoading}
                         >
                             ย้อนกลับ
                         </button>
@@ -376,6 +366,7 @@ const EquipmentPhoto: React.FC = () => {
                             className='btn btn-warning w-100 w-md-auto align-self-center mb-2 mb-md-0'
                             type='button'
                             onClick={handleNextClick}
+                            disabled={isLoading}
                         >
                             อัพเดทข้อมูล
                         </button>
@@ -384,7 +375,8 @@ const EquipmentPhoto: React.FC = () => {
                     <div className='d-none d-xl-flex justify-content-between align-items-center my-5 mx-7'>
                         <button
                             className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'
-                            onClick={() => navigate('/sale/photo/gallery/equipment')}
+                            onClick={() => navigate('/sale/photo/gallery/equipment', { state: { data: item, fromStep } })}
+                            disabled={isLoading}
                         >
                             ย้อนกลับ
                         </button>
@@ -392,11 +384,44 @@ const EquipmentPhoto: React.FC = () => {
                             className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
                             type='button'
                             onClick={handleNextClick}
+                            disabled={isLoading}
                         >
                             บันทึกรูปภาพลงระบบ
                         </button>
                     </div>
                 )}
+
+                <div
+                    className="d-flex justify-content-center align-items-center my-5 mx-7"
+                    style={{
+                        border: "1px solid #ccc",
+                        borderRadius: "10px",
+                        padding: "10px",
+                        backgroundColor: "#f9f9f9",
+                    }}
+                >
+                    <label
+                        className="btn btn-success px-5"
+                        htmlFor="camera-input"
+                        style={{
+                            cursor: "pointer",
+                            borderRadius: "10px",
+                            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                        }}
+                    >
+                        เลือกรูปจากคลัง
+                    </label>
+                </div>
+
+                {/* Input hidden สำหรับการอัปโหลดไฟล์ */}
+                <input
+                    id="camera-input"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    style={{ display: "none" }}
+                    disabled={isLoading}
+                />
 
                 {/* ปุ่มในหน้าจอเล็ก */}
                 {/* แสดงปุ่มเมื่อมาจาก Step */}
@@ -414,12 +439,14 @@ const EquipmentPhoto: React.FC = () => {
                         <button
                             className="btn btn-secondary w-auto me-2"
                             onClick={() => navigate('/sale/photo/gallery/equipment', { state: { data: item, fromStep } })}
+                            disabled={isLoading}
                         >
                             ย้อนกลับ
                         </button>
                         <button
                             className="btn btn-warning w-auto me-2"
                             onClick={handleNextClick}
+                            disabled={isLoading}
                         >
                             อัพเดทข้อมูล
                         </button>
@@ -437,13 +464,15 @@ const EquipmentPhoto: React.FC = () => {
                     >
                         <button
                             className="btn btn-secondary w-auto me-2"
-                            onClick={() => navigate('/sale/photo/gallery/equipment')}
+                            onClick={() => navigate('/sale/photo/gallery/equipment', { state: { data: item, fromStep } })}
+                            disabled={isLoading}
                         >
                             ย้อนกลับ
                         </button>
                         <button
                             className="btn btn-primary w-auto me-2"
                             onClick={handleNextClick}
+                            disabled={isLoading}
                         >
                             บันทึกรูปภาพลงระบบ
                         </button>

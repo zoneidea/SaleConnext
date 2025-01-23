@@ -1,10 +1,16 @@
 import { defineConfig } from 'vite';
+import dotenv from "dotenv";
 import react from '@vitejs/plugin-react-swc';
 import fs from 'fs';
 import path from 'path';
 
+dotenv.config();
+
 // https://vitejs.dev/config/
 export default defineConfig({
+  define: {
+    "process.env": process.env,
+  },
   css: {
     preprocessorOptions: {
       css: {
@@ -27,10 +33,10 @@ export default defineConfig({
     },
   },
   server: {
-    // https: {
-    //   key: fs.readFileSync('./certs/localhost-key.pem'),  // ใส่คีย์สำหรับ HTTPS
-    //   cert: fs.readFileSync('./certs/localhost.pem'),     // ใส่ใบรับรองสำหรับ HTTPS
-    // },
-    https: false
+    https: {
+      key: fs.readFileSync('./certs/localhost-key.pem'),  // ใส่คีย์สำหรับ HTTPS
+      cert: fs.readFileSync('./certs/localhost.pem'),     // ใส่ใบรับรองสำหรับ HTTPS
+    },
+    // https: false
   }
 });

@@ -74,7 +74,7 @@ const SalesPackage: React.FC = () => {
 
     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
     const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContractValidate`;
-    const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage`;
+    const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage?REFNO=${refno}`;
 
     const [comment, setComment] = useState('')
     const [cbxApproveSelected, setApproveSelected] = useState(true);
@@ -89,9 +89,7 @@ const SalesPackage: React.FC = () => {
     useEffect(() => {
         const fetchImages = async () => {
             try {
-                const response = await axios.get(GET_IMAGES_API, {
-                    params: { REFNO: refno },
-                });
+                const response = await axios.get(GET_IMAGES_API);
 
                 // ตรวจสอบว่า response.data เป็นไปตามโครงสร้างของ ImagesType
                 const data = response.data;
@@ -190,7 +188,7 @@ const SalesPackage: React.FC = () => {
     return (
         <>
             <Content>
-                <div className='d-flex justify-content-between align-items-center my-5'>
+                <div className='d-flex justify-content-between align-items-center mb-10'>
                     <div id="kt_page_title" data-kt-swapper="true" data-kt-swapper-mode="prepend"
                         data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
                         className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
@@ -1251,8 +1249,8 @@ const SalesPackage: React.FC = () => {
                     </div>
                 </div>
 
-                <div className='row mb-6'>
-                    <div className='col-lg-6 mb-3'>
+                <div className='row mb-10'>
+                    <div className='col-lg-6 mb-20'>
                         <label className='form-label fw-bold fs-6'>รายละเอียดเพิ่มเติม</label>
                         <textarea
                             onChange={(e) => setComment(e.target.value)}

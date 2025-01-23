@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../../../modules/auth/core/Auth';
 import { Content } from '../../../../../_metronic/layout/components/content'
+import useRefnoBarcodeStore from "../accessCam/refnoBarcodeStore";
 
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
@@ -15,24 +16,37 @@ import {
 } from '../../../../modules/stores/sales/packageStore/packageStore';
 
 interface ItemProps {
-  REFNO: String,
-  CONTNO: String,
-  EMPID: String,
-  TEAMSALE: String,
-  SALECODE: String,
-  SUPEMPID: String,
-  SECEMPID: String,
-  STATUS: String,
-  PRODUCT: [any],
-  CUSTOMERSTATUS: [any],
-  DISCOUNT: [any],
-  SALEEMPLOYEE: [any],
-  CUSTOMERDETAIL: [any],
-  ADDRESS: [any],
-  PDPA: [any],
-  CONTRACT: [any],
-  IMAGE: [any],
-  CHECKERCOMMENT: [any]
+  REFNO: string;
+  CONTNO: string;
+  EMPID: string;
+  TEAMSALE: string;
+  SALECODE: string;
+  SUPEMPID: string;
+  SECEMPID: string;
+  STATUS: string;
+  PRODUCT: [any];
+  CUSTOMERSTATUS: [any];
+  DISCOUNT: [any];
+  CUSTOMERDETAIL: [any];
+  ADDRESS: [any];
+  PDPA: [any];
+  CONTRACT: [any];
+  IMAGE: [any];
+  CHECKERCOMMENT: [any];
+  item?: {
+    REFNO: string; // เพิ่ม item เป็น optional object
+  };
+}
+
+interface ImagesType {
+  IMAGECARD: string[];
+  IMAGEGPS: string[];
+  IMAGEMAP: string[];
+  IMAGECUSTOMERHOME: string[];
+  IMAGEINSTALLATION: string[];
+  IMAGETDS: string[];
+  IMAGECUSTOMER: string[];
+  IMAGETRADEIN: string[];
 }
 
 const Step: React.FC = () => {
@@ -40,11 +54,18 @@ const Step: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate()
   const item = location.state as ItemProps || [];
+  console.log(`item`, item);
+
+  const refnoFromUpdate = useRefnoBarcodeStore((state: any) => state.refno || item?.REFNO || ""); // เพิ่มค่าเริ่มต้น
+  const refno = item.REFNO ? item.REFNO : refnoFromUpdate
+  // console.log(`refno`, refno);
+
   const [data, setData] = useState<any[]>([])
 
   const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
   const GET_CONTRACT_URL = `${API_URL_MONGO}/Contract/GetContractSummary`;
   const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
+  const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage?REFNO=${refno}`;
 
   const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
   const API_URL_POST_CONDITIONSCHECKHISTORY = `${API_SALECONNEXT}/ConditionsCheckHistory`;
@@ -70,10 +91,13 @@ const Step: React.FC = () => {
 
   const [isLoadingFinish, setIsLoadingFinish] = useState<boolean>(false);
 
+  const [images, setImages] = useState<ImagesType | null>(null);
+  // console.log(`images`, images);
+
   const getData = async () => {
     setIsLoadingFinish(true);
     try {
-      const response = await axios.get(GET_CONTRACT_URL + '?refno=' + item.REFNO, {
+      const response = await axios.get(GET_CONTRACT_URL + '?refno=' + refno, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -87,6 +111,14 @@ const Step: React.FC = () => {
       setIsLoadingFinish(false);
     }
   };
+
+  useEffect(() => {
+    if (refno) {
+      getData(); // ดึงข้อมูลเมื่อ refno ถูกตั้งค่าแล้ว
+    } else {
+      console.warn("REFNO is undefined");
+    }
+  }, [refno]);
 
   useEffect(() => {
     getData();
@@ -382,7 +414,7 @@ const Step: React.FC = () => {
 
     try {
       const updateContract = await axios.post(UPDATECONTACT, {
-        REFNO: item.REFNO,
+        REFNO: item.REFNO ? item.REFNO : refnoFromUpdate,
         EMPID: EmpId,
         TEAMSALE: TeamSale,
         FIELD: "CUSTOMERSTATUS",
@@ -509,6 +541,39 @@ const Step: React.FC = () => {
     return `${day} ${month} ${year}`;
   };
 
+  // fetch collection ContractImage
+  useEffect(() => {
+    const fetchImages = async () => {
+      try {
+        const response = await axios.get(GET_IMAGES_API);
+
+        // ตรวจสอบว่า response.data เป็นไปตามโครงสร้างของ ImagesType
+        const data = response.data;
+
+        if (
+          data &&
+          typeof data === 'object' &&
+          'IMAGECARD' in data &&
+          'IMAGEGPS' in data &&
+          'IMAGEMAP' in data &&
+          'IMAGECUSTOMERHOME' in data &&
+          'IMAGEINSTALLATION' in data &&
+          'IMAGETDS' in data &&
+          'IMAGETRADEIN' in data
+        ) {
+          setImages(data as ImagesType);
+        } else {
+          setImages(null);
+        }
+      } catch (err) {
+        console.error('Error fetching images:', err);
+        setImages(null); // ตั้งค่าเป็น null หากมีข้อผิดพลาด
+      }
+    };
+
+    fetchImages();
+  }, [refno]);
+
   return (
     <>
       <Content>
@@ -542,18 +607,19 @@ const Step: React.FC = () => {
               <div className='card-body d-flex align-items-center'>
                 <div className='flex-grow-1'>
                   <div className='text-gray-800 text-hover-primary fw-bold fs-4'>
-                    {`REFNO: ${item?.REFNO}`}
+                    {`REFNO: ${item?.REFNO || refnoFromUpdate}`}
                   </div>
                   <span className={`${data?.[0]?.STATUS === 'DRAFT' ? 'text-warning' : 'text-danger'} fw-semibold d-block fs-6`}>{`สถานะ: ${data?.[0]?.STATUS === 'DRAFT' ? 'ยังไม่ได้ตรวจสอบ' : 'แก้ไข'}`}</span>
                   {
-                    data?.[0]?.CHECKKERCOMMENT?.COMMENT && (
-                      <span className={`text-danger fw-semibold d-block fs-6`}>{`คอมเม้นท์: ${data?.[0]?.CHECKKERCOMMENT?.[0]?.COMMENT}`}</span>
+                    data?.[0]?.CHECKKERCOMMENT?.[0]?.COMMENT && (
+                      <span className={`text-danger fw-semibold d-block fs-6`}>{`คอมเมนต์: ${data?.[0]?.CHECKKERCOMMENT?.[0]?.COMMENT}`}</span>
                     )
                   }
                 </div>
               </div>
               <div className='card-body d-flex align-items-center py-5 pt-6'>
                 <div className='col-12'>
+
                   <Link to={toPackage} state={data?.[0]} onClick={() => handleClick('updateSalePackage')}>
                     <div className='d-flex align-items-center pb-8'>
                       <span className={`bullet bullet-vertical h-40px ${data?.[0]?.PRODUCT?.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
@@ -586,7 +652,7 @@ const Step: React.FC = () => {
                           {`2. ตรวจสอบข้อมูลลูกค้า`}
                         </div>
                         {
-                          data?.[0]?.CUSTOMERSTATUS?.length !== 0 && (
+                          data?.[0]?.CUSTOMERSTATUS?.length !== 0 && data?.[0]?.CUSTOMERSTATUS?.length > 0 && (
                             <span className='text-gray-700 fw-semibold d-block'>{`สถานะ: ${data?.[0]?.CUSTOMERSTATUS?.[3]}`}</span>
                           )
                         }
@@ -692,7 +758,7 @@ const Step: React.FC = () => {
                   </Link>
                   <Link to={toContract} state={data?.[0]} onClick={() => handleClick('UpdateSalesContract')}>
                     <div className='d-flex align-items-center pb-8'>
-                      <span className={`bullet bullet-vertical h-40px ${data?.[0]?.CONTRACT.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
+                      <span className={`bullet bullet-vertical h-40px ${data?.[0]?.PDPA.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
@@ -721,7 +787,13 @@ const Step: React.FC = () => {
                     type='button'
                   >
                     <div className='d-flex align-items-center pb-8'>
-                      <span className={`bullet bullet-vertical h-40px ${data?.[0]?.IMAGE.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
+                      <span
+                        className={`bullet bullet-vertical h-40px ${images &&
+                          Object.values(images).some((field) => Array.isArray(field) && field.length > 0)
+                          ? 'bg-success'
+                          : 'bg-danger'
+                          }`}
+                      ></span>
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className='text-gray-800 text-hover-primary fw-bold fs-2'>

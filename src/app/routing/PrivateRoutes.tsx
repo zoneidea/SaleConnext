@@ -11,7 +11,8 @@ import { SalesWrapper } from '../pages/sales/SalesWrapper'
 import { OrderWrapper } from '../pages/order/OrderWrapper'
 import { FirstBillWrapper } from '../pages/firstBill/FirstBillWrapper'
 
-// SuspensedView Component
+import ErrorBoundary from '../pages/sales/components/accessCam/ErrorBoundary'
+
 const SuspensedView: FC<WithChildren> = ({ children }) => {
   const [loading, setLoading] = useState(true)
 
@@ -65,6 +66,7 @@ const PrivateRoutes = () => {
 
   //กล้อง + รูป
   const DeviceScanBarcode = lazy(() => import('../pages/sales/components/accessCam/DeviceScanBarcode'))
+  const UpdateDeviceScanBarcode = lazy(() => import('../pages/sales/components/accessCam/updateDeviceScanBarcode'))
   const SalesPhoto = lazy(() => import('../pages/sales/SalesPhoto'))
   const IdCardPhoto = lazy(() => import('../pages/sales/components/photo/IdCardPhoto'))
   const GalleryGoogleMapGPS = lazy(() => import('../pages/sales/components/photo/gps/GalleryGoogleMapGPS'))
@@ -200,7 +202,19 @@ const PrivateRoutes = () => {
           path='sale/scanbarcode'
           element={
             <SuspensedView>
-              <DeviceScanBarcode />
+              <ErrorBoundary>
+                <DeviceScanBarcode />
+              </ErrorBoundary>
+            </SuspensedView>
+          }
+        />
+         <Route
+          path='sale/update/updateDeviceScanBarcode'
+          element={
+            <SuspensedView>
+              <ErrorBoundary>
+                <UpdateDeviceScanBarcode />
+              </ErrorBoundary>
             </SuspensedView>
           }
         />

@@ -33,6 +33,17 @@ interface ItemProps {
     CHECKERCOMMENT: [any]
 }
 
+interface ImagesType {
+    IMAGECARD: string[];
+    IMAGEGPS: string[];
+    IMAGEMAP: string[];
+    IMAGECUSTOMERHOME: string[];
+    IMAGEINSTALLATION: string[];
+    IMAGETDS: string[];
+    IMAGECUSTOMER: string[];
+    IMAGETRADEIN: string[];
+}
+
 const UpdateSalesPDPA: React.FC = () => {
     const navigate = useNavigate()
     const MySwal = withReactContent(Swal);
@@ -60,6 +71,7 @@ const UpdateSalesPDPA: React.FC = () => {
 
     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
     const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
+    const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage`;
 
     const { saveCustomerTypes } = useSaveCustomerStore()
 
@@ -86,6 +98,8 @@ const UpdateSalesPDPA: React.FC = () => {
 
     // State สำหรับเก็บ ContNo
     const [contNo, setContNo] = useState<string | null>(item?.CONTNO || null);
+
+    const [images, setImages] = useState<ImagesType | null>(null);
 
     // Memoized ContNo สำหรับการใช้งานใน component อื่น
     const memoizedContNo = useMemo(() => {
@@ -141,6 +155,41 @@ const UpdateSalesPDPA: React.FC = () => {
         setPDPA_Code(consentGiven ? '0001' : '0000');
     }, [consentGiven]);
 
+    // fetch collection ContractImage
+    useEffect(() => {
+        const fetchImages = async () => {
+            try {
+                const response = await axios.get(GET_IMAGES_API, {
+                    params: { REFNO: refno },
+                });
+
+                // ตรวจสอบว่า response.data เป็นไปตามโครงสร้างของ ImagesType
+                const data = response.data;
+
+                if (
+                    data &&
+                    typeof data === 'object' &&
+                    'IMAGECARD' in data &&
+                    'IMAGEGPS' in data &&
+                    'IMAGEMAP' in data &&
+                    'IMAGECUSTOMERHOME' in data &&
+                    'IMAGEINSTALLATION' in data &&
+                    'IMAGETDS' in data &&
+                    'IMAGETRADEIN' in data
+                ) {
+                    setImages(data as ImagesType);
+                } else {
+                    setImages(null);
+                }
+            } catch (err) {
+                console.error('Error fetching images:', err);
+                setImages(null); // ตั้งค่าเป็น null หากมีข้อผิดพลาด
+            }
+        };
+
+        fetchImages();
+    }, [refno]);
+
     const currentDate = new Date();
     const formattedDate = `${currentDate.getDate()}/${currentDate.getMonth() + 1}/${currentDate.getFullYear()}`;
 
@@ -171,6 +220,48 @@ const UpdateSalesPDPA: React.FC = () => {
         }
     };
 
+    // const checkOTP = async () => {
+    //     try {
+    //         const responseCheckOTP = await axios.post(CHECK_OTP_API, {
+    //             EmpID: EmpId,
+    //             RefNo: refno,
+    //             OTP: inputOTP,
+    //         }, {
+    //             headers: {
+    //                 'Content-Type': 'multipart/form-data',
+    //             },
+    //         });
+
+    //         // console.log(`responseCheckOTP: `, responseCheckOTP.data);
+
+    //         if (responseCheckOTP.data.status === 400) {
+    //             Swal.fire({
+    //                 icon: 'error',
+    //                 title: 'ข้อผิดพลาด!',
+    //                 text: 'รหัส OTP ไม่ถูกต้อง!',
+    //                 confirmButtonText: 'ตกลง',
+    //             });
+    //         } else if (responseCheckOTP.data.status === 200) {
+    //             Swal.fire({
+    //                 icon: 'success',
+    //                 title: 'สำเร็จ!',
+    //                 text: 'การตรวจสอบ OTP สำเร็จ!',
+    //                 timer: 2000, // แสดงผล 3 วินาที
+    //                 showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
+    //             })
+    //             setResponseCheckOTPSuccess(true)
+    //         }
+    //     } catch (error) {
+    //         console.error('Error responseCheckOTP:', error);
+    //         Swal.fire({
+    //             icon: 'error',
+    //             title: 'ข้อผิดพลาด!',
+    //             text: 'ไม่สามารถตรวจสอบ OTP ได้!',
+    //             confirmButtonText: 'ตกลง',
+    //         });
+    //     }
+    // };
+
     const checkOTP = async () => {
         try {
             const responseCheckOTP = await axios.post(CHECK_OTP_API, {
@@ -183,8 +274,7 @@ const UpdateSalesPDPA: React.FC = () => {
                 },
             });
 
-            // console.log(`responseCheckOTP: `, responseCheckOTP.data);
-
+            // ตรวจสอบสถานะการตอบกลับ
             if (responseCheckOTP.data.status === 400) {
                 Swal.fire({
                     icon: 'error',
@@ -197,9 +287,14 @@ const UpdateSalesPDPA: React.FC = () => {
                     icon: 'success',
                     title: 'สำเร็จ!',
                     text: 'การตรวจสอบ OTP สำเร็จ!',
-                    confirmButtonText: 'ตกลง',
-                })
-                setResponseCheckOTPSuccess(true)
+                    timer: 2000, // แสดงผล 3 วินาที
+                    showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
+                });
+
+                setResponseCheckOTPSuccess(true);
+
+                // เรียก API handleUpdateContract หลังจาก OTP สำเร็จ
+                handleUpdateContract();
             }
         } catch (error) {
             console.error('Error responseCheckOTP:', error);
@@ -228,7 +323,13 @@ const UpdateSalesPDPA: React.FC = () => {
             });
             // console.log(`updateContract PDPA: `, updateContract.data);
             if (updateContract.data.message === "Update contract successfully.") {
-                MySwal.fire('สำเร็จ', 'ปรับปรุงข้อมูล PDPA แล้ว', 'success');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'สำเร็จ!',
+                    text: 'ปรับปรุงข้อมูล PDPA แล้ว',
+                    timer: 2000, // แสดงผล 3 วินาที
+                    showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
+                })
             } else {
                 MySwal.fire('เกิดข้อผิดพลาด', updateContract.data.message, 'error');
             }
@@ -256,7 +357,13 @@ const UpdateSalesPDPA: React.FC = () => {
             if (!response.data.data) {
                 MySwal.fire('เกิดข้อผิดพลาด', 'ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
             } else {
-                MySwal.fire('สำเร็จ', 'ส่งข้อมูลตรวจสอบแล้ว', 'success');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'สำเร็จ!',
+                    text: 'ส่งข้อมูลตรวจสอบแล้ว',
+                    timer: 2000, // แสดงผล 3 วินาที
+                    showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
+                })
             }
         } else {
             MySwal.fire('เกิดข้อผิดพลาด', response.data.message, 'error');
@@ -265,17 +372,21 @@ const UpdateSalesPDPA: React.FC = () => {
 
     // เช็คว่า data ใน item มีครบทุกขั้นตอน (ไม่เป็น array เปล่า) ใช่ไหม ถ้าเป็นจะ disabled ปุ่มส่งตรวจสอบ
     const isDataComplete = useMemo(() => {
+        // ตรวจสอบว่ามีรูปภาพในฟิลด์ใดฟิลด์หนึ่งใน images อย่างน้อย 1 รูป
+        const hasImages = images && Object.values(images).some(
+            (field) => Array.isArray(field) && field.length > 0
+        );
+
         return (
             Array.isArray(item.ADDRESS) && item.ADDRESS.length > 0 &&
             Array.isArray(item.CUSTOMERDETAIL) && item.CUSTOMERDETAIL.length > 0 &&
             Array.isArray(item.CUSTOMERSTATUS) && item.CUSTOMERSTATUS.length > 0 &&
             Array.isArray(item.DISCOUNT) && item.DISCOUNT.length > 0 &&
             Array.isArray(item.PDPA) && item.PDPA.length > 0 &&
-            Array.isArray(item.PRODUCT) && item.PRODUCT.length > 0
+            Array.isArray(item.PRODUCT) && item.PRODUCT.length > 0 &&
+            hasImages
         );
-    }, [item]);
-
-    // console.log(`test`, pdpaContract?.[0]?.SIGNATURE);
+    }, [item, images]);
 
     return (
         <>
@@ -472,35 +583,35 @@ const UpdateSalesPDPA: React.FC = () => {
                         ย้อนกลับ
                     </button>
 
-                    {!responseCheckOTPSuccess && (
-                        <>
-                            {isOTPSent ? (
-                                <button
-                                    className='btn btn-success w-100 w-md-auto align-self-center mb-2 mb-md-0'
-                                    type='button'
-                                    onClick={checkOTP}
-                                >
-                                    ยืนยัน OTP
-                                </button>
-                            ) : (
-                                <button
-                                    className='btn btn-warning w-100 w-md-auto align-self-center mb-2 mb-md-0'
-                                    type='button'
-                                    onClick={sendSMS}
-                                >
-                                    รับ OTP
-                                </button>
-                            )}
-                        </>
-                    )}
-
+                    {/* {!responseCheckOTPSuccess && ( */}
+                    <>
+                        {isOTPSent ? (
+                            <button
+                                className='btn btn-warning w-100 w-md-auto align-self-center mb-2 mb-md-0'
+                                type='button'
+                                onClick={checkOTP}
+                            >
+                                อัพเดทข้อมูล
+                            </button>
+                        ) : (
+                            <button
+                                className='btn btn-warning w-100 w-md-auto align-self-center mb-2 mb-md-0'
+                                type='button'
+                                onClick={sendSMS}
+                            >
+                                รับ OTP
+                            </button>
+                        )}
+                    </>
+                    {/* )} */}
+                    {/* 
                     {responseCheckOTPSuccess && (
                         <button
                             className='btn btn-warning w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'
                             onClick={handleUpdateContract}>
                             อัพเดทข้อมูล
                         </button>
-                    )}
+                    )} */}
 
                     <button className={`btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0 ${!isDataComplete ? `disabled` : ``}`}
                         disabled={!isDataComplete}
@@ -529,35 +640,35 @@ const UpdateSalesPDPA: React.FC = () => {
                         ย้อนกลับ
                     </button>
 
-                    {!responseCheckOTPSuccess && (
-                        <>
-                            {isOTPSent ? (
-                                <button
-                                    className="btn btn-warning w-auto me-2"
-                                    type='button'
-                                    onClick={checkOTP}
-                                >
-                                    ยืนยัน OTP
-                                </button>
-                            ) : (
-                                <button
-                                    className="btn btn-warning w-auto me-2"
-                                    type='button'
-                                    onClick={sendSMS}
-                                >
-                                    รับ OTP
-                                </button>
-                            )}
-                        </>
-                    )}
+                    {/* {!responseCheckOTPSuccess && ( */}
+                    <>
+                        {isOTPSent ? (
+                            <button
+                                className="btn btn-warning w-auto me-2"
+                                type='button'
+                                onClick={checkOTP}
+                            >
+                                อัพเดทข้อมูล
+                            </button>
+                        ) : (
+                            <button
+                                className="btn btn-warning w-auto me-2"
+                                type='button'
+                                onClick={sendSMS}
+                            >
+                                รับ OTP
+                            </button>
+                        )}
+                    </>
+                    {/* )} */}
 
-                    {responseCheckOTPSuccess && (
+                    {/* {responseCheckOTPSuccess && (
                         <button
                             className="btn btn-warning w-auto me-2"
                             onClick={handleUpdateContract}>
                             อัพเดทข้อมูล
                         </button>
-                    )}
+                    )} */}
 
                     <button className={`btn btn-primary w-auto me-2 ${!isDataComplete ? `disabled` : ``}`}
                         disabled={!isDataComplete}

@@ -470,6 +470,7 @@ const CreateFirstBill: React.FC = () => {
                                                                                     dropdownMode="select"
                                                                                     isClearable
                                                                                     dateFormat="yyyy/MM/dd"
+                                                                                    withPortal
                                                                                 />
                                                                             </div>
                                                                         </div>
@@ -518,6 +519,7 @@ const CreateFirstBill: React.FC = () => {
                                                                     dropdownMode="select"
                                                                     isClearable
                                                                     dateFormat="yyyy/MM/dd"
+                                                                    withPortal
                                                                 />
                                                             </div>
                                                         </div>

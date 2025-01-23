@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { Content } from '../../../../_metronic/layout/components/content';
 import { useAuth } from '../../../modules/auth/core/Auth';
 import { useUUIDStore, useSaveProductStore } from '../../../modules/stores/stepsStore';
+import useRefnoBarcodeStore from "../components/accessCam/refnoBarcodeStore";
 
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
@@ -22,60 +23,92 @@ import {
 //component
 import { CardProduct } from '../components/cards/CardProduct';
 import { CardPackage } from '../components/cards/CardPackage';
+import { log } from 'node:console';
 
 interface ItemProps {
-    REFNO: String,
-    CONTNO: String,
-    EMPID: String,
-    TEAMSALE: String,
-    SALECODE: String,
-    SUPEMPID: String,
-    SECEMPID: String,
-    STATUS: String,
-    PRODUCT: [any],
-    CUSTOMERSTATUS: [any],
-    DISCOUNT: [any],
-    CUSTOMERDETAIL: [any],
-    ADDRESS: [any],
-    PDPA: [any],
-    CONTRACT: [any],
-    IMAGE: [any],
-    CHECKERCOMMENT: [any]
+    REFNO: string;
+    CONTNO: string;
+    EMPID: string;
+    TEAMSALE: string;
+    SALECODE: string;
+    SUPEMPID: string;
+    SECEMPID: string;
+    STATUS: string;
+    PRODUCT: [any];
+    CUSTOMERSTATUS: [any];
+    DISCOUNT: [any];
+    CUSTOMERDETAIL: [any];
+    ADDRESS: [any];
+    PDPA: [any];
+    CONTRACT: [any];
+    IMAGE: [any];
+    CHECKERCOMMENT: [any];
+    barCode?: string; // เพิ่ม property barCode
+    item?: {
+        REFNO: string; // เพิ่ม item เป็น optional object
+        barcode: string;
+    };
+}
+
+interface ImagesType {
+    IMAGECARD: string[];
+    IMAGEGPS: string[];
+    IMAGEMAP: string[];
+    IMAGECUSTOMERHOME: string[];
+    IMAGEINSTALLATION: string[];
+    IMAGETDS: string[];
+    IMAGECUSTOMER: string[];
+    IMAGETRADEIN: string[];
 }
 
 const UpdateSalesPackage: React.FC = () => {
     const navigate = useNavigate(); // ใช้ useNavigate สำหรับการเปลี่ยนเส้นทาง
+    const location = useLocation();
+    const { auth } = useAuth();
     const MySwal = withReactContent(Swal);
 
-    const location = useLocation();
     const item = location.state as ItemProps || [];
+    console.log(`item`, item);
 
-    const refno = item?.REFNO
-    const productContract = item?.PRODUCT
-    // console.log(`productContract`, productContract);
+    // const itemFromStore = (location.state || {}) as { item?: { REFNO?: string } };
+    // console.log(`itemFromStore`, itemFromStore);
 
-    const { auth } = useAuth();
+    const { refno, barCode, setRefno, setBarCode } = useRefnoBarcodeStore((state) => ({
+        refno: state.refno,
+        barCode: state.barCode,
+        setRefno: state.setRefno,
+        setBarCode: state.setBarCode,
+    }));
+    console.log(`barCode`, barCode);
+
+    // const memoizedRefno: string = useMemo(() => {
+    //     return refno || itemFromStore?.REFNO || ""; // ใช้ "" เป็นค่าเริ่มต้นหากไม่มีค่า
+    // }, [refno, item?.REFNO]);
+
+    const productContract = item?.PRODUCT || [];
+    console.log(productContract, productContract);
 
     const [loadingCategories, setLoadingCategories] = useState(true); // เพิ่ม state สำหรับการโหลดหมวดหมู่
     const [loadingProducts, setLoadingProducts] = useState(false); // เพิ่ม state สำหรับการโหลดสินค้า
+    const [loadingPackages, setLoadingPackages] = useState(true)
 
     const { fetchCategory } = useFetchCategoryStore();
-    // console.log(`fetchCategory: `, fetchCategory);
+    // console.log(fetchCategory: , fetchCategory);
 
     const [categories, setCategories] = useState<any[]>([]);
 
     const [packageType, setPackageType] = useState<any[]>([]);
-    // console.log(`packageType: `, packageType);
+    // console.log(packageType: , packageType);
 
     const [promotion, setPromotion] = useState<any[]>([]);
-    // console.log(`promotion: `, promotion);
+    // console.log(promotion: , promotion);
 
     const [packageList, setPackageList] = useState<any[]>([]);
-    // console.log(`packageList: `, packageList);
+    // console.log(packageList: , packageList);
 
     const [selectedCategoryId, setSelectedCategoryId] = useState<any>('');
     const [selectedProductIndex, setSelectedProductIndex] = useState<number | null>(null);
-    // console.log(`selectedProductIndex`, selectedProductIndex);
+    // console.log(selectedProductIndex, selectedProductIndex);
     const [selectedItemCode, setSelectedItemCode] = useState<string | null>(null);
     const [selectedPromotion, setSelectedPromotion] = useState<string | number>('');
 
@@ -87,15 +120,16 @@ const UpdateSalesPackage: React.FC = () => {
     const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
     const [selectedTransDate, setSelectedTransDate] = useState<string | null>(null);
     const [productId, setProductId] = useState(null);  // สร้าง state สำหรับเก็บ _id
-    // console.log(`productId`, productId);
+    // console.log(productId, productId);
 
     const [selectedPackageTypeId, setSelectedPackageTypeId] = useState<number | null>(null);
+    console.log(selectedPackageTypeId, selectedPackageTypeId);
 
     const [selectedPackageModel, setSelectedPackageModel] = useState<number | null>(null);
-    // console.log(`selectedPackageModel: `, selectedPackageModel);
+    console.log(`selectedPackageModel`, selectedPackageModel);
 
     const [checktype, setChecktype] = useState<number | null>(null);
-    // console.log(`checktype`, checktype);
+    // console.log(checktype, checktype);
 
     const {
         EmpId, setEmpId,
@@ -107,19 +141,19 @@ const UpdateSalesPackage: React.FC = () => {
         DepartId, setDepartId,
         DepartGroup, setDepartGroup,
     } = useCategoryStore();
-    // console.log(`EmpId`, EmpId);
-    // console.log(`EmpId`, EmpId);
+    // console.log(EmpId, EmpId);
+    // console.log(EmpId, EmpId);
 
     const getCategoryLocal = localStorage.getItem("fetchCategory");
     const parsegetCategoryLocal = getCategoryLocal ? JSON.parse(getCategoryLocal) : null;
 
     const { product, setProduct } = useProductStore();
-    // console.log(`product: `, product);
+    console.log(`product:`, product);
 
     const [PackageTypeID, setPackageTypeID] = useState<number | null>(null);
     const { ItemID, setItemID } = usePackageStore();
-    // console.log(`ItemID: `, ItemID);
-    // console.log(`PackageTypeID: `, PackageTypeID);
+    // console.log(ItemID: , ItemID);
+    // console.log(PackageTypeID: , PackageTypeID);
 
     const { Model, setModel } = useConditionsCheckHistoryStore();
 
@@ -174,18 +208,67 @@ const UpdateSalesPackage: React.FC = () => {
     const CHECKCUSTOMER_URL = `${API_URL_POST_CHECKCUSTOMER}/CheckCustomer`;
 
     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
-    const getProductUrl = () => `${API_URL_MONGO}/Product/GetStock?empid=${EmpId}&teamSale=${TeamSale}&categoryId=${selectedCategoryId}`;
+    // const getProductUrl = () => ${API_URL_MONGO}/Product/GetStock?empid=${EmpId}&teamSale=${TeamSale}&categoryId=${selectedCategoryId};
     const SAVEPRODUCTPACKAGE = `${API_URL_MONGO}/Contract/saveProductPackage`;
     const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
+    const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage`;
 
     // สร้าง ref สำหรับส่วนแพ็คเกจ
     const packageSectionRef = useRef<HTMLDivElement>(null);
 
+    const [images, setImages] = useState<ImagesType | null>(null);
+
+    // // บันทึก refno ลง Zustand หากยังไม่มี
+    // useEffect(() => {
+    //     if (!refno && memoizedRefno) {
+    //         setRefno(memoizedRefno ?? ""); // กำหนดค่าเริ่มต้นหาก memoizedRefno เป็น null
+    //     }
+    // }, [refno, memoizedRefno, setRefno]);
+
     useEffect(() => {
-        if (productContract?.[0]?.Package.length !== 0) {
-            setSelectedPackageTypeId(productContract?.[0]?.Package?.[0].PACKAGETYPEID)
-            setPackageTypeID(productContract?.[0]?.Package?.[0].PACKAGETYPEID);
+        setBarCode(null); // ล้างค่า barCode เมื่อเปิดหน้า
+    }, []);
+
+    useEffect(() => {
+        if (productContract && productContract.length > 0) {
+            console.log("ProductContract data:", productContract);
+
+            // แปลงข้อมูลจาก productContract ให้อยู่ในรูปแบบของ product
+            const formattedProducts = productContract.map((item) => ({
+                ItemCode: item.ItemCode,
+                ItemDescription: item.ItemDescription,
+                DescriptionTH: item.DescriptionTH,
+                SerialNo: item.SerialNo,
+                Branch: item.Branch,
+                TransDate: item.TransDate,
+                Status: item.Status,
+            }));
+
+            // ตั้งค่า product
+            setProduct(formattedProducts);
+
+            // ตั้งค่าข้อมูลที่เลือกไว้ (Selected)
+            setSelectedProductIndex(0); // เลือกรายการแรก
+            setSelectedItemCode(productContract?.[0]?.ItemCode);
+            setSelectedItemDescription(productContract?.[0]?.ItemDescription);
+            setSelectedDescriptionTH(productContract?.[0]?.DescriptionTH);
+            setSelectedSerialNo(productContract?.[0]?.SerialNo);
+            setSelectedStatus(productContract?.[0]?.Status);
+            setSelectedBranch(productContract?.[0]?.Branch);
+            setSelectedTransDate(productContract?.[0]?.TransDate);
+        } else {
+            console.log("No productContract data available");
+        }
+    }, [productContract]);
+
+
+    useEffect(() => {
+        if (productContract?.[0]?.Package?.length > 0) {
+            setSelectedPackageTypeId(productContract?.[0]?.Package?.[0]?.PACKAGETYPEID);
+            setPackageTypeID(productContract?.[0]?.Package?.[0]?.PACKAGETYPEID);
             setModel(productContract?.[0]?.Package?.[0]?.MODEL);
+        } else {
+            console.warn("No packages found in productContract.");
         }
 
         setSelectedItemCode(productContract?.[0]?.ItemCode);
@@ -220,6 +303,45 @@ const UpdateSalesPackage: React.FC = () => {
         }
     }, [selectedItemCode, productId]);
 
+    useEffect(() => {
+        console.log("packageList updated:", packageList);
+    }, [packageList]);
+
+    // fetch collection ContractImage
+    useEffect(() => {
+        const fetchImages = async () => {
+            try {
+                const response = await axios.get(GET_IMAGES_API, {
+                    params: { REFNO: refno },
+                });
+
+                // ตรวจสอบว่า response.data เป็นไปตามโครงสร้างของ ImagesType
+                const data = response.data;
+
+                if (
+                    data &&
+                    typeof data === 'object' &&
+                    'IMAGECARD' in data &&
+                    'IMAGEGPS' in data &&
+                    'IMAGEMAP' in data &&
+                    'IMAGECUSTOMERHOME' in data &&
+                    'IMAGEINSTALLATION' in data &&
+                    'IMAGETDS' in data &&
+                    'IMAGETRADEIN' in data
+                ) {
+                    setImages(data as ImagesType);
+                } else {
+                    setImages(null);
+                }
+            } catch (err) {
+                console.error('Error fetching images:', err);
+                setImages(null); // ตั้งค่าเป็น null หากมีข้อผิดพลาด
+            }
+        };
+
+        fetchImages();
+    }, [refno]);
+
     // POST GetProduct/Categories
     useEffect(() => {
         const postData = async () => {
@@ -245,26 +367,58 @@ const UpdateSalesPackage: React.FC = () => {
     // GET Product/GetStock?
     useEffect(() => {
         const fetchProducts = async () => {
-            if (!selectedCategoryId) return;
-            setLoadingProducts(true); // เริ่มโหลดเมื่อเปลี่ยนหมวดหมู่สินค้า
+            setLoadingProducts(true); // เริ่มแสดงสถานะการโหลด
             try {
-                const response = await axios.get(getProductUrl(), {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                    }
-                });
-                const data = Array.isArray(response.data.data) ? response.data.data : [];
-                setProduct(data); // บันทึกสินค้าใหม่
+                let url = ""; // สร้างตัวแปร URL
+
+                // เลือก URL ตามเงื่อนไข
+                if (selectedCategoryId) {
+                    url = `${API_URL_MONGO}/Product/GetStock?empid=${EmpId}&teamSale=${TeamSale}&categoryId=${selectedCategoryId}`;
+                } else if (barCode && barCode !== "ยังไม่มีข้อมูล") {
+                    url = `${API_URL_MONGO}/Product/GetStock?empid=${EmpId}&teamSale=${TeamSale}&sn=${barCode}`;
+                } else {
+                    console.warn("No valid category or barcode to fetch products");
+                    setLoadingProducts(false);
+                    return;
+                }
+
+                // เรียก API
+                const response = await axios.get(url);
+
+                // ตรวจสอบว่า response.data มีข้อมูล
+                const data = Array.isArray(response.data?.data) ? response.data.data : [];
+                console.log("Fetched products:", data);
+
+                // ตั้งค่า product
+                setProduct(data);
+
+                // หากมีสินค้าตัวเดียวและมี barCode ให้ตั้งค่าตัวแรกโดยอัตโนมัติ
+                if (data.length === 1 && barCode && barCode !== "ยังไม่มีข้อมูล") {
+                    const product = data[0];
+                    setSelectedProductIndex(0);
+                    setSelectedItemCode(product?.ItemCode);
+                    setItemID(product?.ItemCode);
+                    setProductId(product?.ProductID);
+                    setSelectedItemDescription(product?.ItemDescription);
+                    setSelectedDescriptionEN(product?.DescriptionEN);
+                    setSelectedDescriptionTH(product?.DescriptionTH);
+                    setSelectedSerialNo(product?.SerialNo);
+                    setSelectedStatus(product?.Status);
+                    setSelectedBranch(product?.Branch);
+                    setSelectedTransDate(product?.TransDate);
+                }
             } catch (error) {
-                console.error('Error fetching products:', error);
+                console.error("Error fetching products:", error);
             } finally {
-                setLoadingProducts(false); // หยุดโหลดเมื่อดึงข้อมูลเสร็จ
+                setLoadingProducts(false); // ซ่อนสถานะการโหลด
             }
         };
 
-        fetchProducts();
-    }, [selectedCategoryId, EmpId, DivisionId, DepartId, DepartGroup, TeamSale]); // ทำงานเมื่อ selectedCategoryId เปลี่ยนแปลง
+        // เรียกใช้ fetchProducts เมื่อมีการเปลี่ยนแปลง selectedCategoryId หรือ barCode
+        if (selectedCategoryId || (barCode && barCode !== "ยังไม่มีข้อมูล")) {
+            fetchProducts();
+        }
+    }, [selectedCategoryId, barCode, EmpId, TeamSale]); // เพิ่ม dependencies ที่จำเป็น    
 
     // GetProduct/ProductPromotionList
     const fetchPromotion = async () => {
@@ -273,16 +427,6 @@ const UpdateSalesPackage: React.FC = () => {
             return;
         }
         try {
-            // console.log("Fetching promotions with parameters:", {
-            //     ProductID: productId,
-            //     EmpId,
-            //     DivisionId,
-            //     DepartId,
-            //     DepartGroup,
-            //     TeamSale,
-            //     ItemID: selectedItemCode,
-            // });
-
             const response = await axios.post(PROMOTION_URL, {
                 ProductID: productId,
                 EmpId,
@@ -339,6 +483,7 @@ const UpdateSalesPackage: React.FC = () => {
 
     // POST GetPackage/PackageList
     const getPackageList = async () => {
+        setLoadingPackages(true)
         try {
             const response = await axios.post(POST_PACKAGE_URL,
                 { EmpId, DivisionId, DepartId, DepartGroup, TeamSale, ItemID, PackageTypeID }, {
@@ -360,6 +505,8 @@ const UpdateSalesPackage: React.FC = () => {
             // console.log('Package index: ', index)
         } catch (error) {
             console.error('Error fetching POST_PACKAGE_URL:', error);
+        } finally {
+            setLoadingPackages(false)
         }
     };
 
@@ -367,49 +514,70 @@ const UpdateSalesPackage: React.FC = () => {
         getPackageList()
     }, [EmpId, DivisionId, DepartId, DepartGroup, TeamSale, ItemID, PackageTypeID]);
 
-    const handleCateOptionChange = (event: any) => {
+    const handleCateOptionChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
         const value = event.target.value;
         setSelectedCategoryId(value);
 
-        // ล้างข้อมูล product ทันทีเมื่อเลือกหมวดหมู่ใหม่
+        // ล้างค่าทั้งหมดใน state ที่เกี่ยวข้อง
         setProduct([]);
-
-        // ล้างค่าที่เลือกสำหรับ product, packageType, และ packageModel
         setSelectedProductIndex(null);
+        setSelectedItemCode(null);
+        setSelectedItemDescription(null);
+        setSelectedDescriptionEN(null);
+        setSelectedDescriptionTH(null);
+        setSelectedSerialNo(null); // ล้าง Serial Number
+        setSelectedStatus(null);
+        setSelectedBranch(null);
+        setSelectedTransDate(null);
+        setSelectedPromotion('');
         setSelectedPackageTypeId(null);
         setSelectedPackageModel(null);
+        setPackageList([]);
+
+        // ล้าง barCode
+        navigate("/sale/update/updateSalePackage", { state: { barCode: "" } });
+
+        if (value) {
+            try {
+                setLoadingProducts(true);
+                const response = await axios.get(
+                    `${API_URL_MONGO}/Product/GetStock?empid=${EmpId}&teamSale=${TeamSale}&categoryId=${value}`
+                );
+                const data = Array.isArray(response.data.data) ? response.data.data : [];
+                setProduct(data);
+            } catch (error) {
+                console.error('Error fetching products:', error);
+            } finally {
+                setLoadingProducts(false);
+            }
+        }
     };
 
     const handleCardProductClick = (index: number) => {
         setSelectedProductIndex(index);
-        setSelectedItemCode(product[index].ItemCode);
-        setItemID(product[index].ItemCode)
-        setProductId(product[index].ProductID)
-
-        setSelectedItemDescription(product[index].ItemDescription);
-        setSelectedDescriptionEN(product[index].DescriptionEN);
-        setSelectedDescriptionTH(product[index].DescriptionTH);
-        setSelectedSerialNo(product[index].SerialNo);
-        setSelectedStatus(product[index].Status);
-        setSelectedBranch(product[index].Branch);
-        setSelectedTransDate(product[index].TransDate);
-
-        if (selectedCategoryId === '') {
-            setSelectedProductIndex(null);
-            setSelectedPackageTypeId(null);
-            setSelectedPackageModel(null);
-        }
+        setSelectedItemCode(product[index]?.ItemCode);
+        setItemID(product[index]?.ItemCode);
+        setProductId(product[index]?.ProductID);
+        setSelectedItemDescription(product[index]?.ItemDescription);
+        setSelectedDescriptionEN(product[index]?.DescriptionEN);
+        setSelectedDescriptionTH(product[index]?.DescriptionTH);
+        setSelectedSerialNo(product[index]?.SerialNo);
+        setSelectedStatus(product[index]?.Status);
+        setSelectedBranch(product[index]?.Branch);
+        setSelectedTransDate(product[index]?.TransDate);
     };
 
     //เปลี่ยนสไตล์เป็น success เมื่อเลือกปุ่ม package และเลื่อนลงมายังส่วนแพ็คเกจ
-    const handlePackageTypeClick = (index: number) => {
-        setSelectedPackageTypeId(index);
-        setPackageTypeID(index); // เก็บค่าใน PackageTypeID ด้วย
-        if (selectedCategoryId === '') {
-            setSelectedProductIndex(null);
-            setSelectedPackageTypeId(null);
-            setSelectedPackageModel(null);
+    const handlePackageTypeClick = (packageTypeId: number) => {
+        if (!packageTypeId) {
+            console.error("Invalid PackageTypeId:", packageTypeId);
+            return;
         }
+
+        setSelectedPackageTypeId(packageTypeId); // อัปเดตค่า selectedPackageTypeId
+        setPackageTypeID(packageTypeId); // อัปเดตค่าใน state อื่นถ้าจำเป็น
+
+        console.log("PackageTypeId selected:", packageTypeId);
 
         // Scroll the page to the package section
         if (packageSectionRef.current) {
@@ -438,7 +606,7 @@ const UpdateSalesPackage: React.FC = () => {
 
                 if (productIndex !== -1) {
                     setSelectedProductIndex(productIndex); // ตั้งค่าดัชนีของสินค้า
-                    setSelectedItemCode(product[productIndex].ItemCode); // ตั้งค่า ItemCode
+                    setSelectedItemCode(product[productIndex]?.ItemCode); // ตั้งค่า ItemCode
                 }
             }
 
@@ -466,6 +634,37 @@ const UpdateSalesPackage: React.FC = () => {
         }
     }, [selectedPackageModel, packageList, setModel]);
 
+    useEffect(() => {
+        if (packageType && packageType.length > 0) {
+            console.log('PackageType Loaded:', packageType);
+        } else {
+            console.warn('No PackageType data available');
+        }
+    }, [packageType]);
+
+    const handleScanBarcodeClick = () => {
+        setBarCode(null); // ล้างค่า barCode ก่อนเปลี่ยนหน้า
+
+        const isDesktop = !/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (isDesktop) {
+            Swal.fire({
+                icon: "info",
+                title: "ไม่รองรับ",
+                text: "ฟีเจอร์สแกนบาร์โค้ด สามารถใช้งานได้เฉพาะบนมือถือหรือแท็บเล็ตเท่านั้น",
+            });
+            return;
+        }
+
+        navigate("/sale/update/updateDeviceScanBarcode", {
+            state: { item, refno }, // ส่งค่า refno ไปด้วย
+        });
+    };
+
+    useEffect(() => {
+        // ล้างค่าบาร์โค้ดเมื่อโหลดหน้านี้
+        setBarCode("");
+    }, [setBarCode]);
+
     // ตรวจสอบ ConditionsCheckHistory ว่าต้องตรวจสอบประวัติไหม หากตรวจให้เช็ค CheckCustomer ต่อ
     const handleNextClick = async () => {
         try {
@@ -489,7 +688,13 @@ const UpdateSalesPackage: React.FC = () => {
                 if (!response.data.data) {
                     MySwal.fire('เกิดข้อผิดพลาด', 'ปรับปรุงข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
                 } else {
-                    MySwal.fire('สำเร็จ', 'ปรับปรุงข้อมูลแพ็คเกจแล้ว', 'success');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'สำเร็จ!',
+                        text: 'ปรับปรุงข้อมูลแพ็คเกจแล้ว',
+                        timer: 2000, // แสดงผล 3 วินาที
+                        showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
+                    })
                 }
             } else {
                 MySwal.fire('เกิดข้อผิดพลาด', response.data.message, 'error');
@@ -524,7 +729,13 @@ const UpdateSalesPackage: React.FC = () => {
             if (!response.data.data) {
                 MySwal.fire('เกิดข้อผิดพลาด', 'ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
             } else {
-                MySwal.fire('สำเร็จ', 'ส่งข้อมูลตรวจสอบแล้ว', 'success');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'สำเร็จ!',
+                    text: 'ส่งข้อมูลตรวจสอบแล้ว',
+                    timer: 2000, // แสดงผล 3 วินาที
+                    showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
+                })
                 navigate("/sale/overview")
             }
         } else {
@@ -534,18 +745,49 @@ const UpdateSalesPackage: React.FC = () => {
 
     // เช็คว่า data ใน item มีครบทุกขั้นตอน (ไม่เป็น array เปล่า) ใช่ไหม ถ้าเป็นจะ disabled ปุ่มส่งตรวจสอบ
     const isDataComplete = useMemo(() => {
+        // ตรวจสอบว่ามีรูปภาพในฟิลด์ใดฟิลด์หนึ่งใน images อย่างน้อย 1 รูป
+        const hasImages = images && Object.values(images).some(
+            (field) => Array.isArray(field) && field.length > 0
+        );
+
         return (
             Array.isArray(item.ADDRESS) && item.ADDRESS.length > 0 &&
             Array.isArray(item.CUSTOMERDETAIL) && item.CUSTOMERDETAIL.length > 0 &&
             Array.isArray(item.CUSTOMERSTATUS) && item.CUSTOMERSTATUS.length > 0 &&
             Array.isArray(item.DISCOUNT) && item.DISCOUNT.length > 0 &&
             Array.isArray(item.PDPA) && item.PDPA.length > 0 &&
-            Array.isArray(item.PRODUCT) && item.PRODUCT.length > 0
+            Array.isArray(item.PRODUCT) && item.PRODUCT.length > 0 &&
+            hasImages
         );
-    }, [item]);
+    }, [item, images]);
 
     return (
         <>
+            {/* สแกนบาร์โค้ด */}
+            <div
+                className="d-flex justify-content-center align-items-center mt-5 mx-7"
+                style={{
+                    border: "1px solid #ccc",
+                    borderRadius: "10px",
+                    padding: "10px",
+                    backgroundColor: "#f9f9f9",
+                }}
+                onClick={handleScanBarcodeClick}
+            >
+                <label
+                    className="btn btn-success px-5 w-200px"
+                    htmlFor="camera-input"
+                    style={{
+                        cursor: "pointer",
+                        borderRadius: "10px",
+                        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                    }}
+                >
+                    สแกนบาร์โค้ด
+                </label>
+            </div>
+            {/* สแกนบาร์โค้ด */}
+
             <Content>
                 <div className='d-flex justify-content-between align-items-center mb-7 mt-7 mt-lg-0'>
                     <div id="kt_page_title" data-kt-swapper="true" data-kt-swapper-mode="prepend"
@@ -564,7 +806,7 @@ const UpdateSalesPackage: React.FC = () => {
                         </ul>
                     </div>
                 </div>
-                <p>REFNO: {item?.REFNO}</p>
+                <p>REFNO: {item?.REFNO || item?.item?.REFNO}</p>
 
                 <div className='accordion mb-10' id='kt_accordion_1'>
                     <div className='accordion-item mb-10'>
@@ -589,6 +831,9 @@ const UpdateSalesPackage: React.FC = () => {
                                 <form noValidate className='form'>
                                     <div className='card-body px-lg-9 px-1'>
                                         <div className='row'>
+
+                                            <label className='form-label fw-bold fs-3 mt-3'>S/N ที่สแกนได้: {item?.barCode}</label>
+
                                             <div className='col-lg-6 my-7 my-xl-10'>
                                                 <label className='form-label required fw-bold fs-3'>หมวดหมู่สินค้า</label>
                                                 <select
@@ -612,10 +857,17 @@ const UpdateSalesPackage: React.FC = () => {
                                             </div>
                                         )}
 
-                                        {selectedCategoryId.length > 0 && product.length > 0 ? (
+                                        {/* หากไม่มีสินค้าให้แสดงข้อความนี้ */}
+                                        {!loadingProducts && selectedCategoryId && product && selectedCategoryId.length > 0 && product.length === 0 && (
+                                            <div className='text-center my-7'>
+                                                <h5>ไม่มีรายการสินค้า</h5>
+                                            </div>
+                                        )}
+
+                                        {selectedCategoryId && product && selectedCategoryId.length > 0 && product.length > 0 ? (
                                             <label className='form-label required fw-bold fs-3 mt-7 mt-xl-10'>รายการสินค้า</label>
                                         ) : ('')}
-                                        {!loadingProducts && selectedCategoryId.length > 0 && (
+                                        {!loadingProducts && product.length > 0 && (
                                             <div className='row '>
                                                 {product.map((item, index) => (
                                                     <div
@@ -625,21 +877,14 @@ const UpdateSalesPackage: React.FC = () => {
                                                         style={{ cursor: 'pointer' }}
                                                     >
                                                         <CardProduct
-                                                            DescriptionTH={item.DescriptionTH}
-                                                            ItemDescription={item.ItemDescription}
-                                                            ItemCode={item.ItemCode}
-                                                            SerialNo={item.SerialNo}
+                                                            DescriptionTH={item?.DescriptionTH}
+                                                            ItemDescription={item?.ItemDescription}
+                                                            ItemCode={item?.ItemCode}
+                                                            SerialNo={item?.SerialNo}
                                                             isSelected={selectedProductIndex === index}
                                                         />
                                                     </div>
                                                 ))}
-
-                                                {/* หากไม่มีสินค้าให้แสดงข้อความนี้ */}
-                                                {!loadingProducts && product.length === 0 && selectedCategoryId && (
-                                                    <div className='text-center my-7'>
-                                                        <h5>ไม่มีรายการสินค้า</h5>
-                                                    </div>
-                                                )}
 
                                                 <div className='row'>
                                                     <div className='col-lg-6 my-7 my-xl-10'>
@@ -663,18 +908,20 @@ const UpdateSalesPackage: React.FC = () => {
                                                     <div className='container my-10 my-xl-10'>
                                                         <div className='row d-flex'>
                                                             <label className='form-label required fw-bold fs-3'>ประเภทการชำระ</label>
-                                                            {packageType.map((item, index) => (
-                                                                <div className='col-6 col-md-auto mb-2 d-flex align-items-center'>
+                                                            {packageType.map((item) => (
+                                                                <div className='col-6 col-md-auto mb-2 d-flex align-items-center' key={item.PACKAGETYPEID}>
                                                                     <div
-                                                                        key={item.PACKAGETYPEID}
-                                                                        className={`border rounded w-100 w-md-auto h-60px 
-                                                                            d-flex justify-content-center align-items-center fw-bold fs-6 px-5`}
+                                                                        className="border rounded w-100 w-md-auto h-60px d-flex justify-content-center align-items-center fw-bold fs-6 px-5"
                                                                         style={{
                                                                             backgroundColor: selectedPackageTypeId === item.PACKAGETYPEID ? '#ACE1AF' : '#fcfcfc',
                                                                             transition: 'background-color 0.2s ease, color 0.2s ease',
-                                                                            cursor: 'pointer'
+                                                                            cursor: 'pointer',
                                                                         }}
-                                                                        onClick={() => handlePackageTypeClick(item.PACKAGETYPEID)} >
+                                                                        onClick={() => {
+                                                                            console.log('Clicked PackageTypeId:', item.PACKAGETYPEID);
+                                                                            handlePackageTypeClick(item.PACKAGETYPEID);
+                                                                        }}
+                                                                    >
                                                                         {item.PACKAGETYPENAME}
                                                                     </div>
                                                                 </div>
@@ -682,30 +929,43 @@ const UpdateSalesPackage: React.FC = () => {
                                                         </div>
                                                     </div>
                                                 )}
+
+                                                {/* หากไม่มีแพ็คเกจให้แสดงข้อความนี้ */}
+                                                {!loadingPackages && packageList.length === 0 && selectedCategoryId !== null && selectedProductIndex !== null && selectedPackageTypeId && (
+                                                    <div className='text-center my-7'>
+                                                        <h5>ไม่มีรายการแพ็คเกจ</h5>
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
+
                                         {/* ส่วนของแพ็คเกจที่จะเลื่อนมาที่นี่ */}
-                                        {selectedPackageTypeId !== null && selectedCategoryId && product.length > 0 && packageList.length > 0 ? (
+                                        {/* แสดง Loading */}
+                                        {loadingPackages && (
+                                            <div className="text-center my-10">
+                                                <ThreeDot />
+                                            </div>
+                                        )}
+
+                                        {/* แสดงแพ็คเกจหากโหลดเสร็จ */}
+                                        {!loadingPackages && packageList.length > 0 && selectedPackageTypeId !== null && (
                                             <div className='my-10 my-xl-10' ref={packageSectionRef}>
                                                 <div className='row d-flex'>
                                                     <label className='form-label required fw-bold fs-3'>แพ็คเกจ</label>
                                                     {packageList.map((item, index) => (
                                                         <div
-                                                            className='col-12 col-md-auto col-sm-auto mb-2'
-                                                            key={item.MODEL}
+                                                            className='col-12 col-md-4 col-sm-4 mb-2'
+                                                            key={item.MODEL || index}
                                                             onClick={() => handlePackageModelClick(index)}
-                                                            style={{ cursor: 'pointer' }} >
+                                                            style={{ cursor: 'pointer' }}
+                                                        >
                                                             <CardPackage
-                                                                PackageTitle={item.PACKAGETITLE}
+                                                                PackageTitle={item.PACKAGETITLE || "No Title"}
                                                                 isSelected={selectedPackageModel === index}
                                                             />
                                                         </div>
                                                     ))}
                                                 </div>
-                                            </div>
-                                        ) : (
-                                            <div className='text-center my-7'>
-                                                <h5>ไม่มีข้อมูลแพ็คเกจ</h5>
                                             </div>
                                         )}
                                     </div>
@@ -724,14 +984,14 @@ const UpdateSalesPackage: React.FC = () => {
                     </button>
                     <button
                         className={`btn btn-warning w-100 w-md-auto align-self-center h-50px m-5 
-                                ${product.length === 0 || selectedProductIndex === null ? 'disabled' : ''}`}
+                        ${product.length === 0 || selectedProductIndex === null ? 'disabled' : ''}`}
                         disabled={product.length === 0 || selectedProductIndex === null}
                         onClick={handleNextClick}
                     >
                         อัพเดทข้อมูล
                     </button>
                     <button
-                        className={`btn btn-primary w-100 w-md-auto align-self-center h-50px ${!isDataComplete ? `disabled` : ``}`}
+                        className={`btn btn-primary w-100 w-md-auto align-self-center h-50px ${!isDataComplete ? 'disabled' : ''}`}
                         disabled={!isDataComplete}
                         onClick={handleCheckerClick}
                     >
@@ -757,23 +1017,21 @@ const UpdateSalesPackage: React.FC = () => {
                         ย้อนกลับ
                     </button>
                     <button
-                        className={`btn btn-warning w-auto me-2 
-                                ${product.length === 0 || selectedProductIndex === null ? 'disabled' : ''}`}
+                        className={`btn btn-warning w-auto me-2 ${product.length === 0 || selectedProductIndex === null ? 'disabled' : ''}`}
                         disabled={product.length === 0 || selectedProductIndex === null}
                         onClick={handleNextClick}
                     >
                         อัพเดทข้อมูล
                     </button>
                     <button
-                        className={`btn btn-primary w-auto ${!isDataComplete ? `disabled` : ``}`}
+                        className={`btn btn-primary w-auto ${!isDataComplete ? 'disabled' : ''}`}
                         disabled={!isDataComplete}
                         onClick={handleCheckerClick}
                     >
                         ส่งตรวจสอบ
-                    </button>
-                </div>
-
-            </Content>
+                    </button >
+                </div >
+            </Content >
         </>
     );
 }

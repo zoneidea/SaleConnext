@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import axios from 'axios';
 import clsx from 'clsx'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { KTIcon, toAbsoluteUrl } from '../../../../_metronic/helpers'
 import { getLayoutFromLocalStorage, ILayout, LayoutSetup } from '../../../../_metronic/layout/core'
 import { ToolbarWrapper } from '../../../../_metronic/layout/components/toolbar'
@@ -20,7 +20,7 @@ import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 
 interface ContractState {
-    contNo: string;
+    contNo: string; 
 }
 
 interface ItemProps {
@@ -43,6 +43,17 @@ interface ItemProps {
     CHECKERCOMMENT: [any]
 }
 
+interface ImagesType {
+    IMAGECARD: string[];
+    IMAGEGPS: string[];
+    IMAGEMAP: string[];
+    IMAGECUSTOMERHOME: string[];
+    IMAGEINSTALLATION: string[];
+    IMAGETDS: string[];
+    IMAGECUSTOMER: string[];
+    IMAGETRADEIN: string[];
+}
+
 const UpdateSalesContract: React.FC = () => {
     const navigate = useNavigate()
     const location = useLocation();
@@ -63,6 +74,8 @@ const UpdateSalesContract: React.FC = () => {
     const item = location.state as ItemProps || [];
     // console.log(`item`, item);
     const refno = item?.REFNO
+    // console.log(`refno`, refno);
+
     const product = item?.PRODUCT
     // console.log(`product`, product);
     const contNo = item?.CONTNO
@@ -72,6 +85,7 @@ const UpdateSalesContract: React.FC = () => {
 
     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
     const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
+    const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage`;
 
     const currentDate = new Date();
     const formattedDate = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate()}`;
@@ -93,6 +107,44 @@ const UpdateSalesContract: React.FC = () => {
     const totalPrice = product[0]?.Package[0]?.TOTALPRICE || 0;
     const discountAmount = item?.DISCOUNT[0]?.DISCOUNTAMOUNT || 0;
     const netPrice = totalPrice - discountAmount;
+
+    const [images, setImages] = useState<ImagesType | null>(null);
+    // console.log(`images`, images);
+
+    // fetch collection ContractImage
+    useEffect(() => {
+        const fetchImages = async () => {
+            try {
+                const response = await axios.get(GET_IMAGES_API, {
+                    params: { REFNO: refno },
+                });
+
+                // ตรวจสอบว่า response.data เป็นไปตามโครงสร้างของ ImagesType
+                const data = response.data;
+
+                if (
+                    data &&
+                    typeof data === 'object' &&
+                    'IMAGECARD' in data &&
+                    'IMAGEGPS' in data &&
+                    'IMAGEMAP' in data &&
+                    'IMAGECUSTOMERHOME' in data &&
+                    'IMAGEINSTALLATION' in data &&
+                    'IMAGETDS' in data &&
+                    'IMAGETRADEIN' in data
+                ) {
+                    setImages(data as ImagesType);
+                } else {
+                    setImages(null);
+                }
+            } catch (err) {
+                console.error('Error fetching images:', err);
+                setImages(null); // ตั้งค่าเป็น null หากมีข้อผิดพลาด
+            }
+        };
+
+        fetchImages();
+    }, [refno]);
 
     const handleNextClick = async () => {
         try {
@@ -118,8 +170,9 @@ const UpdateSalesContract: React.FC = () => {
                 icon: 'success',
                 title: 'สำเร็จ!',
                 text: 'บันทึกสัญญาเรียบร้อยแล้ว',
-                confirmButtonText: 'ตกลง'
-            });
+                timer: 2000, // แสดงผล 3 วินาที
+                showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
+            })
         } catch (error) {
             console.error('Error fetching CONTRACT:', error);
 
@@ -152,7 +205,13 @@ const UpdateSalesContract: React.FC = () => {
             if (!response.data.data) {
                 MySwal.fire('เกิดข้อผิดพลาด', 'ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
             } else {
-                MySwal.fire('สำเร็จ', 'ส่งข้อมูลตรวจสอบแล้ว', 'success');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'สำเร็จ!',
+                    text: 'ส่งข้อมูลตรวจสอบแล้ว',
+                    timer: 2000, // แสดงผล 3 วินาที
+                    showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
+                })
                 navigate("/sale/overview")
             }
         } else {
@@ -162,15 +221,21 @@ const UpdateSalesContract: React.FC = () => {
 
     // เช็คว่า data ใน item มีครบทุกขั้นตอน (ไม่เป็น array เปล่า) ใช่ไหม ถ้าเป็นจะ disabled ปุ่มส่งตรวจสอบ
     const isDataComplete = useMemo(() => {
+        // ตรวจสอบว่ามีรูปภาพในฟิลด์ใดฟิลด์หนึ่งใน images อย่างน้อย 1 รูป
+        const hasImages = images && Object.values(images).some(
+            (field) => Array.isArray(field) && field.length > 0
+        );
+
         return (
             Array.isArray(item.ADDRESS) && item.ADDRESS.length > 0 &&
             Array.isArray(item.CUSTOMERDETAIL) && item.CUSTOMERDETAIL.length > 0 &&
             Array.isArray(item.CUSTOMERSTATUS) && item.CUSTOMERSTATUS.length > 0 &&
             Array.isArray(item.DISCOUNT) && item.DISCOUNT.length > 0 &&
             Array.isArray(item.PDPA) && item.PDPA.length > 0 &&
-            Array.isArray(item.PRODUCT) && item.PRODUCT.length > 0
+            Array.isArray(item.PRODUCT) && item.PRODUCT.length > 0 &&
+            hasImages
         );
-    }, [item]);
+    }, [item, images]);
 
     return (
         <>

@@ -107,7 +107,8 @@ const SalesContract: React.FC = () => {
         icon: 'success',
         title: 'สำเร็จ!',
         text: 'บันทึกสัญญาเรียบร้อยแล้ว',
-        confirmButtonText: 'ตกลง'
+        timer: 2000, // แสดงผล 3 วินาที
+        showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
       }).then(() => {
         navigate('/sale/photo'); // นำทางไปยังหน้าอื่นถ้าต้องการ
       });

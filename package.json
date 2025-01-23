@@ -34,6 +34,7 @@
     "crypto-js": "^4.2.0",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.12",
+    "dotenv": "^16.4.7",
     "formik": "2.2.9",
     "html-to-image": "^1.11.11",
     "html2canvas": "^1.4.1",
@@ -93,8 +94,8 @@
     "@types/react-table": "^7.7.9",
     "@types/sass-loader": "8.0.3",
     "@types/uuid": "^10.0.0",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
     "@vitejs/plugin-react-swc": "^3.3.2",
     "css-loader": "6.7.1",
     "del": "7.0.0",
@@ -107,6 +108,7 @@
     "rtlcss-webpack-plugin": "4.0.7",
     "sass": "1.55.0",
     "sass-loader": "13.2.0",
+    "typescript": "^5.7.3",
     "vite": "^4.5.5",
     "webpack-rtl-plugin": "^2.0.0"
   }

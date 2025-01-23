@@ -22,7 +22,9 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item }) => {
     return `${day} ${thaiMonths[month]} ${year + 543}`;
   };
 
-  let customer, product, productPackage, serialNumber, createdAt, statusTxt;
+  // console.log(`test`, item);
+  
+  let customer, product, productPackage, serialNumber, createdAt, statusTxt, checkerComment
   if (item.CUSTOMERDETAIL.length > 0) {
     if (item.CUSTOMERDETAIL[0].CUSTOMERTYPE == 1) {
       customer = <span className='text-gray-700 fw-semibold d-block'>{`ชื่อบริษัท: ${item.CUSTOMERDETAIL[0].CUSTOMERMD}`}</span>
@@ -47,6 +49,7 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item }) => {
     statusTxt = <span className='text-warning fw-semibold d-block'>{`ร่าง`}</span>
   } else if (item.STATUS === 'EDIT') {
     statusTxt = <span className='text-danger fw-semibold d-block'>{`แก้ไข`}</span>
+    // checkerComment = <span className='text-danger fw-semibold d-block'>{`Comment: ${item.CHECKKERCOMMENT[0]?.COMMENT}`}</span>
   } else if (item.STATUS === 'FINISH') {
     statusTxt = <span className='text-danger fw-semibold d-block'>{`เสร็จสมบูรณ์`}</span>
   } else if (item.STATUS === 'PENDING') {
@@ -74,6 +77,7 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item }) => {
                 {serialNumber}
                 {createdAt}
                 {statusTxt}
+                {checkerComment}
               </div>
             </div>
           </Link>

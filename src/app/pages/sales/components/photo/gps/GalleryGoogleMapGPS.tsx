@@ -48,7 +48,7 @@ const GalleryGoogleMapGPS: React.FC = () => {
     // console.log(`refno`, refno);
 
     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
-    const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage`;
+    const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage?REFNO=${refno}`;
 
     const isIOS: boolean = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isAndroid: boolean = /Android/.test(navigator.userAgent);
@@ -61,9 +61,7 @@ const GalleryGoogleMapGPS: React.FC = () => {
             setError(null);
 
             try {
-                const response = await axios.get(GET_IMAGES_API, {
-                    params: { REFNO: refno },
-                });
+                const response = await axios.get(GET_IMAGES_API);
 
                 const data = response.data;
                 // console.log(data); // ตรวจสอบข้อมูล
@@ -76,7 +74,6 @@ const GalleryGoogleMapGPS: React.FC = () => {
                 }
             } catch (err) {
                 console.error('Error fetching images:', err);
-                setError('ไม่สามารถโหลดรูปภาพได้ กรุณาลองใหม่');
             } finally {
                 setLoading(false);
             }
@@ -86,7 +83,7 @@ const GalleryGoogleMapGPS: React.FC = () => {
     }, [refno]);
 
     return (
-        <div className="row mx-5 mt-10">
+        <div className="row mx-5 mt-3">
             {loading ? (
                 <div className="text-center w-100 mt-10">
                     <ThreeDot />

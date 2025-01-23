@@ -44,10 +44,13 @@ const IdCardPhotoGallery: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
 
     const { REFNO } = useUUIDStore();
+
     const refno = fromStep ? item?.REFNO : REFNO;
+    // console.log(`fromStep`, fromStep);
+    // console.log(`refno`, refno);
 
     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
-    const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage`;
+    const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage?REFNO=${refno}`;
 
     const isIOS: boolean = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isAndroid: boolean = /Android/.test(navigator.userAgent);
@@ -60,9 +63,7 @@ const IdCardPhotoGallery: React.FC = () => {
             setError(null);
 
             try {
-                const response = await axios.get(GET_IMAGES_API, {
-                    params: { REFNO: refno },
-                });
+                const response = await axios.get(GET_IMAGES_API);
 
                 const data = response.data;
                 // console.log(data); // ตรวจสอบข้อมูล
@@ -73,9 +74,9 @@ const IdCardPhotoGallery: React.FC = () => {
                 } else {
                     setImages([]);
                 }
+
             } catch (err) {
                 console.error('Error fetching images:', err);
-                setError('ไม่สามารถโหลดรูปภาพได้ กรุณาลองใหม่');
             } finally {
                 setLoading(false);
             }
@@ -173,7 +174,7 @@ const IdCardPhotoGallery: React.FC = () => {
                 </button>
                 <button
                     className="btn btn-primary w-100 w-md-auto align-self-center"
-                    onClick={() => navigate('/sale/photo/idcard')}
+                    onClick={() => navigate('/sale/photo/idcard', { state: { data: item, fromStep } })}
                 >
                     {isPC ? "เพิ่มรูปภาพ" : "แกลอรี่ / ถ่ายรูป"}
                 </button>
@@ -197,7 +198,7 @@ const IdCardPhotoGallery: React.FC = () => {
                 </button>
                 <button
                     className="btn btn-primary w-auto me-2"
-                    onClick={() => navigate('/sale/photo/idcard')}
+                    onClick={() => navigate('/sale/photo/idcard', { state: { data: item, fromStep } })}
                 >
                     {isPC ? "เพิ่มรูปภาพ" : "แกลอรี่ / ถ่ายรูป"}
                 </button>

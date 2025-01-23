@@ -11,7 +11,7 @@ const SidebarMenuMain = () => {
 
   // เก็บข้อมูลเมนูเป็น array
   const [menu, setMenu] = useState<any[]>([])
-  // console.log(`menu`, menu);
+  const [fontSize, setFontSize] = useState('14px'); //เฉพาะเมนูที่ไม่ได้ดึงจาก api
 
   // GET GetMenu
   useEffect(() => {
@@ -34,6 +34,24 @@ const SidebarMenuMain = () => {
     }
     getData()
   }, [])
+
+  // แก้ฟอนต์ตามขนาดหน้าจอ เฉพาะเมนูที่ไม่ได้ดึงจาก api
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setFontSize('11px'); // ฟอนต์เล็กลงสำหรับหน้าจอเล็ก
+      } else {
+        setFontSize('14px'); // ฟอนต์ปกติสำหรับหน้าจอใหญ่
+      }
+    };
+
+    handleResize(); // เรียกครั้งแรกเมื่อโหลดหน้า
+    window.addEventListener('resize', handleResize); // ฟังค์ชันตรวจจับการเปลี่ยนแปลงหน้าจอ
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   // ฟังก์ชันกำหนดไอคอนของแต่ละเมนู
   const getCustomMenuIcon = (menuName: string) => {
@@ -119,10 +137,9 @@ const SidebarMenuMain = () => {
         </span>
         <span
           style={{
-            fontSize: '14px',
-            fontWeight: 500,
+            fontSize: fontSize,
             color: 'inherit',
-            padding: '0px 5px',
+            padding: '0px 3px',
           }}
         >
           รายงานการขายประจำวัน

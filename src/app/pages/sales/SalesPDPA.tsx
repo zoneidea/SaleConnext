@@ -150,8 +150,9 @@ const SalesPDPA: React.FC = () => {
         Swal.fire({
           icon: 'success',
           title: 'สำเร็จ!',
-          text: 'การตรวจสอบ OTP สำเร็จ!',
-          confirmButtonText: 'ตกลง',
+          text: 'การตรวจสอบ OTP สำเร็จ! บันทึกข้อมูลเรียบร้อย',
+          timer: 2000, // แสดงผล 3 วินาที
+          showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
         }).then(() => {
           handleUpdateContract();
         });

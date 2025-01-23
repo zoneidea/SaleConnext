@@ -39,6 +39,17 @@ interface ItemProps {
     CHECKERCOMMENT: [any]
 }
 
+interface ImagesType {
+    IMAGECARD: string[];
+    IMAGEGPS: string[];
+    IMAGEMAP: string[];
+    IMAGECUSTOMERHOME: string[];
+    IMAGEINSTALLATION: string[];
+    IMAGETDS: string[];
+    IMAGECUSTOMER: string[];
+    IMAGETRADEIN: string[];
+}
+
 const UpdateSaleAddress: React.FC = () => {
     const navigate = useNavigate()
     const MySwal = withReactContent(Swal);
@@ -70,6 +81,7 @@ const UpdateSaleAddress: React.FC = () => {
 
     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
     const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
+    const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage`;
 
     const {
         addressCard, setAddressCard,
@@ -177,6 +189,8 @@ const UpdateSaleAddress: React.FC = () => {
     const [addressPhoneForBilling, setAddressPhoneForBilling] = useState<string>('');
 
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+    const [images, setImages] = useState<ImagesType | null>(null);
 
     const SaveAddressData = useMemo(() => {
         const province = getProvince.find(p => String(p.PROVINCECODE) === String(selectedProvince));
@@ -709,6 +723,41 @@ const UpdateSaleAddress: React.FC = () => {
         addressPhoneForBilling
     ]);
 
+    // fetch collection ContractImage
+    useEffect(() => {
+        const fetchImages = async () => {
+            try {
+                const response = await axios.get(GET_IMAGES_API, {
+                    params: { REFNO: refno },
+                });
+
+                // ตรวจสอบว่า response.data เป็นไปตามโครงสร้างของ ImagesType
+                const data = response.data;
+
+                if (
+                    data &&
+                    typeof data === 'object' &&
+                    'IMAGECARD' in data &&
+                    'IMAGEGPS' in data &&
+                    'IMAGEMAP' in data &&
+                    'IMAGECUSTOMERHOME' in data &&
+                    'IMAGEINSTALLATION' in data &&
+                    'IMAGETDS' in data &&
+                    'IMAGETRADEIN' in data
+                ) {
+                    setImages(data as ImagesType);
+                } else {
+                    setImages(null);
+                }
+            } catch (err) {
+                console.error('Error fetching images:', err);
+                setImages(null); // ตั้งค่าเป็น null หากมีข้อผิดพลาด
+            }
+        };
+
+        fetchImages();
+    }, [refno]);
+
     // ยิง UPDATECONTACT เมื่อมีการเปลี่ยนค่า value ของทุก Address อัตโนมัติ
     // useEffect(() => {
     //     if (
@@ -1071,7 +1120,13 @@ const UpdateSaleAddress: React.FC = () => {
                 if (!updateContract.data.data) {
                     MySwal.fire('เกิดข้อผิดพลาด', 'ปรับปรุงข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
                 } else {
-                    MySwal.fire('สำเร็จ', 'ปรับปรุงข้อมูลที่อยู่แล้ว', 'success');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'สำเร็จ!',
+                        text: 'ปรับปรุงข้อมูลที่อยู่แล้ว',
+                        timer: 2000, // แสดงผล 3 วินาที
+                        showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
+                    })
                 }
             } else {
                 MySwal.fire('เกิดข้อผิดพลาด', updateContract.data.message, 'error');
@@ -1100,7 +1155,13 @@ const UpdateSaleAddress: React.FC = () => {
             if (!response.data.data) {
                 MySwal.fire('เกิดข้อผิดพลาด', 'ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
             } else {
-                MySwal.fire('สำเร็จ', 'ส่งข้อมูลตรวจสอบแล้ว', 'success');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'สำเร็จ!',
+                    text: 'ส่งข้อมูลตรวจสอบแล้ว',
+                    timer: 2000, // แสดงผล 3 วินาที
+                    showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
+                })
                 navigate("/sale/overview")
             }
         } else {
@@ -1110,18 +1171,22 @@ const UpdateSaleAddress: React.FC = () => {
 
     // เช็คว่า data ใน item มีครบทุกขั้นตอน (ไม่เป็น array เปล่า) ใช่ไหม ถ้าเป็นจะ disabled ปุ่มส่งตรวจสอบ
     const isDataComplete = useMemo(() => {
+        // ตรวจสอบว่ามีรูปภาพในฟิลด์ใดฟิลด์หนึ่งใน images อย่างน้อย 1 รูป
+        const hasImages = images && Object.values(images).some(
+            (field) => Array.isArray(field) && field.length > 0
+        );
+
         return (
             Array.isArray(item.ADDRESS) && item.ADDRESS.length > 0 &&
             Array.isArray(item.CUSTOMERDETAIL) && item.CUSTOMERDETAIL.length > 0 &&
             Array.isArray(item.CUSTOMERSTATUS) && item.CUSTOMERSTATUS.length > 0 &&
             Array.isArray(item.DISCOUNT) && item.DISCOUNT.length > 0 &&
             Array.isArray(item.PDPA) && item.PDPA.length > 0 &&
-            Array.isArray(item.PRODUCT) && item.PRODUCT.length > 0
+            Array.isArray(item.PRODUCT) && item.PRODUCT.length > 0 &&
+            hasImages
         );
-    }, [item]);
+    }, [item, images]);
 
-    // console.log(isDataComplete);
-    
     return (
         <>
             <Content>

@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ES2020",
     "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": ["ES2020", "DOM", "DOM.Iterable", "dom"],
     "module": "ESNext",
     "outDir": "./dist",                             // โฟลเดอร์ output หลังจาก build
     "rootDir": "./src",                             // โฟลเดอร์ต้นทาง

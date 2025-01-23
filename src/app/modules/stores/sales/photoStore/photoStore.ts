@@ -52,7 +52,7 @@ export const usePhotoIdCardStore = create<PhotoIdCardStore>((set) => ({
   clearImages: () => {
     set(() => {
       localStorage.removeItem("IdCardImages"); // ลบข้อมูลใน localStorage
-      console.log("Images cleared"); // Log ข้อมูลหลังล้างรูป
+      // console.log("Images cleared"); // Log ข้อมูลหลังล้างรูป
       return { imagesIdCard: [] };
     });
   },
@@ -104,7 +104,7 @@ export const usePhotoDrawingMapStore = create<photoDrawingMapStore>((set) => ({
   clearImages: () => {
     set(() => {
       localStorage.removeItem("DrawingMapImages"); // ลบข้อมูลใน localStorage
-      console.log("Images cleared"); // Log ข้อมูลหลังล้างรูป
+      // console.log("Images cleared"); // Log ข้อมูลหลังล้างรูป
       return { imagesDrawingMap: [] };
     });
   },
@@ -187,7 +187,7 @@ export const usePhotoTurnStore = create<photoTurnStore>((set) => ({
   clearImages: () => {
     set(() => {
       localStorage.removeItem("turnImages"); // ลบข้อมูลใน localStorage
-      console.log("Images cleared"); // Log ข้อมูลหลังล้างรูป
+      // console.log("Images cleared"); // Log ข้อมูลหลังล้างรูป
       return { imagesTurn: [] };
     });
   },
@@ -271,7 +271,7 @@ export const usePhotoInstallationStore = create<photoInstallationStore>((set) =>
   clearImages: () => {
     set(() => {
       localStorage.removeItem("InstallationImages"); // ลบข้อมูลใน localStorage
-      console.log("Images cleared"); // Log ข้อมูลหลังล้างรูป
+      // console.log("Images cleared"); // Log ข้อมูลหลังล้างรูป
       return { imagesInstallation: [] };
     });
   },
@@ -355,7 +355,7 @@ export const usePhotoHomeCustomerStore = create<photoHomeCustomerStore>((set) =>
   clearImages: () => {
     set(() => {
       localStorage.removeItem("HomeCustomerImages"); // ลบข้อมูลใน localStorage
-      console.log("Images cleared"); // Log ข้อมูลหลังล้างรูป
+      // console.log("Images cleared"); // Log ข้อมูลหลังล้างรูป
       return { imagesHomeCustomer: [] };
     });
   },
@@ -439,7 +439,7 @@ export const usePhotoCustomerStore = create<photoCustomerStore>((set) => ({
   clearImages: () => {
     set(() => {
       localStorage.removeItem("CustomerImages"); // ลบข้อมูลใน localStorage
-      console.log("Images cleared"); // Log ข้อมูลหลังล้างรูป
+      // console.log("Images cleared"); // Log ข้อมูลหลังล้างรูป
       return { imagesCustomer: [] };
     });
   },
@@ -523,7 +523,7 @@ export const usePhotoEquipmentStore = create<photoEquipmentStore>((set) => ({
   clearImages: () => {
     set(() => {
       localStorage.removeItem("EquipmentImages"); // ลบข้อมูลใน localStorage
-      console.log("Images cleared"); // Log ข้อมูลหลังล้างรูป
+      // console.log("Images cleared"); // Log ข้อมูลหลังล้างรูป
       return { imagesEquipment: [] };
     });
   },
@@ -610,7 +610,7 @@ export const usePhotoGPSStore = create<PhotoGPSStore>((set) => ({
   clearImages: () => {
     set(() => {
       localStorage.removeItem("GPSImages"); // ลบข้อมูลใน localStorage
-      console.log("Images cleared"); // Log ข้อมูลหลังล้างรูป
+      // console.log("Images cleared"); // Log ข้อมูลหลังล้างรูป
       return { imagesGPS: [] };
     });
   },

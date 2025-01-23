@@ -1197,7 +1197,8 @@ const SalesCreateCust: React.FC = () => {
                 icon: 'success',
                 title: 'สำเร็จ!',
                 text: 'บันทึกข้อมูลลูกค้าเรียบร้อยแล้ว',
-                confirmButtonText: 'ตกลง'
+                timer: 2000, // แสดงผล 3 วินาที
+                showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
             });
             navigate("/sale/pdpa")
         } catch (error) {

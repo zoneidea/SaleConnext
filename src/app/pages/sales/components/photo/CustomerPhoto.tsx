@@ -93,6 +93,8 @@ const CustomerPhoto: React.FC = () => {
     const [imagesFromSystem, setImagesFromSystem] = useState<string[]>([]); // รูปภาพจากระบบ
     const [files, setFiles] = useState<File[]>([]); // เก็บไฟล์ที่อัปโหลดใหม่
 
+    const [isLoading, setIsLoading] = useState<boolean>(false); // State สำหรับควบคุมปุ่ม
+
     useEffect(() => {
         // โหลดรูปภาพและไฟล์จาก Local Storage ตาม REFNO
         const savedFiles = localStorage.getItem(`files_${refno}`);
@@ -198,6 +200,7 @@ const CustomerPhoto: React.FC = () => {
         });
 
         try {
+            setIsLoading(true); // Disable ปุ่ม
             const response = await axios.post(`${API_URL_MONGO}/Contract/SaveContractImage`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
@@ -216,7 +219,12 @@ const CustomerPhoto: React.FC = () => {
                 icon: 'success',
                 title: 'สำเร็จ!',
                 text: 'บันทึกรูปภาพลงระบบเรียบร้อยแล้ว',
+                timer: 2000, // แสดงผล 3 วินาที
+                showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
             });
+
+            navigate('/sale/photo/gallery/customer', { state: { data: item, fromStep } });
+
         } catch (error) {
             console.error('Upload error:', error);
             Swal.fire({
@@ -224,6 +232,8 @@ const CustomerPhoto: React.FC = () => {
                 title: 'เกิดข้อผิดพลาด',
                 text: 'ไม่สามารถบันทึกรูปภาพได้ กรุณาลองใหม่อีกครั้ง',
             });
+        } finally {
+            setIsLoading(false); // เปิดการใช้งานปุ่ม
         }
     };
 
@@ -236,37 +246,6 @@ const CustomerPhoto: React.FC = () => {
 
     return (
         <div>
-            <div
-                className="d-flex justify-content-center align-items-center my-5 mx-7"
-                style={{
-                    border: "1px solid #ccc",
-                    borderRadius: "10px",
-                    padding: "10px",
-                    backgroundColor: "#f9f9f9",
-                }}
-            >
-                <label
-                    className="btn btn-success px-5"
-                    htmlFor="camera-input"
-                    style={{
-                        cursor: "pointer",
-                        borderRadius: "10px",
-                        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                    }}
-                >
-                    เลือกรูปจากคลัง
-                </label>
-            </div>
-
-            {/* Input hidden สำหรับการอัปโหลดไฟล์ */}
-            <input
-                id="camera-input"
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                style={{ display: "none" }}
-            />
-
             <div>
                 {previewImages.length > 0 && (
                     <div className='row mx-5'>
@@ -348,6 +327,37 @@ const CustomerPhoto: React.FC = () => {
                         />
                     </div>
                 )}
+                <div
+                    className="d-flex justify-content-center align-items-center my-5 mx-7"
+                    style={{
+                        border: "1px solid #ccc",
+                        borderRadius: "10px",
+                        padding: "10px",
+                        backgroundColor: "#f9f9f9",
+                    }}
+                >
+                    <label
+                        className="btn btn-success px-5"
+                        htmlFor="camera-input"
+                        style={{
+                            cursor: "pointer",
+                            borderRadius: "10px",
+                            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                        }}
+                    >
+                        เลือกรูปจากคลัง
+                    </label>
+                </div>
+
+                {/* Input hidden สำหรับการอัปโหลดไฟล์ */}
+                <input
+                    id="camera-input"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    style={{ display: "none" }}
+                    disabled={isLoading}
+                />
 
                 {/* แสดงปุ่มเมื่อมาจาก Step */}
                 {fromStep ? (
@@ -355,6 +365,7 @@ const CustomerPhoto: React.FC = () => {
                         <button
                             className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'
                             onClick={() => navigate('/sale/photo/gallery/customer', { state: { data: item, fromStep } })}
+                            disabled={isLoading}
                         >
                             ย้อนกลับ
                         </button>
@@ -362,6 +373,7 @@ const CustomerPhoto: React.FC = () => {
                             className='btn btn-warning w-100 w-md-auto align-self-center mb-2 mb-md-0'
                             type='button'
                             onClick={handleNextClick}
+                            disabled={isLoading}
                         >
                             อัพเดทข้อมูล
                         </button>
@@ -370,7 +382,8 @@ const CustomerPhoto: React.FC = () => {
                     <div className='d-none d-xl-flex justify-content-between align-items-center my-5 mx-7'>
                         <button
                             className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'
-                            onClick={() => navigate('/sale/photo/gallery/customer')}
+                            onClick={() => navigate('/sale/photo/gallery/customer', { state: { data: item, fromStep } })}
+                            disabled={isLoading}
                         >
                             ย้อนกลับ
                         </button>
@@ -378,6 +391,7 @@ const CustomerPhoto: React.FC = () => {
                             className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
                             type='button'
                             onClick={handleNextClick}
+                            disabled={isLoading}
                         >
                             บันทึกรูปภาพลงระบบ
                         </button>
@@ -400,12 +414,14 @@ const CustomerPhoto: React.FC = () => {
                         <button
                             className="btn btn-secondary w-auto me-2"
                             onClick={() => navigate('/sale/photo/gallery/customer', { state: { data: item, fromStep } })}
+                            disabled={isLoading}
                         >
                             ย้อนกลับ
                         </button>
                         <button
                             className="btn btn-warning w-auto me-2"
                             onClick={handleNextClick}
+                            disabled={isLoading}
                         >
                             อัพเดทข้อมูล
                         </button>
@@ -423,13 +439,15 @@ const CustomerPhoto: React.FC = () => {
                     >
                         <button
                             className="btn btn-secondary w-auto me-2"
-                            onClick={() => navigate('/sale/photo/gallery/customer')}
+                            onClick={() => navigate('/sale/photo/gallery/customer', { state: { data: item, fromStep } })}
+                            disabled={isLoading}
                         >
                             ย้อนกลับ
                         </button>
                         <button
                             className="btn btn-primary w-auto me-2"
                             onClick={handleNextClick}
+                            disabled={isLoading}
                         >
                             บันทึกรูปภาพลงระบบ
                         </button>
