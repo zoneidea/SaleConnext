@@ -35,13 +35,13 @@ const updateDeviceScanBarcode: React.FC = () => {
     // ใช้ type assertion เพื่อระบุประเภทของ state
     const state = location.state as LocationState | undefined;
     const item = state?.item as ItemProps; // ใช้ type assertion กับ item
-    console.log(`Received item:`, item);
+    // console.log(`Received item:`, item);
 
     const { setRefno, setBarCode } = useRefnoBarcodeStore((state) => ({
         setRefno: state.setRefno,
         setBarCode: state.setBarCode,
     }));
-    const [barCode, setBarCodeState] = useState<string>("UY01680349");
+    const [barCode, setBarCodeState] = useState<string>("");
 
     const html5QrcodeScannerRef = React.useRef<Html5Qrcode | null>(null);
     const [isScannerRunning, setIsScannerRunning] = useState(false);

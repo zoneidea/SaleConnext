@@ -50,7 +50,7 @@ interface SavePackage {
     DISCOUNTPRICE: number
     SEQUENCE: number
     MODEL: string;
-    PACKAGETYPEID: number;
+    PACKAGETYPEID: number | null;
     ORGANIZATIONCODE: string;
     ITEMID: string;
     PRODUCTID: string;

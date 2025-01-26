@@ -32,7 +32,7 @@ const SalesPackage: React.FC = () => {
     const location = useLocation();
     const state = location.state as { barCode?: any } || {}; // เพิ่ม fallback เป็นอ็อบเจ็กต์ว่าง
     const barCode = state.barCode; // กำหนดค่าเริ่มต้นเป็น "ยังไม่มีข้อมูล"
-    console.log(`barCode`, barCode);
+    // console.log(`barCode`, barCode);
 
     // State สำหรับตรวจสอบสถานะการโหลด
     const [loadingCategories, setLoadingCategories] = useState(true);
@@ -64,7 +64,7 @@ const SalesPackage: React.FC = () => {
     const [selectedCategoryId, setSelectedCategoryId] = useState<any>('');
 
     const [selectedProductIndex, setSelectedProductIndex] = useState<number | null>(null);
-    console.log(`selectedProductIndex: `, selectedProductIndex);
+    // console.log(`selectedProductIndex: `, selectedProductIndex);
 
     const [selectedItemCode, setSelectedItemCode] = useState<string | null>(null);
     // console.log(`selectedItemCode: `, selectedItemCode);
@@ -80,11 +80,13 @@ const SalesPackage: React.FC = () => {
     // console.log(`productId: `, productId);
 
     const [selectedPackageTypeId, setSelectedPackageTypeId] = useState<number | null>(null);
+    // console.log(`selectedPackageTypeId`, selectedPackageTypeId);
+
     const [selectedPackageModel, setSelectedPackageModel] = useState<number | null>(null);
-    console.log(`selectedPackageModel`, selectedPackageModel);
-    
+    // console.log(`selectedPackageModel`, selectedPackageModel);
+
     const [selectedProductId, setSelectedProductId] = useState<any>('');
-    console.log(`selectedProductId`, selectedProductId);
+    // console.log(`selectedProductId`, selectedProductId);
     const [selectedPromotion, setSelectedPromotion] = useState<string | number>('');
     // console.log(`selectedPromotion`, selectedPromotion);
 
@@ -111,7 +113,7 @@ const SalesPackage: React.FC = () => {
     // const parseGetCategoryLocal = getCategoryLocal ? JSON.parse(getCategoryLocal) : null;
 
     const { product, setProduct } = useProductStore();
-    console.log(`product: `, product);
+    // console.log(`product: `, product);
 
     const { ItemID, setItemID, PackageTypeID, setPackageTypeID } = usePackageStore();
 
@@ -135,27 +137,64 @@ const SalesPackage: React.FC = () => {
             TransDate: selectedTransDate || '',
             PromotionId: selectedPromotion,
             ProductId: productId,
-            Package: selectedPackageModel !== null ? [
-                {
-                    MODEL: packageList[selectedPackageModel].MODEL,
-                    PACKAGETYPEID: packageList[selectedPackageModel].PACKAGETYPEID,
-                    ORGANIZATIONCODE: packageList[selectedPackageModel].ORGANIZATIONCODE,
-                    ITEMID: packageList[selectedPackageModel].ITEMID,
-                    PRODUCTID: packageList[selectedPackageModel].PRODUCTID,
-                    PACKAGETITLE: packageList[selectedPackageModel].PACKAGETITLE,
-                    TOTALPRICE: packageList[selectedPackageModel].TOTALPRICE,
-                    HASTRADEIN: packageList[selectedPackageModel].HASTRADEIN,
-                    DISCOUNTPRICE: packageList[selectedPackageModel].DISCOUNTPRICE,
-                    SEQUENCE: packageList[selectedPackageModel].SEQUENCE,
-                    PERMITION_ACTIVE: packageList[selectedPackageModel].PERMITION_ACTIVE,
-                    FREEGIFT: packageList[selectedPackageModel].FREEGIFT,
-                    PERIODDETAILS: packageList[selectedPackageModel].PERIODDETAILS
-                }
-            ] : [], // ถ้าไม่มี package ที่เลือกให้เป็น array ว่าง
+            Package: selectedPackageModel !== null
+                ? [
+                    {
+                        MODEL: packageList[selectedPackageModel]?.MODEL || [],
+                        PACKAGETYPEID: selectedPackageTypeId ?? 0, // ดึงค่า selectedPackageTypeId แม้ selectedPackageModel จะไม่มี
+                        ORGANIZATIONCODE: packageList[selectedPackageModel]?.ORGANIZATIONCODE || [],
+                        ITEMID: packageList[selectedPackageModel]?.ITEMID || [],
+                        PRODUCTID: packageList[selectedPackageModel]?.PRODUCTID || [],
+                        PACKAGETITLE: packageList[selectedPackageModel]?.PACKAGETITLE || [],
+                        TOTALPRICE: packageList[selectedPackageModel]?.TOTALPRICE || [],
+                        HASTRADEIN: packageList[selectedPackageModel]?.HASTRADEIN || [],
+                        DISCOUNTPRICE: packageList[selectedPackageModel]?.DISCOUNTPRICE || [],
+                        SEQUENCE: packageList[selectedPackageModel]?.SEQUENCE || [],
+                        PERMITION_ACTIVE: packageList[selectedPackageModel]?.PERMITION_ACTIVE || [],
+                        FREEGIFT: packageList[selectedPackageModel]?.FREEGIFT || [],
+                        PERIODDETAILS: packageList[selectedPackageModel]?.PERIODDETAILS || []
+                    }
+                ]
+                : selectedPackageTypeId !== null
+                    ? [
+                        {
+                            MODEL: null, // หากไม่มี selectedPackageModel ให้ตั้งค่า MODEL เป็น null
+                            PACKAGETYPEID: selectedPackageTypeId, // เก็บค่าของ selectedPackageTypeId ได้โดยตรง
+                            ORGANIZATIONCODE: null,
+                            ITEMID: null,
+                            PRODUCTID: null,
+                            PACKAGETITLE: null,
+                            TOTALPRICE: null,
+                            HASTRADEIN: null,
+                            DISCOUNTPRICE: null,
+                            SEQUENCE: null,
+                            PERMITION_ACTIVE: null,
+                            FREEGIFT: null,
+                            PERIODDETAILS: null
+                        }
+                    ]
+                    : [], // หากไม่มีค่าใดเลย ให้เป็น array ว่าง
         },
-    ], [EmpId, TeamSale, SaleCode, SupEmpId, SecEmpId, selectedItemCode, selectedItemDescription, selectedCategoryId,
-        selectedDescriptionEN, selectedDescriptionTH, selectedSerialNo,
-        selectedStatus, selectedBranch, selectedTransDate, selectedPromotion, selectedPackageModel, packageList]);
+    ], [
+        EmpId,
+        TeamSale,
+        SaleCode,
+        SupEmpId,
+        SecEmpId,
+        selectedItemCode,
+        selectedItemDescription,
+        selectedCategoryId,
+        selectedDescriptionEN,
+        selectedDescriptionTH,
+        selectedSerialNo,
+        selectedStatus,
+        selectedBranch,
+        selectedTransDate,
+        selectedPromotion,
+        selectedPackageModel,
+        selectedPackageTypeId,
+        packageList
+    ]);
 
     const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
     const CATEGORIES_URL = `${API_SALECONNEXT}/GetProduct/Categories`;
@@ -202,7 +241,7 @@ const SalesPackage: React.FC = () => {
             }
         };
         postData();
-    }, [EmpId, TeamSale, SaleCode, SupEmpId, SecEmpId, DivisionId, DepartId, DepartGroup, auth]);
+    });
 
     // // GET Product/GetStock?
     // useEffect(() => {
@@ -228,6 +267,10 @@ const SalesPackage: React.FC = () => {
     //     fetchProducts();
     // }, [selectedCategoryId]); // ทำงานเมื่อ selectedCategoryId เปลี่ยนแปลง
 
+    useEffect(() => {
+        setProduct([]); // ล้างข้อมูล product ทุกครั้งเมื่อเริ่มต้น
+    }, []);
+
     // GET Product/GetStock?
     useEffect(() => {
         const fetchProducts = async () => {
@@ -239,6 +282,7 @@ const SalesPackage: React.FC = () => {
                     : `${API_URL_MONGO}/Product/GetStock?empid=${EmpId}&teamSale=${TeamSale}&sn=${barCode}`;
 
                 const response = await axios.get(url);
+
                 const data = Array.isArray(response.data.data) ? response.data.data : [];
                 setProduct(data);
 
@@ -431,7 +475,7 @@ const SalesPackage: React.FC = () => {
 
     const handlePackageModelClick = (index: number) => {
         if (packageList[index] && packageList[index].MODEL) {
-            console.log("Selected Package:", packageList[index]); // Debug ข้อมูล
+            // console.log("Selected Package:", packageList[index]); // Debug ข้อมูล
             setSelectedPackageModel(index); // อัปเดต selectedPackageModel
             setModel(packageList[index].MODEL); // อัปเดต Model
             setSelectedProductId(packageList[index].PRODUCTID); // อัปเดต Product ID
@@ -439,12 +483,12 @@ const SalesPackage: React.FC = () => {
             console.error("Invalid package data at index:", index);
             setSelectedPackageModel(null); // หากข้อมูลไม่ถูกต้อง ตั้งค่า null
         }
-    };    
+    };
 
     useEffect(() => {
-        console.log("Package List:", packageList);
+        // console.log("Package List:", packageList);
     }, [packageList]);
-    
+
 
     useEffect(() => {
         if (selectedPackageModel !== null && packageList[selectedPackageModel]) {
@@ -458,7 +502,7 @@ const SalesPackage: React.FC = () => {
     };
 
     const handleNextClick = async () => {
-        console.log("SaveProductData ก่อนส่ง:", SaveProductData);
+        // console.log("SaveProductData ก่อนส่ง:", SaveProductData);
 
         try {
             // Save product package
@@ -563,7 +607,7 @@ const SalesPackage: React.FC = () => {
                     },
                 });
 
-                console.log(`updateContract CUSTOMERSTATUS: `, updateContract.data);
+                // console.log(`updateContract CUSTOMERSTATUS: `, updateContract.data);
 
                 await MySwal.fire({
                     icon: 'success',

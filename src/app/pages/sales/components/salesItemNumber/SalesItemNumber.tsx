@@ -36,7 +36,7 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item }) => {
   if (item.PRODUCT.length > 0) {
     product = <span className='text-gray-700 fw-semibold d-block'>{`สินค้า: ${item.PRODUCT[0].ItemDescription}`}</span>
     if (item.PRODUCT[0].Package.length > 0) {
-      productPackage = <span className='text-gray-700 fw-semibold d-block'>{`แพ็คเกจ: ${item.PRODUCT[0].Package[0].PACKAGETITLE}`}</span>
+      productPackage = <span className='text-gray-700 fw-semibold d-block'>{`แพ็คเกจ: ${item.PRODUCT[0].Package[0].PACKAGETITLE ? item.PRODUCT[0].Package[0].PACKAGETITLE : 'ไม่มีแพ็คเกจ'}`}</span>
       serialNumber = <span className='text-gray-700 fw-semibold d-block'>{`Serial Number: ${item.PRODUCT[0].SerialNo}`}</span>
     }
   }

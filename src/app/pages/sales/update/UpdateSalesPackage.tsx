@@ -80,6 +80,7 @@ const UpdateSalesPackage: React.FC = () => {
         setBarCode: state.setBarCode,
     }));
     console.log(`barCode`, barCode);
+    console.log(`refno`, item.REFNO);  
 
     // const memoizedRefno: string = useMemo(() => {
     //     return refno || itemFromStore?.REFNO || ""; // ใช้ "" เป็นค่าเริ่มต้นหากไม่มีค่า
@@ -104,7 +105,7 @@ const UpdateSalesPackage: React.FC = () => {
     // console.log(promotion: , promotion);
 
     const [packageList, setPackageList] = useState<any[]>([]);
-    // console.log(packageList: , packageList);
+    console.log(`packageList:`, packageList);
 
     const [selectedCategoryId, setSelectedCategoryId] = useState<any>('');
     const [selectedProductIndex, setSelectedProductIndex] = useState<number | null>(null);
@@ -123,7 +124,7 @@ const UpdateSalesPackage: React.FC = () => {
     // console.log(productId, productId);
 
     const [selectedPackageTypeId, setSelectedPackageTypeId] = useState<number | null>(null);
-    console.log(selectedPackageTypeId, selectedPackageTypeId);
+    console.log(`selectedPackageTypeId:`, selectedPackageTypeId);
 
     const [selectedPackageModel, setSelectedPackageModel] = useState<number | null>(null);
     console.log(`selectedPackageModel`, selectedPackageModel);
@@ -163,7 +164,7 @@ const UpdateSalesPackage: React.FC = () => {
         {
             EmpId: EmpId || '',
             TeamSale: TeamSale || '',
-            SaleCode: SaleCode,
+            SaleCode: "C000000000000",
             ItemCode: selectedItemCode || '',
             ItemDescription: selectedItemDescription || '',
             CategoriesId: selectedCategoryId || '',
@@ -173,29 +174,66 @@ const UpdateSalesPackage: React.FC = () => {
             Status: selectedStatus || '',
             Branch: selectedBranch || '',
             TransDate: selectedTransDate || '',
-            Promotion: selectedPromotion,
+            PromotionId: selectedPromotion,
             ProductId: productId,
-            Package: selectedPackageModel !== null ? [
-                {
-                    MODEL: packageList[selectedPackageModel].MODEL,
-                    PACKAGETYPEID: packageList[selectedPackageModel].PACKAGETYPEID,
-                    ORGANIZATIONCODE: packageList[selectedPackageModel].ORGANIZATIONCODE,
-                    ITEMID: packageList[selectedPackageModel].ITEMID,
-                    PRODUCTID: packageList[selectedPackageModel].PRODUCTID,
-                    PACKAGETITLE: packageList[selectedPackageModel].PACKAGETITLE,
-                    TOTALPRICE: packageList[selectedPackageModel].TOTALPRICE,
-                    HASTRADEIN: packageList[selectedPackageModel].HASTRADEIN,
-                    DISCOUNTPRICE: packageList[selectedPackageModel].DISCOUNTPRICE,
-                    SEQUENCE: packageList[selectedPackageModel].SEQUENCE,
-                    PERMITION_ACTIVE: packageList[selectedPackageModel].PERMITION_ACTIVE,
-                    FREEGIFT: packageList[selectedPackageModel].FREEGIFT,
-                    PERIODDETAILS: packageList[selectedPackageModel].PERIODDETAILS
-                }
-            ] : [], // ถ้าไม่มี package ที่เลือกให้เป็น array ว่าง
+            Package: selectedPackageModel !== null
+                ? [
+                    {
+                        MODEL: packageList[selectedPackageModel]?.MODEL || [],
+                        PACKAGETYPEID: selectedPackageTypeId ?? 0, // ดึงค่า selectedPackageTypeId แม้ selectedPackageModel จะไม่มี
+                        ORGANIZATIONCODE: packageList[selectedPackageModel]?.ORGANIZATIONCODE || [],
+                        ITEMID: packageList[selectedPackageModel]?.ITEMID || [],
+                        PRODUCTID: packageList[selectedPackageModel]?.PRODUCTID || [],
+                        PACKAGETITLE: packageList[selectedPackageModel]?.PACKAGETITLE || [],
+                        TOTALPRICE: packageList[selectedPackageModel]?.TOTALPRICE || [],
+                        HASTRADEIN: packageList[selectedPackageModel]?.HASTRADEIN || [],
+                        DISCOUNTPRICE: packageList[selectedPackageModel]?.DISCOUNTPRICE || [],
+                        SEQUENCE: packageList[selectedPackageModel]?.SEQUENCE || [],
+                        PERMITION_ACTIVE: packageList[selectedPackageModel]?.PERMITION_ACTIVE || [],
+                        FREEGIFT: packageList[selectedPackageModel]?.FREEGIFT || [],
+                        PERIODDETAILS: packageList[selectedPackageModel]?.PERIODDETAILS || []
+                    }
+                ]
+                : selectedPackageTypeId !== null
+                    ? [
+                        {
+                            MODEL: null, // หากไม่มี selectedPackageModel ให้ตั้งค่า MODEL เป็น null
+                            PACKAGETYPEID: selectedPackageTypeId, // เก็บค่าของ selectedPackageTypeId ได้โดยตรง
+                            ORGANIZATIONCODE: null,
+                            ITEMID: null,
+                            PRODUCTID: null,
+                            PACKAGETITLE: null,
+                            TOTALPRICE: null,
+                            HASTRADEIN: null,
+                            DISCOUNTPRICE: null,
+                            SEQUENCE: null,
+                            PERMITION_ACTIVE: null,
+                            FREEGIFT: null,
+                            PERIODDETAILS: null
+                        }
+                    ]
+                    : [], // หากไม่มีค่าใดเลย ให้เป็น array ว่าง
         },
-    ], [EmpId, TeamSale, SaleCode, SupEmpId, SecEmpId, selectedItemCode, selectedItemDescription, selectedCategoryId,
-        selectedDescriptionEN, selectedDescriptionTH, selectedSerialNo,
-        selectedStatus, selectedBranch, selectedTransDate, selectedPromotion, selectedPackageModel, packageList]);
+    ], [
+        EmpId,
+        TeamSale,
+        SaleCode,
+        SupEmpId,
+        SecEmpId,
+        selectedItemCode,
+        selectedItemDescription,
+        selectedCategoryId,
+        selectedDescriptionEN,
+        selectedDescriptionTH,
+        selectedSerialNo,
+        selectedStatus,
+        selectedBranch,
+        selectedTransDate,
+        selectedPromotion,
+        selectedPackageModel,
+        selectedPackageTypeId,
+        packageList
+    ]);
 
     const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
     const CATEGORIES_URL = `${API_SALECONNEXT}/GetProduct/Categories`;
@@ -573,17 +611,16 @@ const UpdateSalesPackage: React.FC = () => {
             console.error("Invalid PackageTypeId:", packageTypeId);
             return;
         }
-
+    
         setSelectedPackageTypeId(packageTypeId); // อัปเดตค่า selectedPackageTypeId
         setPackageTypeID(packageTypeId); // อัปเดตค่าใน state อื่นถ้าจำเป็น
-
-        console.log("PackageTypeId selected:", packageTypeId);
-
+        console.log("PackageTypeId selected:", packageTypeId); // ตรวจสอบว่าค่าถูกตั้งไว้ถูกต้อง
+    
         // Scroll the page to the package section
         if (packageSectionRef.current) {
             packageSectionRef.current.scrollIntoView({ behavior: 'smooth' });
         }
-    };
+    };    
 
     const handlePackageModelClick = (index: number) => {
         setSelectedPackageModel(index);
@@ -667,10 +704,12 @@ const UpdateSalesPackage: React.FC = () => {
 
     // ตรวจสอบ ConditionsCheckHistory ว่าต้องตรวจสอบประวัติไหม หากตรวจให้เช็ค CheckCustomer ต่อ
     const handleNextClick = async () => {
+        console.log("SaveProductData ก่อนส่ง:", SaveProductData); // เพิ่มตรงนี้
+
         try {
             // Save product package
             const response = await axios.post(UPDATECONTACT, {
-                REFNO: refno,
+                REFNO: refno ? refno : item.REFNO,
                 EMPID: EmpId,
                 TEAMSALE: TeamSale,
                 FIELD: "PRODUCT",
@@ -681,9 +720,7 @@ const UpdateSalesPackage: React.FC = () => {
                 },
             });
 
-            // console.log("Pacakage data: ", SaveProductData)
-
-            // console.log('Update package: ', response)
+            console.log('response: ', response)
             if (response.status === 200) {
                 if (!response.data.data) {
                     MySwal.fire('เกิดข้อผิดพลาด', 'ปรับปรุงข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');

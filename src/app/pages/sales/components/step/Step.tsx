@@ -574,6 +574,8 @@ const Step: React.FC = () => {
     fetchImages();
   }, [refno]);
 
+  console.log(`data?.[0]?.PRODUCT?.[0]?.Package[0]?.PACKAGETITLE`, data?.[0]?.PRODUCT?.[0]?.Package[0]?.PACKAGETITLE);
+
   return (
     <>
       <Content>
@@ -636,7 +638,7 @@ const Step: React.FC = () => {
                         {
                           data?.[0]?.PRODUCT?.length &&
                           data?.[0]?.PRODUCT?.[0]?.Package.length && (
-                            <span className='text-gray-700 fw-semibold d-block'>{`แพ็คเกจ: ${data?.[0]?.PRODUCT?.[0]?.Package[0]?.PACKAGETITLE}`}</span>
+                            <span className='text-gray-700 fw-semibold d-block'>{`แพ็คเกจ: ${data?.[0]?.PRODUCT?.[0]?.Package[0]?.PACKAGETITLE ? data?.[0]?.PRODUCT?.[0]?.Package[0]?.PACKAGETITLE : 'ไม่มีแพ็คเกจ'}`}</span>
                           )
                         }
                       </div>
