@@ -68,7 +68,7 @@ const UpdateSalesPackage: React.FC = () => {
     const MySwal = withReactContent(Swal);
 
     const item = location.state as ItemProps || [];
-    console.log(`item`, item);
+    // console.log(`item`, item);
 
     // const itemFromStore = (location.state || {}) as { item?: { REFNO?: string } };
     // console.log(`itemFromStore`, itemFromStore);
@@ -79,15 +79,15 @@ const UpdateSalesPackage: React.FC = () => {
         setRefno: state.setRefno,
         setBarCode: state.setBarCode,
     }));
-    console.log(`barCode`, barCode);
-    console.log(`refno`, item.REFNO);  
+    // console.log(`barCode`, barCode);
+    // console.log(`refno`, item.REFNO);
 
     // const memoizedRefno: string = useMemo(() => {
     //     return refno || itemFromStore?.REFNO || ""; // ใช้ "" เป็นค่าเริ่มต้นหากไม่มีค่า
     // }, [refno, item?.REFNO]);
 
     const productContract = item?.PRODUCT || [];
-    console.log(productContract, productContract);
+    // console.log(productContract, productContract);
 
     const [loadingCategories, setLoadingCategories] = useState(true); // เพิ่ม state สำหรับการโหลดหมวดหมู่
     const [loadingProducts, setLoadingProducts] = useState(false); // เพิ่ม state สำหรับการโหลดสินค้า
@@ -105,7 +105,7 @@ const UpdateSalesPackage: React.FC = () => {
     // console.log(promotion: , promotion);
 
     const [packageList, setPackageList] = useState<any[]>([]);
-    console.log(`packageList:`, packageList);
+    // console.log(`packageList:`, packageList);
 
     const [selectedCategoryId, setSelectedCategoryId] = useState<any>('');
     const [selectedProductIndex, setSelectedProductIndex] = useState<number | null>(null);
@@ -124,10 +124,10 @@ const UpdateSalesPackage: React.FC = () => {
     // console.log(productId, productId);
 
     const [selectedPackageTypeId, setSelectedPackageTypeId] = useState<number | null>(null);
-    console.log(`selectedPackageTypeId:`, selectedPackageTypeId);
+    // console.log(`selectedPackageTypeId:`, selectedPackageTypeId);
 
     const [selectedPackageModel, setSelectedPackageModel] = useState<number | null>(null);
-    console.log(`selectedPackageModel`, selectedPackageModel);
+    // console.log(`selectedPackageModel`, selectedPackageModel);
 
     const [checktype, setChecktype] = useState<number | null>(null);
     // console.log(checktype, checktype);
@@ -149,7 +149,7 @@ const UpdateSalesPackage: React.FC = () => {
     const parsegetCategoryLocal = getCategoryLocal ? JSON.parse(getCategoryLocal) : null;
 
     const { product, setProduct } = useProductStore();
-    console.log(`product:`, product);
+    // console.log(`product:`, product);
 
     const [PackageTypeID, setPackageTypeID] = useState<number | null>(null);
     const { ItemID, setItemID } = usePackageStore();
@@ -269,7 +269,7 @@ const UpdateSalesPackage: React.FC = () => {
 
     useEffect(() => {
         if (productContract && productContract.length > 0) {
-            console.log("ProductContract data:", productContract);
+            // console.log("ProductContract data:", productContract);
 
             // แปลงข้อมูลจาก productContract ให้อยู่ในรูปแบบของ product
             const formattedProducts = productContract.map((item) => ({
@@ -342,7 +342,7 @@ const UpdateSalesPackage: React.FC = () => {
     }, [selectedItemCode, productId]);
 
     useEffect(() => {
-        console.log("packageList updated:", packageList);
+        // console.log("packageList updated:", packageList);
     }, [packageList]);
 
     // fetch collection ContractImage
@@ -425,7 +425,7 @@ const UpdateSalesPackage: React.FC = () => {
 
                 // ตรวจสอบว่า response.data มีข้อมูล
                 const data = Array.isArray(response.data?.data) ? response.data.data : [];
-                console.log("Fetched products:", data);
+                // console.log("Fetched products:", data);
 
                 // ตั้งค่า product
                 setProduct(data);
@@ -521,36 +521,44 @@ const UpdateSalesPackage: React.FC = () => {
 
     // POST GetPackage/PackageList
     const getPackageList = async () => {
-        setLoadingPackages(true)
+        setLoadingPackages(true);
         try {
-            const response = await axios.post(POST_PACKAGE_URL,
-                { EmpId, DivisionId, DepartId, DepartGroup, TeamSale, ItemID, PackageTypeID }, {
+            const response = await axios.post(POST_PACKAGE_URL, {
+                EmpId,
+                DivisionId,
+                DepartId,
+                DepartGroup,
+                TeamSale,
+                ItemID,
+                PackageTypeID,
+                PromotionID: selectedPromotion,
+            }, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-
+    
             const data = Array.isArray(response.data.data) ? response.data.data : [];
-            setPackageList(data)
-            let index = data.findIndex((pl: { MODEL: any; }) => pl.MODEL == productContract?.[0]?.Package?.[0].MODEL)
+            // console.log('Fetched Package List:', data); // ตรวจสอบข้อมูล
+            setPackageList(data);
+    
+            let index = data.findIndex((pl: { MODEL: any }) => pl.MODEL === productContract?.[0]?.Package?.[0].MODEL);
             if (index !== -1) {
-                setSelectedPackageModel(index)
+                setSelectedPackageModel(index);
             } else {
-                setSelectedPackageModel(null)
+                setSelectedPackageModel(null);
             }
-
-            // console.log('Package model: ', productContract?.[0]?.Package?.[0].MODEL)
-            // console.log('Package index: ', index)
         } catch (error) {
             console.error('Error fetching POST_PACKAGE_URL:', error);
         } finally {
-            setLoadingPackages(false)
+            setLoadingPackages(false);
         }
-    };
+    };    
 
+    // ดึงข้อมูลแพ็คเกจจาก db มาโชว์
     useEffect(() => {
         getPackageList()
-    }, [EmpId, DivisionId, DepartId, DepartGroup, TeamSale, ItemID, PackageTypeID]);
+    }, [EmpId, DivisionId, DepartId, DepartGroup, TeamSale, ItemID, PackageTypeID, selectedPromotion]);
 
     const handleCateOptionChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
         const value = event.target.value;
@@ -611,16 +619,16 @@ const UpdateSalesPackage: React.FC = () => {
             console.error("Invalid PackageTypeId:", packageTypeId);
             return;
         }
-    
+
         setSelectedPackageTypeId(packageTypeId); // อัปเดตค่า selectedPackageTypeId
         setPackageTypeID(packageTypeId); // อัปเดตค่าใน state อื่นถ้าจำเป็น
-        console.log("PackageTypeId selected:", packageTypeId); // ตรวจสอบว่าค่าถูกตั้งไว้ถูกต้อง
-    
+        // console.log("PackageTypeId selected:", packageTypeId); // ตรวจสอบว่าค่าถูกตั้งไว้ถูกต้อง
+
         // Scroll the page to the package section
         if (packageSectionRef.current) {
             packageSectionRef.current.scrollIntoView({ behavior: 'smooth' });
         }
-    };    
+    };
 
     const handlePackageModelClick = (index: number) => {
         setSelectedPackageModel(index);
@@ -673,7 +681,7 @@ const UpdateSalesPackage: React.FC = () => {
 
     useEffect(() => {
         if (packageType && packageType.length > 0) {
-            console.log('PackageType Loaded:', packageType);
+            // console.log('PackageType Loaded:', packageType);
         } else {
             console.warn('No PackageType data available');
         }
@@ -704,7 +712,7 @@ const UpdateSalesPackage: React.FC = () => {
 
     // ตรวจสอบ ConditionsCheckHistory ว่าต้องตรวจสอบประวัติไหม หากตรวจให้เช็ค CheckCustomer ต่อ
     const handleNextClick = async () => {
-        console.log("SaveProductData ก่อนส่ง:", SaveProductData); // เพิ่มตรงนี้
+        // console.log("SaveProductData ก่อนส่ง:", SaveProductData); // เพิ่มตรงนี้
 
         try {
             // Save product package
@@ -720,7 +728,7 @@ const UpdateSalesPackage: React.FC = () => {
                 },
             });
 
-            console.log('response: ', response)
+            // console.log('response: ', response)
             if (response.status === 200) {
                 if (!response.data.data) {
                     MySwal.fire('เกิดข้อผิดพลาด', 'ปรับปรุงข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
@@ -826,7 +834,7 @@ const UpdateSalesPackage: React.FC = () => {
             {/* สแกนบาร์โค้ด */}
 
             <Content>
-                <div className='d-flex justify-content-between align-items-center mb-7 mt-7 mt-lg-0'>
+                <div className='d-flex justify-content-between align-items-center mb-7 mt-7'>
                     <div id="kt_page_title" data-kt-swapper="true" data-kt-swapper-mode="prepend"
                         data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
                         className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
@@ -869,9 +877,11 @@ const UpdateSalesPackage: React.FC = () => {
                                     <div className='card-body px-lg-9 px-1'>
                                         <div className='row'>
 
-                                            <label className='form-label fw-bold fs-3 mt-3'>S/N ที่สแกนได้: {item?.barCode}</label>
+                                            {item?.barCode && (
+                                                <label className='form-label fw-bold fs-3 mt-3'>S/N ที่สแกนได้: {item?.barCode}</label>
+                                            )}
 
-                                            <div className='col-lg-6 my-7 my-xl-10'>
+                                            {/* <div className='col-lg-6 my-7 my-xl-10'>
                                                 <label className='form-label required fw-bold fs-3'>หมวดหมู่สินค้า</label>
                                                 <select
                                                     value={selectedCategoryId}
@@ -884,7 +894,7 @@ const UpdateSalesPackage: React.FC = () => {
                                                         </option>
                                                     ))}
                                                 </select>
-                                            </div>
+                                            </div> */}
                                         </div>
 
                                         {/* แสดง Loading */}
@@ -968,7 +978,7 @@ const UpdateSalesPackage: React.FC = () => {
                                                 )}
 
                                                 {/* หากไม่มีแพ็คเกจให้แสดงข้อความนี้ */}
-                                                {!loadingPackages && packageList.length === 0 && selectedCategoryId !== null && selectedProductIndex !== null && selectedPackageTypeId && (
+                                                {!loadingPackages && packageList.length === 0 && selectedCategoryId !== null && selectedProductIndex !== null && (
                                                     <div className='text-center my-7'>
                                                         <h5>ไม่มีรายการแพ็คเกจ</h5>
                                                     </div>
@@ -985,7 +995,7 @@ const UpdateSalesPackage: React.FC = () => {
                                         )}
 
                                         {/* แสดงแพ็คเกจหากโหลดเสร็จ */}
-                                        {!loadingPackages && packageList.length > 0 && selectedPackageTypeId !== null && (
+                                        {!loadingPackages && packageList.length > 0 && selectedPromotion !== null && selectedPackageTypeId !== null && (
                                             <div className='my-10 my-xl-10' ref={packageSectionRef}>
                                                 <div className='row d-flex'>
                                                     <label className='form-label required fw-bold fs-3'>แพ็คเกจ</label>

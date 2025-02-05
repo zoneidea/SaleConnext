@@ -431,6 +431,7 @@ const SalesDiscount: React.FC = () => {
                                                         type='text'
                                                         className='form-control mb-3 mb-lg-0'
                                                         onChange={handleTradeInModelChange}
+                                                        value={tradeInModel}
                                                     />
                                                 </div>
                                                 <div className='col-lg-4 mb-3'>
@@ -439,6 +440,7 @@ const SalesDiscount: React.FC = () => {
                                                         type='text'
                                                         className='form-control mb-3 mb-lg-0'
                                                         onChange={handleTradeInSerialChange}
+                                                        value={tradeInSerial}
                                                     />
                                                 </div>
                                             </div>
@@ -449,7 +451,7 @@ const SalesDiscount: React.FC = () => {
                         </div>
                     )}
 
-                    {discountPrice !== 0 && (
+                    {!discountPrice && discountPrice !== 0 && (
                         <div className='accordion-item mb-10'>
                             <h2 className='accordion-header' id='kt_accordion_2_header_2'>
                                 <h3

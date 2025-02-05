@@ -69,6 +69,14 @@ const SidebarMenuMain = () => {
       return toAbsoluteUrl('media/iconSidebar/money-bag-svgrepo-com.png')
     } else if (menuName.includes('ระบบตรวจสัญญา')) {
       return toAbsoluteUrl('media/iconSidebar/check-circle-svgrepo-com.png')
+    } else if (menuName.includes('ระบบตรวจใบจอง')) {
+      return toAbsoluteUrl('media/iconSidebar/check-1-svgrepo-com.png')
+    } else if (menuName.includes('ระบบตรวจสอบ CT')) {
+      return toAbsoluteUrl('media/iconSidebar/check-1-svgrepo-com.png')
+    } else if (menuName.includes('ระบบติดตั้งจากใบจอง')) {
+      return toAbsoluteUrl('media/iconSidebar/install-svgrepo-com.png')
+    } else if (menuName.includes('รายงานการขายประจำวัน')) {
+      return toAbsoluteUrl('media/iconSidebar/report-linechart-svgrepo-com.png')
     }
   }
 
@@ -83,18 +91,21 @@ const SidebarMenuMain = () => {
 
   return (
     <>
-      {menu.map((item) => (
-        <SidebarMenuItem
-          key={item.MENU_ID}
-          to={item.MENU_OBJECT}
-          title={item.MENU_NAME}
-          imageSrc={getCustomMenuIcon(item.MENU_NAME)}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
+      {/* เมนูทั่วไป */}
+      {menu
+        .filter((item) => item.MENU_NAME !== 'รายงานการขายประจำวัน') // กรองเมนูที่ไม่ใช่ "รายงานการขายประจำวัน"
+        .map((item) => (
+          <SidebarMenuItem
+            key={item.MENU_ID}
+            to={item.MENU_OBJECT}
+            title={item.MENU_NAME}
+            imageSrc={getCustomMenuIcon(item.MENU_NAME)}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          />
+        ))}
 
-        />
-      ))}
-
+      {/* เส้นคั่น */}
       <hr
         style={{
           border: 'none',
@@ -103,7 +114,21 @@ const SidebarMenuMain = () => {
         }}
       />
 
-      <Link
+      {/* เมนู "รายงานการขายประจำวัน" */}
+      {menu
+        .filter((item) => item.MENU_NAME === 'รายงานการขายประจำวัน') // แสดงเฉพาะ "รายงานการขายประจำวัน"
+        .map((item) => (
+          <SidebarMenuItem
+            key={item.MENU_ID}
+            to={item.MENU_OBJECT}
+            title={item.MENU_NAME}
+            imageSrc={getCustomMenuIcon(item.MENU_NAME)}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          />
+        ))}
+
+      {/* <Link
         className={clsx('menu-link without-sub')}
         to={'report/sale'}
         style={{
@@ -143,8 +168,9 @@ const SidebarMenuMain = () => {
           }}
         >
           รายงานการขายประจำวัน
+
         </span>
-      </Link>
+      </Link> */}
     </>
   )
 }

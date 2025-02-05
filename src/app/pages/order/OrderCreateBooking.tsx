@@ -65,6 +65,8 @@ const OrderCreateBooking: React.FC = () => {
 
     const getProductUrl = () => `${API_URL_MONGO}/Product/GetStock?empid=${auth.data[0].EmpId}&teamSale=${auth.data[0].TeamSale}&categoryId=${selectedCategoryId}`;
 
+    const [isLoading, setIsLoading] = useState<boolean>(false)
+
     {/*-------------------- Start Modals ค้นหาลูกค้า --------------------*/ }
     const [showModal, setShowModal] = useState(false);
     const handleShow = () => setShowModal(true);
@@ -92,6 +94,7 @@ const OrderCreateBooking: React.FC = () => {
 
     // พนักงานขาย
     useEffect(() => {
+        setIsLoading(true)
         const postData = async () => {
             try {
                 const response = await axios.post(EMPLOYEE_URL,
@@ -107,6 +110,8 @@ const OrderCreateBooking: React.FC = () => {
             } catch (error) {
                 console.error('Error fetching EMPLOYEE_URL:', error);
                 setEmployee([]); // กำหนดค่าเป็น array ว่าง หากเกิดข้อผิดพลาด
+            } finally {
+                setIsLoading(false)
             }
         };
         postData();
@@ -114,6 +119,7 @@ const OrderCreateBooking: React.FC = () => {
 
     // ช่องทาง
     useEffect(() => {
+        setIsLoading(true)
         const postData = async () => {
             try {
                 const response = await axios.post(CHANNEL_SALE_URL,
@@ -133,6 +139,8 @@ const OrderCreateBooking: React.FC = () => {
             } catch (error) {
                 console.error('Error fetching CHANNEL_SALE_URL:', error);
                 setChannelSale([]); // กำหนดค่าเป็น array ว่าง หากเกิดข้อผิดพลาด
+            } finally {
+                setIsLoading(false)
             }
         };
         postData();
@@ -140,6 +148,7 @@ const OrderCreateBooking: React.FC = () => {
 
     // ผู้แนะนำ (ถ้ามี)
     useEffect(() => {
+        setIsLoading(true)
         const postData = async () => {
             try {
                 const response = await axios.post(ADVISER_URL,
@@ -155,6 +164,8 @@ const OrderCreateBooking: React.FC = () => {
             } catch (error) {
                 console.error('Error fetching ADVISER_URL:', error);
                 setAdviser([]); // กำหนดค่าเป็น array ว่าง หากเกิดข้อผิดพลาด
+            } finally {
+                setIsLoading(false)
             }
         };
         postData();
@@ -355,6 +366,7 @@ const OrderCreateBooking: React.FC = () => {
 
     // POST GetProduct/Categories
     useEffect(() => {
+        setIsLoading(true)
         const postData = async () => {
             try {
                 const response = await axios.post(CATEGORIES_URL,
@@ -375,6 +387,8 @@ const OrderCreateBooking: React.FC = () => {
                 setCategories(data);
             } catch (error) {
                 console.error('Error fetching CATEGORIES_URL:', error);
+            } finally {
+                setIsLoading(false)
             }
         };
         postData();
@@ -636,6 +650,7 @@ const OrderCreateBooking: React.FC = () => {
 
     // GET Customertype
     useEffect(() => {
+        setIsLoading(true)
         const getData = async () => {
             try {
                 const response = await axios.get(CUSTOMER_TYPE_URL, {
@@ -646,6 +661,8 @@ const OrderCreateBooking: React.FC = () => {
                 setCustomerTypes(response.data);
             } catch (error) {
                 console.error('Error fetching CUSTOMER_TYPE_URL:', error);
+            } finally {
+                setIsLoading(false)
             }
         };
         getData();
@@ -692,7 +709,7 @@ const OrderCreateBooking: React.FC = () => {
             setValueCalendar(null); // หากไม่มีวันที่ ให้ตั้งค่าเป็น null
             setValueAge(null); // ตั้งค่าอายุเป็น null
         }
-    };    
+    };
 
     {/*-------------------- End ข้อมูลลูกค้า --------------------*/ }
 
@@ -722,6 +739,7 @@ const OrderCreateBooking: React.FC = () => {
 
     // GET Province For Install
     useEffect(() => {
+        setIsLoading(true)
         const getData = async () => {
             try {
                 const response = await axios.get(PROVINCE_URL, {
@@ -732,6 +750,8 @@ const OrderCreateBooking: React.FC = () => {
                 setGetProvinceForInstall(response.data);
             } catch (error) {
                 console.error('Error fetching CUSTOMER_TYPE_URL:', error);
+            } finally {
+                setIsLoading(false)
             }
         };
         getData();
@@ -856,6 +876,7 @@ const OrderCreateBooking: React.FC = () => {
 
     // GET Province For Tax
     useEffect(() => {
+        setIsLoading(true)
         const getData = async () => {
             try {
                 const response = await axios.get(PROVINCE_URL, {
@@ -866,6 +887,8 @@ const OrderCreateBooking: React.FC = () => {
                 setGetProvinceForTax(response.data);
             } catch (error) {
                 console.error('Error fetching CUSTOMER_TYPE_URL:', error);
+            } finally {
+                setIsLoading(false)
             }
         };
         getData();
@@ -1180,6 +1203,7 @@ const OrderCreateBooking: React.FC = () => {
 
     // GET GetFreegift
     useEffect(() => {
+        setIsLoading(true)
         const getData = async () => {
             try {
                 const response = await axios.get(FREEGIFT_URL, {
@@ -1190,6 +1214,8 @@ const OrderCreateBooking: React.FC = () => {
                 setFreegift(response.data);
             } catch (error) {
                 console.error('Error fetching CUSTOMER_TYPE_URL:', error);
+            } finally {
+                setIsLoading(false)
             }
         };
         getData();
@@ -1213,6 +1239,7 @@ const OrderCreateBooking: React.FC = () => {
 
     // GET GetShipping
     useEffect(() => {
+        setIsLoading(true)
         const getData = async () => {
             try {
                 const response = await axios.post(SHIPPING_URL, {
@@ -1230,13 +1257,16 @@ const OrderCreateBooking: React.FC = () => {
                 setGetShipping(data);
             } catch (error) {
                 console.error('Error fetching SHIPPING_URL:', error);
+            } finally {
+                setIsLoading(false)
             }
         };
         getData();
-    }, [getShipping, auth]);
+    }, []);
 
     // GET GetAppointmentTime
     useEffect(() => {
+        setIsLoading(true)
         const getData = async () => {
             try {
                 const response = await axios.get(APPOINTMENT_TIME_URL, {
@@ -1248,11 +1278,12 @@ const OrderCreateBooking: React.FC = () => {
                 setValueTimeInstall(data);
             } catch (error) {
                 console.error('Error fetching SHIPPING_URL:', error);
+            } finally {
+                setIsLoading(false)
             }
         };
         getData();
-    }, [valueTimeInstall, auth]);
-
+    }, []);
 
     const handleDateChangeInstall = (date: Date | null) => {
         setValueCalendarInstall(date);

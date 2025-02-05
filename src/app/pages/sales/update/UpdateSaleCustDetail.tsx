@@ -381,15 +381,15 @@ const UpdateSaleCustDetail: React.FC = () => {
         const newErrors: { [key: string]: string } = {};
 
         if (!idCard || !/^\d{13}$/.test(idCard)) {
-            newErrors.idCard = 'กรุณากรอกเลขบัตรประชาชนที่ถูกต้อง';
+            newErrors.idCard = 'กรุณากรอกเลขบัตร 13 หลัก';
         }
 
         if (!fullName || fullName.trim() === '') {
-            newErrors.fullName = 'กรุณากรอกชื่อ-สกุล';
+            newErrors.fullName = 'กรุณากรอก';
         }
 
-        if (!age || !/^\d+$/.test(age) || parseInt(age) <= 0) {
-            newErrors.age = 'กรุณากรอกอายุที่ถูกต้อง';
+        if (!nameMD || nameMD.trim() === '') {
+            newErrors.nameMD = 'กรุณากรอก';
         }
 
         if (email && !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
@@ -430,8 +430,16 @@ const UpdateSaleCustDetail: React.FC = () => {
     };
 
     const handleNextClick = async () => {
+        if (!validateForm()) {
+            Swal.fire({
+                icon: 'error',
+                title: 'เกิดข้อผิดพลาด!',
+                text: 'กรุณากรอกข้อมูลให้ถูกต้องก่อนอัพเดท',
+            });
+            return; 
+        }
+    
         try {
-            // POST Contract/updateContract
             const updateContract = await axios.post(UPDATECONTACT, {
                 REFNO: refno,
                 EMPID: EmpId,
@@ -446,27 +454,31 @@ const UpdateSaleCustDetail: React.FC = () => {
                     'Content-Type': 'application/json',
                 },
             });
-            // console.log(`updateContract CUSTOMERDETAIL: `, updateContract.data);
-
-            if (updateContract.status === 200) {
-                if (!updateContract.data.data) {
-                    MySwal.fire('เกิดข้อผิดพลาด', 'ปรับปรุงข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
-                } else {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'สำเร็จ!',
-                        text: 'ปรับปรุงข้อมูลลูกค้าแล้ว',
-                        timer: 2000, // แสดงผล 3 วินาที
-                        showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
-                    })
-                }
+    
+            if (updateContract.status === 200 && updateContract.data.data) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'สำเร็จ!',
+                    text: 'ปรับปรุงข้อมูลลูกค้าแล้ว',
+                    timer: 2000,
+                    showConfirmButton: false,
+                });
             } else {
-                MySwal.fire('เกิดข้อผิดพลาด', updateContract.data.message, 'error');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาด!',
+                    text: updateContract.data.message || 'ไม่สามารถอัพเดทข้อมูลได้',
+                });
             }
         } catch (error) {
-            console.error('Error fetching UPDATECONTACT:', error);
+            console.error('Error updating data:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'เกิดข้อผิดพลาด!',
+                text: 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง',
+            });
         }
-    };
+    };    
 
     const handleCheckerClick = async () => {
         const response = await axios.post(UPDATECONTACT, {
@@ -505,14 +517,8 @@ const UpdateSaleCustDetail: React.FC = () => {
         e.preventDefault();
         if (validateForm()) {
             const formData = {
-                selectedCustomerType,
-                selectedCardType,
                 idCard,
-                selectedPrefixId,
                 fullName,
-                valueCalendar,
-                age,
-                selectedSexId,
                 email,
                 mobile
             };
@@ -640,7 +646,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                     className='form-control mb-3 mb-lg-0'
                                                                     placeholder='บัตรประชาชน'
                                                                 />
-                                                                {/* {errors.idCard && <p className='text-danger'>{errors.idCard.message}</p>} */}
+                                                                {errors.idCard && <p className='text-danger'>{errors.idCard}</p>}
                                                             </div>
                                                             <div className='col-lg-4 mb-3'>
                                                                 <label className='form-label required fw-bold fs-6'>คำนำหน้าชื่อ</label>
@@ -798,7 +804,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                     type='text'
                                                                     className='form-control mb-3 mb-lg-0'
                                                                 />
-                                                                {/* {errors.idCard && <p className='text-danger'>{errors.idCard.message}</p>} */}
+                                                                {errors.fullName && <p className='text-danger'>{errors.fullName}</p>}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -814,7 +820,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                     className='form-control mb-3 mb-lg-0'
                                                                 // disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.CUSTOMERID !== "" ? true : false : false}
                                                                 />
-                                                                {/* {errors.idCard && <p className='text-danger'>{errors.idCard.message}</p>} */}
+                                                                {errors.idCard && <p className='text-danger'>{errors.idCard}</p>}
                                                             </div>
                                                             <div className='col-lg-4 mb-3'>
                                                                 <label className='form-label required fw-bold fs-6'>คำนำหน้า</label>
@@ -839,7 +845,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                     className='form-control mb-3 mb-lg-0'
                                                                 // disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.CUSTOMERMD !== "" ? true : false : false}
                                                                 />
-                                                                {/* {errors.fullname && <p className='text-danger'>{errors.fullname.message}</p>} */}
+                                                                {errors.nameMD && <p className='text-danger'>{errors.nameMD}</p>}
                                                             </div>
                                                         </div>
 
@@ -853,6 +859,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                         className='form-control mb-3 mb-lg-0'
                                                                         onChange={(e) => setMobile(e.target.value)}
                                                                     />
+                                                                    {errors.mobile && <p className='text-danger'>{errors.mobile}</p>}
                                                                 </div>
                                                                 <div className='col-lg-6 mb-3'>
                                                                     <label className='form-label fw-bold fs-6'>เบอร์บ้าน</label>

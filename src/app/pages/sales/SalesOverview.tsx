@@ -14,7 +14,7 @@ const SalesOverview: React.FC = () => {
   const [isLoadingFinish, setIsLoadingFinish] = useState<boolean>(false);
   const [draft, setDraft] = useState<any[]>([]);
   // console.log(`draft`, draft);
-  
+
   const [finish, setFinish] = useState<any[]>([]);
   const [search, setSearch] = useState<string>(''); // State สำหรับค้นหา
 
@@ -163,7 +163,12 @@ const SalesOverview: React.FC = () => {
               ) : draftDisplayedData.length > 0 ? (
                 <>
                   {draftDisplayedData.map((item, index) => (
-                    <SalesItemNumber key={index} status="DRAFT" item={item} />
+                    <SalesItemNumber
+                      key={index}
+                      status="DRAFT"
+                      item={item}
+                      onDelete={getDataDraft} //รีเฟรชข้อมูลหลังจากลบสำเร็จ
+                    />
                   ))}
 
                   <div className='d-none d-xl-flex justify-content-end align-items-center mt-5'>
@@ -209,7 +214,12 @@ const SalesOverview: React.FC = () => {
               ) : finishDisplayedData.length > 0 ? (
                 <>
                   {finishDisplayedData.map((item, index) => (
-                    <SalesItemNumber key={index} status="FINISH" item={item} />
+                    <SalesItemNumber
+                      key={index}
+                      status="FINISH"
+                      item={item}
+                      onDelete={getDataFinish}
+                    />
                   ))}
 
                   <div className='d-none d-xl-flex justify-content-end align-items-center mt-5'>

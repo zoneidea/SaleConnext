@@ -37,12 +37,14 @@ class ScrollTopComponent {
   }
 
   private _handlers = () => {
-    let timer: number
-    window.addEventListener('scroll', () => {
-      throttle(timer, () => {
-        this._scroll()
-      })
-    })
+    function throttle(timer: number | null, callback: () => void, delay: number): number {
+      if (timer) return timer // หาก timer ยังทำงานอยู่ ไม่ต้องสร้างใหม่
+      timer = window.setTimeout(() => {
+        callback() // เรียก callback หลังจาก delay
+        timer = null // รีเซ็ต timer หลังการทำงาน
+      }, delay)
+      return timer
+    }
 
     this.element.addEventListener('click', (e: Event) => {
       e.preventDefault()
@@ -145,4 +147,4 @@ class ScrollTopComponent {
     ElementAnimateUtil.scrollTop(0, defaultScrollTopOptions.speed)
   }
 }
-export {ScrollTopComponent, defaultScrollTopOptions}
+export { ScrollTopComponent, defaultScrollTopOptions }

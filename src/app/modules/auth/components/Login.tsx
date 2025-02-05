@@ -18,15 +18,15 @@ const loginSchema = Yup.object().shape({
   password: Yup.string().required('Password is required'),
 })
 
-const initialValues = {
-  username: '058488',
-  password: 'Bb1234567',
-}
-
 // const initialValues = {
-//   username: '',
-//   password: '',
+//   username: '058488',
+//   password: 'Bb1234567',
 // }
+
+const initialValues = {
+  username: '',
+  password: '',
+}
 
 export function Login() {
   const API_URL_POST_CATEGORIES = import.meta.env.VITE_APP_API_SALECONNEXT
@@ -221,21 +221,22 @@ export function Login() {
   })
 
   return (
-    <form
-      className='form w-100'
-      onSubmit={formik.handleSubmit}
-      noValidate
-      id='kt_login_signin_form'
-    >
-      <div className='text-center'>
-        <img
-          alt='Logo'
-          src={toAbsoluteUrl('media/logos/logo-tsr-old.png')}
-          className='h-150px'
-        />
-      </div>
-      {formik.status ? (
-        <div className='mb-lg-15 alert alert-danger'>
+    <div className="d-flex justify-content-center">
+      <form
+        className="text-center d-flex flex-column align-items-center justify-content-center"
+        onSubmit={formik.handleSubmit}
+        noValidate
+        id='kt_login_signin_form'
+      >
+        <div className="d-flex justify-content-center align-items-center mb-4">
+          <img
+            alt="Logo"
+            src={toAbsoluteUrl("media/logos/logo-tsr-old.png")}
+            className="h-150px w-150px"
+          />
+        </div>
+        {/* {formik.status ? (
+        <div className='mb-lg-15 alert alert-danger rounded'>
           <div className='alert-text font-weight-bold'>{formik.status}</div>
         </div>
       ) : (
@@ -244,74 +245,76 @@ export function Login() {
             Use username <strong>058488</strong> and password <strong>Bb1234567</strong> to continue.
           </div>
         </div>
-      )}
+      )} */}
 
-      <div className='fv-row mb-3'>
-        <label className='form-label fw-bolder text-gray-900 fs-6 mb-0'>Username</label>
-        <input
-          type='text'
-          autoComplete='off'
-          {...formik.getFieldProps('username')}
-          className={clsx(
-            'form-control bg-transparent',
-            {
-              'is-invalid': formik.touched.username && formik.errors.username,
-            },
-            {
-              'is-valid': formik.touched.username && !formik.errors.username,
-            }
-          )}
-        />
-        {formik.touched.username && formik.errors.username && (
-          <div className='fv-plugins-message-container'>
-            <div className='fv-help-block'>
-              <span role='alert'>{formik.errors.username}</span>
+        <div className='fv-row mb-3 w-lg-500px w-300px w-md-500px'>
+          <label className='d-flex form-label fw-bolder text-gray-900 fs-6 mb-0'>Username</label>
+          <input
+            type='text'
+            autoComplete='off'
+            {...formik.getFieldProps('username')}
+            className={clsx(
+              'form-control bg-transparent',
+              {
+                'is-invalid': formik.touched.username && formik.errors.username,
+              },
+              {
+                'is-valid': formik.touched.username && !formik.errors.username,
+              }
+            )}
+          />
+          {formik.touched.username && formik.errors.username && (
+            <div className='fv-plugins-message-container'>
+              <div className='fv-help-block d-flex'>
+                <span role='alert'>{formik.errors.username}</span>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
-
-      <div className='fv-row mb-3'>
-        <label className='form-label fw-bolder text-gray-900 fs-6 mb-0'>Password</label>
-        <input
-          type='password'
-          autoComplete='off'
-          {...formik.getFieldProps('password')}
-          className={clsx(
-            'form-control bg-transparent',
-            {
-              'is-invalid': formik.touched.password && formik.errors.password,
-            },
-            {
-              'is-valid': formik.touched.password && !formik.errors.password,
-            }
           )}
-        />
-        {formik.touched.password && formik.errors.password && (
-          <div className='fv-plugins-message-container'>
-            <div className='fv-help-block'>
-              <span role='alert'>{formik.errors.password}</span>
+        </div>
+
+        <div className='fv-row mb-3 w-lg-500px w-300px w-md-500px'>
+          <label className='d-flex form-label fw-bolder text-gray-900 fs-6 mb-0'>Password</label>
+          <input
+            type='password'
+            autoComplete='off'
+            {...formik.getFieldProps('password')}
+            className={clsx(
+              'form-control bg-transparent',
+              {
+                'is-invalid': formik.touched.password && formik.errors.password,
+              },
+              {
+                'is-valid': formik.touched.password && !formik.errors.password,
+              }
+            )}
+          />
+          {formik.touched.password && formik.errors.password && (
+            <div className='fv-plugins-message-container'>
+              <div className='fv-help-block d-flex'>
+                <span role='alert'>{formik.errors.password}</span>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
-
-      <div className='d-grid my-10'>
-        <button
-          type='submit'
-          id='kt_sign_in_submit'
-          className='btn btn-primary'
-          disabled={formik.isSubmitting || !formik.isValid}
-        >
-          {!loading && <span className='indicator-label'>เข้าสู่ระบบ</span>}
-          {loading && (
-            <span className='indicator-progress' style={{ display: 'block' }}>
-              โปรดรอสักครู่...
-              <span className='spinner-border spinner-border-sm align-middle ms-2'></span>
-            </span>
           )}
-        </button>
-      </div>
-    </form>
+        </div>
+
+        <div className='d-grid my-10 w-lg-500px w-300px w-md-500px'>
+          <button
+            type='submit'
+            id='kt_sign_in_submit'
+            className='btn btn-primary'
+            disabled={formik.isSubmitting || !formik.isValid}
+          >
+            {!loading && <span className='indicator-label'>เข้าสู่ระบบ</span>}
+            {loading && (
+              <span className='indicator-progress' style={{ display: 'block' }}>
+                โปรดรอสักครู่...
+                <span className='spinner-border spinner-border-sm align-middle ms-2'></span>
+              </span>
+            )}
+          </button>
+        </div>
+      </form>
+    </div>
+
   )
 }

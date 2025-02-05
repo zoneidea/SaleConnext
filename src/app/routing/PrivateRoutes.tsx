@@ -91,7 +91,6 @@ const PrivateRoutes = () => {
 
   //หัวข้อ ระบบตรวจสัญญา
   const ContractChecker = lazy(() => import('../pages/contractChecker/ContractChecker'))
-  const ContractCheckerStep = lazy(() => import('../pages/contractChecker/step/Step'))
   const ContractDetailChecker = lazy(() => import('../pages/contractChecker/ContractDetailChecker'))
 
   // Update contract
@@ -104,6 +103,14 @@ const PrivateRoutes = () => {
 
   //หัวข้อ ระบบจอง
   const OrderCreateBooking = lazy(() => import('../pages/order/OrderCreateBooking'))
+
+  //หัวข้อ ระบบตรวจใบจอง Admin
+  const OrderCheckerAdmin = lazy(() => import('../pages/orderChecker/admin/OrderCheckerAdmin'))
+  const OrderDetailCheckerAdmin = lazy(() => import('../pages/orderChecker/admin/OrderDetailCheckerAdmin'))
+
+  //หัวข้อ ระบบตรวจใบจอง CT
+  const OrderCheckerCT = lazy(() => import('../pages/orderChecker/ct/OrderCheckerCT'))
+  const OrderDetailCheckerCT = lazy(() => import('../pages/orderChecker/ct/OrderDetailCheckerCT'))
 
   //หัวข้อ ระบบเก็บเงินงวดแรก
   const CreateFirstBill = lazy(() => import('../pages/firstBill/CreateFirstBill'))
@@ -208,7 +215,7 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
-         <Route
+        <Route
           path='sale/update/updateDeviceScanBarcode'
           element={
             <SuspensedView>
@@ -392,14 +399,6 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='contract-checker/step'
-          element={
-            <SuspensedView>
-              <ContractCheckerStep />
-            </SuspensedView>
-          }
-        />
-        <Route
           path='contract-checker/detailChecker'
           element={
             <SuspensedView>
@@ -466,6 +465,43 @@ const PrivateRoutes = () => {
           element={
             <SuspensedView>
               <OrderCreateBooking />
+            </SuspensedView>
+          }
+        />
+        {/* End ระบบจอง */}
+
+        {/* Start ระบบตรวจใบจอง Admin */}
+        <Route
+          path='order-admin'
+          element={
+            <SuspensedView>
+              <OrderCheckerAdmin />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path='order-admin/detailCheckerAdmin'
+          element={
+            <SuspensedView>
+              <OrderDetailCheckerAdmin />
+            </SuspensedView>
+          }
+        />
+
+        {/* Start ระบบตรวจใบจอง CT */}
+        <Route
+          path='order-checker'
+          element={
+            <SuspensedView>
+              <OrderCheckerCT />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path='order-checker/detailCheckerCT'
+          element={
+            <SuspensedView>
+              <OrderDetailCheckerCT />
             </SuspensedView>
           }
         />

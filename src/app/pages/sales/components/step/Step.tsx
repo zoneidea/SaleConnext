@@ -54,7 +54,7 @@ const Step: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate()
   const item = location.state as ItemProps || [];
-  console.log(`item`, item);
+  // console.log(`item`, item);
 
   const refnoFromUpdate = useRefnoBarcodeStore((state: any) => state.refno || item?.REFNO || ""); // เพิ่มค่าเริ่มต้น
   const refno = item.REFNO ? item.REFNO : refnoFromUpdate
@@ -403,7 +403,8 @@ const Step: React.FC = () => {
         await MySwal.fire({
           text: message,
           icon: Customerstatus ? 'success' : 'success',
-          confirmButtonText: 'ตกลง'
+          timer: 2000, 
+          showConfirmButton: false, 
         });
 
         updateData = [idCard, conditionCheckResponse.data.checktype, Customerstatus, message];
@@ -513,8 +514,9 @@ const Step: React.FC = () => {
         await MySwal.fire({
           icon: 'success',
           title: 'บันทึกสำเร็จ!',
-          text: `ข้อมูลพนักงาน "${selectedEmployee.FName} ${selectedEmployee.LName}" ถูกบันทึกเรียบร้อยแล้ว`,
-          confirmButtonText: 'ตกลง',
+          text: `ข้อมูลพนักงานถูกบันทึกเรียบร้อยแล้ว`,
+          timer: 2000, 
+          showConfirmButton: false, 
         });
 
         // อัปเดตข้อมูลใน state (กรณีต้องการแสดงผลทันทีในหน้าจอ)
@@ -573,8 +575,6 @@ const Step: React.FC = () => {
 
     fetchImages();
   }, [refno]);
-
-  console.log(`data?.[0]?.PRODUCT?.[0]?.Package[0]?.PACKAGETITLE`, data?.[0]?.PRODUCT?.[0]?.Package[0]?.PACKAGETITLE);
 
   return (
     <>
@@ -655,7 +655,7 @@ const Step: React.FC = () => {
                         </div>
                         {
                           data?.[0]?.CUSTOMERSTATUS?.length !== 0 && data?.[0]?.CUSTOMERSTATUS?.length > 0 && (
-                            <span className='text-gray-700 fw-semibold d-block'>{`สถานะ: ${data?.[0]?.CUSTOMERSTATUS?.[3]}`}</span>
+                            <span className='text-gray-700 fw-semibold d-block'>{`สถานะ: ${data?.[0]?.CUSTOMERSTATUS?.[3] ? data?.[0]?.CUSTOMERSTATUS?.[3] : ''}`}</span>
                           )
                         }
                       </div>

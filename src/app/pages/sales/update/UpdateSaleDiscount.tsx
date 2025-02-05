@@ -51,6 +51,8 @@ const UpdateSalesDiscount: React.FC = () => {
 
     const refno = item?.REFNO
     const productContract = item?.PRODUCT
+    // console.log(`productContract`, productContract);
+
     const discount = item?.DISCOUNT
 
     const { auth } = useAuth();
@@ -72,6 +74,8 @@ const UpdateSalesDiscount: React.FC = () => {
     const { DISCOUNT, SETDISCOUNT } = useSaveDiscountStore();
 
     const [tradeInBrand, setTradeInBrand] = useState<any[]>([]);
+    // console.log(`tradeInBrand`, tradeInBrand);
+
     const [selectedTurnId, setSelectedTurnId] = useState<any>('');
     // console.log(`selectedTurnId`, selectedTurnId);
     const [selectedTradeInBrandName, setSelectedTradeInBrandName] = useState<string>('');
@@ -103,7 +107,6 @@ const UpdateSalesDiscount: React.FC = () => {
     const [isDiscountValid, setIsDiscountValid] = useState<boolean>(true);
 
     const [images, setImages] = useState<ImagesType | null>(null);
-
 
     // ฟังก์ชันจัดการเมื่อมีการเปลี่ยนแปลงในฟิลด์ส่วนลด
     const handleDiscountChange = (value: string) => {
@@ -222,6 +225,8 @@ const UpdateSalesDiscount: React.FC = () => {
                     }
                 });
                 const data = Array.isArray(response.data.data) ? response.data.data : [];
+                // console.log(`response`, response);
+
                 setTradeInBrand(data);
             } catch (error) {
                 console.error('Error fetching TRADEINBRAND_URL:', error);
@@ -238,7 +243,6 @@ const UpdateSalesDiscount: React.FC = () => {
             }
 
             setDiscountInput(discount?.[0].DISCOUNTAMOUNT)
-
             setSelectedGiftId(discount?.[0].GIFT?.GIFTID);
         }
     }, []);
@@ -459,6 +463,7 @@ const UpdateSalesDiscount: React.FC = () => {
                                                     <select
                                                         className='form-select form-select-solid form-select-lg'
                                                         onChange={handleTurnOptionChange}
+                                                        value={selectedTurnId}
                                                     >
                                                         <option value=''>เลือกเครื่องเทิร์น...</option>
                                                         {tradeInBrand.map((item, index) => (
@@ -475,6 +480,7 @@ const UpdateSalesDiscount: React.FC = () => {
                                                         className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                                                         placeholder='รุ่น'
                                                         onChange={handleTradeInModelChange}
+                                                        value={tradeInModel}
                                                     />
                                                 </div>
                                                 <div className='col-lg-4 mb-3'>
@@ -484,6 +490,7 @@ const UpdateSalesDiscount: React.FC = () => {
                                                         className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                                                         placeholder='หมายเลขเครื่อง'
                                                         onChange={handleTradeInSerialChange}
+                                                        value={tradeInSerial}
                                                     />
                                                 </div>
                                             </div>
@@ -494,7 +501,7 @@ const UpdateSalesDiscount: React.FC = () => {
                         </div>
                     )}
 
-                    {discountPrice !== 0 && (
+                    {!discountPrice && discountPrice !== 0 && (
                         <div className='accordion-item mb-10'>
                             <h2 className='accordion-header' id='kt_accordion_2_header_2'>
                                 <h3

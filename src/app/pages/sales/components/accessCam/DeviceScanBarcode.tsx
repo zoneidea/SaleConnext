@@ -100,6 +100,14 @@ const DeviceScanBarcode: React.FC = () => {
         });
     };
 
+    useEffect(() => {
+        if (barCode) {
+            navigate("/sale/package", {
+                state: { item, barCode }, // ส่งกลับมาทั้ง item และ refno
+            });
+        }
+    })
+
     return (
         <div style={{ position: "relative", width: "100%", height: "500px" }}>
             {isIOSorAndroid ? (

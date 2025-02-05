@@ -60,7 +60,7 @@ const CreateFirstBill: React.FC = () => {
     const SecEmpId = auth?.data?.[0]?.SecEmp || '';
 
     const item = location.state as ItemProps || [];
-    // console.log(`item`, item);
+    console.log(`item`, item);
     const refno = item?.REFNO
     const product = item?.PRODUCT
     const contNo = item?.CONTNO
@@ -72,7 +72,7 @@ const CreateFirstBill: React.FC = () => {
     const paymentPeriodNumber = product[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTPERIODNUMBER
     const periodAmount = product[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTAMOUNT
     const paymentAmount = product[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTAMOUNT
-
+    
     const totalPrice = product[0]?.Package[0]?.TOTALPRICE || 0;
     const netPrice = totalPrice - discountAmount;
     // console.log(`netPrice`, netPrice);

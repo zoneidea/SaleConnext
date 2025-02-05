@@ -1137,10 +1137,14 @@ const SalesCreateCust: React.FC = () => {
             .string()
             .required("กรุณากรอก")
             .matches(/^[0-9]{13}$/, "ต้องเป็นตัวเลข 13 หลัก"),
+        fullName: yup.string().required("กรุณากรอก"),
         telNo: yup
             .string()
             .required("กรุณากรอกเบอร์ที่ติดต่อได้")
             .matches(/^[0-9]{9,10}$/, "เบอร์โทรต้องเป็นตัวเลข 9-10 หลัก"),
+        email: yup
+            .string()
+            .email("รูปแบบอีเมล์ไม่ถูกต้อง"),
 
         //ที่อยู่ตามบัตร
         homeNoIdCard: yup.string().required("กรุณากรอกบ้านเลขที่"),
@@ -1153,13 +1157,17 @@ const SalesCreateCust: React.FC = () => {
             .matches(/^[0-9]{9,10}$/, "เบอร์โทรต้องเป็นตัวเลข 9-10 หลัก"),
     });
 
-    const { control, handleSubmit, formState: { errors } } = useForm({
+    const { control, handleSubmit, formState: { errors }, trigger } = useForm({
         resolver: yupResolver(schema),
+        mode: "onChange", // ตรวจสอบเมื่อมีการกรอกข้อมูล
+        reValidateMode: "onChange", // ตรวจสอบซ้ำเมื่อมีการเปลี่ยนแปลงข้อมูล
         defaultValues: {
             //ข้อมูลลูกค้า
             customerType: "",
             idCard: "",
+            fullName: "",
             telNo: "",
+            email: "",
 
             //ที่อยู่ตามบัตร
             homeNoIdCard: "",
@@ -1323,6 +1331,7 @@ const SalesCreateCust: React.FC = () => {
                                                                             onChange={(e) => {
                                                                                 field.onChange(e)
                                                                                 setIdCard(e.target.value)
+                                                                                trigger("idCard");
                                                                             }}
                                                                             type='text'
                                                                         />
@@ -1345,12 +1354,24 @@ const SalesCreateCust: React.FC = () => {
                                                             </div>
                                                             <div className='col-lg-4'>
                                                                 <label className='form-label required fw-bold fs-6'>ชื่อสกุล</label>
-                                                                <input
-                                                                    value={fullName}
-                                                                    onChange={(e) => setFullName(e.target.value)}
-                                                                    type='text'
-                                                                    className='form-control mb-3 mb-lg-0'
+                                                                <Controller
+                                                                    name="fullName"
+                                                                    control={control}
+                                                                    render={({ field }) => (
+                                                                        <input
+                                                                            {...field}
+                                                                            className={`form-control mb-3 mb-lg-0 ${errors.fullName ? "is-invalid" : ""}`}
+                                                                            value={fullName}
+                                                                            onChange={(e) => {
+                                                                                field.onChange(e);        // อัพเดตค่าในฟอร์ม
+                                                                                setFullName(e.target.value)
+                                                                                trigger("fullName");        // Trigger validation แบบทันที
+                                                                            }}
+                                                                            type="text"
+                                                                        />
+                                                                    )}
                                                                 />
+                                                                {errors.fullName && <p className="text-danger">{errors.fullName.message}</p>}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1416,6 +1437,7 @@ const SalesCreateCust: React.FC = () => {
                                                                                 onChange={(e) => {
                                                                                     field.onChange(e)
                                                                                     setMobile(e.target.value)
+                                                                                    trigger("telNo")
                                                                                 }}
                                                                                 type='text'
                                                                             />
@@ -1448,12 +1470,30 @@ const SalesCreateCust: React.FC = () => {
                                                                 </div>
                                                                 <div className='col-lg-6 mb-3'>
                                                                     <label className='form-label fw-bold fs-6'>อีเมล์</label>
-                                                                    <input
+                                                                    {/* <input
                                                                         value={email}
                                                                         onChange={(e) => setEmail(e.target.value)}
                                                                         type='text'
                                                                         className='form-control'
+                                                                    /> */}
+                                                                    <Controller
+                                                                        name="email"
+                                                                        control={control}
+                                                                        render={({ field }) => (
+                                                                            <input
+                                                                                {...field}
+                                                                                className={`form-control ${errors.email ? "is-invalid" : ""}`}
+                                                                                value={email}
+                                                                                onChange={(e) => {
+                                                                                    field.onChange(e)
+                                                                                    setEmail(e.target.value)
+                                                                                    trigger("email")
+                                                                                }}
+                                                                                type='text'
+                                                                            />
+                                                                        )}
                                                                     />
+                                                                    {errors.email && <p className="text-danger">{errors.email.message}</p>}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -1484,12 +1524,24 @@ const SalesCreateCust: React.FC = () => {
 
                                                             <div className='col-lg-6'>
                                                                 <label className='form-label required fw-bold fs-6'>ชื่อบริษัท</label>
-                                                                <input
-                                                                    value={fullName}
-                                                                    onChange={(e) => setFullName(e.target.value)}
-                                                                    type='text'
-                                                                    className='form-control mb-3 mb-lg-0'
+                                                                <Controller
+                                                                    name="fullName"
+                                                                    control={control}
+                                                                    render={({ field }) => (
+                                                                        <input
+                                                                            {...field}
+                                                                            className={`form-control mb-3 mb-lg-0 ${errors.fullName ? "is-invalid" : ""}`}
+                                                                            value={fullName}
+                                                                            onChange={(e) => {
+                                                                                field.onChange(e);        // อัพเดตค่าในฟอร์ม
+                                                                                setFullName(e.target.value)
+                                                                                trigger("fullName");
+                                                                            }}
+                                                                            type="text"
+                                                                        />
+                                                                    )}
                                                                 />
+                                                                {errors.fullName && <p className="text-danger">{errors.fullName.message}</p>}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1509,6 +1561,7 @@ const SalesCreateCust: React.FC = () => {
                                                                             onChange={(e) => {
                                                                                 field.onChange(e)
                                                                                 setIdCard(e.target.value)
+                                                                                trigger("idCard");
                                                                             }}
                                                                             type='text'
                                                                         />
@@ -1557,6 +1610,7 @@ const SalesCreateCust: React.FC = () => {
                                                                                 onChange={(e) => {
                                                                                     field.onChange(e)
                                                                                     setMobile(e.target.value)
+                                                                                    trigger("telNo")
                                                                                 }}
                                                                             />
                                                                         )}
@@ -1611,7 +1665,8 @@ const SalesCreateCust: React.FC = () => {
                                                             onClick={handleNextClick}
                                                             disabled={!selectedCustomerType || !selectedCardType || !idCard ||
                                                                 !selectedPrefixId || !fullName || !valueCalendar || !valueAge ||
-                                                                !selectedSexId || !mobile} >
+                                                                !selectedSexId || !mobile}
+                                                        >
                                                             เพิ่มที่อยู่ลูกค้า
                                                         </button>
                                                     </div>
@@ -1629,8 +1684,7 @@ const SalesCreateCust: React.FC = () => {
                                                         </button>
                                                     </div>
                                                 </>
-                                            )
-                                            }
+                                            )}
                                         </div>
                                     </form>
                                     {/* end form */}
