@@ -664,7 +664,7 @@ const UpdateSalesSatusCust: React.FC = () => {
             </ul>
           </div>
         </div>
-        <p>เลขที่ขาย: {REFNO}</p>
+        <p>เลขที่ขาย: {refno}</p>
 
         {/* Card Body */}
         <div className='card mb-10'>

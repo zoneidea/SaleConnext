@@ -113,16 +113,7 @@ const loginTimestamp = localStorage.getItem('loginTimestamp');
 if (loginTimestamp && Date.now() - parseInt(loginTimestamp, 10) > 24 * 60 * 60 * 1000) {
   // Session หมดอายุแล้ว: ล้าง localStorage และแจ้งเตือนผู้ใช้
   localStorage.clear();
-  Swal.fire({
-    title: 'เซสชันหมดอายุ',
-    text: 'การเข้าสู่ระบบของคุณหมดอายุแล้ว กรุณาเข้าสู่ระบบใหม่',
-    icon: 'warning',
-    confirmButtonText: 'ตกลง'
-  }).then((result: any) => {
-    if (result.isConfirmed) {
-      window.location.href = '/auth';
-    }
-  });
+  window.location.href = '/auth';
 } else {
   // หากยังไม่หมดอายุ ให้ render แอปตามปกติ
   const queryClient = new QueryClient()

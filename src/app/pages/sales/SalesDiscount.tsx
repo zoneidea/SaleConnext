@@ -48,7 +48,7 @@ const SalesDiscount: React.FC = () => {
     const [selectedGiftId, setSelectedGiftId] = useState<any>('');
 
     // ตรวจสอบว่ามีข้อมูล PRODUCT หรือไม่ก่อนที่จะดึงข้อมูลจากมัน
-    const hasTradeIn = PRODUCT?.[0]?.Package?.[0]?.HASTRADEIN ?? null;
+    const hasTradeIn = PRODUCT?.[0]?.Package?.[0]?.HASTRADEIN ?? 0;
     // console.log(`hasTradeIn`, hasTradeIn);
 
     const totalPrice = PRODUCT?.[0]?.Package?.[0]?.TOTALPRICE ?? 0;
@@ -364,6 +364,10 @@ const SalesDiscount: React.FC = () => {
         setSelectedGiftId(value);
     };
 
+    console.log(`hasTradeIn`, hasTradeIn);
+    console.log(`discountPrice`, discountPrice);
+    console.log(`freeGift`, freeGift);
+
     return (
         <>
             <Content>
@@ -565,8 +569,8 @@ const SalesDiscount: React.FC = () => {
                     )}
                 </div>
 
-                {hasTradeIn === null && discountPrice === 0 && freeGift.length === 0 && (
-                    <div className='text-center mt-20'>
+                {(hasTradeIn == 0 || !hasTradeIn) && (discountPrice == 0 || !discountPrice) && (freeGift.length === 0) && (
+                    <div className='text-center my-20'>
                         <h5>ไม่มี เครื่องเทิร์น / ส่วนลด / ของแถม</h5>
                     </div>
                 )}

@@ -232,11 +232,10 @@ const UpdateSalesDiscount: React.FC = () => {
                 console.error('Error fetching TRADEINBRAND_URL:', error);
             }
         };
+        getData();
 
         if (discount?.[0]) {
             if (discount?.[0].TRADEIN?.HASTRADEIN !== 0) {
-                getData();
-
                 setSelectedTurnId(discount?.[0].TRADEIN?.TRADEINBRANDID)
                 setTradeInModel(discount?.[0].TRADEIN?.TRADEINMODEL);
                 setTradeInSerial(discount?.[0].TRADEIN?.TRADEINSERIAL);
@@ -616,6 +615,12 @@ const UpdateSalesDiscount: React.FC = () => {
                         </div>
                     )}
                 </div>
+
+                {hasTradeIn.length === 0 && discountPrice.length === 0 && freeGift.length === 0 && (
+                    <div className='text-center my-20'>
+                        <h5>ไม่มี เครื่องเทิร์น / ส่วนลด / ของแถม</h5>
+                    </div>
+                )}
 
                 <div className='d-none d-xl-flex justify-content-between align-items-center my-5'>
                     <button

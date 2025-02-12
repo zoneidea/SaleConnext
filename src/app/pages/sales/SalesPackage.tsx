@@ -1710,7 +1710,7 @@ const SalesPackage: React.FC = () => {
                                                 <label className='form-label fw-bold fs-3 mt-3'>S/N ที่สแกนได้: {barCode}</label>
                                             )}
 
-                                            {/* <div className='col-lg-6 my-7 my-xl-10'>
+                                            <div className='col-lg-6 my-7 my-xl-10'>
                                                 <label className='form-label required fw-bold fs-3'>หมวดหมู่สินค้า</label>
                                                 <select
                                                     className='form-select'
@@ -1723,7 +1723,7 @@ const SalesPackage: React.FC = () => {
                                                         </option>
                                                     ))}
                                                 </select>
-                                            </div> */}
+                                            </div>
                                         </div>
 
                                         {/* แสดง Loading */}
