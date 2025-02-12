@@ -61,6 +61,7 @@ const Step: React.FC = () => {
   // console.log(`refno`, refno);
 
   const [data, setData] = useState<any[]>([])
+  // console.log(`data`, data);
 
   const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
   const GET_CONTRACT_URL = `${API_URL_MONGO}/Contract/GetContractSummary`;
@@ -139,6 +140,10 @@ const Step: React.FC = () => {
       setToDiscount('../sale/update/updateSaleDiscount')
     }
 
+    if (data?.[0]?.CUSTOMERSTATUS?.length > 0) {
+      setToStatusCust('../sale/update/updateSalesSatusCust')
+    }
+
     if (data?.[0]?.DISCOUNT?.length > 0) {
       setToDiscount('../sale/update/updateSaleDiscount')
       setToCustDetail('../sale/update/updateCustDetail')
@@ -166,6 +171,7 @@ const Step: React.FC = () => {
   }, [data, location]);
 
   const [toPackage, setToPackage] = useState('')
+  const [toStatusCust, setToStatusCust] = useState('')
   const [toDiscount, setToDiscount] = useState('')
   const [toCustDetail, setToCustDetail] = useState('')
   const [toAddress, setToAddress] = useState('')
@@ -187,72 +193,74 @@ const Step: React.FC = () => {
 
     // ตรวจสอบสถานะลูกค้าแบคลิสต์
     if (routeName === 'updateSaleDiscount') {
-      if (data?.[0]?.CUSTOMERSTATUS[2] === true) {
+      if (data?.[0]?.CUSTOMERSTATUS[0].STATUSSALE === "0") {
         await Swal.fire({
           icon: 'error',
           title: 'เกิดข้อผิดพลาด!',
           text: 'ลูกค้ามีประวัติแบลคลิสต์ ไม่สามารถทำรายการต่อได้',
           confirmButtonText: 'ตกลง',
         });
-        return; // หยุดการทำงาน ไม่ให้เข้าสู่หน้าแก้ไข
+        return false;
       } else {
         setToDiscount('../sale/update/updateSaleDiscount'); // อนุญาตให้ทำขั้นตอนนี้ได้
         navigate('../sale/update/updateSaleDiscount', { state: data?.[0] });
+        return true;
       }
     }
 
-    if (routeName === 'updateCustDetail' && data?.[0]?.CUSTOMERSTATUS[2] === true) {
+    if (routeName === 'updateCustDetail' && data?.[0]?.CUSTOMERSTATUS[0].STATUSSALE === "0") {
       await Swal.fire({
         icon: 'error',
         title: 'เกิดข้อผิดพลาด!',
         text: 'ลูกค้ามีประวัติแบลคลิสต์ ไม่สามารถทำรายการต่อได้',
         confirmButtonText: 'ตกลง',
       });
-      return; // หยุดการทำงาน ไม่ให้เข้าสู่หน้าแก้ไข
+      return false;
     }
 
-    if (routeName === 'updateAddress' && data?.[0]?.CUSTOMERSTATUS[2] === true) {
+    if (routeName === 'updateAddress' && data?.[0]?.CUSTOMERSTATUS[0].STATUSSALE === "0") {
       await Swal.fire({
         icon: 'error',
         title: 'เกิดข้อผิดพลาด!',
         text: 'ลูกค้ามีประวัติแบลคลิสต์ ไม่สามารถทำรายการต่อได้',
         confirmButtonText: 'ตกลง',
       });
-      return; // หยุดการทำงาน ไม่ให้เข้าสู่หน้าแก้ไข
+      return false;
     }
 
-    if (routeName === 'UpdateSalesPDPA' && data?.[0]?.CUSTOMERSTATUS[2] === true) {
+    if (routeName === 'UpdateSalesPDPA' && data?.[0]?.CUSTOMERSTATUS[0].STATUSSALE === "0") {
       await Swal.fire({
         icon: 'error',
         title: 'เกิดข้อผิดพลาด!',
         text: 'ลูกค้ามีประวัติแบลคลิสต์ ไม่สามารถทำรายการต่อได้',
         confirmButtonText: 'ตกลง',
       });
-      return; // หยุดการทำงาน ไม่ให้เข้าสู่หน้าแก้ไข
+      return false;
     }
 
-    if (routeName === 'UpdateSalesContract' && data?.[0]?.CUSTOMERSTATUS[2] === true) {
+    if (routeName === 'UpdateSalesContract' && data?.[0]?.CUSTOMERSTATUS[0].STATUSSALE === "0") {
       await Swal.fire({
         icon: 'error',
         title: 'เกิดข้อผิดพลาด!',
         text: 'ลูกค้ามีประวัติแบลคลิสต์ ไม่สามารถทำรายการต่อได้',
         confirmButtonText: 'ตกลง',
       });
-      return; // หยุดการทำงาน ไม่ให้เข้าสู่หน้าแก้ไข
+      return false;
     }
 
-    if (routeName === 'photo' && data?.[0]?.CUSTOMERSTATUS[2] === true) {
+    if (routeName === 'photo' && data?.[0]?.CUSTOMERSTATUS[0].STATUSSALE === "0") {
       await Swal.fire({
         icon: 'error',
         title: 'เกิดข้อผิดพลาด!',
         text: 'ลูกค้ามีประวัติแบลคลิสต์ ไม่สามารถทำรายการต่อได้',
         confirmButtonText: 'ตกลง',
       });
-      return; // หยุดการทำงาน ไม่ให้เข้าสู่หน้าแก้ไข
+      return false;
     }
 
     if (routeName === 'updateSalePackage') {
       setToPackage('../sale/update/updateSalePackage')
+      return true;
     }
     else if (routeName === 'updateSaleDiscount') {
       if (data?.[0]?.CUSTOMERSTATUS?.length === 0) {
@@ -262,6 +270,7 @@ const Step: React.FC = () => {
           text: 'กรุณาตรวจสอบสถานะลูกค้าก่อน',
           confirmButtonText: 'ตกลง'
         });
+        return false
       }
       else if (data?.[0]?.PRODUCT?.length === 0) {
         Swal.fire({
@@ -270,8 +279,10 @@ const Step: React.FC = () => {
           text: 'กรุณาบันทึกข้อมูลสินค้าและแพ็คเกจสินค้าก่อน',
           confirmButtonText: 'ตกลง'
         });
+        return false
       } else {
         setToDiscount('../sale/update/updateSaleDiscount')
+        return true
       }
     }
     else if (routeName === 'updateCustDetail') {
@@ -283,13 +294,14 @@ const Step: React.FC = () => {
           text: 'กรุณาบันทึกข้อมูลพนักงานขายก่อน',
           confirmButtonText: 'ตกลง',
         });
-        return;
+        return false
       }
 
       console.log('Navigating to updateCustDetail'); // Debugging point
       await new Promise((resolve) => setTimeout(resolve, 100));
       setToCustDetail('../sale/update/updateCustDetail');
       navigate('../sale/update/updateCustDetail', { state: data?.[0] });
+      return true
     }
     else if (routeName === 'updateAddress') {
       if (data?.[0]?.CUSTOMERDETAIL?.length === 0) {
@@ -299,8 +311,10 @@ const Step: React.FC = () => {
           text: 'กรุณาบันทึกข้อมูลลูกค้าก่อน',
           confirmButtonText: 'ตกลง'
         });
+        return false
       } else {
         setToAddress('../sale/update/updateAddress')
+        return true
       }
     }
     else if (routeName === 'UpdateSalesPDPA') {
@@ -311,8 +325,10 @@ const Step: React.FC = () => {
           text: 'กรุณาบันทึกข้อมูลที่อยู่ก่อน',
           confirmButtonText: 'ตกลง'
         });
+        return false
       } else {
         setToPDPA('../sale/update/UpdateSalesPDPA')
+        return true
       }
     }
     else if (routeName === 'UpdateSalesContract') {
@@ -324,8 +340,10 @@ const Step: React.FC = () => {
           text: 'กรุณาบันทึกข้อมูลให้ครบทุกส่วน',
           confirmButtonText: 'ตกลง'
         });
+        return false
       } else {
         setToContract('../sale/update/UpdateSalesContract')
+        return true
       }
     }
     else if (routeName === 'photo') {
@@ -337,8 +355,10 @@ const Step: React.FC = () => {
           text: 'กรุณาบันทึกข้อมูลให้ครบทุกส่วน',
           confirmButtonText: 'ตกลง'
         });
+        return false
       } else {
         navigate('../sale/photo', { state: { fromStep: true, data: data?.[0] } });
+        return true
       }
     } else {
       setToPackage('')
@@ -351,87 +371,87 @@ const Step: React.FC = () => {
     }
   }
 
-  const handleCheckCustStatus = async () => {
-    const Model = data?.[0]?.PRODUCT?.[0]?.Package.MODEL
-    const conditionCheckResponse = await axios.post(API_URL_POST_CONDITIONSCHECKHISTORY, {
-      EmpId, DivisionId, DepartId, DepartGroup, TeamSale, Model
-    }, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+  // const handleCheckCustStatus = async () => {
+  //   const Model = data?.[0]?.PRODUCT?.[0]?.Package.MODEL
+  //   const conditionCheckResponse = await axios.post(API_URL_POST_CONDITIONSCHECKHISTORY, {
+  //     EmpId, DivisionId, DepartId, DepartGroup, TeamSale, Model
+  //   }, {
+  //     headers: {
+  //       'Content-Type': 'multipart/form-data',
+  //     },
+  //   });
 
-    let updateData;
+  //   let updateData;
 
-    if (conditionCheckResponse.data.checktype !== 0) {
-      const { value: idCard } = await MySwal.fire({
-        title: 'ตรวจสอบประวัติลูกค้า',
-        html: `
-              <input 
-                  id="idCardInput" 
-                  type="text" 
-                  class="form-control" 
-                  placeholder="กรุณากรอกเลขบัตรประชาชน (13 หลัก)" 
-                  maxlength="13"
-                  oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,13);" 
-              />
-          `,
-        showCancelButton: true,
-        confirmButtonText: 'ตรวจสอบ',
-        cancelButtonText: 'ยกเลิก',
-        preConfirm: async () => {
-          const input = (document.getElementById('idCardInput') as HTMLInputElement).value;
-          if (input.length === 13) {
-            return input;
-          } else {
-            MySwal.showValidationMessage('กรุณากรอกเลขบัตรประชาชนให้ครบ 13 หลัก');
-            return null;
-          }
-        }
-      });
+  //   if (conditionCheckResponse.data.checktype !== 0) {
+  //     const { value: idCard } = await MySwal.fire({
+  //       title: 'ตรวจสอบประวัติลูกค้า',
+  //       html: `
+  //             <input 
+  //                 id="idCardInput" 
+  //                 type="text" 
+  //                 class="form-control" 
+  //                 placeholder="กรุณากรอกเลขบัตรประชาชน (13 หลัก)" 
+  //                 maxlength="13"
+  //                 oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,13);" 
+  //             />
+  //         `,
+  //       showCancelButton: true,
+  //       confirmButtonText: 'ตรวจสอบ',
+  //       cancelButtonText: 'ยกเลิก',
+  //       preConfirm: async () => {
+  //         const input = (document.getElementById('idCardInput') as HTMLInputElement).value;
+  //         if (input.length === 13) {
+  //           return input;
+  //         } else {
+  //           MySwal.showValidationMessage('กรุณากรอกเลขบัตรประชาชนให้ครบ 13 หลัก');
+  //           return null;
+  //         }
+  //       }
+  //     });
 
-      if (idCard) {
-        const apiResponse = await axios.post(CHECKCUSTOMER_URL, { Search: idCard }, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
+  //     if (idCard) {
+  //       const apiResponse = await axios.post(CHECKCUSTOMER_URL, { Search: idCard }, {
+  //         headers: {
+  //           'Content-Type': 'multipart/form-data',
+  //         },
+  //       });
 
-        const { Customerstatus, message } = apiResponse.data;
-        const destination = Customerstatus ? '/sale/overview' : '/sale/discount';
+  //       const { Customerstatus, message } = apiResponse.data;
+  //       const destination = Customerstatus ? '/sale/overview' : '/sale/discount';
 
-        await MySwal.fire({
-          text: message,
-          icon: Customerstatus ? 'success' : 'success',
-          timer: 2000, 
-          showConfirmButton: false, 
-        });
+  //       await MySwal.fire({
+  //         text: message,
+  //         icon: Customerstatus ? 'success' : 'success',
+  //         timer: 2000, 
+  //         showConfirmButton: false, 
+  //       });
 
-        updateData = [idCard, conditionCheckResponse.data.checktype, Customerstatus, message];
-      }
-    } else {
-      updateData = ["", conditionCheckResponse.data.checktype, conditionCheckResponse.data.message];
-    }
+  //       updateData = [idCard, conditionCheckResponse.data.checktype, Customerstatus, message];
+  //     }
+  //   } else {
+  //     updateData = ["", conditionCheckResponse.data.checktype, conditionCheckResponse.data.message];
+  //   }
 
-    try {
-      const updateContract = await axios.post(UPDATECONTACT, {
-        REFNO: item.REFNO ? item.REFNO : refnoFromUpdate,
-        EMPID: EmpId,
-        TEAMSALE: TeamSale,
-        FIELD: "CUSTOMERSTATUS",
-        DATA: updateData,
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      // console.log(`updateContract CUSTOMERSTATUS: `, updateContract.data);
-      getData();
-    } catch (error) {
-      console.error('Error updating contract:', error);
-      MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถอัปเดตข้อมูลได้', 'error');
-    }
-  }
+  //   try {
+  //     const updateContract = await axios.post(UPDATECONTACT, {
+  //       REFNO: item.REFNO ? item.REFNO : refnoFromUpdate,
+  //       EMPID: EmpId,
+  //       TEAMSALE: TeamSale,
+  //       FIELD: "CUSTOMERSTATUS",
+  //       DATA: updateData,
+  //     }, {
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //     });
+  //     // console.log(`updateContract CUSTOMERSTATUS: `, updateContract.data);
+  //     getData();
+  //   } catch (error) {
+  //     console.error('Error updating contract:', error);
+  //     MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถอัปเดตข้อมูลได้', 'error');
+  //   }
+  // }
 
   // GET EmpInTeam จาก API
   useEffect(() => {
@@ -456,7 +476,7 @@ const Step: React.FC = () => {
   const handleCheckEmpSale = async () => {
 
     // ตรวจสอบสถานะลูกค้าแบคลิสต์
-    if (data?.[0]?.CUSTOMERSTATUS?.[2] === true) {
+    if (data?.[0]?.CUSTOMERSTATUS[0].STATUSSALE === "0") {
       await Swal.fire({
         icon: 'error',
         title: 'เกิดข้อผิดพลาด!',
@@ -515,8 +535,8 @@ const Step: React.FC = () => {
           icon: 'success',
           title: 'บันทึกสำเร็จ!',
           text: `ข้อมูลพนักงานถูกบันทึกเรียบร้อยแล้ว`,
-          timer: 2000, 
-          showConfirmButton: false, 
+          timer: 2000,
+          showConfirmButton: false,
         });
 
         // อัปเดตข้อมูลใน state (กรณีต้องการแสดงผลทันทีในหน้าจอ)
@@ -645,7 +665,7 @@ const Step: React.FC = () => {
                     </div>
                   </Link>
                   {/* <Link onClick={handleCheckCustStatus} to={''}> */}
-                  <a onClick={handleCheckCustStatus} style={{ cursor: 'pointer' }}>
+                  {/* <a onClick={handleCheckCustStatus} style={{ cursor: 'pointer' }}>
                     <div className='d-flex align-items-center pb-8'>
                       <span className={`bullet bullet-vertical h-40px ${data?.[0]?.CUSTOMERSTATUS.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
@@ -655,12 +675,45 @@ const Step: React.FC = () => {
                         </div>
                         {
                           data?.[0]?.CUSTOMERSTATUS?.length !== 0 && data?.[0]?.CUSTOMERSTATUS?.length > 0 && (
-                            <span className='text-gray-700 fw-semibold d-block'>{`สถานะ: ${data?.[0]?.CUSTOMERSTATUS?.[3] ? data?.[0]?.CUSTOMERSTATUS?.[3] : ''}`}</span>
+                            <span className='text-gray-700 fw-semibold d-block'>{`สถานะ: ${data?.[0]?.CUSTOMERSTATUS?.[0].MESSAGE ? data?.[0]?.CUSTOMERSTATUS?.[0].MESSAGE : ''}`}</span>
                           )
                         }
                       </div>
                     </div>
-                  </a>
+                  </a> */}
+                  <Link
+                    to={data?.[0]?.PRODUCT?.length > 0 ? toStatusCust : '#'}
+                    state={data?.[0]}
+                    onClick={() => {
+                      if (data?.[0]?.PRODUCT?.length > 0) {
+                        handleClick('updateSalesSatusCust');
+                      } else {
+                        Swal.fire({
+                          icon: 'warning',
+                          title: 'กรุณาเลือกแพ็คเกจก่อน',
+                          text: 'กรุณาบันทึกข้อมูลสินค้าและแพ็คเกจสินค้าก่อนตรวจสอบลูกค้า',
+                          confirmButtonText: 'ตกลง',
+                        });
+                      }
+                    }}
+                  >
+                    <div className='d-flex align-items-center pb-8'>
+                      <span className={`bullet bullet-vertical h-40px ${data?.[0]?.CUSTOMERSTATUS.length === 0 ? 'bg-danger' : 'bg-success'}`}></span>
+                      <div className='form-check form-check-custom form-check-solid mx-5'></div>
+                      <div className='flex-grow-1'>
+                        <div className='text-gray-800 fw-bold fs-2'>
+                          {`2. ตรวจสอบข้อมูลลูกค้า`}
+                        </div>
+                        {
+                          data?.[0]?.CUSTOMERSTATUS?.length !== 0 && (
+                            <span className='text-gray-700 fw-semibold d-block'>
+                              {`สถานะ: ${data?.[0]?.CUSTOMERSTATUS?.[0].MESSAGE || ''}`}
+                            </span>
+                          )
+                        }
+                      </div>
+                    </div>
+                  </Link>
                   <a
                     style={{ cursor: 'pointer', textDecoration: 'none' }}
                     onClick={() => handleClick('updateSaleDiscount')}
@@ -692,7 +745,16 @@ const Step: React.FC = () => {
                       </div>
                     </div>
                   </a>
-                  <Link to={toCustDetail} state={data?.[0]} onClick={() => handleClick('updateCustDetail')}>
+                  <button
+                    onClick={async () => {
+                      const result = await handleClick('updateCustDetail');  // รอให้ handleClick ทำงานเสร็จ
+                      if (result) {
+                        navigate(toCustDetail, { state: data?.[0] });  // นำทางถ้าเงื่อนไขผ่าน
+                      }
+                    }}
+                    className='w-100 text-start border-0 bg-transparent p-0'
+                    style={{ cursor: 'pointer' }}
+                  >
                     <div className='d-flex align-items-center pb-8'>
                       <span className={`bullet bullet-vertical h-40px ${data?.[0]?.CUSTOMERDETAIL.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
@@ -715,8 +777,17 @@ const Step: React.FC = () => {
                         }
                       </div>
                     </div>
-                  </Link>
-                  <Link to={toAddress} state={data?.[0]} onClick={() => handleClick('updateAddress')}>
+                  </button>
+                  <button
+                    onClick={async () => {
+                      const result = await handleClick('updateAddress');  // รอให้ handleClick ทำงานเสร็จ
+                      if (result) {
+                        navigate(toAddress, { state: data?.[0] });  // นำทางถ้าเงื่อนไขผ่าน
+                      }
+                    }}
+                    className='w-100 text-start border-0 bg-transparent p-0'
+                    style={{ cursor: 'pointer' }}
+                  >
                     <div className='d-flex align-items-center pb-8'>
                       <span className={`bullet bullet-vertical h-40px ${data?.[0]?.ADDRESS.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
@@ -741,8 +812,17 @@ const Step: React.FC = () => {
                         }
                       </div>
                     </div>
-                  </Link>
-                  <Link to={toPDPA} state={data?.[0]} onClick={() => handleClick('UpdateSalesPDPA')}>
+                  </button>
+                  <button
+                    onClick={async () => {
+                      const result = await handleClick('UpdateSalesPDPA');  // รอให้ handleClick ทำงานเสร็จ
+                      if (result) {
+                        navigate(toPDPA, { state: data?.[0] });  // นำทางถ้าเงื่อนไขผ่าน
+                      }
+                    }}
+                    className='w-100 text-start border-0 bg-transparent p-0'
+                    style={{ cursor: 'pointer' }}
+                  >
                     <div className='d-flex align-items-center pb-8'>
                       <span className={`bullet bullet-vertical h-40px ${data?.[0]?.PDPA.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
@@ -757,25 +837,32 @@ const Step: React.FC = () => {
                         }
                       </div>
                     </div>
-                  </Link>
-                  <Link to={toContract} state={data?.[0]} onClick={() => handleClick('UpdateSalesContract')}>
+                  </button>
+                  <button
+                    onClick={async () => {
+                      const result = await handleClick('UpdateSalesContract');  // รอให้ handleClick ทำงานเสร็จ
+                      if (result) {
+                        navigate(toContract, { state: data?.[0] });  // นำทางถ้าเงื่อนไขผ่าน
+                      }
+                    }}
+                    className='w-100 text-start border-0 bg-transparent p-0'
+                    style={{ cursor: 'pointer' }}
+                  >
                     <div className='d-flex align-items-center pb-8'>
-                      <span className={`bullet bullet-vertical h-40px ${data?.[0]?.PDPA.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
+                      <span className={`bullet bullet-vertical h-40px ${data?.[0]?.PDPA.length === 0 ? 'bg-danger' : 'bg-success'}`}></span>
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
                           {`8. รายละเอียดสัญญา`}
                         </div>
-                        {
-                          data?.[0]?.CONTRACT?.length !== 0 && (
-                            <span className='text-gray-700 fw-semibold d-block'>
-                              {`วันที่ทำสัญญา: ${data?.[0]?.CONTRACT?.[0]?.createdAt ? formatThaiDate(data[0].CONTRACT[0].createdAt) : '-'}`}
-                            </span>
-                          )
-                        }
+                        {data?.[0]?.CONTRACT?.length !== 0 && (
+                          <span className='text-gray-700 fw-semibold d-block'>
+                            {`วันที่ทำสัญญา: ${data?.[0]?.CONTRACT?.[0]?.createdAt ? formatThaiDate(data[0].CONTRACT[0].createdAt) : '-'}`}
+                          </span>
+                        )}
                       </div>
                     </div>
-                  </Link>
+                  </button>
                   <button
                     style={{
                       background: 'none',

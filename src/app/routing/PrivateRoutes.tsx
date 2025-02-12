@@ -95,6 +95,7 @@ const PrivateRoutes = () => {
 
   // Update contract
   const UpdateContractPackage = lazy(() => import('../pages/sales/update/UpdateSalesPackage'))
+  const UpdateSalesSatusCust = lazy(() => import('../pages/sales/update/UpdateSalesSatusCust/UpdateSalesSatusCust'))
   const UpdateContractDiscount = lazy(() => import('../pages/sales/update/UpdateSaleDiscount'))
   const UpdateContractCustDetail = lazy(() => import('../pages/sales/update/UpdateSaleCustDetail'))
   const UpdateSaleAddress = lazy(() => import('../pages/sales/update/UpdateSaleAddress'))
@@ -414,6 +415,14 @@ const PrivateRoutes = () => {
           element={
             <SuspensedView>
               <UpdateContractPackage />
+            </SuspensedView>
+          }
+        />
+         <Route
+          path='sale/update/UpdateSalesSatusCust'
+          element={
+            <SuspensedView>
+              <UpdateSalesSatusCust />
             </SuspensedView>
           }
         />

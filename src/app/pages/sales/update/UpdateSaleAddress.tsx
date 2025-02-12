@@ -1187,6 +1187,16 @@ const UpdateSaleAddress: React.FC = () => {
         );
     }, [item, images]);
 
+    // ใช้ validate ห้ามฟีลด์ว่าง
+    const isAddressCardValid =
+        addressNumber.trim() !== '' &&
+        selectedProvince !== undefined &&
+        selectedDistrict !== undefined &&
+        selectedSubDistrict !== undefined &&
+        addressPhone.trim() !== '';
+
+    const isFormComplete = isDataComplete && isAddressCardValid;
+
     return (
         <>
             <Content>
@@ -2045,7 +2055,9 @@ const UpdateSaleAddress: React.FC = () => {
                     </button>
                     <button
                         className='btn btn-warning w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'
-                        onClick={handleNextClick}>
+                        onClick={handleNextClick}
+                        disabled={!isAddressCardValid}  // ปุ่มอัพเดทจะถูก disabled หากข้อมูลที่อยู่ (ตามบัตร) ไม่ครบ
+                    >
                         อัพเดทข้อมูล
                     </button>
                     <button
@@ -2077,6 +2089,7 @@ const UpdateSaleAddress: React.FC = () => {
                     <button
                         className="btn btn-warning w-auto me-2"
                         onClick={handleNextClick}
+                        disabled={!isAddressCardValid}  // ปุ่มอัพเดทจะถูก disabled หากข้อมูลที่อยู่ (ตามบัตร) ไม่ครบ
                     >
                         อัพเดทข้อมูล
                     </button>

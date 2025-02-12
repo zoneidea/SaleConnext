@@ -68,6 +68,7 @@ const UpdateSalesPackage: React.FC = () => {
     const MySwal = withReactContent(Swal);
 
     const item = location.state as ItemProps || [];
+    
     // console.log(`item`, item);
 
     // const itemFromStore = (location.state || {}) as { item?: { REFNO?: string } };
@@ -255,6 +256,7 @@ const UpdateSalesPackage: React.FC = () => {
     const packageSectionRef = useRef<HTMLDivElement>(null);
 
     const [images, setImages] = useState<ImagesType | null>(null);
+    console.log(`images`, images);
 
     // // บันทึก refno ลง Zustand หากยังไม่มี
     // useEffect(() => {
@@ -350,7 +352,7 @@ const UpdateSalesPackage: React.FC = () => {
         const fetchImages = async () => {
             try {
                 const response = await axios.get(GET_IMAGES_API, {
-                    params: { REFNO: refno },
+                    params: { REFNO: item?.REFNO },
                 });
 
                 // ตรวจสอบว่า response.data เป็นไปตามโครงสร้างของ ImagesType
@@ -537,23 +539,30 @@ const UpdateSalesPackage: React.FC = () => {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-    
+
             const data = Array.isArray(response.data.data) ? response.data.data : [];
             // console.log('Fetched Package List:', data); // ตรวจสอบข้อมูล
             setPackageList(data);
-    
+
             let index = data.findIndex((pl: { MODEL: any }) => pl.MODEL === productContract?.[0]?.Package?.[0].MODEL);
             if (index !== -1) {
+                // หน่วงเวลา 2 วินาทีก่อนแสดงผลข้อมูล
+                setTimeout(() => {
+                    setPackageList(data); // อัปเดตแพ็คเกจหลังจากหน่วงเวลา
+                    setLoadingPackages(false); // หยุดแสดง loading หลังหน่วงเวลา
+                }, 1000);
+
                 setSelectedPackageModel(index);
             } else {
                 setSelectedPackageModel(null);
             }
+
         } catch (error) {
             console.error('Error fetching POST_PACKAGE_URL:', error);
         } finally {
             setLoadingPackages(false);
         }
-    };    
+    };
 
     // ดึงข้อมูลแพ็คเกจจาก db มาโชว์
     useEffect(() => {
@@ -1071,12 +1080,12 @@ const UpdateSalesPackage: React.FC = () => {
                         อัพเดทข้อมูล
                     </button>
                     <button
-                        className={`btn btn-primary w-auto ${!isDataComplete ? 'disabled' : ''}`}
+                        className={`btn btn-primary w-auto ${!isDataComplete ? `disabled` : ``}`}
                         disabled={!isDataComplete}
                         onClick={handleCheckerClick}
                     >
                         ส่งตรวจสอบ
-                    </button >
+                    </button>
                 </div >
             </Content >
         </>

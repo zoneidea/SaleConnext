@@ -120,6 +120,9 @@ const UpdateSaleCustDetail: React.FC = () => {
 
     const [images, setImages] = useState<ImagesType | null>(null);
 
+    // เช็ค validate ฟอร์ม
+    const [formValid, setFormValid] = useState<boolean>(false);
+
     // เก็บข้อมูลส่วนลดใน state และ store
     const SaveCustomertData = useMemo(() => {
         const customerTypeData = customerTypes.find((type) => type.CUSTOMERTYPE === selectedCustomerType);
@@ -385,11 +388,7 @@ const UpdateSaleCustDetail: React.FC = () => {
         }
 
         if (!fullName || fullName.trim() === '') {
-            newErrors.fullName = 'กรุณากรอก';
-        }
-
-        if (!nameMD || nameMD.trim() === '') {
-            newErrors.nameMD = 'กรุณากรอก';
+            newErrors.fullName = 'กรุณากรอกชื่อ-สกุล';
         }
 
         if (email && !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
@@ -400,8 +399,45 @@ const UpdateSaleCustDetail: React.FC = () => {
             newErrors.mobile = 'กรุณากรอกหมายเลขโทรศัพท์ที่ถูกต้อง (9-10 หลัก)';
         }
 
+        // ตั้งค่าข้อผิดพลาดใน state เพื่อแสดงข้อความแจ้งเตือน
         setErrors(newErrors);
+
+        // คืนค่าความถูกต้องของฟอร์ม (true ถ้าไม่มีข้อผิดพลาด)
         return Object.keys(newErrors).length === 0;
+    };
+
+    const validateField = (fieldName: string, value: string) => {
+        let fieldError = '';
+
+        switch (fieldName) {
+            case 'idCard':
+                if (!/^\d{13}$/.test(value)) {
+                    fieldError = 'กรุณากรอกเลขบัตร 13 หลัก';
+                }
+                break;
+            case 'fullName':
+                if (value.trim() === '') {
+                    fieldError = 'กรุณากรอกชื่อ-สกุล';
+                }
+                break;
+            case 'email':
+                if (value && !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value)) {
+                    fieldError = 'กรุณากรอกอีเมลให้ถูกต้อง';
+                }
+                break;
+            case 'mobile':
+                if (!/^\d{9,10}$/.test(value)) {
+                    fieldError = 'กรุณากรอกหมายเลขโทรศัพท์ที่ถูกต้อง (9-10 หลัก)';
+                }
+                break;
+            default:
+                break;
+        }
+
+        setErrors(prevErrors => ({
+            ...prevErrors,
+            [fieldName]: fieldError
+        }));
     };
 
     // Handle Customer Type Change
@@ -416,6 +452,30 @@ const UpdateSaleCustDetail: React.FC = () => {
         const value = event.target.value.replace(/\D/g, ''); // ลบตัวอักษรที่ไม่ใช่ตัวเลขออก
         if (value.length <= 13) {
             setIdCard(value);
+            validateField('idCard', value);  // ตรวจสอบความถูกต้องทันที
+        }
+    };
+
+    // Handle Full Name Change
+    const handleFullNameChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const value = event.target.value;
+        setFullName(value);
+        validateField('fullName', value);  // ตรวจสอบความถูกต้องทันที
+    };
+
+    // Handle Email Change
+    const handleEmailChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const value = event.target.value;
+        setEmail(value);
+        validateField('email', value);  // ตรวจสอบความถูกต้องทันที
+    };
+
+    // Handle Mobile Change
+    const handleMobileChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const value = event.target.value.replace(/\D/g, ''); // ลบตัวอักษรที่ไม่ใช่ตัวเลขออก
+        if (value.length <= 10) {
+            setMobile(value);
+            validateField('mobile', value);  // ตรวจสอบความถูกต้องทันที
         }
     };
 
@@ -430,15 +490,17 @@ const UpdateSaleCustDetail: React.FC = () => {
     };
 
     const handleNextClick = async () => {
+        // ตรวจสอบฟอร์มโดยตรงก่อนอัพเดทข้อมูล
         if (!validateForm()) {
             Swal.fire({
                 icon: 'error',
                 title: 'เกิดข้อผิดพลาด!',
                 text: 'กรุณากรอกข้อมูลให้ถูกต้องก่อนอัพเดท',
             });
-            return; 
+            return;  // หยุดการทำงานถ้ามีข้อผิดพลาด
         }
-    
+
+        // ถ้าไม่มีข้อผิดพลาดให้ทำการอัพเดทข้อมูล
         try {
             const updateContract = await axios.post(UPDATECONTACT, {
                 REFNO: refno,
@@ -454,7 +516,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                     'Content-Type': 'application/json',
                 },
             });
-    
+
             if (updateContract.status === 200 && updateContract.data.data) {
                 Swal.fire({
                     icon: 'success',
@@ -467,7 +529,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                 Swal.fire({
                     icon: 'error',
                     title: 'เกิดข้อผิดพลาด!',
-                    text: updateContract.data.message || 'ไม่สามารถอัพเดทข้อมูลได้',
+                    text: updateContract.data.message || 'ไม่สามารถอัปเดตข้อมูลได้',
                 });
             }
         } catch (error) {
@@ -478,7 +540,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                 text: 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง',
             });
         }
-    };    
+    };
 
     const handleCheckerClick = async () => {
         const response = await axios.post(UPDATECONTACT, {
@@ -522,8 +584,10 @@ const UpdateSaleCustDetail: React.FC = () => {
                 email,
                 mobile
             };
-            // console.log('Submitting form data:', formData);
+            setFormValid(true);  // ฟอร์มถูกต้อง
+            console.log('Submitting form data:', formData);
         } else {
+            setFormValid(false);  // ฟอร์มมีข้อผิดพลาด
             console.log('Form has errors');
         }
     };
@@ -666,7 +730,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                 <label className='form-label required fw-bold fs-6'>ชื่อสกุล</label>
                                                                 <input
                                                                     value={fullName}
-                                                                    onChange={(e) => setFullName(e.target.value)}
+                                                                    onChange={handleFullNameChange}
                                                                     type='text'
                                                                     className='form-control mb-3 mb-lg-0'
                                                                     placeholder='ชื่อ-สกุล'
@@ -729,7 +793,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                         <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
                                                                         <input
                                                                             value={mobile}
-                                                                            onChange={(e) => setMobile(e.target.value)}
+                                                                            onChange={handleMobileChange}
                                                                             type='text'
                                                                             className='form-control mb-3 mb-lg-0'
                                                                         />
@@ -763,7 +827,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                     <label className='form-label fw-bold fs-6'>อีเมล์</label>
                                                                     <input
                                                                         value={email}
-                                                                        onChange={(e) => setEmail(e.target.value)}
+                                                                        onChange={handleEmailChange}
                                                                         type='text'
                                                                         className='form-control mb-3 mb-lg-0'
                                                                     />
@@ -795,33 +859,22 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                     ))}
                                                                 </select>
                                                             </div>
-
                                                             <div className='col-lg-6'>
-                                                                <label className='form-label required fw-bold fs-6'>ชื่อบริษัท</label>
-                                                                <input
-                                                                    value={fullName}
-                                                                    onChange={(e) => setFullName(e.target.value)}
-                                                                    type='text'
-                                                                    className='form-control mb-3 mb-lg-0'
-                                                                />
-                                                                {errors.fullName && <p className='text-danger'>{errors.fullName}</p>}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="container">
-                                                        <div className='row mb-6'>
-                                                            <div className='col-lg-4'>
                                                                 <label className='form-label required fw-bold fs-6'>เลขประจำตัวผู้เสียภาษี</label>
                                                                 <input
                                                                     value={idCard}
-                                                                    onChange={(e) => setIdCard(e.target.value)}
+                                                                    onChange={handleIdCardChange}
                                                                     type='text'
                                                                     className='form-control mb-3 mb-lg-0'
                                                                 // disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.CUSTOMERID !== "" ? true : false : false}
                                                                 />
                                                                 {errors.idCard && <p className='text-danger'>{errors.idCard}</p>}
                                                             </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="container">
+                                                        <div className='row mb-6'>
                                                             <div className='col-lg-4 mb-3'>
                                                                 <label className='form-label required fw-bold fs-6'>คำนำหน้า</label>
                                                                 <select
@@ -836,6 +889,16 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                     ))}
                                                                 </select>
                                                             </div>
+                                                            <div className='col-lg-4'>
+                                                                <label className='form-label required fw-bold fs-6'>ชื่อบริษัท</label>
+                                                                <input
+                                                                    value={fullName}
+                                                                    onChange={handleFullNameChange}
+                                                                    type='text'
+                                                                    className='form-control mb-3 mb-lg-0'
+                                                                />
+                                                                {errors.fullName && <p className='text-danger'>{errors.fullName}</p>}
+                                                            </div>
                                                             <div className='col-lg-4 mb-3'>
                                                                 <label className='form-label required fw-bold fs-6'>กรรมการผู้มีอำนาจ</label>
                                                                 <input
@@ -845,7 +908,6 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                     className='form-control mb-3 mb-lg-0'
                                                                 // disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.CUSTOMERMD !== "" ? true : false : false}
                                                                 />
-                                                                {errors.nameMD && <p className='text-danger'>{errors.nameMD}</p>}
                                                             </div>
                                                         </div>
 
@@ -857,7 +919,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                         value={mobile}
                                                                         type='text'
                                                                         className='form-control mb-3 mb-lg-0'
-                                                                        onChange={(e) => setMobile(e.target.value)}
+                                                                        onChange={handleMobileChange}
                                                                     />
                                                                     {errors.mobile && <p className='text-danger'>{errors.mobile}</p>}
                                                                 </div>
@@ -888,7 +950,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                     <label className='form-label fw-bold fs-6'>อีเมล์</label>
                                                                     <input
                                                                         value={email}
-                                                                        onChange={(e) => setEmail(e.target.value)}
+                                                                        onChange={handleEmailChange}
                                                                         type='text'
                                                                         className='form-control mb-3 mb-lg-0'
                                                                     />

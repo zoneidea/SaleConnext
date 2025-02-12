@@ -8,8 +8,8 @@ export const LOGIN_URL = `${API_URL}/Login`;
 
 // ฟังก์ชัน login
 export function login(username: string, password: string) {
-  console.log('username', username);
-  console.log('password', password);
+  // console.log('username', username);
+  // console.log('password', password);
 
   const formData = new FormData();
   formData.append('username', username);

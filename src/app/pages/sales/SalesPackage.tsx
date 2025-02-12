@@ -1298,25 +1298,42 @@ const SalesPackage: React.FC = () => {
     // POST GetPackage/PackageList
     useEffect(() => {
         const postData = async () => {
-            setLoadingPackages(true)
+            setLoadingPackages(true); // เริ่มโหลดข้อมูล
             try {
-                const response = await axios.post(POST_PACKAGE_URL,
-                    { EmpId, DivisionId, DepartId, DepartGroup, TeamSale, ItemID, PackageTypeID, PromotionID: selectedPromotion }, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                    },
-                });
+                const response = await axios.post(POST_PACKAGE_URL, 
+                    { 
+                        EmpId, 
+                        DivisionId, 
+                        DepartId, 
+                        DepartGroup, 
+                        TeamSale, 
+                        ItemID, 
+                        PackageTypeID, 
+                        PromotionID: selectedPromotion 
+                    }, 
+                    {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        },
+                    }
+                );
+                
                 const data = Array.isArray(response.data.data) ? response.data.data : [];
-                // console.log(`response data from GetPackage/PackageList: `, data);
-                setPackageList(data);
+    
+                // หน่วงเวลา 2 วินาทีก่อนแสดงผลข้อมูล
+                setTimeout(() => {
+                    setPackageList(data); // อัปเดตแพ็คเกจหลังจากหน่วงเวลา
+                    setLoadingPackages(false); // หยุดแสดง loading หลังหน่วงเวลา
+                }, 1000);
+                
             } catch (error) {
                 console.error('Error fetching POST_PACKAGE_URL:', error);
-            } finally {
-                setLoadingPackages(false)
+                setLoadingPackages(false); // หยุดแสดง loading ถ้าเกิดข้อผิดพลาด
             }
         };
+    
         postData();
-    }, [EmpId, DivisionId, DepartId, DepartGroup, TeamSale, ItemID, PackageTypeID]);
+    }, [EmpId, DivisionId, DepartId, DepartGroup, TeamSale, ItemID, PackageTypeID, selectedPromotion]);    
 
     useEffect(() => {
         // console.log("SaveProductData:", SaveProductData);
@@ -1594,17 +1611,6 @@ const SalesPackage: React.FC = () => {
 
             // เรียก API UPDATECONTACT หลังจากเสร็จสิ้นเงื่อนไขทั้งหมด
             try {
-                await axios.post(UPDATECONTACT, {
-                    REFNO,
-                    EMPID: EmpId,
-                    TEAMSALE: TeamSale,
-                    FIELD: "CUSTOMERSTATUS",
-                    DATA: SaveProductData,
-                }, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                });
                 await MySwal.fire({
                     icon: 'success',
                     title: 'สำเร็จ!',
@@ -1704,7 +1710,7 @@ const SalesPackage: React.FC = () => {
                                                 <label className='form-label fw-bold fs-3 mt-3'>S/N ที่สแกนได้: {barCode}</label>
                                             )}
 
-                                            <div className='col-lg-6 my-7 my-xl-10'>
+                                            {/* <div className='col-lg-6 my-7 my-xl-10'>
                                                 <label className='form-label required fw-bold fs-3'>หมวดหมู่สินค้า</label>
                                                 <select
                                                     className='form-select'
@@ -1717,7 +1723,7 @@ const SalesPackage: React.FC = () => {
                                                         </option>
                                                     ))}
                                                 </select>
-                                            </div>
+                                            </div> */}
                                         </div>
 
                                         {/* แสดง Loading */}

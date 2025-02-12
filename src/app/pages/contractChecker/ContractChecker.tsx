@@ -8,7 +8,7 @@ import { ToolbarWrapper } from '../../../_metronic/layout/components/toolbar'
 import { Content } from '../../../_metronic/layout/components/content'
 import { TablesWidget5 } from '../../../_metronic/partials/widgets'
 import { useAuth } from '../../modules/auth/core/Auth';
-import { SalesItemNumber } from '../sales/components/salesItemNumber/SalesItemNumber';
+import { SalesItemNumber } from './component/SalesItemNumber';
 import {
     useUUIDStore,
     useSaveProductStore,
@@ -123,7 +123,7 @@ const ContractChecker: React.FC = () => {
                             ) : pending.length > 0 ? (
                                 <>
                                     {pendingDisplayedData.map((item, index) => (
-                                        <SalesItemNumber key={index} status="PENDING" item={item} />
+                                        <SalesItemNumber key={index} status="PENDING" item={item}  />
                                     ))}
 
                                     <div className='d-none d-xl-flex justify-content-end align-items-center mt-5'>

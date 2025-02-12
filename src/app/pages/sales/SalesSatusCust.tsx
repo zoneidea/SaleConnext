@@ -10,12 +10,30 @@ import axios from 'axios';
 
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
+import { ThreeDot } from 'react-loading-indicators';
+
+interface ProvinceItem {
+  PROVINCENAME: string;
+  PROVINCECODE: string;
+}
+
+interface DistrictItem {
+  DISTRICTNAME: string;
+  DISTRICTCODE: string;
+}
+
+interface SubDistrictItem {
+  SUBDISTRICTNAME: string;
+  SUBDISTRICTCODE: string;
+}
+
 
 const SalesSatusCust: React.FC = () => {
   const [showModal, setShowModal] = useState(false); // เริ่มต้นโมดาลปิดอยู่
   const navigate = useNavigate();
   const { REFNO } = useUUIDStore();
   const { auth } = useAuth();
+  // console.log(`auth`, auth);
 
   const EmpId = auth?.data?.[0]?.EmpId || '';
   const TeamSale = auth?.data?.[0]?.TeamSale || '';
@@ -23,20 +41,49 @@ const SalesSatusCust: React.FC = () => {
   const SupEmpId = auth?.data?.[0]?.SupEmp || '';
   const SecEmpId = auth?.data?.[0]?.SecEmp || '';
 
-  const API_URL_POST_CHECKCUSTOMER = import.meta.env.VITE_APP_API_THIENSURAT;
-  const CHECK_CUST_NEW_URL = `${API_URL_POST_CHECKCUSTOMER}/CheckCustomer/Check_New`;
+  const API_THIENSURAT = import.meta.env.VITE_APP_API_THIENSURAT;
+  const CHECK_CUST_NEW_URL = `${API_THIENSURAT}/CheckCustomer/Check_New`;
+  const CHECK_OTP = `${API_THIENSURAT}/CheckCustomer/Check_otp`
 
-  const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
-  const GET_CONTRACT = `${API_URL_MONGO}/Contract/GetContractSummary?refno=${REFNO}`;
+  const API_MONGO = import.meta.env.VITE_APP_API_MONGO;
+  const GET_CONTRACT = `${API_MONGO}/Contract/GetContractSummary?refno=${REFNO}`;
+  const UPDATECONTACT = `${API_MONGO}/Contract/updateContract`;
+
+  const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
+  const PROVINCE_URL = `${API_SALECONNEXT}/GetAddress/Province`;
+  const DISTRICT_URL = `${API_SALECONNEXT}/GetAddress/District`;
+  const SUBDISTRICT_URL = `${API_SALECONNEXT}/GetAddress/SubDistrict`;
 
   const [getContract, setGetContract] = useState<any[]>([]);
   // console.log(`getContract`, getContract);
+
   const ItemCode = getContract[0]?.PRODUCT[0]?.ItemCode
   const Model = getContract[0]?.PRODUCT[0]?.Package[0]?.MODEL
   const [idCard, setIdCard] = useState<string>('');
   const [error, setError] = useState<string>('');
 
   const [customerStatus, setCustomerStatus] = useState<any>(null);
+  // console.log(`customerStatus`, customerStatus);
+
+  const [getProvince, setGetProvince] = useState<any[]>([]);
+  // console.log(`getProvince`, getProvince);
+  const [getDistrict, setGetDistrict] = useState<any[]>([]);
+  const [getSubDistrict, setGetSubDistrict] = useState<any[]>([]);
+  const [selectedProvince, setSelectedProvince] = useState<number>();
+  const [selectedDistrict, setSelectedDistrict] = useState<number>();
+  const [selectedSubDistrict, setSelectedSubDistrict] = useState<number>();
+
+  const [statusCustomerContract, setStatusCustomerContract] = useState<any>(null);
+
+  // เช็คว่า user กดปุ่มค้นหาแล้วรึยัง
+  const [isSearchDone, setIsSearchDone] = useState(false);
+
+  // ถ้ามีการ์ด ให้คลิกการ์ดก่อน ปุ่มถัดไปจึงจะทำงานได้
+  const [hasClickedCard, setHasClickedCard] = useState(false);
+  // ตัวแปรคำนวณสำหรับ disable ปุ่ม “ถัดไป”
+  const isNextDisabled = !isSearchDone || (customerStatus?.length > 0 && !hasClickedCard);
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const searchData = {
     RefNo: REFNO,
@@ -45,6 +92,12 @@ const SalesSatusCust: React.FC = () => {
     ItemCode: ItemCode,
     Model: Model,
   }
+
+  useEffect(() => {
+    if (statusCustomerContract && statusCustomerContract.statustext && statusCustomerContract.date?.OTP) {
+      saveCustomerStatus();  // เรียกฟังก์ชันบันทึกข้อมูลเมื่อ statusCustomerContract ถูกอัปเดตเสร็จ
+    }
+  }, [statusCustomerContract]);
 
   useEffect(() => {
     const getContract = async () => {
@@ -64,6 +117,95 @@ const SalesSatusCust: React.FC = () => {
     getContract();
   }, []);
 
+  // GET Province
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const response = await axios.get(PROVINCE_URL, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          }
+        });
+        setGetProvince(response.data);
+      } catch (error) {
+        console.error('Error fetching CUSTOMER_TYPE_URL:', error);
+      }
+    };
+    getData();
+  }, []);
+
+  // POST District
+  useEffect(() => {
+    const getData = async () => {
+      if (selectedProvince) { // ตรวจสอบว่ามี selectedProvince ก่อนการเรียก API
+        try {
+          const response = await axios.post(DISTRICT_URL, { ProvinceCode: selectedProvince }, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            }
+          });
+          setGetDistrict(response.data); // อัปเดต district เมื่อได้รับข้อมูลใหม่
+        } catch (error) {
+          console.error('Error fetching DISTRICT_URL:', error);
+        }
+      } else {
+        setGetDistrict([]); // ล้างข้อมูล district เมื่อไม่ได้เลือก province
+      }
+    };
+    getData();
+  }, [selectedProvince]);
+
+  // POST SubDistrict
+  useEffect(() => {
+    const fetchSubDistricts = async () => {
+      if (selectedDistrict) {
+        try {
+          const response = await axios.post(SUBDISTRICT_URL, { DistrictCode: selectedDistrict }, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            }
+          });
+          setGetSubDistrict(response.data);
+        } catch (error) {
+          console.error('Error fetching SUBDISTRICT_URL:', error);
+        }
+      } else {
+        setGetSubDistrict([]);
+      }
+    };
+    fetchSubDistricts();
+  }, [selectedDistrict]);
+
+  // POST Check_otp
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        const response = await axios.post(CHECK_OTP, {
+          EmpId: EmpId,
+          RefNo: REFNO,
+          Otp: 446981
+        }, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          }
+        });
+      } catch (error) {
+        console.error('Error fetching :', error);
+      }
+    };
+    getData();
+  }, []);
+
+  const handleConfirmClick = () => {
+    // ซ่อนโมดาล
+    setShowModal(false);
+
+    // หน่วงเวลา 1 วินาทีก่อนนำทาง
+    setTimeout(() => {
+      navigate('/sale/discount');
+    }, 1000);
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
 
@@ -81,25 +223,45 @@ const SalesSatusCust: React.FC = () => {
     }
 
     try {
-      const response = await axios.post(CHECK_CUST_NEW_URL, searchData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          'Accept': 'multipart/form-data',
+      setIsLoading(true); // เริ่มแสดง loading
+
+      // หน่วงเวลา 2 วินาทีก่อนเรียก API
+      setTimeout(async () => {
+        const response = await axios.post(CHECK_CUST_NEW_URL, searchData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Accept': 'multipart/form-data',
+          }
+        });
+
+        const data = Array.isArray(response.data.data) ? response.data.data : [];
+        // console.log(`response`, response);
+
+        setIsLoading(false); // หยุดแสดง loading หลังจากได้ผลลัพธ์
+
+        if (data.length === 0) {
+          Swal.fire({
+            icon: 'success',
+            title: 'ไม่พบประวัติลูกค้า',
+          });
         }
-      });
-      const data = Array.isArray(response.data.data) ? response.data.data : [];
-      setCustomerStatus(data);
+
+        setCustomerStatus(data);
+        setIsSearchDone(true);
+      }, 2000);  // หน่วงเวลา 2 วินาที
+
     } catch (error) {
+      setIsLoading(false); // หยุดแสดง loading ในกรณีเกิดข้อผิดพลาด
       console.error('Error:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'เกิดข้อผิดพลาด',
+        text: 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้',
+      });
     }
   };
 
-  // const handleNextClick = () => {
-  //   // แสดงโมดาลเมื่อคลิกปุ่มถัดไป
-  //   setShowModal(true);
-  // };
-
-  const handleNextClick = () => {
+  const handleCheckStatusCustomer = () => {
     if (!customerStatus) {
       Swal.fire({
         icon: 'error',
@@ -109,78 +271,259 @@ const SalesSatusCust: React.FC = () => {
       return;
     }
 
+    // กำหนด state เมื่อผู้ใช้คลิก CardStatusCustomer (เฉพาะเมื่อมีข้อมูลอยู่)
+    if (customerStatus.length > 0) {
+      setHasClickedCard(true);
+    }
+
     const statusSale = customerStatus?.[0]?.StatusSale;
+    console.log(`statusSale`, statusSale);
 
     if (statusSale === "0") {
-      //กรณีไม่ผ่านการตรวจสอบ
+      // กรณีไม่ผ่านการตรวจสอบ
       Swal.fire({
         icon: 'error',
         title: 'ไม่ผ่านการตรวจสอบ',
         text: 'ลูกค้าไม่ผ่านเงื่อนไขในการดำเนินการต่อ',
       });
+      navigate('/sale/overview');
     } else if (statusSale === "1") {
       // กรณีผ่านการตรวจสอบ
       navigate('/sale/discount');
     } else if (statusSale === "2") {
-      // ℹ️ กรณีต้องแสดง Iframe
+      // ℹ️ กรณีต้องแสดงเนื้อหาในหน้าต่างใหม่
       const refNo = REFNO;
       const bookingNo = REFNO;
-      const createBy = EmpId;
-      const saleEmployeeCode = EmpId;
-      const saleCode = SaleCode;
-      const teamName = TeamSale;
-      const processType = 'CT';
-      const customerType = customerStatus?.[0]?.CustomerType || '0';
-      const fName = encodeURIComponent(customerStatus?.[0]?.FirstName || '');
-      const lName = encodeURIComponent(customerStatus?.[0]?.LastName || '');
-      const idCard = customerStatus?.[0]?.IDCard || '';
-      const birthDay = customerStatus?.[0]?.BirthDay || '';
-      const address = encodeURIComponent(customerStatus?.[0]?.Address || '');
+      const createBy = auth?.data?.[0]?.EmpId || '';
+      const saleEmployeeCode = auth?.data?.[0]?.EmpId || '';
+      const saleCode = auth?.data?.[0]?.saleCode || '';
+      const teamName = auth?.data?.[0]?.TeamSale || '';
+      const processType = auth?.data?.[0]?.DepartGroup || '';
+      const customerType = customerStatus?.[0]?.CustomerType;
+
+      const fullName = customerStatus?.[0]?.CustomerName || '';
+      const firstName = fullName.split(' ')[0];
+      const lastName = fullName.split(' ')[1];
+      const fName = encodeURIComponent(firstName);
+      const lName = encodeURIComponent(lastName);
+
+      const idCard = customerStatus?.[0]?.Contract.IDCard || '';
+      const birthDay = customerStatus?.[0]?.Contract.Brithday || '';
+
+      const addressDetails = customerStatus?.[0]?.Contract.Address[0] || {};
+      const fullAddress = [
+        addressDetails.AddressDetail || '',
+        addressDetails.AddressDetail2 || '',
+        addressDetails.AddressDetail3 || '',
+        addressDetails.AddressDetail4 || ''
+      ].filter(detail => detail.trim() !== '').join(' ');
+      const address = encodeURIComponent(fullAddress);
+
+      const province = customerStatus?.[0]?.Contract?.Address?.[0]?.Province || '';
+      const provinceCode = getProvince.find(item => item.PROVINCENAME === province)?.PROVINCECODE || '';
+
+      const districtRaw = customerStatus?.[0]?.Contract?.Address?.[0]?.Amphur || '';
+      const district = districtRaw.replace(/^อ\.\s*/, '');  // ตัดคำว่า "อ." ออก
+      const districtCode = getDistrict.find(item => item.DISTRICTNAME === district)?.DISTRICTCODE || '';
+
+      const subDistrictRaw = customerStatus?.[0]?.Contract?.Address?.[0]?.District || '';
+      const subDistrict = subDistrictRaw.replace(/^ต\.\s*/, '');  // ตัดคำว่า "อ." ออก
+      const subDistrictCode = getSubDistrict.find(item => item.SUBDISTRICTNAME === subDistrict)?.SUBDISTRICTCODE || '';
+
+      const zipCode = customerStatus?.[0]?.Contract.Address[0]?.Zipcode || '';
+      const telMobile = customerStatus?.[0]?.Contract.Address[0]?.TelMobile || '';
+      const telHome = customerStatus?.[0]?.Contract.Address[0]?.TelHome || '';
+      const telOffice = customerStatus?.[0]?.Contract.Address[0]?.TelOffice || '';
+
+      const productID = getContract?.[0]?.PRODUCT[0]?.ProductId || '';
+      const itemCode = getContract?.[0]?.PRODUCT[0]?.ItemCode || '';
+      const productName = getContract?.[0]?.PRODUCT[0]?.ItemDescription || '';
+      const packageCode = getContract?.[0]?.PRODUCT[0]?.Package[0]?.MODEL || '';
+      const packageName = getContract?.[0]?.PRODUCT[0]?.Package[0]?.PACKAGETITLE || '';
+      const packagePrice = getContract?.[0]?.PRODUCT[0]?.Package[0]?.TOTALPRICE || '';
+      const firstPayment = getContract?.[0]?.PRODUCT[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTAMOUNT || '';
+      const nextPayment = getContract?.[0]?.PRODUCT[0]?.Package[0]?.PERIODDETAILS[1]?.PAYMENTAMOUNT || '';
+
+      const saleName1 = '';
+      const saleName2 = auth?.data?.[0]?.TeamName || '';
+      const saleName3 = auth?.data?.[0]?.SupName || '';
 
       const iframeURL =
-        `https://app.tsrplc.com/love_connext/issue_systems_page_2.php??RefNo=${refNo}&BookingNo=${bookingNo}&CreateBy=${createBy}&SaleEmployeeCode=${saleEmployeeCode}&SaleCode=${saleCode}&TeamName=${teamName}&ProcessType=${processType}&CustomerType=${customerType}&FName=${fName}&LName=${lName}&IDCard=${idCard}&BirthDay=${birthDay}&Address=${address}`;
+        `https://app.tsrplc.com/love_connext/issue_systems_page_2.php?RefNo=${refNo}&BookingNo=${bookingNo}&CreateBy=${createBy}&SaleEmployeeCode=${saleEmployeeCode}&SaleCode=${saleCode}&TeamName=${teamName}&ProcessType=${processType}&CustomerType=${customerType}&FName=${fName}&LName=${lName}&IDCard=${idCard}&BirthDay=${birthDay}&Address=${address}&ProvinceCode=${provinceCode}&DistrictCode=${districtCode}&SubDistrictCode=${subDistrictCode}&Zipcode=${zipCode}&TelMobile=${telMobile}&TelHome=${telHome}&TelOffice=${telOffice}&ProductID=${productID}&ItemCode=${itemCode}&ProductName=${productName}&PackageCode=${packageCode}&PackageName=${packageName}&PackagePrice=${packagePrice}&FirstPayment=${firstPayment}&NextPayment=${nextPayment}&SaleName1=${saleName1}&SaleName2=${saleName2}&SaleName3=${saleName3}`;
 
+      // ยืนยันก่อนเปิดหน้าต่างใหม่
       Swal.fire({
         title: 'แสดงรายละเอียดเพิ่มเติม',
-        html: `
-            <div style="width: 100%; height: 80vh; overflow: hidden;">
-              <iframe 
-                src="${iframeURL}" 
-                width="100%" 
-                height="100%" 
-                style="border: none;"
-                onerror="this.parentNode.innerHTML = '<p style=\'color:red;\'>ไม่สามารถโหลดเนื้อหาได้ กรุณาตรวจสอบ URL หรือการตั้งค่า CORS</p>';">
-              </iframe>
-            </div>
-          `,
-        width: '90vw',    // กำหนดความกว้าง 90% ของ viewport
-        heightAuto: false, // ปิดการปรับความสูงอัตโนมัติ
-        showCloseButton: true,
+        text: 'คุณต้องการเปิดรายละเอียดเพิ่มเติมในหน้าต่างใหม่หรือไม่?',
+        icon: 'info',
         showCancelButton: true,
-        focusConfirm: false,
-        confirmButtonText: 'ตกลง',
+        confirmButtonText: 'เปิดหน้าต่างใหม่',
         cancelButtonText: 'ยกเลิก',
-        customClass: {
-          popup: 'custom-swal-popup' // เพิ่ม class สำหรับปรับแต่งเพิ่มเติม
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // เปิดหน้าต่างใหม่
+          window.open(iframeURL, '_blank', 'width=1200,height=800,noopener,noreferrer');
         }
       });
     }
   };
 
-  const handleConfirmClick = () => {
-    // ซ่อนโมดาล
-    setShowModal(false);
+  const saveCustomerStatus = async () => {
+    try {
+      const response = await axios.post(UPDATECONTACT, {
+        REFNO,
+        EMPID: EmpId,
+        TEAMSALE: TeamSale,
+        FIELD: 'CUSTOMERSTATUS',
+        DATA: [{
+          STATUSSALE: customerStatus[0]?.StatusSale,
+          STATUSTEXT: statusCustomerContract.statustext,
+          MESSAGE: statusCustomerContract.message,
+          OTP: statusCustomerContract.date.OTP
+        }]
+      }, {
+        headers: { 'Content-Type': 'application/json' },
+      });
 
-    // หน่วงเวลา 1 วินาทีก่อนนำทาง
-    setTimeout(() => {
-      navigate('/sale/discount');
-    }, 1000);
+      console.log('API Update Response:', response.data);
+
+      Swal.fire({
+        icon: 'success',
+        title: 'สำเร็จ!',
+        text: 'บันทึกข้อมูลเรียบร้อยแล้ว',
+        timer: 2000,
+        showConfirmButton: false
+      }).then(() => {
+        navigate('/sale/discount');
+      });
+
+    } catch (error) {
+      console.error('Error while updating contract:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'การบันทึกข้อมูลล้มเหลว!',
+        text: 'เกิดข้อผิดพลาดระหว่างการบันทึกข้อมูล',
+      });
+    }
   };
+
+  const handleNextClick = () => {
+    Swal.fire({
+      title: 'กรุณากรอก OTP',
+      input: 'text',
+      inputAttributes: {
+        maxlength: '6',
+        autocapitalize: 'off',
+        autocorrect: 'off'
+      },
+      showCancelButton: true,
+      confirmButtonText: 'ยืนยัน',
+      cancelButtonText: 'ยกเลิก',
+      showLoaderOnConfirm: true,
+      preConfirm: (otp) => {
+        if (!otp || otp.length !== 6) {
+          Swal.showValidationMessage('กรุณากรอก OTP ให้ครบ 6 หลัก');
+          return;
+        }
+
+        return axios.post(CHECK_OTP, {
+          EmpId: EmpId,
+          RefNo: REFNO,
+          Otp: otp
+        }, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        }).then(response => {
+          if (response.data.message !== 'ตรวจสอบผ่าน') {
+            throw new Error(response.data.message || 'OTP ไม่ถูกต้อง');
+          }
+
+          setStatusCustomerContract(response.data);  // อัปเดตข้อมูล OTP ลงใน state
+          return response.data;
+        }).catch(error => {
+          Swal.showValidationMessage(`การตรวจสอบล้มเหลว: ${error.message}`);
+        });
+      },
+      allowOutsideClick: () => !Swal.isLoading()
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          icon: 'success',
+          title: 'ตรวจสอบ OTP ผ่าน!',
+          text: 'กำลังบันทึกข้อมูล...',
+          showConfirmButton: false,
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
+        // หลังจากนี้ไม่จำเป็นต้องทำอะไร เพราะ useEffect จะเรียก saveCustomerStatus ให้อัตโนมัติ
+      }
+    });
+  };
+
+  useEffect(() => {
+    if (customerStatus) {
+      const province = customerStatus?.[0]?.Contract?.Address?.[0]?.Province || '';
+      const selectedProvinceCode = getProvince.find(item => item.PROVINCENAME === province)?.PROVINCECODE || '';
+
+      setSelectedProvince(selectedProvinceCode);  // ตั้งค่าจังหวัดเพื่อดึงอำเภอ
+    }
+  }, [customerStatus, getProvince]);
+
+  // โหลดอำเภอหลังจากเลือกจังหวัด
+  useEffect(() => {
+    if (selectedProvince) {
+      const fetchDistricts = async () => {
+        try {
+          const response = await axios.post(DISTRICT_URL, { ProvinceCode: selectedProvince }, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+          setGetDistrict(response.data);
+
+          // ตั้งค่าอำเภออัตโนมัติหลังโหลดเสร็จ
+          const districtRaw = customerStatus?.[0]?.Contract?.Address?.[0]?.Amphur || '';
+          const district = districtRaw.replace(/^อ\.\s*/, '');  // ตัด "อ." ออก
+          const districtCode = response.data.find((item: DistrictItem) => item.DISTRICTNAME === district)?.DISTRICTCODE || '';
+
+          setSelectedDistrict(districtCode);  // ตั้งค่าอำเภอเพื่อดึงตำบล
+        } catch (error) {
+          console.error('Error fetching DISTRICT_URL:', error);
+        }
+      };
+      fetchDistricts();
+    }
+  }, [selectedProvince, customerStatus]);
+
+  // โหลดตำบลหลังจากเลือกอำเภอ
+  useEffect(() => {
+    if (selectedDistrict) {
+      const fetchSubDistricts = async () => {
+        try {
+          const response = await axios.post(SUBDISTRICT_URL, { DistrictCode: selectedDistrict }, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+          setGetSubDistrict(response.data);
+
+          // ตั้งค่าตำบลอัตโนมัติหลังโหลดเสร็จ
+          const subDistrictRaw = customerStatus?.[0]?.Contract?.Address?.[0]?.District || '';
+          const subDistrict = subDistrictRaw.replace(/^ต\.\s*/, '');  // ตัด "ต." ออก
+          const subDistrictCode = response.data.find((item: SubDistrictItem) => item.SUBDISTRICTNAME === subDistrict)?.SUBDISTRICTCODE || '';
+
+          setSelectedSubDistrict(subDistrictCode);  // ตั้งค่าตำบล
+          // console.log('subDistrictCode:', subDistrictCode);
+        } catch (error) {
+          console.error('Error fetching SUBDISTRICT_URL:', error);
+        }
+      };
+      fetchSubDistricts();
+    }
+  }, [selectedDistrict, customerStatus]);
+
 
   return (
     <>
       <Content>
-        <div className='d-flex justify-content-between align-items-center mb-7 mt-lg-5'>
+        <div className='d-flex justify-content-between align-items-center mb-7 mt-lg-5 my-5'>
           <div id="kt_page_title" data-kt-swapper="true" data-kt-swapper-mode="prepend"
             data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
             className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
@@ -235,11 +578,18 @@ const SalesSatusCust: React.FC = () => {
               {error && <div className="invalid-feedback d-block">{error}</div>}
             </div>
 
+            {/* แสดง Loading */}
+            {isLoading && (
+              <div className="text-center my-10">
+                <ThreeDot />
+              </div>
+            )}
+
             {/* CardStatusCustomer Component */}
             <div className='row'>
               <div className='col-12 col-md-6 col-xl-4'>
-                {customerStatus && customerStatus.length > 0 && (
-                  <CardStatusCustomer customerStatus={customerStatus} />
+                {!isLoading && customerStatus && customerStatus.length > 0 && (
+                  <CardStatusCustomer customerStatus={customerStatus} handleCheckStatusCustomer={handleCheckStatusCustomer} />
                 )}
               </div>
             </div>
@@ -255,8 +605,10 @@ const SalesSatusCust: React.FC = () => {
             กลับหน้าแรก
           </button>
           <button
-            className='btn btn-primary w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'
+            className={`btn btn-primary w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px 
+    ${!isSearchDone || isNextDisabled ? 'disabled' : ''}`}
             onClick={handleNextClick}
+            disabled={!isSearchDone || isNextDisabled}  // ปุ่มจะ disable ถ้า isSearchDone หรือ hasClickedCard เป็น false
           >
             ถัดไป
           </button>
@@ -280,8 +632,10 @@ const SalesSatusCust: React.FC = () => {
             กลับหน้าแรก
           </button>
           <button
-            className={`btn btn-primary w-auto`}
+            className={`btn btn-primary w-auto me-2 
+ ${!isSearchDone || isNextDisabled ? 'disabled' : ''}`}
             onClick={handleNextClick}
+            disabled={!isSearchDone || isNextDisabled} // ป้องกันการกดปุ่มถ้าไม่ได้ค้นหา
           >
             ถัดไป
           </button>

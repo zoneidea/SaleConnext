@@ -165,18 +165,27 @@ export function Login() {
       setLoading(true)
       try {
         const response = await login(values.username, values.password)
+        // console.log(`response`, response);
 
         if (response.data.status === 500) {
           setErrors({
-            username: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง.',
-            password: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง.',
+            username: response.data.message,
+            password: response.data.message,
           })
           setSubmitting(false)
           setLoading(false)
+        } else if (response.data.status === 404) {
+          setErrors({
+            username: response.data.message,
+            password: response.data.message,
+          })
         } else {
           const authData = JSON.stringify(response.data)
           const encryptedAuthData = CryptoJS.AES.encrypt(authData, SECRET_KEY).toString()
+          const loginTimestamp = new Date().getTime(); // บันทึกเวลาล็อกอิน
+          
           localStorage.setItem('authData', encryptedAuthData)
+          localStorage.setItem('loginTimestamp', loginTimestamp.toString()); // บันทึกเวลาใน localStorage
 
           saveAuth(response.data)
           const user = {

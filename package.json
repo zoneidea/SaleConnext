@@ -64,7 +64,6 @@
     "react-loading-indicators": "^1.0.0",
     "react-query": "3.38.0",
     "react-router-dom": "6.3.0",
-    "react-select": "^5.8.0",
     "react-signature-canvas": "^1.0.6",
     "react-signature-pad-wrapper": "^4.0.4",
     "react-table": "^7.7.0",
