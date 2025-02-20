@@ -1,0 +1,268 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { Content } from '../../../_metronic/layout/components/content';
+import { SendMoneyItemNumber } from './component/SendMoneyItemNumber';
+import { useUUIDStore } from '../../modules/stores/stepsStore';
+import { useAuth } from '../../modules/auth/core/Auth';
+
+import { EntriesDropdown, PaginationTable } from '../../modules/entriesAndPagination/Pagination';
+import { ThreeDot } from 'react-loading-indicators';
+
+const SendMoneyOverview: React.FC = () => {
+  const [isLoadingDraft, setIsLoadingDraft] = useState<boolean>(false);
+  const [isLoadingFinish, setIsLoadingFinish] = useState<boolean>(false);
+
+  const [dataSendMoney, setDataSendMoney] = useState<any[]>([]);
+  console.log(`dataSendMoney`, dataSendMoney);
+
+  const [search, setSearch] = useState<string>(''); // State สำหรับค้นหา
+
+  // Pagination states
+  const [entries, setEntries] = useState<number>(10); // Default entries per page
+  const [currentPageDraft, setCurrentPageDraft] = useState<number>(1);
+  const [currentPageFinish, setCurrentPageFinish] = useState<number>(1);
+
+  const navigate = useNavigate();
+  const { SETREFNO } = useUUIDStore();
+  const { auth } = useAuth();
+  const EmpId = auth?.data?.[0]?.EmpId || '';
+  const TeamSale = auth?.data?.[0]?.TeamSale || '';
+  const SaleCode = auth?.data?.[0]?.SaleCode || '';
+
+  const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
+  const GET_SEND_MONEY = `${API_SALECONNEXT}/GetSendMoney/GetData`;
+
+  // console.log('EmpId:', EmpId);
+  // console.log('TeamSale:', TeamSale);
+  // console.log('SaleCode:', SaleCode);
+
+  useEffect(() => {
+    getDataSendMoney();
+  }, []);
+
+  const getDataSendMoney = async () => {
+    setIsLoadingDraft(true);
+    try {
+      const formData = new FormData();
+      // formData.append('EmpId', EmpId);
+      // formData.append('TeamSale', TeamSale);
+      // formData.append('SaleCode', SaleCode);
+
+      formData.append('EmpId', "A00110");
+      formData.append('TeamSale', "C06AA-11");
+      formData.append('SaleCode', "C06AA00740000");
+
+      const response = await axios.post(GET_SEND_MONEY, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      const data = Array.isArray(response.data.data) ? response.data.data : [];
+      setDataSendMoney(data);
+    } catch (error) {
+      console.error('Error fetching GET_SEND_MONEY:', error);
+    } finally {
+      setIsLoadingDraft(false);
+    }
+  };
+
+  const handleAddItemClick = () => {
+    SETREFNO();
+    navigate('/sale/package');
+  };
+
+  // กรองข้อมูลตาม search
+  const searchLower = search.toLowerCase();
+
+  const filteredDraft = search
+    ? dataSendMoney.filter((item) =>
+      (item.CUSTOMERDETAIL?.[0]?.CUSTOMERNAME || "").toLowerCase().includes(searchLower) ||
+      (item.PRODUCT?.[0]?.Package?.[0]?.PACKAGETITLE || "").toLowerCase().includes(searchLower) ||
+      (item.PRODUCT?.[0]?.ItemDescription || "").toLowerCase().includes(searchLower) ||
+      (item.PRODUCT?.[0]?.SerialNo || "").toLowerCase().includes(searchLower)
+    )
+    : dataSendMoney;
+
+  // const filteredFinish = search
+  //   ? finish.filter((item) =>
+  //     (item.CUSTOMERDETAIL?.[0]?.CUSTOMERNAME || "").toLowerCase().includes(searchLower) ||
+  //     (item.PRODUCT?.[0]?.Package?.[0]?.PACKAGETITLE || "").toLowerCase().includes(searchLower) ||
+  //     (item.PRODUCT?.[0]?.ItemDescription || "").toLowerCase().includes(searchLower) ||
+  //     (item.PRODUCT?.[0]?.SerialNo || "").toLowerCase().includes(searchLower)
+  //   )
+  //   : finish;
+
+  // Pagination logic for Draft
+  const draftStartIndex = (currentPageDraft - 1) * entries;
+  const draftDisplayedData = filteredDraft.slice(draftStartIndex, draftStartIndex + entries);
+
+  // Pagination logic for Finish
+  // const finishStartIndex = (currentPageFinish - 1) * entries;
+  // const finishDisplayedData = filteredFinish.slice(finishStartIndex, finishStartIndex + entries);
+
+  return (
+    <Content>
+      <div className='d-flex justify-content-between align-items-center mb-5 mt-5'>
+        <div id="kt_page_title" className="page-title d-flex flex-wrap me-3 flex-column">
+          <h1 className="page-heading text-gray-900 fw-bold fs-3 my-0">ระบบส่งเงิน</h1>
+          <ul className="breadcrumb fw-semibold fs-7 my-0">
+            <li className="breadcrumb-item text-muted">
+              <span className="text-muted text-hover-primary">ระบบส่งเงิน</span>
+            </li>
+            <li className="breadcrumb-item text-gray-900">ภาพรวม</li>
+          </ul>
+        </div>
+
+        <button onClick={handleAddItemClick} className='btn btn-primary'>
+          เพิ่มรายการ
+        </button>
+      </div>
+
+      <div className='card mb-10'>
+        <div className='card-body'>
+          <ul className="nav nav-tabs nav-line-tabs mb-5 fs-6">
+            <li className="nav-item">
+              <a
+                className="nav-link active"
+                data-bs-toggle="tab"
+                href="#kt_tab_pane_1"
+                onClick={getDataSendMoney}
+              >
+                รายการรอสร้างใบส่งเงิน
+              </a>
+            </li>
+            <li className="nav-item">
+              <a
+                className="nav-link"
+                data-bs-toggle="tab"
+                href="#kt_tab_pane_2"
+                onClick={getDataSendMoney}
+              >
+                รายการสร้างใบส่งเงินแล้ว
+              </a>
+            </li>
+          </ul>
+
+          <div className="tab-content">
+            {/* ช่องค้นหา */}
+            <div className="mb-5 col-xl-6">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="ค้นหาจาก ชื่อสินค้า, แพ็คเกจ, Serial Number, ชื่อลูกค้า"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+
+            {/* Tab Draft */}
+            <div className="tab-pane fade active show" id="kt_tab_pane_1">
+              {isLoadingDraft ? (
+                <div className="text-center my-10">
+                  <ThreeDot />
+                </div>
+              ) : draftDisplayedData.length > 0 ? (
+                <>
+                  {draftDisplayedData.map((item, index) => (
+                    <SendMoneyItemNumber
+                      key={index}
+                      status="DRAFT"
+                      item={item}
+                      onDelete={getDataSendMoney} //รีเฟรชข้อมูลหลังจากลบสำเร็จ
+                    />
+                  ))}
+
+                  <div className='d-none d-xl-flex justify-content-end align-items-center mt-5'>
+                    <PaginationTable
+                      totalData={filteredDraft.length}
+                      entries={entries}
+                      currentPage={currentPageDraft}
+                      onPageChange={setCurrentPageDraft}
+                    />
+                  </div>
+
+                  {/* PaginationTable หน้าจอเล็ก */}
+                  <div
+                    className="d-flex d-xl-none justify-content-end align-items-center bg-light p-3 border-top"
+                    style={{
+                      position: "fixed",
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      zIndex: 1050,
+                    }}
+                  >
+                    <PaginationTable
+                      totalData={filteredDraft.length}
+                      entries={entries}
+                      currentPage={currentPageDraft}
+                      onPageChange={setCurrentPageDraft}
+                    />
+                  </div>
+
+                </>
+              ) : (
+                <p className="text-gray-600 text-center mt-3">ไม่มีรายการคงค้าง</p>
+              )}
+            </div>
+
+            {/* Tab Finish */}
+            <div className="tab-pane fade" id="kt_tab_pane_2">
+              {isLoadingFinish ? (
+                <div className="text-center my-10">
+                  <ThreeDot />
+                </div>
+              ) : filteredDraft.length > 0 ? (
+                <>
+                  {filteredDraft.map((item, index) => (
+                    <SendMoneyItemNumber
+                      key={index}
+                      status="FINISH"
+                      item={item}
+                      onDelete={getDataSendMoney}
+                    />
+                  ))}
+
+                  <div className='d-none d-xl-flex justify-content-end align-items-center mt-5'>
+                    <PaginationTable
+                      totalData={filteredDraft.length}
+                      entries={entries}
+                      currentPage={currentPageFinish}
+                      onPageChange={setCurrentPageFinish}
+                    />
+                  </div>
+
+                  {/* PaginationTable หน้าจอเล็ก */}
+                  <div
+                    className="d-flex d-xl-none justify-content-end align-items-center bg-light p-3 border-top"
+                    style={{
+                      position: "fixed",
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      zIndex: 1050,
+                    }}
+                  >
+                    <PaginationTable
+                      totalData={filteredDraft.length}
+                      entries={entries}
+                      currentPage={currentPageFinish}
+                      onPageChange={setCurrentPageFinish}
+                    />
+                  </div>
+
+                </>
+              ) : (
+                <p className="text-gray-600 text-center mt-3">ไม่มีรายการที่เสร็จสมบูรณ์</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </Content>
+  );
+};
+
+export { SendMoneyOverview };

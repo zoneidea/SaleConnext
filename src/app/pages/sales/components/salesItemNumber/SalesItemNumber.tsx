@@ -12,7 +12,7 @@ interface StatusLabelProps {
 }
 
 const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item, onDelete }) => {
-  console.log(`item`, item);
+  // console.log(`item`, item);
 
   const API_URL_GET_ALLCONTRACT = import.meta.env.VITE_APP_API_MONGO;
   const DEL_CONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/DelContract`;

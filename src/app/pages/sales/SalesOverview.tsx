@@ -103,7 +103,7 @@ const SalesOverview: React.FC = () => {
     <Content>
       <div className='d-flex justify-content-between align-items-center mb-5 mt-5'>
         <div id="kt_page_title" className="page-title d-flex flex-wrap me-3 flex-column">
-          <h1 className="page-heading text-gray-900 fw-bold fs-3 my-0">ภาพรวม</h1>
+          <h1 className="page-heading text-gray-900 fw-bold fs-3 my-0">ระบบขาย</h1>
           <ul className="breadcrumb fw-semibold fs-7 my-0">
             <li className="breadcrumb-item text-muted">
               <span className="text-muted text-hover-primary">ระบบขาย</span>

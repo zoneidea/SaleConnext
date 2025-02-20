@@ -10,6 +10,7 @@ import { DashboardWrapper } from '../pages/dashboard/DashboardWrapper'
 import { SalesWrapper } from '../pages/sales/SalesWrapper'
 import { OrderWrapper } from '../pages/order/OrderWrapper'
 import { FirstBillWrapper } from '../pages/firstBill/FirstBillWrapper'
+import { SendMoneyWrapper } from '../pages/sendMoney/SendMoneyWrapper'
 
 import ErrorBoundary from '../pages/sales/components/accessCam/ErrorBoundary'
 
@@ -116,10 +117,13 @@ const PrivateRoutes = () => {
   //หัวข้อ ระบบเก็บเงินงวดแรก
   const CreateFirstBill = lazy(() => import('../pages/firstBill/CreateFirstBill'))
 
+  //หัวข้อ ระบบส่งเงิน
+  const CreateSendMoney = lazy(() => import('../pages/sendMoney/CreateSendMoney'))
+
   // โครงสร้างพนักงาน
   const EmpStructure = lazy(() => import('../pages/employee/EmpStructure'))
 
-  // โครงสร้างพนักงาน
+  // รายงานยอดขายประจำวัน
   const ReportSale = lazy(() => import('../pages/report/ReportSale'))
 
   return (
@@ -131,7 +135,7 @@ const PrivateRoutes = () => {
         <Route path='dashboard' element={<SuspensedView><DashboardWrapper /></SuspensedView>} />
         <Route path='sale/overview' element={<SuspensedView><SalesWrapper /></SuspensedView>} />
         <Route path='order/overview' element={<SuspensedView><OrderWrapper /></SuspensedView>} />
-
+        <Route path='sendMoney' element={<SuspensedView><SendMoneyWrapper /></SuspensedView>} />
 
         {/* Start ระบบขาย */}
         <Route
@@ -418,7 +422,7 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
-         <Route
+        <Route
           path='sale/update/UpdateSalesSatusCust'
           element={
             <SuspensedView>
@@ -534,6 +538,17 @@ const PrivateRoutes = () => {
           }
         />
         {/* End ระบบเก็บเงินงวดแรก */}
+
+        {/* Start ระบบส่งเงิน */}
+        <Route
+          path='sendmoney/CreateSendMoney'
+          element={
+            <SuspensedView>
+              <CreateSendMoney />
+            </SuspensedView>
+          }
+        />
+        {/* End ระบบส่งเงิน */}
 
         {/* Start โครงสร้างพนักงาน */}
         <Route

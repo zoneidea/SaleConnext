@@ -23,7 +23,7 @@ export function login(username: string, password: string) {
   .then((response) => {
     // ตรวจสอบการตอบกลับจาก API
     if (response.status === 200 && response.data) {
-      console.log('Login successful:', response.data);
+      // console.log('Login successful:', response.data);
       return response;
     } else {
       console.error('Unexpected response:', response);

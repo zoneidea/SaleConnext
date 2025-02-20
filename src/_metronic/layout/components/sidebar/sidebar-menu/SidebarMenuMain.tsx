@@ -9,6 +9,8 @@ const SidebarMenuMain = () => {
   const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT
   const GET_MENU_URL = `${API_SALECONNEXT}/GetMenu`
 
+  const APP_VERSION = import.meta.env.VITE_APP_VERSION;
+
   // เก็บข้อมูลเมนูเป็น array
   const [menu, setMenu] = useState<any[]>([])
   const [fontSize, setFontSize] = useState('14px'); //เฉพาะเมนูที่ไม่ได้ดึงจาก api
@@ -77,6 +79,8 @@ const SidebarMenuMain = () => {
       return toAbsoluteUrl('media/iconSidebar/install-svgrepo-com.png')
     } else if (menuName.includes('รายงานการขายประจำวัน')) {
       return toAbsoluteUrl('media/iconSidebar/report-linechart-svgrepo-com.png')
+    } else if (menuName.includes('ระบบส่งเงิน')) {
+      return toAbsoluteUrl('media/iconSidebar/money-send-svgrepo-com.png')
     }
   }
 
@@ -128,49 +132,10 @@ const SidebarMenuMain = () => {
           />
         ))}
 
-      {/* <Link
-        className={clsx('menu-link without-sub')}
-        to={'report/sale'}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          padding: '10px 25px',
-          color: '#b5b5c3',
-          textDecoration: 'none',
-          transition: 'all 0.3s ease-in-out',
-          backgroundColor: 'transparent',
-        }}
-        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#1b1b28')}
-        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-      >
-        <span
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginRight: '10px',
-          }}
-        >
-          <img
-            src={'/media/iconSidebar/report-linechart-svgrepo-com.png'}
-            alt="icon"
-            style={{
-              width: '25px',
-              height: '25px',
-            }}
-          />
-        </span>
-        <span
-          style={{
-            fontSize: fontSize,
-            color: 'inherit',
-            padding: '0px 3px',
-          }}
-        >
-          รายงานการขายประจำวัน
-
-        </span>
-      </Link> */}
+      <div style={{ color: '#9A9CAE' }} className="mt-4 text-end">
+        version {APP_VERSION}
+      </div>
+      
     </>
   )
 }

@@ -1189,13 +1189,11 @@ const UpdateSaleAddress: React.FC = () => {
 
     // ใช้ validate ห้ามฟีลด์ว่าง
     const isAddressCardValid =
-        addressNumber.trim() !== '' &&
+        addressNumber !== '' &&
         selectedProvince !== undefined &&
         selectedDistrict !== undefined &&
         selectedSubDistrict !== undefined &&
-        addressPhone.trim() !== '';
-
-    const isFormComplete = isDataComplete && isAddressCardValid;
+        addressPhone !== '';
 
     return (
         <>

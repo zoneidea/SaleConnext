@@ -60,7 +60,7 @@ const FirstBillOverview: React.FC = () => {
 
   // กรองข้อมูลตาม search
   const searchLower = search.toLowerCase();
-  
+
   const filteredFinish = search
     ? finish.filter((item) =>
       (item.CUSTOMERDETAIL?.[0]?.CUSTOMERNAME || "").toLowerCase().includes(searchLower) ||
@@ -82,7 +82,7 @@ const FirstBillOverview: React.FC = () => {
             data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
             className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
             <h1 className="page-heading d-flex text-gray-900 fw-bold fs-3 my-0 flex-column justify-content-center">
-              ภาพรวม
+              ระบบเก็บเงินงวดแรก
             </h1>
             <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
               <li className="breadcrumb-item text-muted">

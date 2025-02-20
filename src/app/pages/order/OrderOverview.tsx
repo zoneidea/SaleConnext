@@ -37,7 +37,7 @@ const OrderOverview: React.FC = () => {
   const startIndex = (currentPage - 1) * entries;
   const displayedData = allBookingList.slice(startIndex, startIndex + entries);
   // console.log(`displayedData`, displayedData);
-  
+
   const [isLoading, setIsLoading] = useState<boolean>(false); // สถานะการโหลด
 
   // พนักงานขาย
@@ -56,7 +56,7 @@ const OrderOverview: React.FC = () => {
         });
         const data = Array.isArray(response.data.data) ? response.data.data : [];
         // console.log(`data`, data);
-        
+
         setAllBookingList(data);
       } catch (error) {
         console.error('Error fetching GETBOOKINGLIST_URL:', error);
@@ -97,7 +97,7 @@ const OrderOverview: React.FC = () => {
             className="page-title d-flex flex-wrap me-3 flex-column justify-content-center mb-3"
           >
             <h1 className="page-heading text-gray-900 fw-bold fs-3 mb-0">
-              ภาพรวม
+              ระบบจอง
             </h1>
             <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
               <li className="breadcrumb-item text-muted">
@@ -109,7 +109,7 @@ const OrderOverview: React.FC = () => {
               <li className="breadcrumb-item text-gray-900">ภาพรวม</li>
             </ul>
           </div>
-  
+
           <div className="d-flex justify-content-end mb-3">
             <button
               onClick={handleAddItemClick}
@@ -119,7 +119,7 @@ const OrderOverview: React.FC = () => {
             </button>
           </div>
         </div>
-  
+
         {/* Card Body */}
         <div className="card mb-10">
           <div className="card-body py-5">
@@ -129,7 +129,7 @@ const OrderOverview: React.FC = () => {
                 <ThreeDot />
               </div>
             )}
-  
+
             {!isLoading && allBookingList.length > 0 && (
               <>
                 {/* Dropdown สำหรับเลือกจำนวนรายการ */}
@@ -138,7 +138,7 @@ const OrderOverview: React.FC = () => {
                     onEntriesChange={(value) => setEntries(value)}
                   />
                 </div>
-  
+
                 {/* Start Table */}
                 <div className="table-responsive">
                   <table className="table table-rounded table-row-bordered border table-striped gs-7 mt-3">
@@ -192,7 +192,7 @@ const OrderOverview: React.FC = () => {
                   </table>
                 </div>
                 {/* End Table */}
-  
+
                 {/* Pagination */}
                 <div className="d-flex justify-content-center mt-4">
                   <PaginationTable
@@ -209,7 +209,7 @@ const OrderOverview: React.FC = () => {
         {/* End Card Body */}
       </Content>
     </>
-  );  
+  );
 }
 
 export { OrderOverview };
