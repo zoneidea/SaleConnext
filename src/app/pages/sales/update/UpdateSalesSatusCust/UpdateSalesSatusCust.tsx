@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom'
 import { KTIcon } from '../../../../../_metronic/helpers'
 import { Content } from '../../../../../_metronic/layout/components/content'
 import { UpdateCardStatusCustomer } from './UpdateCardStatusCustomer'
-import { useUUIDStore, useSaveProductStore } from '../../../../modules/stores/stepsStore';
 import { useAuth } from '../../../../modules/auth/core/Auth';
 import axios from 'axios';
 
@@ -58,13 +57,17 @@ interface SubDistrictItem {
   SUBDISTRICTCODE: string;
 }
 
+interface UpdateCardStatusCustomerProps {
+  customerStatus: any[];
+  handleCheckStatusCustomer: () => void;
+  onSelectCard: (item: any) => void; // ประกาศ callback เพื่อส่งข้อมูลกลับ Parent
+}
 
 const UpdateSalesSatusCust: React.FC = () => {
   const navigate = useNavigate();
   const MySwal = withReactContent(Swal);
 
   const [showModal, setShowModal] = useState(false); // เริ่มต้นโมดาลปิดอยู่
-  const { REFNO } = useUUIDStore();
   const { auth } = useAuth();
   // console.log(`auth`, auth);
 
@@ -83,7 +86,7 @@ const UpdateSalesSatusCust: React.FC = () => {
   const CHECK_OTP = `${API_THIENSURAT}/CheckCustomer/Check_otp`
 
   const API_MONGO = import.meta.env.VITE_APP_API_MONGO;
-  const GET_CONTRACT = `${API_MONGO}/Contract/GetContractSummary?refno=${REFNO}`;
+  const GET_CONTRACT = `${API_MONGO}/Contract/GetContractSummary?refno=${refno}`;
   const UPDATECONTACT = `${API_MONGO}/Contract/updateContract`;
   const GET_IMAGES_API = `${API_MONGO}/Contract/GetContractImage`;
 
@@ -101,7 +104,10 @@ const UpdateSalesSatusCust: React.FC = () => {
   const [error, setError] = useState<string>('');
 
   const [customerStatus, setCustomerStatus] = useState<any>(null);
-  // console.log(`customerStatus`, customerStatus);
+  console.log(`customerStatus`, customerStatus);
+
+  // เก็บข้อมูล customerStatus ของการ์ดที่ถูกเลือก
+  const [selectedCard, setSelectedCard] = useState<any>(null);
 
   const [getProvince, setGetProvince] = useState<any[]>([]);
   // console.log(`getProvince`, getProvince);
@@ -112,7 +118,7 @@ const UpdateSalesSatusCust: React.FC = () => {
   const [selectedSubDistrict, setSelectedSubDistrict] = useState<number>();
 
   const [statusCustomerContract, setStatusCustomerContract] = useState<any>(null);
-
+  console.log(`statusCustomerContract`, statusCustomerContract);
   // เช็คว่า user กดปุ่มค้นหาแล้วรึยัง
   const [isSearchDone, setIsSearchDone] = useState(false);
 
@@ -125,7 +131,7 @@ const UpdateSalesSatusCust: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const searchData = {
-    RefNo: REFNO,
+    RefNo: refno,
     Search: idCard,
     EmpId,
     ItemCode: ItemCode,
@@ -221,7 +227,7 @@ const UpdateSalesSatusCust: React.FC = () => {
       try {
         const response = await axios.post(CHECK_OTP, {
           EmpId: EmpId,
-          RefNo: REFNO,
+          RefNo: refno,
           Otp: 446981
         }, {
           headers: {
@@ -240,7 +246,7 @@ const UpdateSalesSatusCust: React.FC = () => {
     const fetchImages = async () => {
       try {
         const response = await axios.get(GET_IMAGES_API, {
-          params: { REFNO: item?.REFNO },
+          params: refno,
         });
 
         // ตรวจสอบว่า response.data เป็นไปตามโครงสร้างของ ImagesType
@@ -335,7 +341,7 @@ const UpdateSalesSatusCust: React.FC = () => {
     }
   };
 
-  const handleCheckStatusCustomer = () => {
+  const handleCheckStatusCustomer = (customer: any) => {
     if (!customerStatus) {
       Swal.fire({
         icon: 'error',
@@ -345,9 +351,19 @@ const UpdateSalesSatusCust: React.FC = () => {
       return;
     }
 
+    if (!customer) {
+      Swal.fire({
+        icon: 'error',
+        title: 'เกิดข้อผิดพลาด!',
+        text: 'ไม่พบข้อมูลการ์ดที่เลือก',
+      });
+      return;
+    }
+
     // กำหนด state เมื่อผู้ใช้คลิก CardStatusCustomer (เฉพาะเมื่อมีข้อมูลอยู่)
     if (customerStatus.length > 0) {
       setHasClickedCard(true);
+      setSelectedCard(customer);
     }
 
     const statusSale = customerStatus?.[0]?.StatusSale;
@@ -363,11 +379,12 @@ const UpdateSalesSatusCust: React.FC = () => {
       navigate('/sale/overview');
     } else if (statusSale === "1") {
       // กรณีผ่านการตรวจสอบ
+      saveCustomerStatus();
       // navigate('/sale/discount');
     } else if (statusSale === "2") {
       // ℹ️ กรณีต้องแสดงเนื้อหาในหน้าต่างใหม่
-      const refNo = REFNO;
-      const bookingNo = REFNO;
+      const refNo = refno;
+      const bookingNo = refno;
       const createBy = auth?.data?.[0]?.EmpId || '';
       const saleEmployeeCode = auth?.data?.[0]?.EmpId || '';
       const saleCode = auth?.data?.[0]?.saleCode || '';
@@ -443,21 +460,36 @@ const UpdateSalesSatusCust: React.FC = () => {
   };
 
   const saveCustomerStatus = async () => {
+    // ตัวอย่างการสร้าง dataPayload จาก selectedCard
+    const dataPayload =
+      (selectedCard?.StatusSale ||
+        selectedCard?.CustomerStatus ||
+        selectedCard?.Message ||
+        statusCustomerContract?.date?.OTP)
+        ? [
+          {
+            STATUSSALE: selectedCard?.StatusSale || '',
+            CUSTOMERSTATUS: selectedCard?.CustomerStatus || '',
+            MESSAGE: selectedCard?.Message || '',
+            OTP: statusCustomerContract?.date?.OTP || '',
+          },
+        ]
+        : 'ไม่พบประวัติลูกค้า';
+
     try {
-      const response = await axios.post(UPDATECONTACT, {
-        REFNO,
-        EMPID: EmpId,
-        TEAMSALE: TeamSale,
-        FIELD: 'CUSTOMERSTATUS',
-        DATA: [{
-          STATUSSALE: customerStatus[0]?.StatusSale,
-          STATUSTEXT: statusCustomerContract.statustext,
-          MESSAGE: statusCustomerContract.message,
-          OTP: statusCustomerContract.date.OTP
-        }]
-      }, {
-        headers: { 'Content-Type': 'application/json' },
-      });
+      const response = await axios.post(
+        UPDATECONTACT,
+        {
+          REFNO: refno,
+          EMPID: EmpId,
+          TEAMSALE: TeamSale,
+          FIELD: 'CUSTOMERSTATUS',
+          DATA: dataPayload,
+        },
+        {
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
 
       console.log('API Update Response:', response.data);
 
@@ -466,11 +498,10 @@ const UpdateSalesSatusCust: React.FC = () => {
         title: 'สำเร็จ!',
         text: 'บันทึกข้อมูลเรียบร้อยแล้ว',
         timer: 2000,
-        showConfirmButton: false
+        showConfirmButton: false,
       }).then(() => {
         // navigate('/sale/discount');
       });
-
     } catch (error) {
       console.error('Error while updating contract:', error);
       Swal.fire({
@@ -482,6 +513,23 @@ const UpdateSalesSatusCust: React.FC = () => {
   };
 
   const handleNextClick = () => {
+    // ถ้าไม่พบประวัติลูกค้า ให้เรียก saveCustomerStatus ทันที
+    if (!customerStatus || customerStatus.length === 0) {
+      saveCustomerStatus();
+      return;
+    }
+
+    // ตรวจสอบ statusSale จากการ์ดที่เลือก (selectedCard) หรือ fallback ที่ customerStatus[0]
+    const statusSale = selectedCard?.StatusSale || customerStatus?.[0]?.StatusSale;
+
+    // ถ้า statusSale === "1" ให้ข้ามการเรียก OTP
+    if (statusSale === "1") {
+      // เรียกฟังก์ชันบันทึกข้อมูล หรือจะ navigate ต่อเลยก็ได้
+      saveCustomerStatus();
+      return;
+    }
+
+    // กรณีที่มีข้อมูลลูกค้า (ผ่านการค้นหา) ให้ทำ OTP ตามเดิม
     Swal.fire({
       title: 'กรุณากรอก OTP',
       input: 'text',
@@ -502,7 +550,7 @@ const UpdateSalesSatusCust: React.FC = () => {
 
         return axios.post(CHECK_OTP, {
           EmpId: EmpId,
-          RefNo: REFNO,
+          RefNo: refno,
           Otp: otp
         }, {
           headers: { 'Content-Type': 'multipart/form-data' }
@@ -711,11 +759,12 @@ const UpdateSalesSatusCust: React.FC = () => {
 
             {/* CardStatusCustomer Component */}
             <div className='row'>
-              <div className='col-12 col-md-6 col-xl-4'>
-                {!isLoading && customerStatus && customerStatus.length > 0 && (
-                  <UpdateCardStatusCustomer customerStatus={customerStatus} handleCheckStatusCustomer={handleCheckStatusCustomer} />
-                )}
-              </div>
+              {!isLoading && customerStatus && customerStatus.length > 0 && (
+                <UpdateCardStatusCustomer
+                  customerStatus={customerStatus}
+                  handleCheckStatusCustomer={handleCheckStatusCustomer}
+                />
+              )}
             </div>
             {/* End CardStatusCustomer Component */}
           </div>

@@ -132,7 +132,7 @@ const SidebarMenuMain = () => {
           />
         ))}
 
-      <div style={{ color: '#9A9CAE' }} className="mt-4 text-end">
+      <div style={{ color: '#9A9CAE' }} className="mt-8 text-center">
         version {APP_VERSION}
       </div>
       

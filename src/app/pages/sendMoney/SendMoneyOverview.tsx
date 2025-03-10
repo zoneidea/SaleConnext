@@ -15,6 +15,8 @@ const SendMoneyOverview: React.FC = () => {
 
   const [dataSendMoney, setDataSendMoney] = useState<any[]>([]);
   console.log(`dataSendMoney`, dataSendMoney);
+  const [dataCreatedSendMoney, setDataCreatedSendMoney] = useState<any[]>([]);
+  console.log(`dataCreatedSendMoney`, dataCreatedSendMoney);
 
   const [search, setSearch] = useState<string>(''); // State สำหรับค้นหา
 
@@ -32,6 +34,7 @@ const SendMoneyOverview: React.FC = () => {
 
   const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
   const GET_SEND_MONEY = `${API_SALECONNEXT}/GetSendMoney/GetData`;
+  const GET_DATA_SEND_MONEY = `${API_SALECONNEXT}/GetSendMoney/GetData_Send`
 
   // console.log('EmpId:', EmpId);
   // console.log('TeamSale:', TeamSale);
@@ -39,6 +42,7 @@ const SendMoneyOverview: React.FC = () => {
 
   useEffect(() => {
     getDataSendMoney();
+    getDataCreatedSendMoney()
   }, []);
 
   const getDataSendMoney = async () => {
@@ -49,9 +53,9 @@ const SendMoneyOverview: React.FC = () => {
       // formData.append('TeamSale', TeamSale);
       // formData.append('SaleCode', SaleCode);
 
-      formData.append('EmpId', "A00110");
-      formData.append('TeamSale', "C06AA-11");
-      formData.append('SaleCode', "C06AA00740000");
+      formData.append('EmpId', EmpId);
+      formData.append('TeamSale', TeamSale);
+      formData.append('SaleCode', SaleCode);
 
       const response = await axios.post(GET_SEND_MONEY, formData, {
         headers: {
@@ -68,9 +72,31 @@ const SendMoneyOverview: React.FC = () => {
     }
   };
 
-  const handleAddItemClick = () => {
-    SETREFNO();
-    navigate('/sale/package');
+  const getDataCreatedSendMoney = async () => {
+    setIsLoadingFinish(true);
+    try {
+      const formData = new FormData();
+      // formData.append('EmpId', EmpId);
+      // formData.append('TeamSale', TeamSale);
+      // formData.append('SaleCode', SaleCode);
+
+      formData.append('EmpId', EmpId);
+      formData.append('TeamSale', TeamSale);
+      formData.append('SaleCode', SaleCode);
+
+      const response = await axios.post(GET_DATA_SEND_MONEY, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      const data = Array.isArray(response.data.data) ? response.data.data : [];
+      setDataCreatedSendMoney(data);
+    } catch (error) {
+      console.error('Error fetching GET_DATA_SEND_MONEY:', error);
+    } finally {
+      setIsLoadingFinish(false);
+    }
   };
 
   // กรองข้อมูลตาม search
@@ -85,22 +111,22 @@ const SendMoneyOverview: React.FC = () => {
     )
     : dataSendMoney;
 
-  // const filteredFinish = search
-  //   ? finish.filter((item) =>
-  //     (item.CUSTOMERDETAIL?.[0]?.CUSTOMERNAME || "").toLowerCase().includes(searchLower) ||
-  //     (item.PRODUCT?.[0]?.Package?.[0]?.PACKAGETITLE || "").toLowerCase().includes(searchLower) ||
-  //     (item.PRODUCT?.[0]?.ItemDescription || "").toLowerCase().includes(searchLower) ||
-  //     (item.PRODUCT?.[0]?.SerialNo || "").toLowerCase().includes(searchLower)
-  //   )
-  //   : finish;
+  const filteredFinish = search
+    ? dataCreatedSendMoney.filter((item) =>
+      (item.CUSTOMERDETAIL?.[0]?.CUSTOMERNAME || "").toLowerCase().includes(searchLower) ||
+      (item.PRODUCT?.[0]?.Package?.[0]?.PACKAGETITLE || "").toLowerCase().includes(searchLower) ||
+      (item.PRODUCT?.[0]?.ItemDescription || "").toLowerCase().includes(searchLower) ||
+      (item.PRODUCT?.[0]?.SerialNo || "").toLowerCase().includes(searchLower)
+    )
+    : dataCreatedSendMoney;
 
   // Pagination logic for Draft
   const draftStartIndex = (currentPageDraft - 1) * entries;
   const draftDisplayedData = filteredDraft.slice(draftStartIndex, draftStartIndex + entries);
 
   // Pagination logic for Finish
-  // const finishStartIndex = (currentPageFinish - 1) * entries;
-  // const finishDisplayedData = filteredFinish.slice(finishStartIndex, finishStartIndex + entries);
+  const finishStartIndex = (currentPageFinish - 1) * entries;
+  const finishDisplayedData = filteredFinish.slice(finishStartIndex, finishStartIndex + entries);
 
   return (
     <Content>
@@ -114,10 +140,6 @@ const SendMoneyOverview: React.FC = () => {
             <li className="breadcrumb-item text-gray-900">ภาพรวม</li>
           </ul>
         </div>
-
-        <button onClick={handleAddItemClick} className='btn btn-primary'>
-          เพิ่มรายการ
-        </button>
       </div>
 
       <div className='card mb-10'>
@@ -138,7 +160,7 @@ const SendMoneyOverview: React.FC = () => {
                 className="nav-link"
                 data-bs-toggle="tab"
                 href="#kt_tab_pane_2"
-                onClick={getDataSendMoney}
+                onClick={getDataCreatedSendMoney}
               >
                 รายการสร้างใบส่งเงินแล้ว
               </a>
@@ -204,7 +226,7 @@ const SendMoneyOverview: React.FC = () => {
 
                 </>
               ) : (
-                <p className="text-gray-600 text-center mt-3">ไม่มีรายการคงค้าง</p>
+                <p className="text-gray-600 text-center mt-3">ไม่มีรายการที่รอสร้าง</p>
               )}
             </div>
 
@@ -214,20 +236,20 @@ const SendMoneyOverview: React.FC = () => {
                 <div className="text-center my-10">
                   <ThreeDot />
                 </div>
-              ) : filteredDraft.length > 0 ? (
+              ) : filteredFinish.length > 0 ? (
                 <>
-                  {filteredDraft.map((item, index) => (
+                  {filteredFinish.map((item, index) => (
                     <SendMoneyItemNumber
                       key={index}
                       status="FINISH"
                       item={item}
-                      onDelete={getDataSendMoney}
+                      onDelete={getDataCreatedSendMoney}
                     />
                   ))}
 
                   <div className='d-none d-xl-flex justify-content-end align-items-center mt-5'>
                     <PaginationTable
-                      totalData={filteredDraft.length}
+                      totalData={filteredFinish.length}
                       entries={entries}
                       currentPage={currentPageFinish}
                       onPageChange={setCurrentPageFinish}
@@ -246,7 +268,7 @@ const SendMoneyOverview: React.FC = () => {
                     }}
                   >
                     <PaginationTable
-                      totalData={filteredDraft.length}
+                      totalData={filteredFinish.length}
                       entries={entries}
                       currentPage={currentPageFinish}
                       onPageChange={setCurrentPageFinish}

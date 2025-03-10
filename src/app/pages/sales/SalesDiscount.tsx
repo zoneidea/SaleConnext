@@ -10,6 +10,11 @@ import { useSaveDiscountStore } from '../../modules/stores/stepsStore';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 
+interface SalesEmployeePayload {
+    SALEEMPLOYEE: any;
+    ADVISER?: any;
+}
+
 const SalesDiscount: React.FC = () => {
     const navigate = useNavigate();
     const MySwal = withReactContent(Swal);
@@ -29,6 +34,7 @@ const SalesDiscount: React.FC = () => {
 
     const API_URL_TSR = import.meta.env.VITE_APP_API_THIENSURAT;
     const EMP_IN_TEAM_URL = `${API_URL_TSR}/Employee_Structure`;
+    const ADVISER_URL = `${API_URL_TSR}/Employee_Structure/Emp_All`;
 
     const { REFNO } = useUUIDStore();
     const { PRODUCT } = useSaveProductStore();
@@ -49,15 +55,16 @@ const SalesDiscount: React.FC = () => {
 
     // ตรวจสอบว่ามีข้อมูล PRODUCT หรือไม่ก่อนที่จะดึงข้อมูลจากมัน
     const hasTradeIn = PRODUCT?.[0]?.Package?.[0]?.HASTRADEIN ?? 0;
-    // console.log(`hasTradeIn`, hasTradeIn);
 
     const totalPrice = PRODUCT?.[0]?.Package?.[0]?.TOTALPRICE ?? 0;
     const discountPrice = PRODUCT?.[0]?.Package?.[0]?.DISCOUNTPRICE ?? 0;
-    // console.log(`discountPrice`, discountPrice);
 
     const sequence = PRODUCT?.[0]?.Package?.[0]?.SEQUENCE ?? 0;
     const freeGift = PRODUCT?.[0]?.Package?.[0]?.FREEGIFT ?? [];
-    // console.log(`freeGift`, freeGift);
+
+    console.log(`hasTradeIn`, hasTradeIn);
+    console.log(`discountPrice`, discountPrice);
+    console.log(`freeGift`, freeGift);
 
     // console.log(`selectedGift`, freeGift[selectedGiftId-1]?.GIFTCODE);
 
@@ -67,7 +74,7 @@ const SalesDiscount: React.FC = () => {
 
     // EmpInTeam
     const [empInTeam, setEmpInTeam] = useState<any[]>([]);
-    // console.log(`empInTeam`, empInTeam)
+    const [adviserList, setAdviserList] = useState<any[]>([]);
 
     // อัปเดต selectedTradeInBrandName เมื่อ selectedTurnId หรือ tradeInBrand เปลี่ยน
     useEffect(() => {
@@ -222,100 +229,151 @@ const SalesDiscount: React.FC = () => {
         getEmpInTeam();
     }, []);
 
+    useEffect(() => {
+        const getAdviserData = async () => {
+            try {
+                const formData = new FormData();
+                formData.append('EmpId', EmpId);
+
+                const response = await axios.post(ADVISER_URL, formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                });
+                const data = Array.isArray(response.data.data) ? response.data.data : [];
+                setAdviserList(data);
+            } catch (error) {
+                console.error('Error fetching ADVISER_URL:', error);
+            }
+        };
+        getAdviserData();
+    }, []);
+
     // POST Contract/updateContract
     const handleNextClick = async () => {
         try {
-            // สร้าง inputOptions จาก empInTeam
+            // สร้าง inputOptions สำหรับพนักงานขาย จาก empInTeam
             const empOptions = empInTeam.reduce((options, emp) => {
                 const fullName = `${emp.FName} ${emp.LName}`; // รวม FName และ LName
                 options[emp.SaleEmp] = fullName; // ใช้ SaleEmp เป็น key
                 return options;
             }, {});
 
-            // แสดง popup ให้ผู้ใช้เลือกพนักงาน
-            const { value: selectedEmpId } = await MySwal.fire({
-                title: 'เลือกพนักงานขาย',
-                input: 'select',
-                inputOptions: empOptions,
-                inputPlaceholder: 'กรุณาเลือกพนักงานขาย...',
+            // สร้าง prompt ด้วย custom HTML เพื่อให้เลือกพนักงานขายและผู้แนะนำ
+            const { value: formValues } = await MySwal.fire({
+                title: 'เลือกพนักงานขายและผู้แนะนำ (ถ้ามี)',
+                html: `
+                  <select id="swal-employee" class="swal2-input" style="width: 100%; margin-bottom: 1rem;">
+                    <option value="">เลือกพนักงานขาย...</option>
+                    ${Object.entries(empOptions)
+                        .map(([key, value]) => `<option value="${key}">${value}</option>`)
+                        .join('')}
+                  </select>
+                  <select id="swal-adviser" class="swal2-input" style="width: 100%;">
+                    <option value="">เลือกผู้แนะนำ (ถ้ามี)...</option>
+                    ${adviserList
+                        .map(emp => `<option value="${emp.SaleEmp}">${emp.FName} ${emp.LName}</option>`)
+                        .join('')}
+                  </select>
+                `,
+                focusConfirm: false,
                 showCancelButton: true,
                 confirmButtonText: 'ตกลง',
                 cancelButtonText: 'ยกเลิก',
+                preConfirm: () => {
+                    const employee = (document.getElementById('swal-employee') as HTMLSelectElement).value;
+                    const adviser = (document.getElementById('swal-adviser') as HTMLSelectElement).value;
+                    if (!employee) {
+                        Swal.showValidationMessage('กรุณาเลือกพนักงานขาย');
+                    }
+                    return { employee, adviser };
+                },
             });
 
-            // หากผู้ใช้ยืนยันและเลือกพนักงาน
-            if (selectedEmpId) {
+            if (formValues && formValues.employee) {
                 // ดึงข้อมูลพนักงานที่เลือกจาก empInTeam
-                const selectedEmployee = empInTeam.find((emp) => emp.SaleEmp === selectedEmpId);
+                const selectedEmployee = empInTeam.find((emp) => emp.SaleEmp === formValues.employee);
 
-                // POST Contract/updateContract (สำหรับข้อมูลพนักงานที่เลือก)
-                await axios.post(UPDATECONTACT, {
-                    REFNO,
-                    EMPID: EmpId,
-                    TEAMSALE: TeamSale,
-                    FIELD: 'SALEEMPLOYEE', // ฟิลด์สำหรับอัปเดตพนักงาน
-                    DATA: selectedEmployee, // ส่งข้อมูลพนักงานทั้งก้อน
-                }, {
-                    headers: {
-                        'Content-Type': 'application/json',
+                // สร้าง payload ด้วย type ที่กำหนดไว้
+                const payload: {
+                    SALEEMPLOYEE: any;
+                    ADVISER?: {
+                        SaleEmp: string;
+                        SaleCode: string;
+                    };
+                } = {
+                    SALEEMPLOYEE: selectedEmployee,
+                };
+
+                // หากมีการเลือกผู้แนะนำ (optional) ให้เพิ่มข้อมูลผู้แนะนำเข้าไปใน payload
+                if (formValues.adviser) {
+                    const selectedAdviser = adviserList.find((emp) => emp.SaleEmp === formValues.adviser);
+                    if (selectedAdviser) {
+                        payload.ADVISER = selectedAdviser;
+                    }
+                }
+
+                // POST Contract/updateContract (สำหรับข้อมูลพนักงานที่เลือกและผู้แนะนำ)
+                await axios.post(
+                    UPDATECONTACT,
+                    {
+                        REFNO,
+                        EMPID: EmpId,
+                        TEAMSALE: TeamSale,
+                        FIELD: 'SALEEMPLOYEE',
+                        DATA: [payload],
                     },
-                });
+                    {
+                        headers: { 'Content-Type': 'application/json' },
+                    }
+                );
 
-                // console.log('Payload to API:', {
-                //     DATA: selectedEmployee,
-                // });
-
-                // แสดง popup ว่าข้อมูลพนักงานถูกบันทึกแล้ว
+                // แสดง popup ว่าข้อมูลพนักงานและผู้แนะนำถูกบันทึกแล้ว
                 await MySwal.fire({
                     icon: 'success',
                     title: 'บันทึกสำเร็จ!',
-                    text: `ข้อมูลพนักงาน "${selectedEmployee.FName} ${selectedEmployee.LName}" ถูกบันทึกเรียบร้อยแล้ว`,
-                    timer: 2000, // แสดงผล 3 วินาที
-                    showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
+                    text: `ข้อมูลพนักงานขาย "${selectedEmployee.FName} ${selectedEmployee.LName}"${formValues.adviser ? ` และ ผู้แนะนำถูกบันทึกเรียบร้อยแล้ว` : ''
+                        }`,
+                    timer: 2000,
+                    showConfirmButton: false,
                 });
 
                 // POST Contract/updateContract (สำหรับส่วนลด)
-                const discountUpdateResponse = await axios.post(UPDATECONTACT, {
-                    REFNO,
-                    EMPID: EmpId,
-                    TEAMSALE: TeamSale,
-                    SALECODE: SaleCode,
-                    SUPEMPID: SupEmpId,
-                    SECEMPID: SecEmpId,
-                    FIELD: 'DISCOUNT',
-                    DATA: SaveDiscountData,
-                }, {
-                    headers: {
-                        'Content-Type': 'application/json',
+                const discountUpdateResponse = await axios.post(
+                    UPDATECONTACT,
+                    {
+                        REFNO,
+                        EMPID: EmpId,
+                        TEAMSALE: TeamSale,
+                        SALECODE: SaleCode,
+                        SUPEMPID: SupEmpId,
+                        SECEMPID: SecEmpId,
+                        FIELD: 'DISCOUNT',
+                        DATA: SaveDiscountData,
                     },
-                });
+                    {
+                        headers: { 'Content-Type': 'application/json' },
+                    }
+                );
 
-                // ใช้งาน response เพื่อตรวจสอบผลลัพธ์
                 if (discountUpdateResponse.status === 200) {
                     console.log('ส่วนลดบันทึกสำเร็จ:', discountUpdateResponse.data);
                 } else {
                     console.log('เกิดข้อผิดพลาดในการบันทึกส่วนลด:', discountUpdateResponse.status);
                 }
 
-                // แสดง popup สำเร็จสำหรับส่วนลด
                 await MySwal.fire({
                     icon: 'success',
                     title: 'บันทึกสำเร็จ!',
                     text: 'ข้อมูลส่วนลดถูกบันทึกเรียบร้อยแล้ว',
-                    timer: 2000, // แสดงผล 3 วินาที
-                    showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
+                    timer: 2000,
+                    showConfirmButton: false,
                 });
 
-                // นำทางไปยังหน้าอื่น (เช่น /sale/createcust)
                 navigate('/sale/createcust');
             } else {
-                // ผู้ใช้กดยกเลิก
                 MySwal.fire('ยกเลิก!', 'การดำเนินการถูกยกเลิก', 'info');
             }
         } catch (error) {
             console.error('Error fetching UPDATECONTACT:', error);
-
-            // แสดง popup ข้อผิดพลาด
             MySwal.fire({
                 icon: 'error',
                 title: 'เกิดข้อผิดพลาด!',
@@ -455,37 +513,41 @@ const SalesDiscount: React.FC = () => {
                         </div>
                     )}
 
-                    {!discountPrice && discountPrice !== 0 && (
-                        <div className='accordion-item mb-10'>
-                            <h2 className='accordion-header' id='kt_accordion_2_header_2'>
-                                <h3
-                                    className='accordion-button fs-4 fw-bold collapsed border-0 h-50px pt-5 rounded-top px-lg-15 px-7'
-                                    data-bs-toggle='collapse'
-                                    data-bs-target='#kt_accordion_2_body_2'
-                                    aria-expanded='true'
-                                    aria-controls='kt_accordion_2_body_2'
-                                    style={{ color: 'white', cursor: 'pointer', backgroundColor: '#3777bc' }}
+                    {
+                        (
+                            (!Array.isArray(discountPrice) && discountPrice !== 0 && discountPrice !== null) ||
+                            (Array.isArray(discountPrice) && discountPrice.length > 0)
+                        ) && (
+                            <div className='accordion-item mb-10'>
+                                <h2 className='accordion-header' id='kt_accordion_2_header_2'>
+                                    <h3
+                                        className='accordion-button fs-4 fw-bold collapsed border-0 h-50px pt-5 rounded-top px-lg-15 px-7'
+                                        data-bs-toggle='collapse'
+                                        data-bs-target='#kt_accordion_2_body_2'
+                                        aria-expanded='true'
+                                        aria-controls='kt_accordion_2_body_2'
+                                        style={{ color: 'white', cursor: 'pointer', backgroundColor: '#3777bc' }}
+                                    >
+                                        ส่วนลด
+                                    </h3>
+                                </h2>
+                                <div
+                                    id='kt_accordion_2_body_2'
+                                    className='accordion-collapse collapse show'
+                                    aria-labelledby='kt_accordion_2_header_2'
+                                    data-bs-parent='#kt_accordion_2'
                                 >
-                                    ส่วนลด
-                                </h3>
-                            </h2>
-                            <div
-                                id='kt_accordion_2_body_2'
-                                className='accordion-collapse collapse show'
-                                aria-labelledby='kt_accordion_2_header_2'
-                                data-bs-parent='#kt_accordion_2'
-                            >
-                                <div className='accordion-body'>
-                                    <form noValidate className='form'>
-                                        <div className='card-body px-lg-9 px-1'>
-                                            <div className='row mb-6'>
-                                                <div className='col-lg-6 mb-3'>
-                                                    <label className='form-label fw-bold fs-6'>ราคา</label>
-                                                    <p className='form-control mb-3 mb-lg-0'>
-                                                        {(finalPrice).toLocaleString()}
-                                                    </p>
-                                                </div>
-                                                {/* <div className='col-lg-6 mb-3'>
+                                    <div className='accordion-body'>
+                                        <form noValidate className='form'>
+                                            <div className='card-body px-lg-9 px-1'>
+                                                <div className='row mb-6'>
+                                                    <div className='col-lg-6 mb-3'>
+                                                        <label className='form-label fw-bold fs-6'>ราคา</label>
+                                                        <p className='form-control mb-3 mb-lg-0'>
+                                                            {(finalPrice).toLocaleString()}
+                                                        </p>
+                                                    </div>
+                                                    {/* <div className='col-lg-6 mb-3'>
                                                     <label className='form-label fw-bold fs-6'>ส่วนลด</label>
                                                     <div className='d-flex align-items-center'>
                                                         <button className='btn btn-light-primary' type='button' onClick={handleDecrement}>
@@ -499,28 +561,28 @@ const SalesDiscount: React.FC = () => {
                                                         </button>
                                                     </div>
                                                 </div> */}
-                                                <div className='col-lg-6 mb-3'>
-                                                    <label className='form-label fw-bold fs-6'>ส่วนลด</label>
-                                                    <div className='d-flex align-items-center'>
-                                                        <input
-                                                            type="text"
-                                                            className={`form-control`}
-                                                            onChange={(e) => handleDiscountChange(e.target.value)}
-                                                        />
-                                                    </div>
-                                                    {discountValidationMessage && (
-                                                        <div className={`mt-2 text-${discountValidationMessage.type}`}>
-                                                            {discountValidationMessage.message}
+                                                    <div className='col-lg-6 mb-3'>
+                                                        <label className='form-label fw-bold fs-6'>ส่วนลด</label>
+                                                        <div className='d-flex align-items-center'>
+                                                            <input
+                                                                type="text"
+                                                                className={`form-control`}
+                                                                onChange={(e) => handleDiscountChange(e.target.value)}
+                                                            />
                                                         </div>
-                                                    )}
+                                                        {discountValidationMessage && (
+                                                            <div className={`mt-2 text-${discountValidationMessage.type}`}>
+                                                                {discountValidationMessage.message}
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </form>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
                     {freeGift.length > 0 && (
                         <div className='accordion-item mb-10'>
@@ -569,11 +631,19 @@ const SalesDiscount: React.FC = () => {
                     )}
                 </div>
 
-                {(hasTradeIn == 0 || !hasTradeIn) && (discountPrice == 0 || !discountPrice) && (freeGift.length === 0) && (
-                    <div className='text-center my-20'>
-                        <h5>ไม่มี เครื่องเทิร์น / ส่วนลด / ของแถม</h5>
-                    </div>
-                )}
+                {
+                    (hasTradeIn !== 1) &&
+                    (
+                        Array.isArray(discountPrice)
+                            ? discountPrice.length === 0
+                            : discountPrice === 0
+                    ) &&
+                    (freeGift.length === 0) && (
+                        <div className='text-center my-20'>
+                            <h5>ไม่มี เครื่องเทิร์น / ส่วนลด / ของแถม</h5>
+                        </div>
+                    )
+                }
 
                 <div className='d-none d-xl-flex justify-content-between align-items-center mt-5 mb-10'>
                     <button

@@ -480,12 +480,26 @@ const UpdateSaleCustDetail: React.FC = () => {
     };
 
     const handleDateChange = (date: Date | null) => {
-        setValueCalendar(date);
         if (date) {
             const calculatedAge = dayjs().diff(dayjs(date), 'year');
+            if (calculatedAge <= 18) {
+                MySwal.fire({
+                    icon: 'warning',
+                    title: 'อายุไม่ถึงเกณฑ์',
+                    text: 'อายุต้องมากกว่า 18 ปีขึ้นไปจึงทำรายการได้',
+                })
+                // เคลียร์ค่าใน DatePicker และอายุ
+                setValueCalendar(null);
+                setValueAge(null);
+                return; // ยกเลิกการ set ค่าอื่น ๆ ต่อ
+            }
+            // ถ้าอายุมากกว่า 18 ก็ set ค่าให้ปกติ
+            setValueCalendar(date);
             setValueAge(calculatedAge);
         } else {
-            setValueAge(null); // ตั้งค่าเป็น null หากผู้ใช้ล้างฟิลด์วันเดือนปีเกิด
+            // กรณีลบวันที่ทิ้ง
+            setValueCalendar(null);
+            setValueAge(null);
         }
     };
 

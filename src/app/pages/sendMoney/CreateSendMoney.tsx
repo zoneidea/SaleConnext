@@ -18,6 +18,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import 'react-datetime-picker/dist/DateTimePicker.css';
 import 'react-calendar/dist/Calendar.css';
 import 'react-clock/dist/Clock.css';
+import { log } from 'node:console';
 
 interface ItemProps {
     AMOUNT: number,
@@ -32,10 +33,6 @@ const CreateSendMoney: React.FC = () => {
     const navigate = useNavigate()
     const location = useLocation();
     const MySwal = withReactContent(Swal);
-
-    const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
-    const GET_CHANNEL = `${API_SALECONNEXT}/GetSendMoney/GetChannel`;
-    const GET_CHANNEL_ITEM = `${API_SALECONNEXT}/GetSendMoney/GetChannelItem`;
 
     const { auth } = useAuth();
     const EmpId = auth?.data?.[0]?.EmpId || '';
@@ -53,16 +50,26 @@ const CreateSendMoney: React.FC = () => {
     const payDate = item.PAYDATE
     const paymentType = item.PaymentType[0]?.PAYMENTTYPE
 
-    const [valueCalendarPayment, setValueCalendarPayment] = useState<Date | null>(null);
+    const [valueCalendarPayment, setValueCalendarPayment] = useState<string>('');
+    console.log(`valueCalendarPayment`, valueCalendarPayment);
     const [channelSendMoney, setChannelSendMoney] = useState<any[]>([]);
-    // console.log(`channelSendMoney`, channelSendMoney);
+    console.log(`channelSendMoney`, channelSendMoney);
     const [subChannelSendMoney, setSubChannelSendMoney] = useState<any[]>([]);
     console.log(`subChannelSendMoney`, subChannelSendMoney);
-    const [selectedChannel, setSelectedChannel] = useState<number>();
+    const [selectedChannel, setSelectedChannel] = useState<string>('');
     console.log(`selectedChannel`, selectedChannel);
-    const [selectedSubChannel, setSelectedSubChannel] = useState<number>();
+    const [selectedSubChannel, setSelectedSubChannel] = useState<string>('');
+    console.log(`selectedSubChannel`, selectedSubChannel);
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
+
+    const isFormValid = Boolean(valueCalendarPayment && selectedChannel && selectedSubChannel);
+
+    const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
+    const GET_CHANNEL = `${API_SALECONNEXT}/GetSendMoney/GetChannel`;
+    const GET_CHANNEL_ITEM = `${API_SALECONNEXT}/GetSendMoney/GetChannelItem`;
+    const SEND_MONEY =
+        `${API_SALECONNEXT}/CreateSendMoney?EmpId=${EmpId}&TeamSale=${TeamSale}&SaleCode=${SaleCode}&SendDate=${valueCalendarPayment}&PaymentType=${paymentType}&PaymentDate=${payDate}&ChannelItemId=${selectedSubChannel}&SendAmount=${amount}&OrganizationCode=${organizationCode}`;
 
     useEffect(() => {
         getChannelSendMoney();
@@ -99,30 +106,72 @@ const CreateSendMoney: React.FC = () => {
                             'Content-Type': 'multipart/form-data',
                         }
                     });
-                    setSubChannelSendMoney(response.data); // เซ็ตข้อมูลที่ได้รับ
+                    console.log('GET_CHANNEL_ITEM response:', response);
+                    const data = Array.isArray(response.data.data) ? response.data.data : [];
+                    setSubChannelSendMoney(data); // เซ็ตข้อมูลที่ได้รับ
                 } catch (error) {
                     console.error('Error fetching sub channels:', error);
                 }
             } else {
-                setSubChannelSendMoney([]); // ล้างค่าถ้าไม่มีสถานที่นำส่งเงินที่เลือก
+                setSubChannelSendMoney([]);
             }
         };
         getData();
     }, [selectedChannel]);
 
     const handleDateChangePayment = (date: Date | null) => {
-        setValueCalendarPayment(date);
+        setValueCalendarPayment(date ? dayjs(date).format('YYYY-MM-DD') : '');
     };
 
     const handleChannelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const value = Number(e.target.value);
+        const value = e.target.value;
         setSelectedChannel(value);
-        setSelectedSubChannel(undefined); // ล้างค่าของสาขาย่อยเมื่อเปลี่ยนสถานที่นำส่งเงิน
+        setSelectedSubChannel(''); // ล้างค่าของสาขาย่อยเมื่อเปลี่ยนสถานที่นำส่งเงิน
     };
 
     const handleSubChannelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const value = Number(e.target.value);
+        const value = e.target.value;
         setSelectedSubChannel(value);
+    };
+
+    const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        if (!isFormValid) return;
+        try {
+            // Prepare form-data payload
+            const formData = new FormData();
+            formData.append("EmpId", EmpId);
+            formData.append("TeamSale", TeamSale);
+            formData.append("SaleCode", SaleCode);
+            formData.append("SendDate", valueCalendarPayment);
+            formData.append("PaymentType", paymentType);
+            formData.append("PaymentDate", payDate);
+            formData.append("ChannelItemId", selectedSubChannel);
+            formData.append("SendAmount", amount.toString());
+            formData.append("OrganizationCode", organizationCode);
+            const response = await axios.post(SEND_MONEY, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                }
+            });
+            // console.log("API response:", response);
+            if (response.data.status && response.data.status >= 400) {
+                Swal.fire("Error", response.data.message || "เกิดข้อผิดพลาดในการส่งข้อมูล", "error");
+                return;
+            }
+            Swal.fire({
+                title: "สำเร็จ",
+                text: "บันทึกรายการส่งเงินสำเร็จ",
+                icon: "success",
+                timer: 2000,
+                showConfirmButton: false
+            }).then(() => {
+                navigate('/sendmoney/SendMoneySummary', { state: { responseData: response.data.data } });
+            });
+        } catch (error) {
+            console.error("Error submitting data:", error);
+            Swal.fire("Error", "เกิดข้อผิดพลาดในการส่งข้อมูล", "error");
+        }
     };
 
     return (
@@ -180,7 +229,7 @@ const CreateSendMoney: React.FC = () => {
                                                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                                                             <label className="form-label required fw-bold fs-6">วันที่นำส่งเงิน</label>
                                                             <DatePicker
-                                                                selected={valueCalendarPayment}
+                                                                selected={valueCalendarPayment ? new Date(valueCalendarPayment) : null}
                                                                 onChange={handleDateChangePayment}
                                                                 className="form-control mb-3 mb-lg-0"
                                                                 showYearDropdown
@@ -258,7 +307,7 @@ const CreateSendMoney: React.FC = () => {
                                                         >
                                                             <option value=''>เลือกสถานที่นำส่งเงิน...</option>
                                                             {channelSendMoney.map((item, index) => (
-                                                                <option key={index} value={item.CHANNELITEMID}>
+                                                                <option key={index} value={item.CHANNELID}>
                                                                     {item.CHANNELNAME}
                                                                 </option>
                                                             ))}
@@ -273,13 +322,38 @@ const CreateSendMoney: React.FC = () => {
                                                         >
                                                             <option value=''>เลือกสาขาย่อย...</option>
                                                             {subChannelSendMoney.map((item, index) => (
-                                                                <option key={index} value={item.SUBCHANNELID}>
-                                                                    {item.SUBCHANNELNAME}
+                                                                <option key={index} value={item.CHANNELITEMID}>
+                                                                    {item.CHANNELITEMNAME}
                                                                 </option>
                                                             ))}
                                                         </select>
                                                     </div>
                                                 </div>
+                                                {/* Conditional inputs based on selectedChannel */}
+                                                {selectedChannel === '307D09CEB5554F27A1FAA61E4E33CFC6' && (
+                                                    <div className="row mb-6">
+                                                        <div className="col-lg-4 mb-3">
+                                                            <label className="form-label fw-bold fs-6">ชื่อผู้รับเงิน</label>
+                                                            <input type="text" className="form-control" />
+                                                        </div>
+                                                        <div className="col-lg-4 mb-3">
+                                                            <label className="form-label fw-bold fs-6">เลขที่อ้างอิง</label>
+                                                            <input type="text" className="form-control"></input>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {selectedChannel === 'A42D219AE52049059FEE2783F5289B2D' && (
+                                                    <div className="row mb-6">
+                                                        <div className="col-lg-4 mb-3">
+                                                            <label className="form-label fw-bold fs-6">สาขา</label>
+                                                            <input type="text" className="form-control" />
+                                                        </div>
+                                                        <div className="col-lg-4 mb-3">
+                                                            <label className="form-label fw-bold fs-6">เลขที่อ้างอิง</label>
+                                                            <input type="text" className="form-control" />
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </form>
@@ -300,8 +374,8 @@ const CreateSendMoney: React.FC = () => {
                         </button>
                         <button
                             className={`btn btn-primary w-100 w-md-auto align-self-center h-50px`}
-                        // disabled={!isDataComplete}
-                        // onClick={handleCheckerClick}
+                            onClick={handleSubmit}
+                            disabled={!isFormValid}
                         >
                             บันทึก
                         </button>
@@ -326,8 +400,8 @@ const CreateSendMoney: React.FC = () => {
                         </button>
                         <button
                             className={`btn btn-primary w-auto`}
-                        // disabled={!isDataComplete}
-                        // onClick={handleCheckerClick}
+                            onClick={handleSubmit}
+                            disabled={!isFormValid}
                         >
                             บันทึก
                         </button>

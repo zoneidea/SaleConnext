@@ -90,7 +90,11 @@ const UpdateSalesDiscount: React.FC = () => {
     const discountPrice = productContract?.[0]?.Package?.[0]?.DISCOUNTPRICE ?? 0;
     const sequence = productContract?.[0]?.Package?.[0]?.SEQUENCE ?? 0;
     const freeGift = productContract?.[0]?.Package?.[0]?.FREEGIFT ?? [];
-    // console.log(`selectedGift`, freeGift[selectedGiftId-1]?.GIFTCODE);
+    console.log(`hasTradeIn`, hasTradeIn);
+    console.log(`totalPrice`, totalPrice);
+    console.log(`discountPrice`, discountPrice);
+    console.log(`sequence`, sequence);
+    console.log(`freeGift`, freeGift);
 
     const [step, setStep] = useState<number>(100);
     const [currentSequence, setCurrentSequence] = useState<number>(sequence);
@@ -500,37 +504,41 @@ const UpdateSalesDiscount: React.FC = () => {
                         </div>
                     )}
 
-                    {!discountPrice && discountPrice !== 0 && (
-                        <div className='accordion-item mb-10'>
-                            <h2 className='accordion-header' id='kt_accordion_2_header_2'>
-                                <h3
-                                    className='accordion-button fs-4 fw-bold collapsed border-0 h-50px pt-5 rounded-top px-lg-15 px-7'
-                                    data-bs-toggle='collapse'
-                                    data-bs-target='#kt_accordion_2_body_2'
-                                    aria-expanded='true'
-                                    aria-controls='kt_accordion_2_body_2'
-                                    style={{ color: 'white', cursor: 'pointer', backgroundColor: '#3777bc' }}
+                    {
+                        (
+                            (!Array.isArray(discountPrice) && discountPrice !== 0 && discountPrice !== null) ||
+                            (Array.isArray(discountPrice) && discountPrice.length > 0)
+                        ) && (
+                            <div className='accordion-item mb-10'>
+                                <h2 className='accordion-header' id='kt_accordion_2_header_2'>
+                                    <h3
+                                        className='accordion-button fs-4 fw-bold collapsed border-0 h-50px pt-5 rounded-top px-lg-15 px-7'
+                                        data-bs-toggle='collapse'
+                                        data-bs-target='#kt_accordion_2_body_2'
+                                        aria-expanded='true'
+                                        aria-controls='kt_accordion_2_body_2'
+                                        style={{ color: 'white', cursor: 'pointer', backgroundColor: '#3777bc' }}
+                                    >
+                                        ส่วนลด
+                                    </h3>
+                                </h2>
+                                <div
+                                    id='kt_accordion_2_body_2'
+                                    className='accordion-collapse collapse show'
+                                    aria-labelledby='kt_accordion_2_header_2'
+                                    data-bs-parent='#kt_accordion_2'
                                 >
-                                    ส่วนลด
-                                </h3>
-                            </h2>
-                            <div
-                                id='kt_accordion_2_body_2'
-                                className='accordion-collapse collapse show'
-                                aria-labelledby='kt_accordion_2_header_2'
-                                data-bs-parent='#kt_accordion_2'
-                            >
-                                <div className='accordion-body'>
-                                    <form noValidate className='form'>
-                                        <div className='card-body px-lg-9 px-1'>
-                                            <div className='row mb-6'>
-                                                <div className='col-lg-6 mb-3'>
-                                                    <label className='form-label fw-bold fs-6'>ราคา</label>
-                                                    <p className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'>
-                                                        {(finalPrice).toLocaleString()}
-                                                    </p>
-                                                </div>
-                                                {/* <div className='col-lg-6 mb-3'>
+                                    <div className='accordion-body'>
+                                        <form noValidate className='form'>
+                                            <div className='card-body px-lg-9 px-1'>
+                                                <div className='row mb-6'>
+                                                    <div className='col-lg-6 mb-3'>
+                                                        <label className='form-label fw-bold fs-6'>ราคา</label>
+                                                        <p className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'>
+                                                            {(finalPrice).toLocaleString()}
+                                                        </p>
+                                                    </div>
+                                                    {/* <div className='col-lg-6 mb-3'>
                                                     <label className='form-label fw-bold fs-6'>ส่วนลด</label>
                                                     <div className='d-flex align-items-center'>
                                                         <button className='btn btn-light-primary' type='button' onClick={handleDecrement}>
@@ -544,29 +552,29 @@ const UpdateSalesDiscount: React.FC = () => {
                                                         </button>
                                                     </div>
                                                 </div> */}
-                                                <div className='col-lg-6 mb-3'>
-                                                    <label className='form-label fw-bold fs-6'>ส่วนลด</label>
-                                                    <div className='d-flex align-items-center'>
-                                                        <input
-                                                            type="text"
-                                                            className={`form-control form-control-solid`}
-                                                            onChange={(e) => handleDiscountChange(e.target.value)}
-                                                            value={discountInput !== null ? discountInput.toString() : ""}
-                                                        />
-                                                    </div>
-                                                    {discountValidationMessage && (
-                                                        <div className={`mt-2 text-${discountValidationMessage.type}`}>
-                                                            {discountValidationMessage.message}
+                                                    <div className='col-lg-6 mb-3'>
+                                                        <label className='form-label fw-bold fs-6'>ส่วนลด</label>
+                                                        <div className='d-flex align-items-center'>
+                                                            <input
+                                                                type="text"
+                                                                className={`form-control form-control-solid`}
+                                                                onChange={(e) => handleDiscountChange(e.target.value)}
+                                                                value={discountInput !== null ? discountInput.toString() : ""}
+                                                            />
                                                         </div>
-                                                    )}
+                                                        {discountValidationMessage && (
+                                                            <div className={`mt-2 text-${discountValidationMessage.type}`}>
+                                                                {discountValidationMessage.message}
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </form>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
                     {freeGift.length > 0 && (
                         <div className='accordion-item mb-10'>
@@ -616,11 +624,19 @@ const UpdateSalesDiscount: React.FC = () => {
                     )}
                 </div>
 
-                {hasTradeIn.length === 0 && discountPrice.length === 0 && freeGift.length === 0 && (
-                    <div className='text-center my-20'>
-                        <h5>ไม่มี เครื่องเทิร์น / ส่วนลด / ของแถม</h5>
-                    </div>
-                )}
+                {
+                    (hasTradeIn !== 1) &&
+                    (
+                        Array.isArray(discountPrice)
+                            ? discountPrice.length === 0
+                            : discountPrice === 0
+                    ) &&
+                    (freeGift.length === 0) && (
+                        <div className='text-center my-20'>
+                            <h5>ไม่มี เครื่องเทิร์น / ส่วนลด / ของแถม</h5>
+                        </div>
+                    )
+                }
 
                 <div className='d-none d-xl-flex justify-content-between align-items-center my-5'>
                     <button

@@ -87,8 +87,9 @@ const PrivateRoutes = () => {
   const InstallationPhotoGallery = lazy(() => import('../pages/sales/components/photo/gallery/InstallationPhotoGallery'))
   const TurnPhotoGallery = lazy(() => import('../pages/sales/components/photo/gallery/TurnPhotoGallery'))
 
-  //หัวข้อ สินค้าในสต๊อก
+  //หัวข้อ สินค้าในสต๊อก + ระบบยืม
   const ProductStock = lazy(() => import('../pages/productstock/ProductStock'))
+  const ScanBarCodeMoveProduct = lazy(() => import('../pages/productstock/ScanBarCodeMoveProduct'))
 
   //หัวข้อ ระบบตรวจสัญญา
   const ContractChecker = lazy(() => import('../pages/contractChecker/ContractChecker'))
@@ -119,6 +120,7 @@ const PrivateRoutes = () => {
 
   //หัวข้อ ระบบส่งเงิน
   const CreateSendMoney = lazy(() => import('../pages/sendMoney/CreateSendMoney'))
+  const SendMoneySummary = lazy(() => import('../pages/sendMoney/SendMoneySummary'))
 
   // โครงสร้างพนักงาน
   const EmpStructure = lazy(() => import('../pages/employee/EmpStructure'))
@@ -235,6 +237,14 @@ const PrivateRoutes = () => {
           element={
             <SuspensedView>
               <SalesDiscount />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path='productstock/moveProductInStock'
+          element={
+            <SuspensedView>
+              <ScanBarCodeMoveProduct />
             </SuspensedView>
           }
         />
@@ -545,6 +555,14 @@ const PrivateRoutes = () => {
           element={
             <SuspensedView>
               <CreateSendMoney />
+            </SuspensedView>
+          }
+        />
+         <Route
+          path='sendmoney/SendMoneySummary'
+          element={
+            <SuspensedView>
+              <SendMoneySummary />
             </SuspensedView>
           }
         />

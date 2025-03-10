@@ -18,9 +18,11 @@ const EmpStructure: React.FC = () => {
     const navigate = useNavigate(); // ใช้ useNavigate สำหรับการเปลี่ยนเส้นทาง
 
     const { auth } = useAuth();
+    console.log(`auth`, auth);
+    const teamSale = auth.data[0].TeamSale;
 
     const [adviser, setAdviser] = useState<any[]>([]);
-
+    
     const {
         EmpId, setEmpId,
         TeamSale, setTeamSale,
@@ -100,12 +102,19 @@ const EmpStructure: React.FC = () => {
 
                                             {!isLoading && adviser.length > 0 && (
                                                 <>
-                                                    <div className='card-header border-0 pt-5'>
-                                                        <h3 className='card-title align-items-start flex-column'>
-                                                            <span className='card-label fw-bold fs-3 mb-1'>พนักงานในทีม</span>
-                                                            <span className='fw-bold fs-3 mx-1'>{`${adviser.length} คน`}</span>
-                                                        </h3>
+                                                    <div className="card-header border-0 pt-5 d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <h3 className="card-title align-items-start flex-column">
+                                                                <span className="card-label fw-bold fs-3 mb-1">พนักงานในทีม</span>
+                                                                <span className="fw-bold fs-3 mx-1">{`${adviser.length} คน`}</span>
+                                                            </h3>
+                                                        </div>
+                                                        <div className="text-end">
+                                                            <span className="card-label fw-bold fs-3 mb-1">ทีม</span>
+                                                            <span className="fw-bold fs-3 mx-1">{`${teamSale}`}</span>
+                                                        </div>
                                                     </div>
+
                                                     <div className='card-body py-3'>
                                                         <div className='table-responsive'>
                                                             <table className='table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4'>
@@ -131,6 +140,9 @@ const EmpStructure: React.FC = () => {
                                                                                                 </a>
                                                                                                 <span className='text-gray-700 fw-semibold d-block fs-7'>
                                                                                                     {v.SaleEmp}
+                                                                                                </span>
+                                                                                                <span className='text-gray-700 fw-semibold d-block fs-7'>
+                                                                                                    {v.SaleCode}
                                                                                                 </span>
                                                                                             </div>
                                                                                         </div>

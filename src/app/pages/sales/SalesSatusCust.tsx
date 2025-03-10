@@ -65,6 +65,9 @@ const SalesSatusCust: React.FC = () => {
   const [customerStatus, setCustomerStatus] = useState<any>(null);
   // console.log(`customerStatus`, customerStatus);
 
+  // เก็บข้อมูล customerStatus ของการ์ดที่ถูกเลือก
+  const [selectedCard, setSelectedCard] = useState<any>(null);
+
   const [getProvince, setGetProvince] = useState<any[]>([]);
   // console.log(`getProvince`, getProvince);
   const [getDistrict, setGetDistrict] = useState<any[]>([]);
@@ -261,7 +264,7 @@ const SalesSatusCust: React.FC = () => {
     }
   };
 
-  const handleCheckStatusCustomer = () => {
+  const handleCheckStatusCustomer = (customer: any) => {
     if (!customerStatus) {
       Swal.fire({
         icon: 'error',
@@ -271,9 +274,19 @@ const SalesSatusCust: React.FC = () => {
       return;
     }
 
+    if (!customer) {
+      Swal.fire({
+        icon: 'error',
+        title: 'เกิดข้อผิดพลาด!',
+        text: 'ไม่พบข้อมูลการ์ดที่เลือก',
+      });
+      return;
+    }
+
     // กำหนด state เมื่อผู้ใช้คลิก CardStatusCustomer (เฉพาะเมื่อมีข้อมูลอยู่)
     if (customerStatus.length > 0) {
       setHasClickedCard(true);
+      setSelectedCard(customer);
     }
 
     const statusSale = customerStatus?.[0]?.StatusSale;
@@ -289,6 +302,7 @@ const SalesSatusCust: React.FC = () => {
       navigate('/sale/overview');
     } else if (statusSale === "1") {
       // กรณีผ่านการตรวจสอบ
+      saveCustomerStatus()
       navigate('/sale/discount');
     } else if (statusSale === "2") {
       // ℹ️ กรณีต้องแสดงเนื้อหาในหน้าต่างใหม่
@@ -369,45 +383,67 @@ const SalesSatusCust: React.FC = () => {
   };
 
   const saveCustomerStatus = async () => {
-    try {
-      const response = await axios.post(UPDATECONTACT, {
-        REFNO,
-        EMPID: EmpId,
-        TEAMSALE: TeamSale,
-        FIELD: 'CUSTOMERSTATUS',
-        DATA: [{
-          STATUSSALE: customerStatus[0]?.StatusSale,
-          STATUSTEXT: statusCustomerContract.statustext,
-          MESSAGE: statusCustomerContract.message,
-          OTP: statusCustomerContract.date.OTP
-        }]
-      }, {
-        headers: { 'Content-Type': 'application/json' },
-      });
+    // สร้าง payload สำหรับ DATA โดยตรวจสอบว่ามีข้อมูลในฟิลด์ที่ต้องการหรือไม่
+    const dataPayload =
+      (selectedCard?.StatusSale ||
+        selectedCard?.CustomerStatus ||
+        selectedCard?.Message ||
+        statusCustomerContract?.date?.OTP)
+        ? [
+          {
+            STATUSSALE: selectedCard?.StatusSale || '',
+            CUSTOMERSTATUS: selectedCard?.CustomerStatus || '',
+            MESSAGE: selectedCard?.Message || '',
+            OTP: statusCustomerContract?.date?.OTP || '',
+            CUSTOMERSTATUSDATA: customerStatus || '', 
+          },
+        ]
+        : 'ไม่พบประวัติลูกค้า';
 
-      console.log('API Update Response:', response.data);
+    try {
+      const response = await axios.post(
+        UPDATECONTACT,
+        {
+          REFNO: REFNO,
+          EMPID: EmpId,
+          TEAMSALE: TeamSale,
+          FIELD: "CUSTOMERSTATUS",
+          DATA: dataPayload
+        },
+        {
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+
+      console.log("API Update Response:", response.data);
 
       Swal.fire({
-        icon: 'success',
-        title: 'สำเร็จ!',
-        text: 'บันทึกข้อมูลเรียบร้อยแล้ว',
+        icon: "success",
+        title: "สำเร็จ!",
+        text: "บันทึกข้อมูลเรียบร้อยแล้ว",
         timer: 2000,
         showConfirmButton: false
       }).then(() => {
         navigate('/sale/discount');
       });
-
     } catch (error) {
-      console.error('Error while updating contract:', error);
+      console.error("Error while updating contract:", error);
       Swal.fire({
-        icon: 'error',
-        title: 'การบันทึกข้อมูลล้มเหลว!',
-        text: 'เกิดข้อผิดพลาดระหว่างการบันทึกข้อมูล',
+        icon: "error",
+        title: "การบันทึกข้อมูลล้มเหลว!",
+        text: "เกิดข้อผิดพลาดระหว่างการบันทึกข้อมูล"
       });
     }
   };
 
   const handleNextClick = () => {
+    // ถ้าไม่พบประวัติลูกค้า ให้เรียก saveCustomerStatus ทันที
+    if (!customerStatus || customerStatus.length === 0) {
+      saveCustomerStatus();
+      return;
+    }
+
+    // กรณีที่มีข้อมูลลูกค้า (ผ่านการค้นหา) ให้ทำ OTP ตามเดิม
     Swal.fire({
       title: 'กรุณากรอก OTP',
       input: 'text',
@@ -587,11 +623,12 @@ const SalesSatusCust: React.FC = () => {
 
             {/* CardStatusCustomer Component */}
             <div className='row'>
-              <div className='col-12 col-md-6 col-xl-4'>
-                {!isLoading && customerStatus && customerStatus.length > 0 && (
-                  <CardStatusCustomer customerStatus={customerStatus} handleCheckStatusCustomer={handleCheckStatusCustomer} />
-                )}
-              </div>
+              {!isLoading && customerStatus && customerStatus.length > 0 && (
+                <CardStatusCustomer
+                  customerStatus={customerStatus}
+                  handleCheckStatusCustomer={handleCheckStatusCustomer}
+                />
+              )}
             </div>
             {/* End CardStatusCustomer Component */}
           </div>

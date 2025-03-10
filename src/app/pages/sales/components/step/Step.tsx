@@ -61,8 +61,7 @@ const Step: React.FC = () => {
   // console.log(`refno`, refno);
 
   const [data, setData] = useState<any[]>([])
-  // console.log(`data`, data);
-
+  console.log(`data`, data);
   const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
   const GET_CONTRACT_URL = `${API_URL_MONGO}/Contract/GetContractSummary`;
   const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
@@ -76,6 +75,7 @@ const Step: React.FC = () => {
 
   const API_URL_TSR = import.meta.env.VITE_APP_API_THIENSURAT;
   const EMP_IN_TEAM_URL = `${API_URL_TSR}/Employee_Structure`;
+  const ADVISER_URL = `${API_URL_TSR}/Employee_Structure/Emp_All`;
 
   const { auth } = useAuth();
 
@@ -180,6 +180,7 @@ const Step: React.FC = () => {
   const [toPhoto, setToPhoto] = useState('')
 
   const [empInTeam, setEmpInTeam] = useState<any[]>([]);
+  const [adviserList, setAdviserList] = useState<any[]>([]);
 
   // กำหนดค่าเริ่มต้นของพนักงานจาก `data`
   useEffect(() => {
@@ -188,6 +189,25 @@ const Step: React.FC = () => {
       setEmpInTeam((prev) => [...prev, saleEmployee]); // รวมพนักงานที่มีอยู่ใน `data`
     }
   }, [data]);
+
+  // api ผู้แนะนำ
+  useEffect(() => {
+    const getAdviserData = async () => {
+      try {
+        const formData = new FormData();
+        formData.append('EmpId', EmpId);
+
+        const response = await axios.post(ADVISER_URL, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        const data = Array.isArray(response.data.data) ? response.data.data : [];
+        setAdviserList(data);
+      } catch (error) {
+        console.error('Error fetching ADVISER_URL:', error);
+      }
+    };
+    getAdviserData();
+  }, []);
 
   const handleClick = async (routeName: any) => {
 
@@ -472,77 +492,153 @@ const Step: React.FC = () => {
     getEmpInTeam();
   }, [EmpId]);
 
-  // ฟังก์ชันจัดการการเลือกพนักงาน
+  // ฟังก์ชันจัดการการเลือกพนักงานขายและผู้แนะนำ
   const handleCheckEmpSale = async () => {
-
-    // ตรวจสอบสถานะลูกค้าแบคลิสต์
-    if (data?.[0]?.CUSTOMERSTATUS[0].STATUSSALE === "0") {
+    // ตรวจสอบสถานะลูกค้าแบล็คลิสต์ (หรือเงื่อนไขอื่น ๆ)
+    if (data?.[0]?.CUSTOMERSTATUS?.[0]?.STATUSSALE === '0') {
       await Swal.fire({
         icon: 'error',
         title: 'เกิดข้อผิดพลาด!',
         text: 'ลูกค้ามีประวัติแบลคลิสต์ ไม่สามารถทำรายการต่อได้',
         confirmButtonText: 'ตกลง',
       });
-      return; // หยุดการทำงานของฟังก์ชัน
+      return;
     }
 
     try {
-      // กำหนดตัวเลือกของพนักงาน
+      // สร้าง inputOptions สำหรับ "พนักงานขาย" จาก empInTeam
       const empOptions = empInTeam.reduce((options, emp) => {
         const fullName = `${emp.FName} ${emp.LName}`;
         options[emp.SaleEmp] = fullName; // ใช้ SaleEmp เป็น key
         return options;
       }, {});
-      // console.log(`empOptions`, empOptions);
 
-      // ดึงข้อมูลพนักงานปัจจุบันจาก `data`
-      const currentEmployee = data?.[0]?.SALEEMPLOYEE?.[0];
+      // สร้าง inputOptions สำหรับ "ผู้แนะนำ" (adviser) จาก adviserList
+      const adviserOptions = adviserList.reduce((options, adv) => {
+        const fullName = `${adv.FName} ${adv.LName}`;
+        options[adv.SaleEmp] = fullName; // ใช้ SaleEmp เป็น key
+        return options;
+      }, {});
+
+      // ดึงข้อมูล "พนักงานขาย" ปัจจุบันจาก DB (ถ้ามี)
+      const currentEmployee = data?.[0]?.SALEEMPLOYEE?.[0]?.SALEEMPLOYEE;
       const currentEmployeeId = currentEmployee?.SaleEmp;
 
-      // แสดง popup ให้ผู้ใช้เลือกพนักงาน
-      const { value: selectedEmpId } = await MySwal.fire({
-        title: 'เลือกพนักงานขาย',
-        input: 'select',
-        inputOptions: empOptions,
-        inputPlaceholder: 'กรุณาเลือกพนักงานขาย...',
-        inputValue: currentEmployeeId, // ตั้งค่าปัจจุบันเป็นค่าเริ่มต้น
+      // ดึงข้อมูล "ผู้แนะนำ" ปัจจุบันจาก DB (ถ้ามี)
+      const currentAdviser = data?.[0]?.SALEEMPLOYEE?.[0]?.ADVISER;
+      const currentAdviserId = currentAdviser?.SaleEmp;
+
+      // แสดง popup ให้ผู้ใช้เลือกพนักงานขายและผู้แนะนำ (ถ้ามี)
+      const { value: formValues } = await MySwal.fire({
+        title: 'เลือกพนักงานขายและผู้แนะนำ (ถ้ามี)',
+        html: `
+        <select id="swal-employee" class="swal2-input" style="width: 100%; margin-bottom: 1rem;">
+          <option value="">เลือกพนักงานขาย...</option>
+          ${Object.entries(empOptions)
+            .map(([key, value]) => `<option value="${key}">${value}</option>`)
+            .join('')}
+        </select>
+        <select id="swal-adviser" class="swal2-input" style="width: 100%;">
+          <option value="">เลือกผู้แนะนำ (ถ้ามี)</option>
+          ${Object.entries(adviserOptions)
+            .map(([key, value]) => `<option value="${key}">${value}</option>`)
+            .join('')}
+        </select>
+      `,
+        focusConfirm: false,
         showCancelButton: true,
         confirmButtonText: 'ตกลง',
         cancelButtonText: 'ยกเลิก',
+
+        // ตั้งค่าเริ่มต้นให้ select ทั้ง 2 ตัว
+        didOpen: () => {
+          // ใส่ค่าเริ่มต้น "พนักงานขาย"
+          if (currentEmployeeId) {
+            const empSelect = document.getElementById('swal-employee') as HTMLSelectElement;
+            if (empSelect) {
+              empSelect.value = currentEmployeeId;
+            }
+          }
+          // ใส่ค่าเริ่มต้น "ผู้แนะนำ"
+          if (currentAdviserId) {
+            const advSelect = document.getElementById('swal-adviser') as HTMLSelectElement;
+            if (advSelect) {
+              advSelect.value = currentAdviserId;
+            }
+          }
+        },
+
+        preConfirm: () => {
+          const employee = (document.getElementById('swal-employee') as HTMLSelectElement).value;
+          const adviser = (document.getElementById('swal-adviser') as HTMLSelectElement).value;
+
+          // บังคับให้เลือกพนักงานขายเสมอ
+          if (!employee) {
+            Swal.showValidationMessage('กรุณาเลือกพนักงานขาย');
+            return;
+          }
+
+          // ผู้แนะนำ (adviser) จะว่างได้
+          return { employee, adviser };
+        },
       });
 
-      // หากผู้ใช้เลือกพนักงานใหม่
-      if (selectedEmpId) {
-        const selectedEmployee = empInTeam.find((emp) => emp.SaleEmp === selectedEmpId);
+      // ถ้าผู้ใช้กดยกเลิกหรือไม่กรอกอะไร formValues จะเป็น undefined
+      if (!formValues) {
+        return;
+      }
 
-        // POST ไปที่ UPDATECONTACT
-        const updateResponse = await axios.post(UPDATECONTACT, {
+      const { employee, adviser } = formValues;
+
+      // หา object ของ "พนักงานขาย" ที่เลือก
+      const selectedEmployee = empInTeam.find((emp) => emp.SaleEmp === employee);
+
+      // หา object ของ "ผู้แนะนำ" (ถ้ามีเลือก)
+      let selectedAdviser: any = null;
+      if (adviser) {
+        selectedAdviser = adviserList.find((adv) => adv.SaleEmp === adviser);
+      }
+
+      // สร้าง payload สำหรับบันทึกลง DB
+      const payload: any = {
+        SALEEMPLOYEE: selectedEmployee, // เก็บ object ของพนักงานขาย
+      };
+
+      // ถ้ามีผู้แนะนำ ก็เก็บ object ของผู้แนะนำด้วย
+      if (selectedAdviser) {
+        payload.ADVISER = selectedAdviser;
+      }
+
+      // เรียก API POST ไปที่ UPDATECONTACT เพื่อบันทึก (พนักงานขาย + ผู้แนะนำ)
+      await axios.post(
+        UPDATECONTACT,
+        {
           REFNO: data?.[0]?.REFNO,
           EMPID: EmpId,
           TEAMSALE: TeamSale,
           FIELD: 'SALEEMPLOYEE',
-          DATA: selectedEmployee,
-        }, {
+          DATA: [payload],
+        },
+        {
           headers: {
             'Content-Type': 'application/json',
           },
-        });
+        }
+      );
 
-        // console.log('API Response:', updateResponse.data); // ตรวจสอบผลลัพธ์จาก API
+      // แสดง popup สำเร็จ
+      await MySwal.fire({
+        icon: 'success',
+        title: 'บันทึกสำเร็จ!',
+        text: `ข้อมูลพนักงานขาย "${selectedEmployee.FName} ${selectedEmployee.LName}"${adviser ? ` และ ผู้แนะนำถูกบันทึกเรียบร้อยแล้ว` : ''
+          }`,
+        timer: 2000,
+        showConfirmButton: false,
+      });
 
-        // แสดง popup สำเร็จ
-        await MySwal.fire({
-          icon: 'success',
-          title: 'บันทึกสำเร็จ!',
-          text: `ข้อมูลพนักงานถูกบันทึกเรียบร้อยแล้ว`,
-          timer: 2000,
-          showConfirmButton: false,
-        });
-
-        // อัปเดตข้อมูลใน state (กรณีต้องการแสดงผลทันทีในหน้าจอ)
-        const updatedData = { ...data[0], SALEEMPLOYEE: [selectedEmployee] };
-        setData([updatedData]);
-      }
+      // อัปเดตข้อมูลใน state (กรณีต้องการแสดงผลทันทีในหน้าจอ)
+      const updatedData = { ...data[0], SALEEMPLOYEE: [payload] };
+      setData([updatedData]);
     } catch (error) {
       console.error('Error updating contract:', error);
       MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถอัปเดตข้อมูลได้', 'error');
@@ -706,8 +802,17 @@ const Step: React.FC = () => {
                         </div>
                         {
                           data?.[0]?.CUSTOMERSTATUS?.length !== 0 && (
-                            <span className='text-gray-700 fw-semibold d-block'>
-                              {`สถานะ: ${data?.[0]?.CUSTOMERSTATUS?.[0].MESSAGE || ''}`}
+                            <span className="text-gray-700 fw-semibold d-block">
+                              สถานะ: {
+                                typeof data?.[0]?.CUSTOMERSTATUS?.[0] === 'string'
+                                  ? // กรณีเป็น string (เช่น "ไม่พบประวัติลูกค้า")
+                                  data?.[0]?.CUSTOMERSTATUS?.[0]
+                                  : // กรณีเป็น object STATUSSALE === '1'
+                                  data?.[0]?.CUSTOMERSTATUS?.[0]?.STATUSSALE === '1'
+                                    ? 'ผ่าน'
+                                    // กรณี STATUSSALE === '2'
+                                    : data?.[0]?.CUSTOMERSTATUS?.[0]?.MESSAGE || ''
+                              }
                             </span>
                           )
                         }
@@ -735,11 +840,22 @@ const Step: React.FC = () => {
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className='text-gray-800 fw-bold fs-2'>
-                          {`4. เลือกพนักงานขาย`}
+                          {`4. เลือกพนักงานขายและผู้แนะนำ (ถ้ามี)`}
                         </div>
                         {
                           data?.[0]?.SALEEMPLOYEE?.length !== 0 && (
-                            <span className='text-gray-700 fw-semibold d-block'>{`พนักงานขาย: ${data?.[0]?.SALEEMPLOYEE[0]?.FName} ${data?.[0]?.SALEEMPLOYEE[0]?.LName}`}</span>
+                            <>
+                              <span className='text-gray-700 fw-semibold d-block'>{`พนักงานขาย: 
+                              ${data?.[0]?.SALEEMPLOYEE[0]?.SALEEMPLOYEE?.FName} ${data?.[0]?.SALEEMPLOYEE[0]?.SALEEMPLOYEE?.LName}`}
+                              </span>
+                              {
+                                data?.[0]?.SALEEMPLOYEE[0]?.ADVISER && (
+                                  <span className='text-gray-700 fw-semibold d-block'>{`ผู้แนะนำ: 
+                              ${data?.[0]?.SALEEMPLOYEE[0]?.ADVISER?.FName} ${data?.[0]?.SALEEMPLOYEE[0]?.ADVISER?.LName}`}
+                                  </span>
+                                )
+                              }
+                            </>
                           )
                         }
                       </div>
