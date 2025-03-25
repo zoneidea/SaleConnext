@@ -266,6 +266,7 @@ const IdCardPhoto: React.FC = () => {
             <div>
                 {previewImages.length > 0 && (
                     <div className='row mx-5'>
+                        <h5 className='my-8 color-red' style={{ color: 'red' }}>* กดที่รูป หากต้องการดูภาพขนาดใหญ่หรือต้องการลบ</h5>
                         {previewImages.map((image, index) => (
                             <div
                                 className='col-6 col-xl-4 mb-3 position-relative'

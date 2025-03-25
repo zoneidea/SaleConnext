@@ -383,7 +383,7 @@ const UpdateSaleCustDetail: React.FC = () => {
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {};
 
-        if (!idCard || !/^\d{13}$/.test(idCard)) {
+        if (!idCard || !/^[A-Za-z0-9]{13}$/.test(idCard.trim())) {
             newErrors.idCard = 'กรุณากรอกเลขบัตร 13 หลัก';
         }
 
@@ -411,7 +411,7 @@ const UpdateSaleCustDetail: React.FC = () => {
 
         switch (fieldName) {
             case 'idCard':
-                if (!/^\d{13}$/.test(value)) {
+                if (!/^[A-Za-z0-9]{13}$/.test(value.trim())) {
                     fieldError = 'กรุณากรอกเลขบัตร 13 หลัก';
                 }
                 break;
@@ -449,7 +449,7 @@ const UpdateSaleCustDetail: React.FC = () => {
 
     // Handle IdCard Change
     const handleIdCardChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const value = event.target.value.replace(/\D/g, ''); // ลบตัวอักษรที่ไม่ใช่ตัวเลขออก
+        const value = event.target.value.replace(/[^A-Za-z0-9]/g, ''); // ลบเฉพาะตัวที่ไม่ใช่ตัวเลขหรือตัวอักษรออก
         if (value.length <= 13) {
             setIdCard(value);
             validateField('idCard', value);  // ตรวจสอบความถูกต้องทันที
@@ -558,7 +558,7 @@ const UpdateSaleCustDetail: React.FC = () => {
 
     const handleCheckerClick = async () => {
         const response = await axios.post(UPDATECONTACT, {
-            REFNO: refno,
+            REFNO: item.REFNO,
             EMPID: EmpId,
             TEAMSALE: TeamSale,
             FIELD: "STATUS",
@@ -715,7 +715,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                     <div className="container">
                                                         <div className='row mb-6'>
                                                             <div className='col-lg-4'>
-                                                                <label className='form-label required fw-bold fs-6'>บัตรประชาชน</label>
+                                                                <label className='form-label required fw-bold fs-6'>เลขบัตร</label>
                                                                 <input
                                                                     // disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.CUSTOMERID !== "" ? true : false : false}
                                                                     value={idCard}
@@ -810,6 +810,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                             onChange={handleMobileChange}
                                                                             type='text'
                                                                             className='form-control mb-3 mb-lg-0'
+                                                                            maxLength={10}
                                                                         />
                                                                         {errors.mobile && <p className='text-danger'>{errors.mobile}</p>}
                                                                     </div>
@@ -820,6 +821,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                             onChange={(e) => setPhone(e.target.value)}
                                                                             type='text'
                                                                             className='form-control mb-3 mb-lg-0'
+                                                                            maxLength={10}
                                                                         />
                                                                     </div>
                                                                 </div>
@@ -835,6 +837,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                         onChange={(e) => setWorkPhone(e.target.value)}
                                                                         type='text'
                                                                         className='form-control mb-3 mb-lg-0'
+                                                                        maxLength={10}
                                                                     />
                                                                 </div>
                                                                 <div className='col-lg-6 mb-3'>
@@ -934,6 +937,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                         type='text'
                                                                         className='form-control mb-3 mb-lg-0'
                                                                         onChange={handleMobileChange}
+                                                                        maxLength={10}
                                                                     />
                                                                     {errors.mobile && <p className='text-danger'>{errors.mobile}</p>}
                                                                 </div>
@@ -944,6 +948,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                         type='text'
                                                                         className='form-control mb-3 mb-lg-0'
                                                                         onChange={(e) => setPhone(e.target.value)}
+                                                                        maxLength={10}
                                                                     />
                                                                 </div>
                                                             </div>
@@ -958,6 +963,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                         type='text'
                                                                         className='form-control mb-3 mb-lg-0'
                                                                         onChange={(e) => setWorkPhone(e.target.value)}
+                                                                        maxLength={10}
                                                                     />
                                                                 </div>
                                                                 <div className='col-lg-6 mb-3'>

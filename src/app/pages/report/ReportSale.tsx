@@ -83,7 +83,7 @@ const ReportSale: React.FC = () => {
         <>
             <Content>
                 <form onSubmit={(e) => { e.preventDefault(); handleSearch(); }}>
-                    <div className="d-flex justify-content-between align-items-center mb-5">
+                    <div className="d-flex justify-content-between align-items-center my-5">
                         <div className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
                             <h1 className="page-heading d-flex text-gray-900 fw-bold fs-3 my-0 flex-column justify-content-center">
                                 รายงานการขายประจำวัน

@@ -117,59 +117,93 @@ const SalesPhoto: React.FC = () => {
         return () => clearTimeout(timer); // เคลียร์ timer เมื่อ component ถูก unmount
     }, []);
 
-    // สร้างใหม่ ส่งตรวจสอบ
+    // ฟังก์ชัน ส่งตรวจสอบ (กรณีไม่ได้มาจาก step)
     const handleCheckerClick = async () => {
-        const response = await axios.post(UPDATECONTACT, {
-            REFNO: REFNO,
-            EMPID: EmpId,
-            TEAMSALE: TeamSale,
-            FIELD: "STATUS",
-            DATA: "PENDING",
-        }, {
-            headers: {
-                'Content-Type': 'application/json',
+        // เรียก SweetAlert2 loading
+        MySwal.fire({
+            title: 'โปรดรอสักครู่...',
+            text: 'กำลังส่งข้อมูล',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading()
             },
-        });
+        })
 
-        // console.log(response)
+        try {
+            const response = await axios.post(UPDATECONTACT, {
+                REFNO: REFNO,
+                EMPID: EmpId,
+                TEAMSALE: TeamSale,
+                FIELD: 'STATUS',
+                DATA: 'PENDING',
+            },
+                {
+                    headers: { 'Content-Type': 'application/json' },
+                })
 
-        if (response.status === 200) {
-            if (!response.data.data) {
-                MySwal.fire('เกิดข้อผิดพลาด', 'ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
+            // เมื่อสำเร็จ ปิด Loading ก่อน
+            Swal.close()
+
+            // ตรวจสอบ status
+            if (response.status === 200) {
+                if (!response.data.data) {
+                    MySwal.fire('เกิดข้อผิดพลาด', 'ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error')
+                } else {
+                    MySwal.fire('สำเร็จ', 'ส่งข้อมูลตรวจสอบแล้ว', 'success')
+                    navigate('/sale/overview')
+                }
             } else {
-                MySwal.fire('สำเร็จ', 'ส่งข้อมูลตรวจสอบแล้ว', 'success');
-                navigate('/sale/overview')
+                MySwal.fire('เกิดข้อผิดพลาด', response.data.message, 'error')
             }
-        } else {
-            MySwal.fire('เกิดข้อผิดพลาด', response.data.message, 'error');
+        } catch (error) {
+            // กรณีเกิด Error ให้ปิด Loading ก่อน แล้วแจ้ง
+            Swal.close()
+            MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถส่งข้อมูลได้', 'error')
         }
     }
 
-    // อัพเดต มาจากขั้นตอน step ส่งตรวจสอบ
+    // ฟังก์ชัน ส่งตรวจสอบ (กรณีมาจาก step)
     const handleUpdateCheckerClick = async () => {
-        const response = await axios.post(UPDATECONTACT, {
-            REFNO: refno,
-            EMPID: EmpId,
-            TEAMSALE: TeamSale,
-            FIELD: "STATUS",
-            DATA: "PENDING",
-        }, {
-            headers: {
-                'Content-Type': 'application/json',
+        // เรียก SweetAlert2 loading
+        MySwal.fire({
+            title: 'โปรดรอสักครู่...',
+            text: 'กำลังส่งข้อมูล',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading()
             },
-        });
+        })
 
-        // console.log(response)
+        try {
+            const response = await axios.post(UPDATECONTACT, {
+                REFNO: refno,
+                EMPID: EmpId,
+                TEAMSALE: TeamSale,
+                FIELD: 'STATUS',
+                DATA: 'PENDING',
+            },
+                {
+                    headers: { 'Content-Type': 'application/json' },
+                })
 
-        if (response.status === 200) {
-            if (!response.data.data) {
-                MySwal.fire('เกิดข้อผิดพลาด', 'ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
+            // เมื่อสำเร็จ ปิด Loading ก่อน
+            Swal.close()
+
+            // ตรวจสอบ status
+            if (response.status === 200) {
+                if (!response.data.data) {
+                    MySwal.fire('เกิดข้อผิดพลาด', 'ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error')
+                } else {
+                    MySwal.fire('สำเร็จ', 'ส่งข้อมูลตรวจสอบแล้ว', 'success')
+                    navigate('/sale/overview')
+                }
             } else {
-                MySwal.fire('สำเร็จ', 'ส่งข้อมูลตรวจสอบแล้ว', 'success');
-                navigate('/sale/overview')
+                MySwal.fire('เกิดข้อผิดพลาด', response.data.message, 'error')
             }
-        } else {
-            MySwal.fire('เกิดข้อผิดพลาด', response.data.message, 'error');
+        } catch (error) {
+            // กรณีเกิด Error ให้ปิด Loading ก่อน แล้วแจ้ง
+            Swal.close()
+            MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถส่งข้อมูลได้', 'error')
         }
     }
 
@@ -179,13 +213,13 @@ const SalesPhoto: React.FC = () => {
     const isDataComplete = useMemo(() => {
         // ตรวจสอบว่ามีอย่างน้อย 1 รูปใน images category ไหนก็ได้
         const hasImages = images && Object.values(images).some(isNotEmptyArray);
-    
+
         // ถ้า hasImages เป็น true ให้ isDataComplete เป็น true
         if (hasImages) {
             console.log("Has Images:", hasImages);
             return true;
         }
-    
+
         // ตรวจสอบว่า fields ต่าง ๆ ใน item ไม่เป็น array เปล่า
         const isItemComplete = (
             isNotEmptyArray(item.ADDRESS) &&
@@ -195,13 +229,13 @@ const SalesPhoto: React.FC = () => {
             isNotEmptyArray(item.PDPA) &&
             isNotEmptyArray(item.PRODUCT)
         );
-    
+
         console.log("Has Images:", hasImages);
         console.log("Is Item Complete:", isItemComplete);
-    
+
         return isItemComplete;
-    }, [item, images]);    
-    
+    }, [item, images]);
+
     return (
         <>
             {isLoading ? (

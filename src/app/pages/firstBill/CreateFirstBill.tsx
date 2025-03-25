@@ -19,19 +19,21 @@ import 'react-datetime-picker/dist/DateTimePicker.css';
 import 'react-calendar/dist/Calendar.css';
 import 'react-clock/dist/Clock.css';
 
+import { ThreeDot } from 'react-loading-indicators'
+
 interface ContractState {
     contNo: string;
 }
 
 interface ItemProps {
-    REFNO: String,
-    CONTNO: String,
-    EMPID: String,
-    TEAMSALE: String,
-    SALECODE: String,
-    SUPEMPID: String,
-    SECEMPID: String,
-    STATUS: String,
+    REFNO: string,
+    CONTNO: string,
+    EMPID: string,
+    TEAMSALE: string,
+    SALECODE: string,
+    SUPEMPID: string,
+    SECEMPID: string,
+    STATUS: string,
     PRODUCT: [any],
     CUSTOMERSTATUS: [any],
     DISCOUNT: [any],
@@ -48,6 +50,9 @@ const CreateFirstBill: React.FC = () => {
     const API_URL_GET_ALLCONTRACT = import.meta.env.VITE_APP_API_MONGO;
     const POST_PAYMENT_TRANSACTION_URL = `${API_URL_GET_ALLCONTRACT}/Payment/UpdatePaymentTransaction`;
 
+    const API_URL_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
+    const GET_QR_PAYMENT_URL = `${API_URL_SALECONNEXT}/GetQRPayment`;
+
     const navigate = useNavigate()
     const location = useLocation();
     const MySwal = withReactContent(Swal);
@@ -60,7 +65,7 @@ const CreateFirstBill: React.FC = () => {
     const SecEmpId = auth?.data?.[0]?.SecEmp || '';
 
     const item = location.state as ItemProps || [];
-    console.log(`item`, item);
+    // console.log(`item`, item);
     const refno = item?.REFNO
     const product = item?.PRODUCT
     const contNo = item?.CONTNO
@@ -72,7 +77,7 @@ const CreateFirstBill: React.FC = () => {
     const paymentPeriodNumber = product[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTPERIODNUMBER
     const periodAmount = product[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTAMOUNT
     const paymentAmount = product[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTAMOUNT
-    
+
     const totalPrice = product[0]?.Package[0]?.TOTALPRICE || 0;
     const netPrice = totalPrice - discountAmount;
     // console.log(`netPrice`, netPrice);
@@ -102,7 +107,43 @@ const CreateFirstBill: React.FC = () => {
 
     const [errorMessage, setErrorMessage] = useState<string>("");
 
+    const [qrCodeData, setQrCodeData] = useState<string>('')
+    const [loadingQR, setLoadingQR] = useState<boolean>(false)
+
+    const getQRPayment = async () => {
+        try {
+            setLoadingQR(true)
+            // ถ้า payFullAmount === true → ใช้ paymentAmount
+            // ถ้า payFullAmount === false → ใช้ paySomeAmount
+            const amountToPay = payFullAmount
+                ? paymentAmount
+                : paySomeAmount
+
+            console.log('amountToPay', amountToPay)
+
+            const formData = new FormData()
+            formData.append('RefNo', refno)                 // เลขที่ขาย
+            formData.append('Amount', String(amountToPay))  // แปลงเป็น string
+
+            const response = await axios.post(GET_QR_PAYMENT_URL, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            })
+
+            if (response.status === 200 && response.data) {
+                // สมมติว่า response.data.data.QrCode เป็น URL
+                setQrCodeData(response.data.data.QrCode || '')
+            }
+        } catch (error) {
+            console.error('Error fetching QR Payment:', error)
+        } finally {
+            setLoadingQR(false)
+        }
+    }
+
     const handlePayQuickChange = (isPayQuick: boolean) => {
+        setQrCodeData('')
         setPayQuick(isPayQuick);
         setStatus(isPayQuick ? "PAID" : "SCHEDULE");;
         setPaymentChannel(isPayQuick ? "CASH" : "NONE");
@@ -110,54 +151,104 @@ const CreateFirstBill: React.FC = () => {
     };
 
     const handlePayFullAmountChange = (value: boolean) => {
-        setPayFullAmount(value);
-        setPaymentChoice(value ? "FULL" : "SOME"); // อัปเดต PAYMENTCHOICE
+        setQrCodeData('')
+        setPayFullAmount(value)
+        setPaymentChoice(value ? 'FULL' : 'SOME')
 
-        // เปลี่ยน status เป็น SCHEDULE เมื่อชำระบางส่วน / เกินจำนวน
         if (!value) {
-            setStatus("SCHEDULE");
+            // ถ้าเป็นชำระบางส่วน => สถานะ SCHEDULE
+            setStatus('SCHEDULE')
+            // บังคับให้เป็นเงินสด
+            setPaymentChannel('CASH')
+            setPriceOption('CASH')     // <<--- เพิ่มบรรทัดนี้ด้วย
         } else {
-            setStatus("PAID");
+            // ถ้าเป็นชำระเต็มจำนวน => สถานะ PAID
+            setStatus('PAID')
+            // บังคับให้เป็นเงินสด
+            setPaymentChannel('CASH')
+            setPriceOption('CASH')     // <<--- เพิ่มบรรทัดนี้ด้วย
         }
-    };
+    }
 
     const handleDateChangeInstall = (date: Date | null) => {
         setValueCalendarInstall(date);
     };
 
     const handlePaymentChannelChange = (channel: string) => {
-        setPaymentChannel(channel);
-    };
+        setPaymentChannel(channel)
+
+        // ถ้าผู้ใช้เลือก "QR CODE" → call API
+        if (channel === 'QR CODE') {
+            // เช็คยอดที่จะจ่าย
+            let amountToPay = 0
+            if (payFullAmount) {
+                // ชำระเต็ม → (paymentAmount - discount) สมมติเป็นงวดแรก
+                amountToPay = Math.max(0, paymentAmount - discountAmount)
+            } else {
+                // ชำระบางส่วน → paySomeAmount
+                amountToPay = paySomeAmount
+            }
+
+            // call API ขอ QR
+            getQRPayment()
+        } else {
+            // ถ้าเปลี่ยนกลับเป็น 'CASH' ก็เคลียร์ qrCodeData
+            setQrCodeData('')
+        }
+    }
 
     const handlePriceOptionChange = (option: string) => {
-        setPriceOption(option);
-    };
+        setPriceOption(option)
 
-    const handleSomeAmountChange = (value: string) => {
-        // หากผู้ใช้พิมพ์ "0" โดยตรง
-        if (value === "0") {
-            setPaySomeAmount(0); // ตั้งค่าตรงๆ
-            setErrorMessage(""); // ไม่มีข้อความแจ้งเตือน
-            return;
-        }
-
-        // หากผู้ใช้ลบข้อความทั้งหมด
-        if (value === "") {
-            setErrorMessage(""); // ไม่มีข้อความแจ้งเตือน
-            return;
-        }
-
-        const number = Number(value); // แปลงค่าเป็นตัวเลข
-        if (isNaN(number) || number < 0) {
-            setErrorMessage("กรุณากรอกจำนวนเงินที่ถูกต้อง");
-        } else if (number > netPrice) {
-            setPaySomeAmount(number); // เก็บค่าที่กรอก
-            setErrorMessage(`ห้ามชำระเกินราคาสุทธิ ${netPrice.toLocaleString()} บาท`);
+        // ถ้าเลือก QR CODE จากชุด priceOption
+        if (option === "QR CODE") {
+            // ก็ต้องเรียก getQRPayment ด้วย
+            // หรือบังคับ paymentChannel เป็น "QR CODE" ไปเลย
+            setPaymentChannel("QR CODE")
+            getQRPayment()
         } else {
-            setPaySomeAmount(number); // เก็บค่าที่ถูกต้อง
-            setErrorMessage(""); // ล้างข้อความแจ้งเตือน
+            // ถ้าเป็น "CASH"
+            setPaymentChannel("CASH")
+            setQrCodeData('')
         }
-    };
+    }
+
+    // ฟังก์ชัน handleSomeAmountChange (แก้ให้ลบหมด = 0)
+    const handleSomeAmountChange = (value: string) => {
+        // ล้างค่า QR (ถ้ามี)
+        setQrCodeData('')
+
+        // 1) ถ้าผู้ใช้ลบตัวเลขจนเป็น "" หรือ "0" → ให้เป็น 0
+        if (!value) {
+            setPaySomeAmount(0)
+            setErrorMessage('')
+            return
+        }
+        if (value === '0') {
+            setPaySomeAmount(0)
+            setErrorMessage('')
+            return
+        }
+
+        // 2) จากนั้นตรวจสอบเลข
+        const number = Number(value)
+        if (isNaN(number) || number < 0) {
+            setErrorMessage("กรุณากรอกจำนวนเงินที่ถูกต้อง")
+        } else if (number > netPrice) {
+            setPaySomeAmount(number)
+            setErrorMessage(`ห้ามชำระเกินราคาสุทธิ ${netPrice.toLocaleString()} บาท`)
+        } else {
+            setPaySomeAmount(number)
+            setErrorMessage('')
+        }
+    }
+
+    const handleSomeAmountBlur = () => {
+        // กรณีต้องการให้ยิงเฉพาะตอนเป็น QR CODE
+        if (paymentChannel === 'QR CODE') {
+            getQRPayment()
+        }
+    }
 
     const allData = {
         REFNO: refno,
@@ -181,29 +272,30 @@ const CreateFirstBill: React.FC = () => {
         DISCOUNT: discountAmount
     };
 
-    // console.log("All Data to Submit:", allData)
-
     const onSubmit = async (data: any) => {
-        try {
-            const response = await axios.post(POST_PAYMENT_TRANSACTION_URL, allData, {
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
-
-            if (response.status === 200) {
-                Swal.fire("สำเร็จ", "บันทึกธุรกรรมการชำระเงินสำเร็จ", "success");
-                navigate("/firstBill/overview")
-            } else {
-                Swal.fire("เกิดข้อผิดพลาด", response.data.message || "ไม่สามารถบันทึกข้อมูลได้", "error");
-            }
-        } catch (error) {
-            console.error("Error saving data:", error);
-            Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถส่งข้อมูลได้", "error");
+        // ตรวจสอบการมี qrCodeData เมื่อเลือกช่องทาง QR CODE
+        if (paymentChannel === "QR CODE" && qrCodeData) {
+            Swal.fire("แจ้งเตือน", "กรุณาทำการสแกน qr code ก่อน", "warning");
+            return;
         }
-    };
+        // try {
+        //     const response = await axios.post(POST_PAYMENT_TRANSACTION_URL, allData, {
+        //         headers: {
+        //             "Content-Type": "application/json",
+        //         },
+        //     });
 
-    // console.log(`test`, status);
+        //     if (response.status === 200) {
+        //         Swal.fire("สำเร็จ", "บันทึกธุรกรรมการชำระเงินสำเร็จ", "success");
+        //         navigate("/firstBill/overview");
+        //     } else {
+        //         Swal.fire("เกิดข้อผิดพลาด", response.data.message || "ไม่สามารถบันทึกข้อมูลได้", "error");
+        //     }
+        // } catch (error) {
+        //     console.error("Error saving data:", error);
+        //     Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถส่งข้อมูลได้", "error");
+        // }
+    };
 
     return (
         <>
@@ -353,16 +445,16 @@ const CreateFirstBill: React.FC = () => {
                                                                             />
                                                                             <label className="form-label fw-bold fs-6">เงินสด</label>
                                                                         </div>
-                                                                        {/* <div className="form-check form-check-inline me-3">
+                                                                        <div className="form-check form-check-inline me-3">
                                                                             <input
                                                                                 className="form-check-input"
                                                                                 type="radio"
                                                                                 name="paymentChannel"
-                                                                                checked={paymentChannel === "CREDIT"}
-                                                                                onChange={() => handlePaymentChannelChange("CREDIT")}
+                                                                                checked={paymentChannel === "QR CODE"}
+                                                                                onChange={() => handlePaymentChannelChange("QR CODE")}
                                                                             />
-                                                                            <label className="form-label fw-bold fs-6">บัตรเครดิต</label>
-                                                                        </div> */}
+                                                                            <label className="form-label fw-bold fs-6">QR CODE</label>
+                                                                        </div>
                                                                     </div>
                                                                 </>
                                                             )}
@@ -434,6 +526,7 @@ const CreateFirstBill: React.FC = () => {
                                                                                     type="text"
                                                                                     className={`form-control ${errorMessage ? "is-invalid" : ""}`}
                                                                                     onChange={(e) => handleSomeAmountChange(e.target.value)}
+                                                                                    onBlur={handleSomeAmountBlur}
                                                                                     value={paySomeAmount === 0 ? "0" : paySomeAmount} // ใช้ "0" เพื่อให้พิมพ์ได้
                                                                                     min="0" // ป้องกันค่าติดลบ
                                                                                 />
@@ -487,16 +580,16 @@ const CreateFirstBill: React.FC = () => {
                                                                             />
                                                                             <label className="form-label fw-bold fs-6">เงินสด</label>
                                                                         </div>
-                                                                        {/* <div className="form-check form-check-inline me-3">
+                                                                        <div className="form-check form-check-inline me-3">
                                                                             <input
                                                                                 className="form-check-input"
                                                                                 type="radio"
                                                                                 name="priceOption"
-                                                                                checked={priceOption === "CREDIT"}
-                                                                                onChange={() => handlePriceOptionChange("CREDIT")}
+                                                                                checked={priceOption === "QR CODE"}
+                                                                                onChange={() => handlePriceOptionChange("QR CODE")}
                                                                             />
-                                                                            <label className="form-label fw-bold fs-6">บัตรเครดิต</label>
-                                                                        </div> */}
+                                                                            <label className="form-label fw-bold fs-6">QR CODE</label>
+                                                                        </div>
                                                                     </div>
                                                                 </>
                                                             )}
@@ -525,6 +618,19 @@ const CreateFirstBill: React.FC = () => {
                                                         </div>
                                                     )}
                                                     {/* End นัดชำระ*/}
+
+                                                    <div className='mb-6 mt-10 d-flex justify-content-center'>
+                                                        {loadingQR ? (
+                                                            <ThreeDot />
+                                                        ) : qrCodeData ? (
+                                                            <img
+                                                                src={qrCodeData}
+                                                                alt='QR Code'
+                                                                style={{ width: 200, height: 200 }}
+                                                            />
+                                                        ) : null}
+                                                    </div>
+
                                                 </div>
                                             </div>
 
@@ -596,7 +702,9 @@ const CreateFirstBill: React.FC = () => {
                                         <div className='row mb-7'>
                                             <label className='col-5 col-md-4 fw-bold text-muted'>ของแถม</label>
                                             <div className='col-7 col-md-8'>
-                                                <span className='fw-bold fs-6'>{item?.DISCOUNT[0]?.GIFT?.GIFTNAME}</span>
+                                                <span className='fw-bold fs-6'>
+                                                    {item?.DISCOUNT[0]?.GIFT?.GIFTNAME ? item?.DISCOUNT[0]?.GIFT?.GIFTNAME : "ไม่มี"}
+                                                </span>
                                             </div>
                                         </div>
                                     )}
@@ -615,7 +723,9 @@ const CreateFirstBill: React.FC = () => {
                                         <div className='row mb-7'>
                                             <label className='col-5 col-md-4 fw-bold text-muted'>เครื่องเทิร์น</label>
                                             <div className='col-7 col-md-8 d-flex align-items-center justify-content-between'>
-                                                <span className='fw-bold fs-6'>{item?.DISCOUNT[0]?.TRADEIN?.TRADEINBRANDNAME}</span>
+                                                <span className='fw-bold fs-6'>
+                                                    {item?.DISCOUNT[0]?.TRADEIN?.TRADEINBRANDNAME ? item?.DISCOUNT[0]?.TRADEIN?.TRADEINBRANDNAME : "ไม่มี"}
+                                                </span>
                                             </div>
                                         </div>
                                     )}
@@ -624,7 +734,9 @@ const CreateFirstBill: React.FC = () => {
                                         <div className='row mb-7'>
                                             <label className='col-5 col-md-4 fw-bold text-muted'>ส่วนลด</label>
                                             <div className='col-7 col-md-8 d-flex align-items-center justify-content-between'>
-                                                <span className='fw-bold fs-6'>{discountAmount}</span>
+                                                <span className='fw-bold fs-6'>
+                                                    {discountAmount ? discountAmount : "ไม่มี"}
+                                                </span>
                                                 <span className='badge badge-light-success'>บาท</span>
                                             </div>
                                         </div>
@@ -667,7 +779,7 @@ const CreateFirstBill: React.FC = () => {
                     </div>
                     {/* End Card Body */}
 
-                </div>
+                </div >
 
                 <div className="d-none d-xl-flex justify-content-between align-items-center mt-5 mb-10">
                     <button
@@ -709,7 +821,7 @@ const CreateFirstBill: React.FC = () => {
                     </button>
                 </div>
 
-            </Content>
+            </Content >
         </>
     )
 }

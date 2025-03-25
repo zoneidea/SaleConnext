@@ -88,7 +88,7 @@ const OrderOverview: React.FC = () => {
   return (
     <>
       <Content>
-        <div className="d-flex justify-content-between align-items-center flex-wrap">
+        <div className="d-flex justify-content-between align-items-center flex-wrap my-5">
           <div
             id="kt_page_title"
             data-kt-swapper="true"

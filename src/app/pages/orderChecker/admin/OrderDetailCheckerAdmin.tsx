@@ -1665,7 +1665,7 @@ const OrderDetailCheckerAdmin: React.FC = () => {
         <>
             <Content>
                 <form onSubmit={handleSubmit(onSubmit)}>
-                    <div className='d-flex justify-content-between align-items-center mb-5'>
+                    <div className='d-flex justify-content-between align-items-center my-5'>
                         <div id="kt_page_title" data-kt-swapper="true" data-kt-swapper-mode="prepend"
                             data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
                             className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">

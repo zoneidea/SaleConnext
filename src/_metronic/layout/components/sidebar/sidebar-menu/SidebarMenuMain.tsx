@@ -9,8 +9,6 @@ const SidebarMenuMain = () => {
   const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT
   const GET_MENU_URL = `${API_SALECONNEXT}/GetMenu`
 
-  const APP_VERSION = import.meta.env.VITE_APP_VERSION;
-
   // เก็บข้อมูลเมนูเป็น array
   const [menu, setMenu] = useState<any[]>([])
   const [fontSize, setFontSize] = useState('14px'); //เฉพาะเมนูที่ไม่ได้ดึงจาก api
@@ -131,11 +129,6 @@ const SidebarMenuMain = () => {
             onMouseLeave={handleMouseLeave}
           />
         ))}
-
-      <div style={{ color: '#9A9CAE' }} className="mt-8 text-center">
-        version {APP_VERSION}
-      </div>
-      
     </>
   )
 }

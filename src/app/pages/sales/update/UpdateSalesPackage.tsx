@@ -766,7 +766,7 @@ const UpdateSalesPackage: React.FC = () => {
 
     const handleCheckerClick = async () => {
         const response = await axios.post(UPDATECONTACT, {
-            REFNO: refno,
+            REFNO: item.REFNO,
             EMPID: EmpId,
             TEAMSALE: TeamSale,
             FIELD: "STATUS",
@@ -777,7 +777,7 @@ const UpdateSalesPackage: React.FC = () => {
             },
         });
 
-        // console.log(response)
+        console.log(response)
 
         if (response.status === 200) {
             if (!response.data.data) {

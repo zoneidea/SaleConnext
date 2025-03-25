@@ -17,24 +17,27 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item, onDelete })
   const API_URL_GET_ALLCONTRACT = import.meta.env.VITE_APP_API_MONGO;
   const DEL_CONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/DelContract`;
 
-  const formatDate = (dateString: any) => {
-    const date = new Date(dateString);
-    const day = date.getDate();
-    const month = date.getMonth();
-    const year = date.getFullYear();
+  // const formatDate = (dateString: any) => {
+  //   const date = new Date(dateString);
+  //   const day = date.getDate();
+  //   const month = date.getMonth();
+  //   const year = date.getFullYear();
 
-    const thaiMonths = [
-      "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
-      "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
-    ];
+  //   const thaiMonths = [
+  //     "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+  //     "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+  //   ];
 
-    return `${day} ${thaiMonths[month]} ${year + 543}`;
-  };
+  //   return `${day} ${thaiMonths[month]} ${year + 543}`;
+  // };
+
+  const currentDate = new Date();
+  const formattedDate = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate()}`;
 
   let customer, product, productPackage, serialNumber, createdAt, statusTxt, checkerComment
   if (item.CUSTOMERDETAIL.length > 0) {
     if (item.CUSTOMERDETAIL[0].CUSTOMERTYPE == 1) {
-      customer = <span className='text-gray-700 fw-semibold d-block'>{`ชื่อบริษัท: ${item.CUSTOMERDETAIL[0].CUSTOMERMD}`}</span>
+      customer = <span className='text-gray-700 fw-semibold d-block'>{`ชื่อลูกค้า: ${item.CUSTOMERDETAIL[0].CUSTOMERNAME}`}</span>
     } else {
       customer = <span className='text-gray-700 fw-semibold d-block'>{`ชื่อลูกค้า: ${item.CUSTOMERDETAIL[0].CUSTOMERNAME}`}</span>
     }
@@ -49,7 +52,7 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item, onDelete })
   }
 
   if (item.CONTRACT.length > 0) {
-    createdAt = <span className='text-gray-700 fw-semibold d-block'>{`วันที่ทำสัญญา: ${item.CONTRACT[0].createdAt && formatDate(item.CONTRACT[0].createdAt)}`}</span>
+    createdAt = <span className='text-gray-700 fw-semibold d-block'>{`วันที่ทำสัญญา: ${item.CONTRACT[0].createdAt && (item.CONTRACT[0].createdAt)}`}</span>
   }
 
   if (item.STATUS === 'DRAFT') {
@@ -66,7 +69,7 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item, onDelete })
   const deleteDataDraft = async (e: React.MouseEvent, refno: string) => {
     e.stopPropagation()
     e.preventDefault()
-    
+
     Swal.fire({
       title: 'คุณแน่ใจหรือไม่?',
       text: `คุณต้องการลบ REFNO: ${refno} หรือไม่?`,
@@ -84,9 +87,9 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item, onDelete })
           Swal.fire({
             text: 'ข้อมูลถูกลบเรียบร้อยแล้ว',
             icon: 'success',
-            timer: 2000, 
-            showConfirmButton: false, 
-        });
+            timer: 2000,
+            showConfirmButton: false,
+          });
           onDelete(); // ✅ รีเฟรชข้อมูลใหม่หลังลบสำเร็จ
         } catch (error) {
           console.error('เกิดข้อผิดพลาดในการลบข้อมูล:', error);
@@ -110,7 +113,7 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item, onDelete })
 
   return (
     <>
-      {status === 'DRAFT' ? (
+      {status === 'DRAFT' && (
         <Link to='/sale/step' state={item}>
           <div className='d-flex flex-column flex-md-row align-items-center bg-light-warning rounded p-5 mb-3 col-12'>
             <span className='text-warning me-5 d-none d-md-inline'>
@@ -160,29 +163,15 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item, onDelete })
             </span>
           </div>
         </Link>
-      ) : status === 'FINISH' ? (
-        <div className='d-flex align-items-center bg-light-success rounded p-5 mb-3 col-12'>
-          <span className='text-warning me-5'>
-            <KTIcon iconName='abstract-26' className='text-warning fs-1 me-5' />
-          </span>
-          <div className='flex-grow-1 me-2'>
-            <div className='fw-bold text-gray-800 text-hover-primary fs-6'>
-              {`REFNO: ${item.REFNO}`}
-            </div>
-            {customer}
-            {product}
-            {productPackage}
-            {serialNumber}
-            {createdAt}
-            {statusTxt}
-          </div>
-        </div>
-      ) : (
-        <Link to='/contract-checker/detailChecker' state={item}>
-          <div className='d-flex align-items-center bg-light-warning rounded p-5 mb-3 col-12'>
-            <span className='text-warning me-5'>
+      )}
+
+      {status === 'EDIT' && (
+        <Link to='/sale/step' state={item}>
+          <div className='d-flex flex-column flex-md-row align-items-center bg-light-warning rounded p-5 mb-3 col-12'>
+            <span className='text-warning me-5 d-none d-md-inline'>
               <KTIcon iconName='abstract-26' className='text-warning fs-1 me-5' />
             </span>
+
             <div className='flex-grow-1 me-2'>
               <div className='fw-bold text-gray-800 text-hover-primary fs-6'>
                 {`REFNO: ${item.REFNO}`}
@@ -197,6 +186,49 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item, onDelete })
           </div>
         </Link>
       )}
+
+      {status === 'PENDING' && (
+        <div className='d-flex flex-column flex-md-row align-items-center bg-light-secondary rounded p-5 mb-3 col-12'>
+          <span className='text-warning me-5 d-none d-md-inline'>
+            <KTIcon iconName='abstract-26' className='text-primary fs-1 me-5' />
+          </span>
+
+          <div className='flex-grow-1 me-2'>
+            <div className='fw-bold text-gray-800 text-hover-black fs-6'>
+              {`REFNO: ${item.REFNO}`}
+            </div>
+            {customer}
+            {product}
+            {productPackage}
+            {serialNumber}
+            {createdAt}
+            {statusTxt}
+          </div>
+        </div>
+      )}
+
+      {status === 'FINISH' && (
+        <Link to='/sale/cancel' state={item}>
+          <div className='d-flex flex-column flex-md-row align-items-center bg-light-success rounded p-5 mb-3 col-12'>
+            <span className='text-warning me-5 d-none d-md-inline'>
+              <KTIcon iconName='abstract-26' className='text-success fs-1 me-5' />
+            </span>
+
+            <div className='flex-grow-1 me-2'>
+              <div className='fw-bold text-gray-800 text-hover-primary fs-6'>
+                {`REFNO: ${item.REFNO}`}
+              </div>
+              {customer}
+              {product}
+              {productPackage}
+              {serialNumber}
+              {createdAt}
+              {statusTxt}
+            </div>
+          </div>
+        </Link>
+      )}
+
     </>
   );
 }

@@ -42,7 +42,7 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item }) => {
   }
 
   if (item.CONTRACT.length > 0) {
-    createdAt = <span className='text-gray-700 fw-semibold d-block'>{`วันที่ทำสัญญา: ${item.CONTRACT[0].createdAt && formatDate(item.CONTRACT[0].createdAt)}`}</span>
+    createdAt = <span className='text-gray-700 fw-semibold d-block'>{`วันที่ทำสัญญา: ${item.CONTRACT[0].createdAt && (item.CONTRACT[0].createdAt)}`}</span>
   }
 
   if (item.STATUS === 'DRAFT') {

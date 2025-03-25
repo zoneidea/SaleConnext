@@ -82,124 +82,127 @@ const EquipmentPhotoGallery: React.FC = () => {
     }, [refno]);
 
     return (
-        <div className="row mx-5 mt-10">
-            {loading ? (
-                <div className="text-center w-100">
-                    <ThreeDot />
-                </div>
-            ) : error ? (
-                <div className="text-center w-100 text-danger">
-                    <h3>{error}</h3>
-                </div>
-            ) : images.length > 0 ? (
-                images.map((base64Image, index) => (
-                    <div className="col-6 col-xl-4 mb-3" key={index}>
-                        <div className="border border-gray-500 position-relative">
-                            <img
-                                src={`data:image/jpeg;base64,${base64Image}`} // ใช้ Base64
-                                alt={`Captured ${index + 1}`}
-                                style={{
-                                    width: '100%',
-                                    height: '200px',
-                                    objectFit: 'cover',
-                                    cursor: 'pointer',
-                                }}
-                                onClick={() => setSelectedImage(`data:image/jpeg;base64,${base64Image}`)}
-                            />
-                            {/* Overlay */}
-                            <div
-                                className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-                                style={{
-                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                    opacity: 0,
-                                    transition: 'opacity 0.3s ease-in-out',
-                                }}
-                                onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
-                                onMouseLeave={(e) => (e.currentTarget.style.opacity = '0')}
-                            >
+        <>
+            {images.length > 0 && (<h5 className='mt-8 mb-2 mx-8' style={{ color: 'red' }}>* กดที่รูป หากต้องการดูภาพขนาดใหญ่</h5>)}
+            <div className="row mx-5 mt-1">
+                {loading ? (
+                    <div className="text-center w-100">
+                        <ThreeDot />
+                    </div>
+                ) : error ? (
+                    <div className="text-center w-100 text-danger">
+                        <h3>{error}</h3>
+                    </div>
+                ) : images.length > 0 ? (
+                    images.map((base64Image, index) => (
+                        <div className="col-6 col-xl-4 mb-3" key={index}>
+                            <div className="border border-gray-500 position-relative">
                                 <img
-                                    src={toAbsoluteUrl('media/settings/eye-svgrepo-com.png')}
-                                    alt="ดูภาพ"
-                                    style={{ width: '30px', height: '30px', cursor: 'pointer' }}
+                                    src={`data:image/jpeg;base64,${base64Image}`} // ใช้ Base64
+                                    alt={`Captured ${index + 1}`}
+                                    style={{
+                                        width: '100%',
+                                        height: '200px',
+                                        objectFit: 'cover',
+                                        cursor: 'pointer',
+                                    }}
                                     onClick={() => setSelectedImage(`data:image/jpeg;base64,${base64Image}`)}
                                 />
+                                {/* Overlay */}
+                                <div
+                                    className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+                                    style={{
+                                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                        opacity: 0,
+                                        transition: 'opacity 0.3s ease-in-out',
+                                    }}
+                                    onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                                    onMouseLeave={(e) => (e.currentTarget.style.opacity = '0')}
+                                >
+                                    <img
+                                        src={toAbsoluteUrl('media/settings/eye-svgrepo-com.png')}
+                                        alt="ดูภาพ"
+                                        style={{ width: '30px', height: '30px', cursor: 'pointer' }}
+                                        onClick={() => setSelectedImage(`data:image/jpeg;base64,${base64Image}`)}
+                                    />
+                                </div>
                             </div>
                         </div>
+                    ))
+                ) : (
+                    <div className="text-center w-100">
+                        <h3>ยังไม่มีรูปภาพในระบบ</h3>
                     </div>
-                ))
-            ) : (
-                <div className="text-center w-100">
-                    <h3>ยังไม่มีรูปภาพในระบบ</h3>
-                </div>
-            )}
+                )}
 
-            {/* Modal สำหรับแสดงรูปภาพขยาย */}
-            {selectedImage && (
-                <div
-                    style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        width: '100vw',
-                        height: '100vh',
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        zIndex: 1000,
-                    }}
-                    onClick={() => setSelectedImage(null)}
-                >
-                    <img
-                        src={selectedImage}
-                        alt="Selected"
+                {/* Modal สำหรับแสดงรูปภาพขยาย */}
+                {selectedImage && (
+                    <div
                         style={{
-                            maxWidth: '90%',
-                            maxHeight: '90%',
-                            border: '2px solid white',
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            width: '100vw',
+                            height: '100vh',
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            zIndex: 1000,
                         }}
-                    />
+                        onClick={() => setSelectedImage(null)}
+                    >
+                        <img
+                            src={selectedImage}
+                            alt="Selected"
+                            style={{
+                                maxWidth: '90%',
+                                maxHeight: '90%',
+                                border: '2px solid white',
+                            }}
+                        />
+                    </div>
+                )}
+                <div className='d-none d-xl-flex justify-content-between align-items-center my-5'>
+                    <button
+                        className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'
+                        onClick={() => navigate('/sale/photo', { state: { data: item, fromStep } })}
+                    >
+                        ย้อนกลับ
+                    </button>
+                    <button
+                        className="btn btn-primary w-100 w-md-auto align-self-center"
+                        onClick={() => navigate('/sale/photo/equipment', { state: { data: item, fromStep } })}
+                    >
+                        {isPC ? "เพิ่มรูปภาพ" : "แกลอรี่ / ถ่ายรูป"}
+                    </button>
                 </div>
-            )}
-            <div className='d-none d-xl-flex justify-content-between align-items-center my-5'>
-                <button
-                    className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'
-                    onClick={() => navigate('/sale/photo', { state: { data: item, fromStep } })}
+                {/* ปุ่มในหน้าจอเล็ก */}
+                <div
+                    className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
+                    style={{
+                        position: "fixed",
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        zIndex: 1050,
+                    }}
                 >
-                    ย้อนกลับ
-                </button>
-                <button
-                    className="btn btn-primary w-100 w-md-auto align-self-center"
-                    onClick={() => navigate('/sale/photo/equipment', { state: { data: item, fromStep } })}
-                >
-                    {isPC ? "เพิ่มรูปภาพ" : "แกลอรี่ / ถ่ายรูป"}
-                </button>
+                    <button
+                        className="btn btn-secondary w-auto me-2"
+                        onClick={() => navigate('/sale/photo', { state: { data: item, fromStep } })}
+                    >
+                        ย้อนกลับ
+                    </button>
+                    <button
+                        className="btn btn-primary w-auto me-2"
+                        onClick={() => navigate('/sale/photo/equipment', { state: { data: item, fromStep } })}
+                    >
+                        {isPC ? "เพิ่มรูปภาพ" : "แกลอรี่ / ถ่ายรูป"}
+                    </button>
+                </div>
             </div>
-            {/* ปุ่มในหน้าจอเล็ก */}
-            <div
-                className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
-                style={{
-                    position: "fixed",
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    zIndex: 1050,
-                }}
-            >
-                <button
-                    className="btn btn-secondary w-auto me-2"
-                    onClick={() => navigate('/sale/photo', { state: { data: item, fromStep } })}
-                >
-                    ย้อนกลับ
-                </button>
-                <button
-                    className="btn btn-primary w-auto me-2"
-                    onClick={() => navigate('/sale/photo/equipment', { state: { data: item, fromStep } })}
-                >
-                    {isPC ? "เพิ่มรูปภาพ" : "แกลอรี่ / ถ่ายรูป"}
-                </button>
-            </div>
-        </div>
+        </>
     );
 };
 

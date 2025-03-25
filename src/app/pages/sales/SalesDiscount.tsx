@@ -259,7 +259,7 @@ const SalesDiscount: React.FC = () => {
 
             // สร้าง prompt ด้วย custom HTML เพื่อให้เลือกพนักงานขายและผู้แนะนำ
             const { value: formValues } = await MySwal.fire({
-                title: 'เลือกพนักงานขายและผู้แนะนำ (ถ้ามี)',
+                title: 'เลือกพนักงานขาย',
                 html: `
                   <select id="swal-employee" class="swal2-input" style="width: 100%; margin-bottom: 1rem;">
                     <option value="">เลือกพนักงานขาย...</option>

@@ -131,6 +131,15 @@ const SalesPackage: React.FC = () => {
     // POST Contract/updateContract
     const handleSaveClick = async () => {
         try {
+            MySwal.fire({
+                title: 'โปรดรอสักครู่...',
+                text: 'กำลังส่งข้อมูล',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading()
+                },
+            })
+
             // POST Contract/updateContractValidate
             let obj = {
                 REFNO: refno,
@@ -142,6 +151,9 @@ const SalesPackage: React.FC = () => {
                     'Content-Type': 'application/json',
                 },
             });
+
+            // เมื่อสำเร็จ ปิด Loading ก่อน
+            Swal.close()
             // console.log(`Checker Contract: `, obj);
             // หลังจากทำการส่งข้อมูลสำเร็จ นำทางไปยังหน้า /sale/createcust
 
@@ -851,6 +863,11 @@ const SalesPackage: React.FC = () => {
                                 </div>
                             </div>
                         </div>
+
+                        {images?.IMAGECARD && images.IMAGECARD.length > 0 && (
+                            <h5 className='my-8 mx-8' style={{ color: 'red' }}>* กดที่รูป หากต้องการดูภาพขนาดใหญ่</h5>
+                        )}
+
                         <div className='d-flex flex-column flex-md-row mx-5 mb-5'>
                             {
                                 images?.IMAGECARD && images.IMAGECARD.length > 0 ? (
@@ -893,6 +910,11 @@ const SalesPackage: React.FC = () => {
                                 </div>
                             </div>
                         </div>
+
+                        {images?.IMAGECARD && images.IMAGECARD.length > 0 && (
+                            <h5 className='my-8 mx-8' style={{ color: 'red' }}>* กดที่รูป หากต้องการดูภาพขนาดใหญ่</h5>
+                        )}
+
                         <div className='d-flex flex-column flex-md-row mx-5 mb-5'>
                             {
                                 images?.IMAGEGPS && images.IMAGEGPS.length > 0 ? (
@@ -935,6 +957,11 @@ const SalesPackage: React.FC = () => {
                                 </div>
                             </div>
                         </div>
+
+                        {images?.IMAGECARD && images.IMAGECARD.length > 0 && (
+                            <h5 className='my-8 mx-8' style={{ color: 'red' }}>* กดที่รูป หากต้องการดูภาพขนาดใหญ่</h5>
+                        )}
+
                         <div className='d-flex flex-column flex-md-row mx-5 mb-5'>
                             {
                                 images?.IMAGEMAP && images.IMAGEMAP.length > 0 ? (
@@ -977,6 +1004,11 @@ const SalesPackage: React.FC = () => {
                                 </div>
                             </div>
                         </div>
+
+                        {images?.IMAGECARD && images.IMAGECARD.length > 0 && (
+                            <h5 className='my-8 mx-8' style={{ color: 'red' }}>* กดที่รูป หากต้องการดูภาพขนาดใหญ่</h5>
+                        )}
+
                         <div className='d-flex flex-column flex-md-row mx-5 mb-5'>
                             {
                                 images?.IMAGETRADEIN && images.IMAGETRADEIN.length > 0 ? (
@@ -1019,6 +1051,11 @@ const SalesPackage: React.FC = () => {
                                 </div>
                             </div>
                         </div>
+
+                        {images?.IMAGECARD && images.IMAGECARD.length > 0 && (
+                            <h5 className='my-8 mx-8' style={{ color: 'red' }}>* กดที่รูป หากต้องการดูภาพขนาดใหญ่</h5>
+                        )}
+
                         <div className='d-flex flex-column flex-md-row mx-5 mb-5'>
                             {
                                 images?.IMAGEINSTALLATION && images.IMAGEINSTALLATION.length > 0 ? (
@@ -1061,6 +1098,11 @@ const SalesPackage: React.FC = () => {
                                 </div>
                             </div>
                         </div>
+
+                        {images?.IMAGECARD && images.IMAGECARD.length > 0 && (
+                            <h5 className='my-8 mx-8' style={{ color: 'red' }}>* กดที่รูป หากต้องการดูภาพขนาดใหญ่</h5>
+                        )}
+
                         <div className='d-flex flex-column flex-md-row mx-5 mb-5'>
                             {
                                 images?.IMAGECUSTOMERHOME && images.IMAGECUSTOMERHOME.length > 0 ? (
@@ -1103,6 +1145,11 @@ const SalesPackage: React.FC = () => {
                                 </div>
                             </div>
                         </div>
+
+                        {images?.IMAGECARD && images.IMAGECARD.length > 0 && (
+                            <h5 className='my-8 mx-8' style={{ color: 'red' }}>* กดที่รูป หากต้องการดูภาพขนาดใหญ่</h5>
+                        )}
+
                         <div className='d-flex flex-column flex-md-row mx-5 mb-5'>
                             {
                                 images?.IMAGECUSTOMER && images.IMAGECUSTOMER.length > 0 ? (
@@ -1145,6 +1192,11 @@ const SalesPackage: React.FC = () => {
                                 </div>
                             </div>
                         </div>
+
+                        {images?.IMAGECARD && images.IMAGECARD.length > 0 && (
+                            <h5 className='my-8 mx-8' style={{ color: 'red' }}>* กดที่รูป หากต้องการดูภาพขนาดใหญ่</h5>
+                        )}
+
                         <div className='d-flex flex-column flex-md-row mx-5 mb-5'>
                             {
                                 images?.IMAGETDS && images.IMAGETDS.length > 0 ? (

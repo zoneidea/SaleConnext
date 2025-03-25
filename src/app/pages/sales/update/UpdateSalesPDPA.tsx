@@ -65,6 +65,9 @@ const UpdateSalesPDPA: React.FC = () => {
     const customer = item?.CUSTOMERDETAIL
     // console.log(`customer`, customer);
 
+    const API_URL_PDPA_LETTER = import.meta.env.VITE_APP_API_PDPA_LETTER;
+    const CONSENT_LETTER_API = `${API_URL_PDPA_LETTER}/PDPA?OrganizationCode=0`;
+
     const API_URL_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
     const SEND_SMS_API = `${API_URL_SALECONNEXT}/sendSMS/PDPA`;
     const CHECK_OTP_API = `${API_URL_SALECONNEXT}/CheckOTP/PDPA`;
@@ -100,6 +103,15 @@ const UpdateSalesPDPA: React.FC = () => {
     const [contNo, setContNo] = useState<string | null>(item?.CONTNO || null);
 
     const [images, setImages] = useState<ImagesType | null>(null);
+
+    const otpInputRef = useRef<HTMLInputElement | null>(null);
+
+    // เมื่อกด ดำเนินการต่อ ให้โฟกัสที่ input รับ OTP เลย
+    useEffect(() => {
+        if (isSignatureSaved && otpInputRef.current) {
+            otpInputRef.current.focus();
+        }
+    }, [isSignatureSaved]);
 
     // Memoized ContNo สำหรับการใช้งานใน component อื่น
     const memoizedContNo = useMemo(() => {
@@ -191,7 +203,7 @@ const UpdateSalesPDPA: React.FC = () => {
     }, [refno]);
 
     const currentDate = new Date();
-    const formattedDate = `${currentDate.getDate()}/${currentDate.getMonth() + 1}/${currentDate.getFullYear()}`;
+    const formattedDate = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate()}`;
 
     const sendSMS = async () => {
         saveSignature()
@@ -214,53 +226,13 @@ const UpdateSalesPDPA: React.FC = () => {
                 if (!item?.CONTNO) {
                     setContNo(responseSendSMS.data.ContNo);
                 }
+            } if (otpInputRef.current) {
+                otpInputRef.current.focus();
             }
         } catch (error) {
             console.error('Error responseSendSMS:', error);
         }
     };
-
-    // const checkOTP = async () => {
-    //     try {
-    //         const responseCheckOTP = await axios.post(CHECK_OTP_API, {
-    //             EmpID: EmpId,
-    //             RefNo: refno,
-    //             OTP: inputOTP,
-    //         }, {
-    //             headers: {
-    //                 'Content-Type': 'multipart/form-data',
-    //             },
-    //         });
-
-    //         // console.log(`responseCheckOTP: `, responseCheckOTP.data);
-
-    //         if (responseCheckOTP.data.status === 400) {
-    //             Swal.fire({
-    //                 icon: 'error',
-    //                 title: 'ข้อผิดพลาด!',
-    //                 text: 'รหัส OTP ไม่ถูกต้อง!',
-    //                 confirmButtonText: 'ตกลง',
-    //             });
-    //         } else if (responseCheckOTP.data.status === 200) {
-    //             Swal.fire({
-    //                 icon: 'success',
-    //                 title: 'สำเร็จ!',
-    //                 text: 'การตรวจสอบ OTP สำเร็จ!',
-    //                 timer: 2000, // แสดงผล 3 วินาที
-    //                 showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
-    //             })
-    //             setResponseCheckOTPSuccess(true)
-    //         }
-    //     } catch (error) {
-    //         console.error('Error responseCheckOTP:', error);
-    //         Swal.fire({
-    //             icon: 'error',
-    //             title: 'ข้อผิดพลาด!',
-    //             text: 'ไม่สามารถตรวจสอบ OTP ได้!',
-    //             confirmButtonText: 'ตกลง',
-    //         });
-    //     }
-    // };
 
     const checkOTP = async () => {
         try {
@@ -309,38 +281,72 @@ const UpdateSalesPDPA: React.FC = () => {
 
     const handleUpdateContract = async () => {
         try {
-            const updateContract = await axios.post(UPDATECONTACT, {
+            // 1) เรียก UPDATECONTACT เพื่ออัปเดต PDPA ก่อน
+            const updatePDPA = await axios.post(UPDATECONTACT, {
                 REFNO: refno,
                 EMPID: EmpId,
                 TEAMSALE: TeamSale,
-                FIELD: "PDPA",
+                FIELD: 'PDPA',
                 CONTNO: contNo,
-                DATA: [{ CONSENTGIVEN: consentGiven, SIGNATURE: pdpaContract?.[0]?.SIGNATURE || signatureDataURL, OTP: inputOTP }]
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-            // console.log(`updateContract PDPA: `, updateContract.data);
-            if (updateContract.data.message === "Update contract successfully.") {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'สำเร็จ!',
-                    text: 'ปรับปรุงข้อมูล PDPA แล้ว',
-                    timer: 2000, // แสดงผล 3 วินาที
-                    showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
+                DATA: [
+                    {
+                        CONSENTGIVEN: consentGiven,
+                        SIGNATURE: pdpaContract?.[0]?.SIGNATURE || signatureDataURL,
+                        OTP: inputOTP,
+                    },
+                ],
+            },
+                {
+                    headers: { 'Content-Type': 'application/json' },
                 })
+
+            // ตรวจสอบว่าอัปเดตสำเร็จหรือไม่
+            if (updatePDPA.data.message === 'Update contract successfully.') {
+                // 2) เมื่ออัปเดต PDPA สำเร็จแล้ว จึงเรียก UPDATECONTACT อีกครั้ง เพื่ออัปเดต createdAt
+                const updateCreatedAt = await axios.post(UPDATECONTACT, {
+                    REFNO: refno,
+                    EMPID: EmpId,
+                    TEAMSALE: TeamSale,
+                    SALECODE: SaleCode,
+                    SUPEMPID: SupEmpId,
+                    SECEMPID: SecEmpId,
+                    FIELD: 'CONTRACT',
+                    DATA: { createdAt: formattedDate },
+                },
+                    {
+                        headers: { 'Content-Type': 'application/json' },
+                    })
+
+                if (updateCreatedAt.data.message === 'Update contract successfully.') {
+                    // แสดง Alert เมื่ออัปเดตทั้ง PDPA และ createdAt สำเร็จ
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'สำเร็จ!',
+                        text: 'ปรับปรุงข้อมูล PDPA และวันที่ทำสัญญาเรียบร้อยแล้ว',
+                        timer: 2000,
+                        showConfirmButton: false,
+                    })
+                } else {
+                    // กรณีอัปเดต PDPA สำเร็จ แต่ไม่สามารถอัปเดต createdAt ได้
+                    MySwal.fire('เกิดข้อผิดพลาด', updateCreatedAt.data.message, 'error')
+                }
             } else {
-                MySwal.fire('เกิดข้อผิดพลาด', updateContract.data.message, 'error');
+                // กรณีอัปเดต PDPA ไม่สำเร็จ
+                MySwal.fire('เกิดข้อผิดพลาด', updatePDPA.data.message, 'error')
             }
         } catch (error) {
-            console.error('Error fetching PDPA:', error);
+            console.error('Error updating contract:', error)
+            Swal.fire({
+                icon: 'error',
+                title: 'เกิดข้อผิดพลาด!',
+                text: 'ไม่สามารถอัปเดตสัญญาได้ กรุณาลองใหม่',
+            })
         }
-    };
+    }
 
     const handleCheckerClick = async () => {
         const response = await axios.post(UPDATECONTACT, {
-            REFNO: refno,
+            REFNO: item.REFNO,
             EMPID: EmpId,
             TEAMSALE: TeamSale,
             FIELD: "STATUS",
@@ -412,11 +418,8 @@ const UpdateSalesPDPA: React.FC = () => {
 
                 <div className='card mb-10 px-4'>
                     <div className='card-body flex justify-between items-center p-5'>
-                        <div className='col-12 text-center'>
-                            <span className="fw-bold fs-4">หนังสือให้ความยินยอม</span>
-                        </div>
-                        <br />
-                        <div className='col-12'>
+
+                        {/* <div className='col-12'>
                             <span className="fs-6">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ข้าพเจ้าตกลงและให้ความยินยอมแก่บริษัท สบาย เทคโนโลยี จำกัด (มหาชน) และบริษัทในกลุ่มสบาย รวมถึงพันธมิตรทางธุรกิจ (ให้เรียกรวมกัน“บริษัท”) โดยข้าพเจ้าตกลงใช้บริการและ/หรือผลิตภัณฑ์ของบริษัทในกลุ่มสบาย ณ วันที่ให้ความยินยอมนี้และต่อไปในภายหน้า ในการเก็บ รวบรวม ประมวลผล ใช้ และ/หรือ เปิดเผยข้อมูลส่วนบุคคล และข้อมูลส่วนบุคคลที่อ่อนไหว (Sensitive Data) (เช่น เชื้อชาติ สัญชาติ ศาสนา กรุ๊ปเลือด เป็นต้น) ที่มีข้อมูลปรากฏอยู่บนเอกสารระบุตัวตนของข้าพเจ้า (เช่น บัตรประชาชน หนังสือเดินทาง หรือเอกสารอื่นใดที่ออกโดยหน่วยงานราชการ) รวมถึงข้อมูลชีวภาพของข้าพเจ้า (เช่น ข้อมูลจำลองลายนิ้วมือ ข้อมูลชีวมิติ ข้อมูลภาพถ่ายจำลองใบหน้า เป็นต้น) ตลอดจนข้อมูลภาพหรือเสียงที่มีการบันทึก (ต่อไปนี้รวมเรียกว่า “<span className="fw-bold">ข้อมูลส่วนบุคคลของข้าพเจ้า</span>”) เพื่อวัตถุประสงค์ในการยืนยันและระบุตัวตนของข้าพเจ้าในการขอใช้บริการหรือผลิตภัณฑ์ดังกล่าว และ/หรือ ตามที่กฎหมายกำหนด โดยการดำเนินการดังกล่าวนั้น บริษัทได้ให้ความสำคัญต่อความเป็นส่วนตัวของผู้ใช้บริการ และจัดเก็บข้อมูลส่วนบุคคลของผู้ใช้บริการอย่างปลอดภัยและเป็นไปตามมาตรฐานที่กฎหมายกำหนด ดังนั้น ข้าพเจ้าในฐานะผู้ใช้บริการตกลงให้ความยินยอม ดังต่อไปนี้</span>
                             <br />
                             <span className="fs-6" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;โดยท่านสามารถตรวจสอบ บริษัทในกลุ่มสบายและพันธมิตรทางธุรกิจ รวมถึงบริษัทหรือพันธมิตรที่เกิดขึ้นในอนาคต ได้ที่ <a href="https://sabuytech.com/privacy-policy/" target="_blank" >https://sabuytech.com/privacy-policy/</a></span>
@@ -476,8 +479,16 @@ const UpdateSalesPDPA: React.FC = () => {
                             <span className="fs-6" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ข้าพเจ้าได้อ่านและรับทราบนโยบายคุ้มครองข้อมูลส่วนบุคคลของบริษัทในกลุ่มสบายและพันธมิตรทางธุรกิจเป็นอย่างดีแล้ว ที่เว็บไซต์ <a href="https://sabuytech.com/privacy-policy/" target="_blank" >https://sabuytech.com/privacy-policy/</a> ทั้งนี้ข้าพเจ้าขอรับรองว่าได้ทราบและเข้าใจสิทธิการคุ้มครองข้อมูลส่วนบุคคลและวัตถุประสงค์ในการเก็บรวบรวม ใช้ หรือเปิดเผยข้อมูลส่วนบุคคล ตามข้อความในหนังสือนี้อย่างครบถ้วนสมบูรณ์แล้ว จึงได้ลงเครื่องหมายแสดงความยินยอมรับเงื่อนไขการเก็บ รวบรวม ใช้ และเปิดเผยข้อมูลส่วนบุคคลของข้าพเจ้าและสิทธิของข้าพเจ้าตามเงื่อนไขในหนังสือฉบับนี้ และลงลายมือชื่อไว้เป็นหลักฐาน</span>
                             <br />
                             <span className="fs-6" >&nbsp;</span>
-                        </div>
-                        <div className='row mb-4 text-center'>
+                        </div> */}
+
+                        <iframe
+                            src={CONSENT_LETTER_API}
+                            title="Consent Letter"
+                            width="100%"
+                            height="1250px"
+                        />
+
+                        <div className='row mt-10 mb-4 text-center'>
                             <div className='col-lg-6 mb-3 mt-xl-5'>
                                 <label className='form-check form-check-inline form-check-solid me-5'>
                                     <input
@@ -561,9 +572,10 @@ const UpdateSalesPDPA: React.FC = () => {
                         </div>
 
                         {isOTPSent && (
-                            <div className='col-lg-12 mb-3'>
+                            <div className='col-lg-12 my-10'>
                                 <label className='form-label required fw-bold fs-6'>OTP ที่ได้รับจากลูกค้า</label>
                                 <input
+                                    ref={otpInputRef}
                                     value={inputOTP}
                                     onChange={(e) => setInputOTP(e.target.value)}
                                     type='text'

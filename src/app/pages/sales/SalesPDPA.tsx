@@ -28,6 +28,9 @@ const SalesPDPA: React.FC = () => {
   const { REFNO } = useUUIDStore();
   // console.log(`REFNO`, REFNO);
 
+  const API_URL_PDPA_LETTER = import.meta.env.VITE_APP_API_PDPA_LETTER;
+  const CONSENT_LETTER_API = `${API_URL_PDPA_LETTER}/PDPA?OrganizationCode=0`;
+
   const API_URL_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
   const SEND_SMS_API = `${API_URL_SALECONNEXT}/sendSMS/PDPA`;
   const CHECK_OTP_API = `${API_URL_SALECONNEXT}/CheckOTP/PDPA`;
@@ -56,12 +59,14 @@ const SalesPDPA: React.FC = () => {
   const [contNo, setContNo] = useState<string>('');
   // console.log(`contNo`, contNo);
 
-  // ตรวจสอบว่า `signaturePadRef` พร้อมใช้งานแล้ว
+  const otpInputRef = useRef<HTMLInputElement | null>(null);
+
+  // เมื่อกด ดำเนินการต่อ ให้โฟกัสที่ input รับ OTP เลย
   useEffect(() => {
-    if (signaturePadRef.current) {
-      // console.log("SignaturePad is ready");
+    if (isSignatureSaved && otpInputRef.current) {
+      otpInputRef.current.focus();
     }
-  }, [signaturePadRef]);
+  }, [isSignatureSaved]);  
 
   const clear = () => signaturePadRef.current?.clear()
 
@@ -101,7 +106,7 @@ const SalesPDPA: React.FC = () => {
   }, [consentGiven]);
 
   const currentDate = new Date();
-  const formattedDate = `${currentDate.getDate()}/${currentDate.getMonth() + 1}/${currentDate.getFullYear()}`;
+  const formattedDate = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate()}`;
 
   const sendSMS = async () => {
     try {
@@ -170,24 +175,59 @@ const SalesPDPA: React.FC = () => {
 
   const handleUpdateContract = async () => {
     try {
-      const updateContract = await axios.post(UPDATECONTACT, {
+      // เรียกอัปเดต PDPA ก่อน
+      const responsePDPA = await axios.post(UPDATECONTACT, {
         REFNO,
         EMPID: EmpId,
         TEAMSALE: TeamSale,
         FIELD: "PDPA",
         CONTNO: contNo,
-        DATA: [{ CONSENTGIVEN: consentGiven, SIGNATURE: signatureDataURL, OTP: inputOTP }]
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      // console.log(`updateContract PDPA: `, updateContract.data);
-      navigate("/sale/contract", { state: { contNo } });
+        DATA: [
+          {
+            CONSENTGIVEN: consentGiven,
+            SIGNATURE: signatureDataURL,
+            OTP: inputOTP
+          }
+        ]
+      },
+        {
+          headers: {
+            "Content-Type": "application/json"
+          }
+        })
+
+      // จากนั้นเรียกอัปเดต CONTRACT เพื่อตั้งค่า createdAt
+      const responseContract = await axios.post(UPDATECONTACT, {
+        REFNO,
+        EMPID: EmpId,
+        TEAMSALE: TeamSale,
+        SALECODE: SaleCode,
+        SUPEMPID: SupEmpId,
+        SECEMPID: SecEmpId,
+        FIELD: "CONTRACT",
+        DATA: {
+          // ตัวอย่างเช่น "2025-3-24" หรือ "2025-03-24"
+          createdAt: formattedDate
+        }
+      },
+        {
+          headers: {
+            "Content-Type": "application/json"
+          }
+        })
+
+      // ถ้าทั้งสองเรียกสำเร็จแล้ว จึงค่อยนำทางไปหน้าถัดไป
+      navigate("/sale/contract", { state: { contNo } })
     } catch (error) {
-      console.error('Error fetching PDPA:', error);
+      console.error('Error in handleUpdateContract:', error)
+      Swal.fire({
+        icon: 'error',
+        title: 'เกิดข้อผิดพลาด!',
+        text: 'ไม่สามารถอัปเดตข้อมูลได้ กรุณาลองใหม่',
+        confirmButtonText: 'ตกลง'
+      })
     }
-  };
+  }
 
   return (
     <>
@@ -213,11 +253,8 @@ const SalesPDPA: React.FC = () => {
 
         <div className='card mb-10 px-4'>
           <div className='card-body flex justify-between items-center p-5'>
-            <div className='col-12 text-center'>
-              <span className="fw-bold fs-4">หนังสือให้ความยินยอม</span>
-            </div>
-            <br />
-            <div className='col-12'>
+
+            {/* <div className='col-12'>
               <span className="fs-6">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ข้าพเจ้าตกลงและให้ความยินยอมแก่บริษัท สบาย เทคโนโลยี จำกัด (มหาชน) และบริษัทในกลุ่มสบาย รวมถึงพันธมิตรทางธุรกิจ (ให้เรียกรวมกัน“บริษัท”) โดยข้าพเจ้าตกลงใช้บริการและ/หรือผลิตภัณฑ์ของบริษัทในกลุ่มสบาย ณ วันที่ให้ความยินยอมนี้และต่อไปในภายหน้า ในการเก็บ รวบรวม ประมวลผล ใช้ และ/หรือ เปิดเผยข้อมูลส่วนบุคคล และข้อมูลส่วนบุคคลที่อ่อนไหว (Sensitive Data) (เช่น เชื้อชาติ สัญชาติ ศาสนา กรุ๊ปเลือด เป็นต้น) ที่มีข้อมูลปรากฏอยู่บนเอกสารระบุตัวตนของข้าพเจ้า (เช่น บัตรประชาชน หนังสือเดินทาง หรือเอกสารอื่นใดที่ออกโดยหน่วยงานราชการ) รวมถึงข้อมูลชีวภาพของข้าพเจ้า (เช่น ข้อมูลจำลองลายนิ้วมือ ข้อมูลชีวมิติ ข้อมูลภาพถ่ายจำลองใบหน้า เป็นต้น) ตลอดจนข้อมูลภาพหรือเสียงที่มีการบันทึก (ต่อไปนี้รวมเรียกว่า “<span className="fw-bold">ข้อมูลส่วนบุคคลของข้าพเจ้า</span>”) เพื่อวัตถุประสงค์ในการยืนยันและระบุตัวตนของข้าพเจ้าในการขอใช้บริการหรือผลิตภัณฑ์ดังกล่าว และ/หรือ ตามที่กฎหมายกำหนด โดยการดำเนินการดังกล่าวนั้น บริษัทได้ให้ความสำคัญต่อความเป็นส่วนตัวของผู้ใช้บริการ และจัดเก็บข้อมูลส่วนบุคคลของผู้ใช้บริการอย่างปลอดภัยและเป็นไปตามมาตรฐานที่กฎหมายกำหนด ดังนั้น ข้าพเจ้าในฐานะผู้ใช้บริการตกลงให้ความยินยอม ดังต่อไปนี้</span>
               <br />
               <span className="fs-6" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;โดยท่านสามารถตรวจสอบ บริษัทในกลุ่มสบายและพันธมิตรทางธุรกิจ รวมถึงบริษัทหรือพันธมิตรที่เกิดขึ้นในอนาคต ได้ที่ <a href="https://sabuytech.com/privacy-policy/" target="_blank" >https://sabuytech.com/privacy-policy/</a></span>
@@ -277,8 +314,16 @@ const SalesPDPA: React.FC = () => {
               <span className="fs-6" >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ข้าพเจ้าได้อ่านและรับทราบนโยบายคุ้มครองข้อมูลส่วนบุคคลของบริษัทในกลุ่มสบายและพันธมิตรทางธุรกิจเป็นอย่างดีแล้ว ที่เว็บไซต์ <a href="https://sabuytech.com/privacy-policy/" target="_blank" >https://sabuytech.com/privacy-policy/</a> ทั้งนี้ข้าพเจ้าขอรับรองว่าได้ทราบและเข้าใจสิทธิการคุ้มครองข้อมูลส่วนบุคคลและวัตถุประสงค์ในการเก็บรวบรวม ใช้ หรือเปิดเผยข้อมูลส่วนบุคคล ตามข้อความในหนังสือนี้อย่างครบถ้วนสมบูรณ์แล้ว จึงได้ลงเครื่องหมายแสดงความยินยอมรับเงื่อนไขการเก็บ รวบรวม ใช้ และเปิดเผยข้อมูลส่วนบุคคลของข้าพเจ้าและสิทธิของข้าพเจ้าตามเงื่อนไขในหนังสือฉบับนี้ และลงลายมือชื่อไว้เป็นหลักฐาน</span>
               <br />
               <span className="fs-6" >&nbsp;</span>
-            </div>
-            <div className='row mb-4 text-center'>
+            </div> */}
+
+            <iframe
+              src={CONSENT_LETTER_API}
+              title="Consent Letter"
+              width="100%"
+              height="500px"
+            />
+
+            <div className='row mt-10 mb-4 text-center'>
               <div className='col-lg-6 mb-3 mt-xl-5'>
                 <label className='form-check form-check-inline form-check-solid me-5'>
                   <input
@@ -343,9 +388,10 @@ const SalesPDPA: React.FC = () => {
             </div>
 
             {isSignatureSaved && (
-              <div className='col-lg-12 mb-3'>
+              <div className='col-lg-12 my-10'>
                 <label className='form-label required fw-bold fs-6'>OTP ที่ได้รับจากลูกค้า</label>
                 <input
+                  ref={otpInputRef}
                   value={inputOTP}
                   onChange={(e) => setInputOTP(e.target.value)}
                   type='text'

@@ -836,6 +836,7 @@ const UpdateSaleAddress: React.FC = () => {
         setSelectedDistrict(undefined);
         setSelectedSubDistrict(undefined);
         setSelectedZipcode('');
+        resetShowAddressCard();
     };
 
     const handleDistrictChange = (e: ChangeEvent<HTMLSelectElement>) => {
@@ -844,6 +845,7 @@ const UpdateSaleAddress: React.FC = () => {
         // Reset subdistrict and zipcode
         setSelectedSubDistrict(undefined);
         setSelectedZipcode('');
+        resetShowAddressCard();
     };
 
     const handleSubDistrictChange = (e: ChangeEvent<HTMLSelectElement>) => {
@@ -851,6 +853,7 @@ const UpdateSaleAddress: React.FC = () => {
         setSelectedSubDistrict(value);
         // Reset zipcode
         setSelectedZipcode('');
+        resetShowAddressCard();
     };
 
     // ที่อยู่ลูกค้า (ติดตั้ง)
@@ -861,6 +864,7 @@ const UpdateSaleAddress: React.FC = () => {
         setSelectedDistrictForInstall(undefined);
         setSelectedSubDistrictForInstall(undefined);
         setSelectedZipcodeForInstall('');
+        resetShowInstallAddress()
     };
 
     const handleDistrictChangeForInstall = (e: ChangeEvent<HTMLSelectElement>) => {
@@ -869,6 +873,7 @@ const UpdateSaleAddress: React.FC = () => {
         // Reset subdistrict and zipcode
         setSelectedSubDistrictForInstall(undefined);
         setSelectedZipcodeForInstall('');
+        resetShowInstallAddress()
     };
 
     const handleSubDistrictChangeForInstall = (e: ChangeEvent<HTMLSelectElement>) => {
@@ -876,6 +881,7 @@ const UpdateSaleAddress: React.FC = () => {
         setSelectedSubDistrictForInstall(value);
         // Reset zipcode
         setSelectedZipcodeForInstall('');
+        resetShowInstallAddress()
     };
 
     // ที่อยู่ลูกค้า (เก็บเงิน)
@@ -886,6 +892,7 @@ const UpdateSaleAddress: React.FC = () => {
         setSelectedDistrictForPayment(undefined);
         setSelectedSubDistrictForPayment(undefined);
         setSelectedZipcodeForPayment('');
+        resetShowInstallAddress()
     };
 
     const handleDistrictChangeForPayment = (e: ChangeEvent<HTMLSelectElement>) => {
@@ -894,6 +901,7 @@ const UpdateSaleAddress: React.FC = () => {
         // Reset subdistrict and zipcode
         setSelectedSubDistrictForPayment(undefined);
         setSelectedZipcodeForPayment('');
+        resetShowPaymentAddress()
     };
 
     const handleSubDistrictChangeForPayment = (e: ChangeEvent<HTMLSelectElement>) => {
@@ -901,6 +909,7 @@ const UpdateSaleAddress: React.FC = () => {
         setSelectedSubDistrictForPayment(value);
         // Reset zipcode
         setSelectedZipcodeForPayment('');
+        resetShowPaymentAddress()
     };
 
     // จัดการติ้กใน accordion ที่อยู่ลูกค้า (ตามบัตร)
@@ -930,16 +939,6 @@ const UpdateSaleAddress: React.FC = () => {
                 setSelectedSubDistrictForPayment(selectedSubDistrict);
                 setSelectedZipcodeForPayment(selectedZipcode);
                 setAddressPhoneForPayment(addressPhone);
-
-                setAddressNumberForBilling(addressNumber);
-                setAddressMooForBilling(addressMoo);
-                setAddressSoiForBilling(addressSoi);
-                setAddressRoadForBilling(addressRoad);
-                setSelectedProvinceForBilling(selectedProvince);
-                setSelectedDistrictForBilling(selectedDistrict);
-                setSelectedSubDistrictForBilling(selectedSubDistrict);
-                setSelectedZipcodeForBilling(selectedZipcode);
-                setAddressPhoneForBilling(addressPhone);
             }
         }
 
@@ -1088,14 +1087,40 @@ const UpdateSaleAddress: React.FC = () => {
 
     };
 
+    // ฟังก์ชันเพื่อล้างการติ๊กใน  accordion อื่นๆ เมื่อมีการเปลี่ยนแปลงข้อมูลใน accordion ที่อยู่ลูกค้า (ตามบัตร)
+    const resetShowAddressCard = () => {
+        setLikeAllAddr(false)
+        setInstallLikeCardAddr(false)
+        setPaymentLikeInstallAddr(false)
+        setPaymentLikeCardAddr(false)
+        setBillLikePaymentAddr(false)
+        setBillLikeCardAddr(false)
+    };
+
     // ฟังก์ชันเพื่อล้างการติ๊กใน  accordion ที่อยู่ลูกค้า (ตามบัตร) เมื่อมีการเปลี่ยนแปลงข้อมูลใน accordion ที่อยู่ลูกค้า (ติดตั้ง)
     const resetShowInstallAddress = () => {
-        setShowInstallAddress(false);
+        setLikeAllAddr(false)
+        setInstallLikeCardAddr(false)
+        setPaymentLikeInstallAddr(false)
+        setBillLikeInstallAddr(false)
+
     };
 
     // ฟังก์ชันเพื่อล้างการติ๊กใน  accordion ที่อยู่ลูกค้า (ตามบัตร) เมื่อมีการเปลี่ยนแปลงข้อมูลใน accordion ที่อยู่ลูกค้า (เก็บเงิน)
     const resetShowPaymentAddress = () => {
-        setShowPaymentAddress(false);
+        setLikeAllAddr(false)
+        setInstallLikeCardAddr(false)
+        setPaymentLikeInstallAddr(false)
+        setBillLikePaymentAddr(false)
+
+    };
+
+    // ฟังก์ชันเพื่อล้างการติ๊กใน  accordion อื่นๆ เมื่อมีการเปลี่ยนแปลงข้อมูลใน accordion ที่อยู่ลูกค้า (เก็บเงิน)
+    const resetShowBillingAddress = () => {
+        setLikeAllAddr(false)
+        setBillLikeCardAddr(false)
+        setBillLikeInstallAddr(false)
+        setBillLikePaymentAddr(false)
     };
 
     const handleNextClick = async () => {
@@ -1138,7 +1163,7 @@ const UpdateSaleAddress: React.FC = () => {
 
     const handleCheckerClick = async () => {
         const response = await axios.post(UPDATECONTACT, {
-            REFNO: refno,
+            REFNO: item.REFNO,
             EMPID: EmpId,
             TEAMSALE: TeamSale,
             FIELD: "STATUS",
@@ -1253,7 +1278,10 @@ const UpdateSaleAddress: React.FC = () => {
                                                         <label className='form-label required fw-bold fs-6'>บ้านเลขที่</label>
                                                         <input
                                                             value={addressNumber}
-                                                            onChange={(e) => setAddressNumber(e.target.value)}
+                                                            onChange={(e) => {
+                                                                setAddressNumber(e.target.value)
+                                                                resetShowAddressCard()
+                                                            }}
                                                             type='text'
                                                             className='form-control mb-3 mb-lg-0'
                                                         />
@@ -1262,7 +1290,10 @@ const UpdateSaleAddress: React.FC = () => {
                                                         <label className='form-label fw-bold fs-6'>หมู่ที่</label>
                                                         <input
                                                             value={addressMoo}
-                                                            onChange={(e) => setAddressMoo(e.target.value)}
+                                                            onChange={(e) => {
+                                                                setAddressMoo(e.target.value)
+                                                                resetShowAddressCard()
+                                                            }}
                                                             type='text'
                                                             className='form-control mb-3 mb-lg-0'
                                                         />
@@ -1271,7 +1302,10 @@ const UpdateSaleAddress: React.FC = () => {
                                                         <label className='form-label fw-bold fs-6'>ตรอก / ซอย</label>
                                                         <input
                                                             value={addressSoi}
-                                                            onChange={(e) => setAddressSoi(e.target.value)}
+                                                            onChange={(e) => {
+                                                                setAddressSoi(e.target.value)
+                                                                resetShowAddressCard()
+                                                            }}
                                                             type='text'
                                                             className='form-control mb-3 mb-lg-0'
                                                         />
@@ -1285,7 +1319,10 @@ const UpdateSaleAddress: React.FC = () => {
                                                         <label className='form-label fw-bold fs-6'>ถนน</label>
                                                         <input
                                                             value={addressRoad}
-                                                            onChange={(e) => setAddressRoad(e.target.value)}
+                                                            onChange={(e) => {
+                                                                setAddressRoad(e.target.value)
+                                                                resetShowAddressCard()
+                                                            }}
                                                             type='text'
                                                             className='form-control mb-3 mb-lg-0'
                                                         />
@@ -1356,9 +1393,13 @@ const UpdateSaleAddress: React.FC = () => {
                                                         <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
                                                         <input
                                                             value={addressPhone}
-                                                            onChange={(e) => setAddressPhone(e.target.value)}
+                                                            onChange={(e) => {
+                                                                setAddressPhone(e.target.value)
+                                                                resetShowAddressCard()
+                                                            }}
                                                             type='text'
                                                             className='form-control mb-3 mb-lg-0'
+                                                            maxLength={10}
                                                         />
                                                     </div>
                                                 </div>
@@ -1550,6 +1591,7 @@ const UpdateSaleAddress: React.FC = () => {
                                                             }}
                                                             type='text'
                                                             className='form-control mb-3 mb-lg-0'
+                                                            maxLength={10}
                                                         />
                                                     </div>
                                                 </div>
@@ -1743,6 +1785,7 @@ const UpdateSaleAddress: React.FC = () => {
                                                             }}
                                                             type='text'
                                                             className='form-control mb-3 mb-lg-0'
+                                                            maxLength={10}
                                                         />
                                                     </div>
                                                 </div>
@@ -1783,269 +1826,305 @@ const UpdateSaleAddress: React.FC = () => {
                     </div>
                     {/* End accordion ที่อยู่ลูกค้า (เก็บเงิน)*/}
 
+                    {/* Checkbox สำหรับกำหนดว่าจะให้แสดงที่อยู่ลูกค้า (ออกใบกำกับภาษี) หรือไม่ */}
+                    <div className='form-check form-check-inline form-check-solid mb-20 mx-10'>
+                        <input
+                            className='form-check-input'
+                            type='checkbox'
+                            id='showBillTaxCheckbox'
+                            checked={showBillTax}
+                            onChange={(e) => setShowBillTax(e.target.checked)}
+                        />
+                        <label
+                            className='form-check-label fw-bold fs-6 mx-2' style={{ color: "black" }}
+                            htmlFor='showBillTaxCheckbox'
+                        >
+                            ใช้ที่อยู่ออกใบกำกับภาษี
+                        </label>
+                    </div>
+
                     {/* Start accordion ที่อยู่ลูกค้า (ใบกำกับภาษี)*/}
-                    <div className='accordion mb-10' id='kt_accordion_5'>
-                        <div className='accordion-item mb-10'>
-                            <h2 className='accordion-header' id='kt_accordion_5_header_5'>
-                                <h3
-                                    className='accordion-button fs-4 fw-bold collapsed border-0 h-50px pt-5 rounded-top px-lg-15 px-7'
-                                    data-bs-toggle='collapse'
-                                    data-bs-target='#kt_accordion_5_body_5'
-                                    aria-expanded='true'
-                                    aria-controls='kt_accordion_5_body_5'
-                                    style={{ color: 'white', cursor: 'pointer', backgroundColor: '#3777bc' }}
+                    {showBillTax && (
+                        <div className='accordion mb-10' id='kt_accordion_5'>
+                            <div className='accordion-item mb-10'>
+                                <h2 className='accordion-header' id='kt_accordion_5_header_5'>
+                                    <h3
+                                        className='accordion-button fs-4 fw-bold collapsed border-0 h-50px pt-5 rounded-top px-lg-15 px-7'
+                                        data-bs-toggle='collapse'
+                                        data-bs-target='#kt_accordion_5_body_5'
+                                        aria-expanded='true'
+                                        aria-controls='kt_accordion_5_body_5'
+                                        style={{ color: 'white', cursor: 'pointer', backgroundColor: '#3777bc' }}
+                                    >
+                                        ที่อยู่ลูกค้า (ออกใบกำกับภาษี)
+                                    </h3>
+                                </h2>
+                                <div
+                                    id='kt_accordion_5_body_5'
+                                    className='accordion-collapse collapse show'
+                                    aria-labelledby='kt_accordion_5_header_5'
+                                    data-bs-parent='#kt_accordion_5'
                                 >
-                                    ที่อยู่ลูกค้า (ออกใบกำกับภาษี)
-                                </h3>
-                            </h2>
-                            <div
-                                id='kt_accordion_5_body_5'
-                                className='accordion-collapse collapse show'
-                                aria-labelledby='kt_accordion_5_header_5'
-                                data-bs-parent='#kt_accordion_5'
-                            >
-                                <div className='accordion-body'>
-                                    {/* start form */}
-                                    <form noValidate className='form'>
-                                        <div className='card-body px-lg-9 px-1'>
+                                    <div className='accordion-body'>
+                                        {/* start form */}
+                                        <form noValidate className='form'>
+                                            <div className='card-body px-lg-9 px-1'>
 
-                                            <div className="container">
-                                                <div className='row mb-6'>
-                                                    <div className='col-lg-4 mb-3'>
-                                                        <label className='form-label required fw-bold fs-6'>บ้านเลขที่</label>
-                                                        <input
-                                                            value={addressNumberForBilling}
-                                                            onChange={(e) => setAddressNumberForBilling(e.target.value)}
-                                                            type='text'
-                                                            className='form-control mb-3 mb-lg-0'
-                                                        />
-                                                    </div>
-                                                    <div className='col-lg-4 mb-3'>
-                                                        <label className='form-label fw-bold fs-6'>หมู่ที่</label>
-                                                        <input
-                                                            value={addressMooForBilling}
-                                                            onChange={(e) => setAddressMooForBilling(e.target.value)}
-                                                            type='text'
-                                                            className='form-control mb-3 mb-lg-0'
-                                                        />
-                                                    </div>
-                                                    <div className='col-lg-4 mb-3'>
-                                                        <label className='form-label fw-bold fs-6'>ตรอก / ซอย</label>
-                                                        <input
-                                                            value={addressSoiForBilling}
-                                                            onChange={(e) => setAddressSoiForBilling(e.target.value)}
-                                                            type='text'
-                                                            className='form-control mb-3 mb-lg-0'
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="container">
-                                                <div className='row mb-6'>
-                                                    <div className='col-lg-4 mb-3'>
-                                                        <label className='form-label fw-bold fs-6'>ถนน</label>
-                                                        <input
-                                                            value={addressRoadForBilling}
-                                                            onChange={(e) => setAddressRoadForBilling(e.target.value)}
-                                                            type='text'
-                                                            className='form-control mb-3 mb-lg-0'
-                                                        />
-                                                    </div>
-
-                                                    {/* จังหวัด */}
-                                                    <div className='col-lg-4 mb-3'>
-                                                        <label className='form-label required fw-bold fs-6'>จังหวัด</label>
-                                                        <select
-                                                            className='form-select'
-                                                            value={
-                                                                billLikeCardAddr ? selectedProvince :
-                                                                    billLikeInstallAddr ? selectedProvinceForInstall :
-                                                                        billLikePaymentAddr ? selectedProvinceForPayment :
-                                                                            selectedProvinceForBilling
-                                                            }
-                                                            onChange={(e) => {
-                                                                const selectedValue = Number(e.target.value);
-                                                                if (billLikeCardAddr) {
-                                                                    setSelectedProvince(selectedValue);
-                                                                } else if (billLikeInstallAddr) {
-                                                                    setSelectedProvinceForInstall(selectedValue);
-                                                                } else if (billLikePaymentAddr) {
-                                                                    setSelectedProvinceForPayment(selectedValue);
-                                                                } else {
-                                                                    setSelectedProvinceForBilling(selectedValue);
-                                                                }
-                                                            }}
-                                                        >
-                                                            <option value=''>เลือกจังหวัด...</option>
-                                                            {(billLikeCardAddr ? getProvince :
-                                                                billLikeInstallAddr ? getProvinceForInstall :
-                                                                    billLikePaymentAddr ? getProvinceForPayment :
-                                                                        getProvinceForBilling).map((item) => (
-                                                                            <option key={item.PROVINCECODE} value={item.PROVINCECODE}>
-                                                                                {item.PROVINCENAME}
-                                                                            </option>
-                                                                        ))}
-                                                        </select>
-                                                    </div>
-
-                                                    {/* อำเภอ / เขต */}
-                                                    <div className='col-lg-4 mb-3'>
-                                                        <label className='form-label required fw-bold fs-6'>อำเภอ / เขต</label>
-                                                        <select
-                                                            className='form-select'
-                                                            value={
-                                                                billLikeCardAddr ? selectedDistrict :
-                                                                    billLikeInstallAddr ? selectedDistrictForInstall :
-                                                                        billLikePaymentAddr ? selectedDistrictForPayment :
-                                                                            selectedDistrictForBilling
-                                                            }
-                                                            onChange={(e) => {
-                                                                const selectedValue = Number(e.target.value);
-                                                                if (billLikeCardAddr) {
-                                                                    setSelectedDistrict(selectedValue);
-                                                                } else if (billLikeInstallAddr) {
-                                                                    setSelectedDistrictForInstall(selectedValue);
-                                                                } else if (billLikePaymentAddr) {
-                                                                    setSelectedDistrictForPayment(selectedValue);
-                                                                } else {
-                                                                    setSelectedDistrictForBilling(selectedValue);
-                                                                }
-                                                            }}
-                                                        >
-                                                            <option value=''>เลือกอำเภอ / เขต...</option>
-                                                            {(billLikeCardAddr ? getDistrict :
-                                                                billLikeInstallAddr ? getDistrictForInstall :
-                                                                    billLikePaymentAddr ? getDistrictForPayment :
-                                                                        getDistrictForBilling).map((item) => (
-                                                                            <option key={item.DISTRICTCODE} value={item.DISTRICTCODE}>
-                                                                                {item.DISTRICTNAME}
-                                                                            </option>
-                                                                        ))}
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="container">
-                                                <div className='row mb-6'>
-                                                    {/* ตำบล / แขวง */}
-                                                    <div className='col-lg-4 mb-3'>
-                                                        <label className='form-label required fw-bold fs-6'>ตำบล / แขวง</label>
-                                                        <select
-                                                            className='form-select'
-                                                            value={
-                                                                billLikeCardAddr ? selectedSubDistrict :
-                                                                    billLikeInstallAddr ? selectedSubDistrictForInstall :
-                                                                        billLikePaymentAddr ? selectedSubDistrictForPayment :
-                                                                            selectedSubDistrictForBilling
-                                                            }
-                                                            onChange={(e) => {
-                                                                const selectedValue = Number(e.target.value);
-                                                                if (billLikeCardAddr) {
-                                                                    setSelectedSubDistrict(selectedValue);
-                                                                } else if (billLikeInstallAddr) {
-                                                                    setSelectedSubDistrictForInstall(selectedValue);
-                                                                } else if (billLikePaymentAddr) {
-                                                                    setSelectedSubDistrictForPayment(selectedValue);
-                                                                } else {
-                                                                    setSelectedSubDistrictForBilling(selectedValue);
-                                                                }
-                                                            }}
-                                                        >
-                                                            <option value=''>เลือกตำบล / แขวง...</option>
-                                                            {(billLikeCardAddr ? getSubDistrict :
-                                                                billLikeInstallAddr ? getSubDistrictForInstall :
-                                                                    billLikePaymentAddr ? getSubDistrictForPayment :
-                                                                        getSubDistrictForBilling).map((item) => (
-                                                                            <option key={item.SUBDISTRICTCODE} value={item.SUBDISTRICTCODE}>
-                                                                                {item.SUBDISTRICTNAME}
-                                                                            </option>
-                                                                        ))}
-                                                        </select>
-                                                    </div>
-
-                                                    {/* รหัสไปรษณีย์ */}
-                                                    <div className='col-lg-4 mb-3'>
-                                                        <label className='form-label required fw-bold fs-6'>รหัสไปรษณีย์</label>
-                                                        <input
-                                                            type='text'
-                                                            className='form-control mb-3 mb-lg-0'
-                                                            value={
-                                                                billLikeCardAddr ? selectedZipcode :
-                                                                    billLikeInstallAddr ? selectedZipcodeForInstall :
-                                                                        billLikePaymentAddr ? selectedZipcodeForPayment :
-                                                                            selectedZipcodeForBilling
-                                                            }
-                                                            readOnly
-                                                            style={{
-                                                                backgroundColor: '#d7dbde',
-                                                            }}
-                                                        />
-                                                    </div>
-
-                                                    <div className='col-lg-4 mb-3'>
-                                                        <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
-                                                        <input
-                                                            value={addressPhoneForBilling}
-                                                            onChange={(e) => {
-                                                                setAddressPhoneForBilling(e.target.value)
-                                                            }}
-                                                            type='text'
-                                                            className='form-control mb-3 mb-lg-0'
-                                                        />
-                                                    </div>
-
-                                                </div>
-                                            </div>
-
-                                            <div className="container">
-                                                <div className='row mb-6'>
-                                                    <div className='col-lg-6 mb-3 mt-xl-5'>
-                                                        <label className='form-check form-check-inline form-check-solid me-5'>
+                                                <div className="container">
+                                                    <div className='row mb-6'>
+                                                        <div className='col-lg-4 mb-3'>
+                                                            <label className='form-label required fw-bold fs-6'>บ้านเลขที่</label>
                                                             <input
-                                                                onChange={handleCheckboxChange}
-                                                                className='form-check-input'
-                                                                name='billLikeAddressCard'
-                                                                type='checkbox'
-                                                                checked={billLikeCardAddr}
+                                                                value={addressNumberForBilling}
+                                                                onChange={(e) => {
+                                                                    setAddressNumberForBilling(e.target.value)
+                                                                    resetShowBillingAddress()
+                                                                }}
+                                                                type='text'
+                                                                className='form-control mb-3 mb-lg-0'
                                                             />
-                                                            <span className='fw-bold ps-2 fs-6 mb-sm-5'>ใช้ที่อยู่เดียวกับที่อยู่ตามบัตรฯ</span>
-                                                        </label>
-                                                        <label className='form-check form-check-inline form-check-solid me-5 mt-3 mt-sm-0'>
+                                                        </div>
+                                                        <div className='col-lg-4 mb-3'>
+                                                            <label className='form-label fw-bold fs-6'>หมู่ที่</label>
                                                             <input
-                                                                onChange={handleCheckboxChange}
-                                                                className='form-check-input'
-                                                                name='billLikeAddressInstall'
-                                                                type='checkbox'
-                                                                checked={billLikeInstallAddr}
+                                                                value={addressMooForBilling}
+                                                                onChange={(e) => {
+                                                                    setAddressMooForBilling(e.target.value)
+                                                                    resetShowBillingAddress()
+                                                                }}
+                                                                type='text'
+                                                                className='form-control mb-3 mb-lg-0'
                                                             />
-                                                            <span className='fw-bold ps-2 fs-6'>ใช้ที่อยู่เดียวกับที่อยู่ติดตั้ง</span>
-                                                        </label>
-                                                        <label className='form-check form-check-inline form-check-solid me-5 mt-3 mt-sm-0'>
+                                                        </div>
+                                                        <div className='col-lg-4 mb-3'>
+                                                            <label className='form-label fw-bold fs-6'>ตรอก / ซอย</label>
                                                             <input
-                                                                onChange={handleCheckboxChange}
-                                                                className='form-check-input'
-                                                                name='billLikeAddressPayment'
-                                                                type='checkbox'
-                                                                checked={billLikePaymentAddr}
+                                                                value={addressSoiForBilling}
+                                                                onChange={(e) => {
+                                                                    setAddressSoiForBilling(e.target.value)
+                                                                    resetShowBillingAddress()
+                                                                }}
+                                                                type='text'
+                                                                className='form-control mb-3 mb-lg-0'
                                                             />
-                                                            <span className='fw-bold ps-2 fs-6'>ใช้ที่อยู่เดียวกับที่อยู่เก็บเงิน</span>
-                                                        </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="container">
+                                                    <div className='row mb-6'>
+                                                        <div className='col-lg-4 mb-3'>
+                                                            <label className='form-label fw-bold fs-6'>ถนน</label>
+                                                            <input
+                                                                value={addressRoadForBilling}
+                                                                onChange={(e) => {
+                                                                    setAddressRoadForBilling(e.target.value)
+                                                                    resetShowBillingAddress()
+                                                                }}
+                                                                type='text'
+                                                                className='form-control mb-3 mb-lg-0'
+                                                            />
+                                                        </div>
+
+                                                        {/* จังหวัด */}
+                                                        <div className='col-lg-4 mb-3'>
+                                                            <label className='form-label required fw-bold fs-6'>จังหวัด</label>
+                                                            <select
+                                                                className='form-select'
+                                                                value={
+                                                                    billLikeCardAddr ? selectedProvince :
+                                                                        billLikeInstallAddr ? selectedProvinceForInstall :
+                                                                            billLikePaymentAddr ? selectedProvinceForPayment :
+                                                                                selectedProvinceForBilling
+                                                                }
+                                                                onChange={(e) => {
+                                                                    const selectedValue = Number(e.target.value);
+                                                                    if (billLikeCardAddr) {
+                                                                        setSelectedProvince(selectedValue);
+                                                                    } else if (billLikeInstallAddr) {
+                                                                        setSelectedProvinceForInstall(selectedValue);
+                                                                    } else if (billLikePaymentAddr) {
+                                                                        setSelectedProvinceForPayment(selectedValue);
+                                                                    } else {
+                                                                        setSelectedProvinceForBilling(selectedValue);
+                                                                    }
+                                                                    resetShowBillingAddress()
+                                                                }}
+                                                            >
+                                                                <option value=''>เลือกจังหวัด...</option>
+                                                                {(billLikeCardAddr ? getProvince :
+                                                                    billLikeInstallAddr ? getProvinceForInstall :
+                                                                        billLikePaymentAddr ? getProvinceForPayment :
+                                                                            getProvinceForBilling).map((item) => (
+                                                                                <option key={item.PROVINCECODE} value={item.PROVINCECODE}>
+                                                                                    {item.PROVINCENAME}
+                                                                                </option>
+                                                                            ))}
+                                                            </select>
+                                                        </div>
+
+                                                        {/* อำเภอ / เขต */}
+                                                        <div className='col-lg-4 mb-3'>
+                                                            <label className='form-label required fw-bold fs-6'>อำเภอ / เขต</label>
+                                                            <select
+                                                                className='form-select'
+                                                                value={
+                                                                    billLikeCardAddr ? selectedDistrict :
+                                                                        billLikeInstallAddr ? selectedDistrictForInstall :
+                                                                            billLikePaymentAddr ? selectedDistrictForPayment :
+                                                                                selectedDistrictForBilling
+                                                                }
+                                                                onChange={(e) => {
+                                                                    const selectedValue = Number(e.target.value);
+                                                                    if (billLikeCardAddr) {
+                                                                        setSelectedDistrict(selectedValue);
+                                                                    } else if (billLikeInstallAddr) {
+                                                                        setSelectedDistrictForInstall(selectedValue);
+                                                                    } else if (billLikePaymentAddr) {
+                                                                        setSelectedDistrictForPayment(selectedValue);
+                                                                    } else {
+                                                                        setSelectedDistrictForBilling(selectedValue);
+                                                                    }
+                                                                    resetShowBillingAddress()
+                                                                }}
+                                                            >
+                                                                <option value=''>เลือกอำเภอ / เขต...</option>
+                                                                {(billLikeCardAddr ? getDistrict :
+                                                                    billLikeInstallAddr ? getDistrictForInstall :
+                                                                        billLikePaymentAddr ? getDistrictForPayment :
+                                                                            getDistrictForBilling).map((item) => (
+                                                                                <option key={item.DISTRICTCODE} value={item.DISTRICTCODE}>
+                                                                                    {item.DISTRICTNAME}
+                                                                                </option>
+                                                                            ))}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="container">
+                                                    <div className='row mb-6'>
+                                                        {/* ตำบล / แขวง */}
+                                                        <div className='col-lg-4 mb-3'>
+                                                            <label className='form-label required fw-bold fs-6'>ตำบล / แขวง</label>
+                                                            <select
+                                                                className='form-select'
+                                                                value={
+                                                                    billLikeCardAddr ? selectedSubDistrict :
+                                                                        billLikeInstallAddr ? selectedSubDistrictForInstall :
+                                                                            billLikePaymentAddr ? selectedSubDistrictForPayment :
+                                                                                selectedSubDistrictForBilling
+                                                                }
+                                                                onChange={(e) => {
+                                                                    const selectedValue = Number(e.target.value);
+                                                                    if (billLikeCardAddr) {
+                                                                        setSelectedSubDistrict(selectedValue);
+                                                                    } else if (billLikeInstallAddr) {
+                                                                        setSelectedSubDistrictForInstall(selectedValue);
+                                                                    } else if (billLikePaymentAddr) {
+                                                                        setSelectedSubDistrictForPayment(selectedValue);
+                                                                    } else {
+                                                                        setSelectedSubDistrictForBilling(selectedValue);
+                                                                    }
+                                                                    resetShowBillingAddress()
+                                                                }}
+                                                            >
+                                                                <option value=''>เลือกตำบล / แขวง...</option>
+                                                                {(billLikeCardAddr ? getSubDistrict :
+                                                                    billLikeInstallAddr ? getSubDistrictForInstall :
+                                                                        billLikePaymentAddr ? getSubDistrictForPayment :
+                                                                            getSubDistrictForBilling).map((item) => (
+                                                                                <option key={item.SUBDISTRICTCODE} value={item.SUBDISTRICTCODE}>
+                                                                                    {item.SUBDISTRICTNAME}
+                                                                                </option>
+                                                                            ))}
+                                                            </select>
+                                                        </div>
+
+                                                        {/* รหัสไปรษณีย์ */}
+                                                        <div className='col-lg-4 mb-3'>
+                                                            <label className='form-label required fw-bold fs-6'>รหัสไปรษณีย์</label>
+                                                            <input
+                                                                type='text'
+                                                                className='form-control mb-3 mb-lg-0'
+                                                                value={
+                                                                    billLikeCardAddr ? selectedZipcode :
+                                                                        billLikeInstallAddr ? selectedZipcodeForInstall :
+                                                                            billLikePaymentAddr ? selectedZipcodeForPayment :
+                                                                                selectedZipcodeForBilling
+                                                                }
+                                                                readOnly
+                                                                style={{
+                                                                    backgroundColor: '#d7dbde',
+                                                                }}
+                                                            />
+                                                        </div>
+
+                                                        <div className='col-lg-4 mb-3'>
+                                                            <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
+                                                            <input
+                                                                value={addressPhoneForBilling}
+                                                                onChange={(e) => {
+                                                                    setAddressPhoneForBilling(e.target.value)
+                                                                    resetShowBillingAddress()
+                                                                }}
+                                                                type='text'
+                                                                className='form-control mb-3 mb-lg-0'
+                                                                maxLength={10}
+                                                            />
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+
+                                                <div className="container">
+                                                    <div className='row mb-6'>
+                                                        <div className='col-lg-6 mb-3 mt-xl-5'>
+                                                            <label className='form-check form-check-inline form-check-solid me-5'>
+                                                                <input
+                                                                    onChange={handleCheckboxChange}
+                                                                    className='form-check-input'
+                                                                    name='billLikeAddressCard'
+                                                                    type='checkbox'
+                                                                    checked={billLikeCardAddr}
+                                                                />
+                                                                <span className='fw-bold ps-2 fs-6 mb-sm-5'>ใช้ที่อยู่เดียวกับที่อยู่ตามบัตรฯ</span>
+                                                            </label>
+                                                            <label className='form-check form-check-inline form-check-solid me-5 mt-3 mt-sm-0'>
+                                                                <input
+                                                                    onChange={handleCheckboxChange}
+                                                                    className='form-check-input'
+                                                                    name='billLikeAddressInstall'
+                                                                    type='checkbox'
+                                                                    checked={billLikeInstallAddr}
+                                                                />
+                                                                <span className='fw-bold ps-2 fs-6'>ใช้ที่อยู่เดียวกับที่อยู่ติดตั้ง</span>
+                                                            </label>
+                                                            <label className='form-check form-check-inline form-check-solid me-5 mt-3 mt-sm-0'>
+                                                                <input
+                                                                    onChange={handleCheckboxChange}
+                                                                    className='form-check-input'
+                                                                    name='billLikeAddressPayment'
+                                                                    type='checkbox'
+                                                                    checked={billLikePaymentAddr}
+                                                                />
+                                                                <span className='fw-bold ps-2 fs-6'>ใช้ที่อยู่เดียวกับที่อยู่เก็บเงิน</span>
+                                                            </label>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </form>
-                                    {/* end form */}
+                                        </form>
+                                        {/* end form */}
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    )}
                     {/* End accordion ที่อยู่ลูกค้า (ใบกำกับภาษี)*/}
                 </div>
                 {/* End Card */}
-                
+
                 <div className='d-none d-xl-flex justify-content-between align-items-center my-5'>
                     <button
                         className='btn btn-secondary w-100 w-md-auto align-self-center h-50px'

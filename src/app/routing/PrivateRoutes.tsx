@@ -64,6 +64,8 @@ const PrivateRoutes = () => {
   const SalesDiscount = lazy(() => import('../pages/sales/SalesDiscount'))
   const SalesPackage = lazy(() => import('../pages/sales/SalesPackage'))
   const SalesPDPA = lazy(() => import('../pages/sales/SalesPDPA'))
+  const SalesCancel = lazy(() => import('../pages/sales/SalesCancel'))
+  const SalesBillRecieveMoney = lazy(() => import('../pages/sales/SalesBillRecieveMoney'))
 
   //กล้อง + รูป
   const DeviceScanBarcode = lazy(() => import('../pages/sales/components/accessCam/DeviceScanBarcode'))
@@ -399,6 +401,22 @@ const PrivateRoutes = () => {
           element={
             <SuspensedView>
               <TurnPhotoGallery />
+            </SuspensedView>
+          }
+        />
+         <Route
+          path='sale/cancel'
+          element={
+            <SuspensedView>
+              <SalesCancel />
+            </SuspensedView>
+          }
+        />
+         <Route
+          path='sale/billRecieveMoney'
+          element={
+            <SuspensedView>
+              <SalesBillRecieveMoney />
             </SuspensedView>
           }
         />

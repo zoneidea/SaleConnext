@@ -20,7 +20,7 @@ import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 
 interface ContractState {
-    contNo: string; 
+    contNo: string;
 }
 
 interface ItemProps {
@@ -188,7 +188,7 @@ const UpdateSalesContract: React.FC = () => {
 
     const handleCheckerClick = async () => {
         const response = await axios.post(UPDATECONTACT, {
-            REFNO: refno,
+            REFNO: item.REFNO,
             EMPID: EmpId,
             TEAMSALE: TeamSale,
             FIELD: "STATUS",
@@ -377,7 +377,25 @@ const UpdateSalesContract: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className='row mb-10'>
+                        {address[0]?.ADDRESSTAX?.ADDRESSPROVINCENAME && (
+                            <div className='row mb-10'>
+                                <label className='col-lg-4 fw-bold text-muted'>ที่อยู่เสึยภาษี</label>
+                                <div className='col-lg-8'>
+                                    <span className='fw-bolder fs-6 text-gray-900'>
+                                        {address[0]?.ADDRESSTAX?.ADDRESSNUMBER && `${address[0]?.ADDRESSTAX?.ADDRESSNUMBER}`}&nbsp;
+                                        {address[0]?.ADDRESSTAX?.ADDRESSMOO && `หมู่ที่ ${address[0]?.ADDRESSTAX?.ADDRESSMOO}`}&nbsp;
+                                        {address[0]?.ADDRESSTAX?.ADDRESSSOI && `ซอย ${address[0]?.ADDRESSTAX?.ADDRESSSOI}`}&nbsp;
+                                        {address[0]?.ADDRESSTAX?.ADDRESSROAD && `ถนน ${address[0]?.ADDRESSTAX?.ADDRESSROAD}`}&nbsp;
+                                        {address[0]?.ADDRESSTAX?.ADDRESSSUBDISTRICTNAME && `ตำบล / แขวง ${address[0]?.ADDRESSTAX?.ADDRESSSUBDISTRICTNAME}`}&nbsp;
+                                        {address[0]?.ADDRESSTAX?.ADDRESSDISTRICTNAME && `อำเภอ ${address[0]?.ADDRESSTAX?.ADDRESSDISTRICTNAME}`}&nbsp;
+                                        {address[0]?.ADDRESSTAX?.ADDRESSPROVINCENAME && `จังหวัด ${address[0]?.ADDRESSTAX?.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
+                                        {address[0]?.ADDRESSTAX?.ADDRESSZIPCODE && `${address[0]?.ADDRESSTAX?.ADDRESSZIPCODE}`}&nbsp;
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+
+                        < div className='row mb-10'>
                             <label className='col-lg-4 fw-bold text-muted'>เบอร์โทรติดต่อ</label>
                             <div className='col-lg-8'>
                                 <span className='fw-bold fs-6'>{customerDetail[0]?.CUSTOMERMOBILE}</span>
@@ -404,7 +422,9 @@ const UpdateSalesContract: React.FC = () => {
                             <div className='row align-items-center mb-10'>
                                 <label className='col-lg-4 fw-bold text-muted mb-0'>ของแถม</label>
                                 <div className='col-lg-8 d-flex justify-content-between'>
-                                    <span className='fw-bold fs-6'>{item?.DISCOUNT[0]?.GIFT?.GIFTNAME}</span>
+                                    <span className='fw-bold fs-6'>
+                                        {item?.DISCOUNT[0]?.GIFT?.GIFTNAME ? item?.DISCOUNT[0]?.GIFT?.GIFTNAME : "ไม่มี"}
+                                    </span>
                                 </div>
                             </div>
                         )}
@@ -425,7 +445,9 @@ const UpdateSalesContract: React.FC = () => {
                             <div className='row align-items-center mb-10'>
                                 <label className='col-lg-4 fw-bold text-muted mb-0'>เครื่องเทิร์น</label>
                                 <div className='col-lg-8 d-flex justify-content-between'>
-                                    <span className='fw-bold fs-6'>{item?.DISCOUNT[0]?.TRADEIN?.TRADEINBRANDNAME}</span>
+                                    <span className='fw-bold fs-6'>
+                                        {item?.DISCOUNT[0]?.TRADEIN?.TRADEINBRANDNAME ? item?.DISCOUNT[0]?.TRADEIN?.TRADEINBRANDNAME : "ไม่มี"}
+                                    </span>
                                 </div>
                             </div>
                         )}
@@ -436,7 +458,7 @@ const UpdateSalesContract: React.FC = () => {
                                 <span className='fw-bold fs-6'>
                                     {typeof item?.DISCOUNT?.[0]?.DISCOUNTAMOUNT === 'number'
                                         ? item?.DISCOUNT?.[0]?.DISCOUNTAMOUNT.toLocaleString()
-                                        : '0'}
+                                        : "ไม่มี"}
                                 </span>
                                 <span className='badge badge-light-success'>บาท</span>
                             </div>
@@ -520,7 +542,7 @@ const UpdateSalesContract: React.FC = () => {
                     </button>
                 </div>
 
-            </Content>
+            </Content >
         </>
     )
 }

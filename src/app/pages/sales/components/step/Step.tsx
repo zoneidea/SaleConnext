@@ -136,6 +136,7 @@ const Step: React.FC = () => {
   useEffect(() => {
     if (data?.[0]?.PRODUCT?.length > 0) {
       setToPackage('../sale/update/updateSalePackage')
+      setToStatusCust('../sale/update/updateSalesSatusCust')
       setToPhoto('../sale/photo')
       setToDiscount('../sale/update/updateSaleDiscount')
     }
@@ -211,9 +212,15 @@ const Step: React.FC = () => {
 
   const handleClick = async (routeName: any) => {
 
+    if (routeName === 'updateSalesSatusCust' && data?.[0]?.PRODUCT > 0) {
+      setToStatusCust('../sale/update/updateSalesSatusCust'); // อนุญาตให้ทำขั้นตอนนี้ได้
+      navigate('../sale/update/updateSalesSatusCust', { state: data?.[0] });
+      return true;
+    }
+
     // ตรวจสอบสถานะลูกค้าแบคลิสต์
     if (routeName === 'updateSaleDiscount') {
-      if (data?.[0]?.CUSTOMERSTATUS[0].STATUSSALE === "0") {
+      if (data?.[0]?.CUSTOMERSTATUS?.[0]?.STATUSSALE === "0") {
         await Swal.fire({
           icon: 'error',
           title: 'เกิดข้อผิดพลาด!',
@@ -222,13 +229,13 @@ const Step: React.FC = () => {
         });
         return false;
       } else {
-        setToDiscount('../sale/update/updateSaleDiscount'); // อนุญาตให้ทำขั้นตอนนี้ได้
+        setToDiscount('../sale/update/updateSaleDiscount');
         navigate('../sale/update/updateSaleDiscount', { state: data?.[0] });
         return true;
       }
     }
 
-    if (routeName === 'updateCustDetail' && data?.[0]?.CUSTOMERSTATUS[0].STATUSSALE === "0") {
+    if (routeName === 'updateCustDetail' && data?.[0]?.CUSTOMERSTATUS?.[0]?.STATUSSALE === "0") {
       await Swal.fire({
         icon: 'error',
         title: 'เกิดข้อผิดพลาด!',
@@ -238,7 +245,7 @@ const Step: React.FC = () => {
       return false;
     }
 
-    if (routeName === 'updateAddress' && data?.[0]?.CUSTOMERSTATUS[0].STATUSSALE === "0") {
+    if (routeName === 'updateAddress' && data?.[0]?.CUSTOMERSTATUS?.[0]?.STATUSSALE === "0") {
       await Swal.fire({
         icon: 'error',
         title: 'เกิดข้อผิดพลาด!',
@@ -248,7 +255,7 @@ const Step: React.FC = () => {
       return false;
     }
 
-    if (routeName === 'UpdateSalesPDPA' && data?.[0]?.CUSTOMERSTATUS[0].STATUSSALE === "0") {
+    if (routeName === 'UpdateSalesPDPA' && data?.[0]?.CUSTOMERSTATUS?.[0]?.STATUSSALE === "0") {
       await Swal.fire({
         icon: 'error',
         title: 'เกิดข้อผิดพลาด!',
@@ -258,7 +265,7 @@ const Step: React.FC = () => {
       return false;
     }
 
-    if (routeName === 'UpdateSalesContract' && data?.[0]?.CUSTOMERSTATUS[0].STATUSSALE === "0") {
+    if (routeName === 'UpdateSalesContract' && data?.[0]?.CUSTOMERSTATUS?.[0]?.STATUSSALE === "0") {
       await Swal.fire({
         icon: 'error',
         title: 'เกิดข้อผิดพลาด!',
@@ -268,7 +275,7 @@ const Step: React.FC = () => {
       return false;
     }
 
-    if (routeName === 'photo' && data?.[0]?.CUSTOMERSTATUS[0].STATUSSALE === "0") {
+    if (routeName === 'photo' && data?.[0]?.CUSTOMERSTATUS?.[0]?.STATUSSALE === "0") {
       await Swal.fire({
         icon: 'error',
         title: 'เกิดข้อผิดพลาด!',
@@ -282,7 +289,7 @@ const Step: React.FC = () => {
       setToPackage('../sale/update/updateSalePackage')
       return true;
     }
-    else if (routeName === 'updateSaleDiscount') {
+    if (routeName === 'updateSaleDiscount') {
       if (data?.[0]?.CUSTOMERSTATUS?.length === 0) {
         Swal.fire({
           icon: 'error',
@@ -530,7 +537,7 @@ const Step: React.FC = () => {
 
       // แสดง popup ให้ผู้ใช้เลือกพนักงานขายและผู้แนะนำ (ถ้ามี)
       const { value: formValues } = await MySwal.fire({
-        title: 'เลือกพนักงานขายและผู้แนะนำ (ถ้ามี)',
+        title: 'เลือกพนักงานขาย',
         html: `
         <select id="swal-employee" class="swal2-input" style="width: 100%; margin-bottom: 1rem;">
           <option value="">เลือกพนักงานขาย...</option>
@@ -781,9 +788,11 @@ const Step: React.FC = () => {
                     to={data?.[0]?.PRODUCT?.length > 0 ? toStatusCust : '#'}
                     state={data?.[0]}
                     onClick={() => {
+                      // ถ้ามี PRODUCT => ให้ทำงาน handleClick('updateSalesSatusCust')
                       if (data?.[0]?.PRODUCT?.length > 0) {
-                        handleClick('updateSalesSatusCust');
+                        handleClick('updateSalesSatusCust')
                       } else {
+                        // ถ้าไม่มี PRODUCT => ไม่ต้องไปไหน และแจ้งเตือนผู้ใช้
                         Swal.fire({
                           icon: 'warning',
                           title: 'กรุณาเลือกแพ็คเกจก่อน',
@@ -794,12 +803,14 @@ const Step: React.FC = () => {
                     }}
                   >
                     <div className='d-flex align-items-center pb-8'>
-                      <span className={`bullet bullet-vertical h-40px ${data?.[0]?.CUSTOMERSTATUS.length === 0 ? 'bg-danger' : 'bg-success'}`}></span>
+                      {/* ถ้า CUSTOMERSTATUS เป็น 0 => ขึ้นสีแดง, ไม่ใช่ => ขึ้นสีเขียว */}
+                      <span
+                        className={`bullet bullet-vertical h-40px ${data?.[0]?.CUSTOMERSTATUS?.length === 0 ? 'bg-danger' : 'bg-success'
+                          }`}
+                      ></span>
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
-                        <div className='text-gray-800 fw-bold fs-2'>
-                          {`2. ตรวจสอบข้อมูลลูกค้า`}
-                        </div>
+                        <div className='text-gray-800 fw-bold fs-2'>2. ตรวจสอบข้อมูลลูกค้า</div>
                         {
                           data?.[0]?.CUSTOMERSTATUS?.length !== 0 && (
                             <span className="text-gray-700 fw-semibold d-block">
@@ -819,7 +830,7 @@ const Step: React.FC = () => {
                       </div>
                     </div>
                   </Link>
-                  <a
+                  {/* <a
                     style={{ cursor: 'pointer', textDecoration: 'none' }}
                     onClick={() => handleClick('updateSaleDiscount')}
                   >
@@ -832,15 +843,45 @@ const Step: React.FC = () => {
                         </div>
                       </div>
                     </div>
+                  </a> */}
+                  <a
+                    style={{ cursor: 'pointer', textDecoration: 'none' }}
+                    onClick={() => {
+                      if (data?.[0]?.CUSTOMERSTATUS?.length === 0) {
+                        // ถ้าไม่มี CUSTOMERSTATUS => ให้แจ้งเตือน
+                        Swal.fire({
+                          icon: 'error',
+                          title: 'เกิดข้อผิดพลาด',
+                          text: 'กรุณาตรวจสอบข้อมูลลูกค้าก่อน',
+                          confirmButtonText: 'ตกลง'
+                        })
+                      } else {
+                        // ถ้ามี CUSTOMERSTATUS => ทำงานปกติ
+                        handleClick('updateSaleDiscount')
+                      }
+                    }}
+                  >
+                    <div className='d-flex align-items-center pb-8'>
+                      <span
+                        className={`bullet bullet-vertical h-40px ${data?.[0]?.DISCOUNT?.length === 0 ? 'bg-danger' : 'bg-success'
+                          }`}
+                      ></span>
+                      <div className='form-check form-check-custom form-check-solid mx-5'></div>
+                      <div className='flex-grow-1'>
+                        <div className='text-gray-800 text-hover-primary fw-bold fs-2'>
+                          {`3. ส่วนลด/เครื่องเทิร์น/ของแถม`}
+                        </div>
+                      </div>
+                    </div>
                   </a>
                   {/* <Link onClick={handleCheckCustStatus} to={''}> */}
-                  <a onClick={handleCheckEmpSale} style={{ cursor: 'pointer' }}>
+                  {/* <a onClick={handleCheckEmpSale} style={{ cursor: 'pointer' }}>
                     <div className='d-flex align-items-center pb-8'>
                       <span className={`bullet bullet-vertical h-40px ${data?.[0]?.SALEEMPLOYEE.length === 0 ? 'bg-danger' : 'bg-success'} `}></span>
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className='text-gray-800 fw-bold fs-2'>
-                          {`4. เลือกพนักงานขายและผู้แนะนำ (ถ้ามี)`}
+                          {`4. เลือกพนักงานขาย`}
                         </div>
                         {
                           data?.[0]?.SALEEMPLOYEE?.length !== 0 && (
@@ -858,6 +899,53 @@ const Step: React.FC = () => {
                             </>
                           )
                         }
+                      </div>
+                    </div>
+                  </a> */}
+                  <a
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => {
+                      if (data?.[0]?.CUSTOMERSTATUS?.length === 0) {
+                        // ถ้ายังไม่มีการตรวจสอบสถานะลูกค้า => แจ้งเตือน
+                        Swal.fire({
+                          icon: 'error',
+                          title: 'เกิดข้อผิดพลาด',
+                          text: 'กรุณาตรวจสอบข้อมูลลูกค้าก่อน',
+                          confirmButtonText: 'ตกลง'
+                        })
+                      } if (data?.[0]?.CUSTOMERSTATUS?.length === 0 && data?.[0]?.DISCOUNT?.length === 0) {
+                        // ถ้ายังไม่มีการตรวจสอบสถานะลูกค้า => แจ้งเตือน
+                        Swal.fire({
+                          icon: 'error',
+                          title: 'เกิดข้อผิดพลาด',
+                          text: 'กรุณาทำขั้นตอนก่อนหน้าให้เสร็จก่อน',
+                          confirmButtonText: 'ตกลง'
+                        })
+                      } else {
+                        // ถ้ามี CUSTOMERSTATUS อยู่แล้ว => เรียก handleCheckEmpSale ปกติ
+                        handleCheckEmpSale()
+                      }
+                    }}
+                  >
+                    <div className='d-flex align-items-center pb-8'>
+                      <span className={`bullet bullet-vertical h-40px ${data?.[0]?.SALEEMPLOYEE.length === 0 ? 'bg-danger' : 'bg-success'}`}></span>
+                      <div className='form-check form-check-custom form-check-solid mx-5'></div>
+                      <div className='flex-grow-1'>
+                        <div className='text-gray-800 fw-bold fs-2'>
+                          {`4. เลือกพนักงานขาย`}
+                        </div>
+                        {data?.[0]?.SALEEMPLOYEE?.length !== 0 && (
+                          <>
+                            <span className='text-gray-700 fw-semibold d-block'>
+                              {`พนักงานขาย: ${data?.[0]?.SALEEMPLOYEE[0]?.SALEEMPLOYEE?.FName} ${data?.[0]?.SALEEMPLOYEE[0]?.SALEEMPLOYEE?.LName}`}
+                            </span>
+                            {data?.[0]?.SALEEMPLOYEE[0]?.ADVISER && (
+                              <span className='text-gray-700 fw-semibold d-block'>
+                                {`ผู้แนะนำ: ${data?.[0]?.SALEEMPLOYEE[0]?.ADVISER?.FName} ${data?.[0]?.SALEEMPLOYEE[0]?.ADVISER?.LName}`}
+                              </span>
+                            )}
+                          </>
+                        )}
                       </div>
                     </div>
                   </a>
@@ -973,7 +1061,7 @@ const Step: React.FC = () => {
                         </div>
                         {data?.[0]?.CONTRACT?.length !== 0 && (
                           <span className='text-gray-700 fw-semibold d-block'>
-                            {`วันที่ทำสัญญา: ${data?.[0]?.CONTRACT?.[0]?.createdAt ? formatThaiDate(data[0].CONTRACT[0].createdAt) : '-'}`}
+                            {`วันที่ทำสัญญา: ${data?.[0]?.CONTRACT?.[0]?.createdAt ? (data[0].CONTRACT[0].createdAt) : '-'}`}
                           </span>
                         )}
                       </div>

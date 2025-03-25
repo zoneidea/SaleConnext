@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import axios from 'axios';
 import clsx from 'clsx'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { KTIcon, toAbsoluteUrl } from '../../../_metronic/helpers'
 import { getLayoutFromLocalStorage, ILayout, LayoutSetup } from '../../../_metronic/layout/core'
 import { ToolbarWrapper } from '../../../_metronic/layout/components/toolbar'
@@ -59,22 +59,48 @@ const SalesContract: React.FC = () => {
 
   const { REFNO } = useUUIDStore();
 
+  const [draft, setDraft] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+
   const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
   const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
+  const GET_ALL_CONTRACT_URL = `${API_URL_MONGO}/Contract/GetAllContract?status=DRAFT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true)
+      try {
+        const response = await axios.get(GET_ALL_CONTRACT_URL)
+        // ตรวจสอบว่า response.data.data เป็น array หรือไม่
+        if (response.data?.data && Array.isArray(response.data.data)) {
+          setDraft(response.data.data)
+        }
+      } catch (error) {
+        console.error('Error fetching GetAllContract:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchData()
+  }, [GET_ALL_CONTRACT_URL])
+
+  // ===== (5) หารายการที่มี REFNO ตรงกับ store =====
+  const matchedItem = draft.find((item) => item.REFNO === REFNO)
+  console.log('matchedItem =>', matchedItem)
 
   const currentDate = new Date();
   const formattedDate = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate()}`;
 
   const { PRODUCT } = useSaveProductStore()
-  // console.log(`PRODUCT`, PRODUCT[0].Package[0].PACKAGETYPEID);
+  console.log(`PRODUCT`, PRODUCT[0].Package[0].PACKAGETYPEID);
 
   const { DISCOUNT } = useSaveDiscountStore()
-  // console.log(`DISCOUNT`, DISCOUNT);
+  console.log(`DISCOUNT`, DISCOUNT);
 
   const { saveCustomerTypes } = useSaveCustomerStore()
   // console.log(`saveCustomerTypes`, saveCustomerTypes);
 
-  const { addressCard, addressInstallation, addressPayment } = useSaveAddressStore()
+  const { addressCard, addressInstallation, addressPayment, addressTax } = useSaveAddressStore()
   // console.log(`addressCard`, addressCard)
   // console.log(`addressInstallation`, addressInstallation)
   // console.log(`addressPayment`, addressPayment)
@@ -266,6 +292,24 @@ const SalesContract: React.FC = () => {
               </div>
             </div>
 
+            {addressTax.ADDRESSPROVINCENAME && (
+              <div className='row mb-10'>
+                <label className='col-lg-4 fw-bold text-muted'>ที่อยู่เสึยภาษี</label>
+                <div className='col-lg-8'>
+                  <span className='fw-bolder fs-6 text-gray-900'>
+                    {addressTax.ADDRESSNUMBER}&nbsp;
+                    {addressTax.ADDRESSMOO && `หมู่ที่ ${addressTax.ADDRESSMOO}`}&nbsp;
+                    {addressTax.ADDRESSSOI && `ซอย ${addressTax.ADDRESSSOI}`}&nbsp;
+                    {addressTax.ADDRESSROAD && `ถนน ${addressTax.ADDRESSROAD}`}&nbsp;
+                    {addressTax.ADDRESSSUBDISTRICTNAME && `ตำบล / แขวง ${addressTax.ADDRESSSUBDISTRICTNAME}`}&nbsp;
+                    {addressTax.ADDRESSDISTRICTNAME && `อำเภอ ${addressTax.ADDRESSDISTRICTNAME}`}&nbsp;
+                    {addressTax.ADDRESSPROVINCENAME && `จังหวัด ${addressTax.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
+                    {addressTax.ADDRESSZIPCODE && `${addressTax.ADDRESSZIPCODE}`}&nbsp;
+                  </span>
+                </div>
+              </div>
+            )}
+
             <div className='row mb-10'>
               <label className='col-lg-4 fw-bold text-muted'>เบอร์โทรติดต่อ</label>
               <div className='col-lg-8'>
@@ -293,7 +337,9 @@ const SalesContract: React.FC = () => {
               <div className='row align-items-center mb-10'>
                 <label className='col-lg-4 fw-bold text-muted mb-0'>ของแถม</label>
                 <div className='col-lg-8 d-flex justify-content-between'>
-                  <span className='fw-bold fs-6'>{DISCOUNT[0]?.GIFT?.GIFTNAME}</span>
+                  <span className='fw-bold fs-6'>
+                    {DISCOUNT[0]?.GIFT?.GIFTNAME ? DISCOUNT[0]?.GIFT?.GIFTNAME : "ไม่มี"}
+                  </span>
                 </div>
               </div>
             )}
@@ -312,7 +358,9 @@ const SalesContract: React.FC = () => {
               <div className='row align-items-center mb-10'>
                 <label className='col-lg-4 fw-bold text-muted mb-0'>เครื่องเทิร์น</label>
                 <div className='col-lg-8 d-flex justify-content-between'>
-                  <span className='fw-bold fs-6'>{DISCOUNT[0]?.TRADEIN?.TRADEINBRANDNAME}</span>
+                  <span className='fw-bold fs-6'>
+                    {DISCOUNT[0]?.TRADEIN?.TRADEINBRANDNAME ? DISCOUNT[0]?.TRADEIN?.TRADEINBRANDNAME : "ไม่มี"}
+                  </span>
                 </div>
               </div>
             )}
@@ -321,7 +369,9 @@ const SalesContract: React.FC = () => {
               <div className='row align-items-center mb-10'>
                 <label className='col-lg-4 fw-bold text-muted mb-0'>ส่วนลด</label>
                 <div className='col-lg-8 d-flex justify-content-between'>
-                  <span className='fw-bold fs-6'>{(DISCOUNT[0]?.DISCOUNTAMOUNT).toLocaleString()}</span>
+                  <span className='fw-bold fs-6'>
+                    {DISCOUNT[0]?.DISCOUNTAMOUNT ? (DISCOUNT[0]?.DISCOUNTAMOUNT).toLocaleString() : "ไม่มี"}
+                  </span>
                   <span className='badge badge-light-success'>บาท</span>
                 </div>
               </div>

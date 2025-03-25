@@ -643,7 +643,7 @@ const UpdateSalesSatusCust: React.FC = () => {
 
   const handleCheckerClick = async () => {
     const response = await axios.post(UPDATECONTACT, {
-      REFNO: refno,
+      REFNO: item.REFNO,
       EMPID: EmpId,
       TEAMSALE: TeamSale,
       FIELD: "STATUS",
