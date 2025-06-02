@@ -667,13 +667,24 @@ const CreateFirstBill: React.FC = () => {
                                     </div>
 
                                     <div className='row mb-7'>
-                                        <label className='col-5 col-md-4 fw-bold text-muted'>ชื่อลูกค้า</label>
+                                        <label className='col-5 col-md-4 fw-bold text-muted'>ชื่อ</label>
                                         <div className='col-7 col-md-8'>
                                             <a href='#' className='fw-bold fs-6 text-gray-900 text-hover-primary'>
-                                                {customerDetail[0]?.CUSTOMERNAME}
+                                                {customerDetail[0]?.PREFIX[0]?.PREFIXNAME} {customerDetail[0]?.CUSTOMERNAME}
                                             </a>
                                         </div>
                                     </div>
+
+                                    {customerDetail[0]?.CUSTOMERLASTNAME && (
+                                        <div className='row mb-7'>
+                                            <label className='col-5 col-md-4 fw-bold text-muted'>นามสกุล</label>
+                                            <div className='col-7 col-md-8'>
+                                                <a href='#' className='fw-bold fs-6 text-gray-900 text-hover-primary'>
+                                                    {customerDetail[0]?.CUSTOMERLASTNAME}
+                                                </a>
+                                            </div>
+                                        </div>
+                                    )}
 
                                     <div className='row mb-7'>
                                         <label className='col-5 col-md-4 fw-bold text-muted'>เบอร์โทรติดต่อ</label>

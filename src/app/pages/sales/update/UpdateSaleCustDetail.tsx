@@ -107,6 +107,7 @@ const UpdateSaleCustDetail: React.FC = () => {
 
     const [idCard, setIdCard] = useState<string>('');
     const [fullName, setFullName] = useState<string>('');
+    const [lastName, setLastName] = useState<string>('');
     const [nameMD, setNameMD] = useState<string>('');
     const [age, setAge] = useState<string>('');
     const [email, setEmail] = useState<string>('');
@@ -134,6 +135,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                 CUSTOMERTYPENAME: customerTypeData ? customerTypeData.CUSTOMERTYPENAME : '', // ตรวจสอบว่าข้อมูล customerTypeData มีหรือไม่
                 CUSTOMERID: idCard,
                 CUSTOMERNAME: fullName,
+                CUSTOMERLASTNAME: lastName,
                 CUSTOMERMD: nameMD,
                 CUSTOMERDOB: valueCalendar ? dayjs(valueCalendar).format('YYYY-MM-DD') : '',
                 CUSTOMERRAGE: valueAge ? valueAge.toString() : '',
@@ -211,6 +213,7 @@ const UpdateSaleCustDetail: React.FC = () => {
         setSelectedCardType(customerDetail?.[0]?.CARDTYPE?.[0]?.CARDTYPE)
         setIdCard(customerDetail?.[0]?.CUSTOMERID)
         setFullName(customerDetail?.[0]?.CUSTOMERNAME)
+        setLastName(customerDetail?.[0]?.CUSTOMERLASTNAME)
         setNameMD(customerDetail?.[0]?.CUSTOMERMD)
         setSelectedPrefixId(customerDetail?.[0]?.PREFIX?.[0]?.PREFIXID)
         setValueCalendar(customerDetail?.[0]?.CUSTOMERDOB)
@@ -388,7 +391,7 @@ const UpdateSaleCustDetail: React.FC = () => {
         }
 
         if (!fullName || fullName.trim() === '') {
-            newErrors.fullName = 'กรุณากรอกชื่อ-สกุล';
+            newErrors.fullName = 'กรุณากรอกชื่อ';
         }
 
         if (email && !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
@@ -417,7 +420,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                 break;
             case 'fullName':
                 if (value.trim() === '') {
-                    fieldError = 'กรุณากรอกชื่อ-สกุล';
+                    fieldError = 'กรุณากรอกชื่อ';
                 }
                 break;
             case 'email':
@@ -714,7 +717,7 @@ const UpdateSaleCustDetail: React.FC = () => {
 
                                                     <div className="container">
                                                         <div className='row mb-6'>
-                                                            <div className='col-lg-4'>
+                                                            <div className='col-lg-6'>
                                                                 <label className='form-label required fw-bold fs-6'>เลขบัตร</label>
                                                                 <input
                                                                     // disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.CUSTOMERID !== "" ? true : false : false}
@@ -726,7 +729,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                 />
                                                                 {errors.idCard && <p className='text-danger'>{errors.idCard}</p>}
                                                             </div>
-                                                            <div className='col-lg-4 mb-3'>
+                                                            <div className='col-lg-6 mb-3'>
                                                                 <label className='form-label required fw-bold fs-6'>คำนำหน้าชื่อ</label>
                                                                 <select
                                                                     value={selectedPrefixId}
@@ -740,8 +743,8 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                     ))}
                                                                 </select>
                                                             </div>
-                                                            <div className='col-lg-4'>
-                                                                <label className='form-label required fw-bold fs-6'>ชื่อสกุล</label>
+                                                            <div className='col-lg-6'>
+                                                                <label className='form-label required fw-bold fs-6'>ชื่อ</label>
                                                                 <input
                                                                     value={fullName}
                                                                     onChange={handleFullNameChange}
@@ -750,6 +753,16 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                     placeholder='ชื่อ-สกุล'
                                                                 />
                                                                 {errors.fullName && <p className='text-danger'>{errors.fullName}</p>}
+                                                            </div>
+
+                                                            <div className='col-lg-6'>
+                                                                <label className='form-label required fw-bold fs-6'>นามสกุล</label>
+                                                                <input
+                                                                    type="text"
+                                                                    className="form-control mb-3 mb-lg-0"
+                                                                    value={lastName}
+                                                                    onChange={e => setLastName(e.target.value)}
+                                                                />
                                                             </div>
                                                         </div>
                                                     </div>

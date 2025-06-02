@@ -1,3 +1,4 @@
+import styles from '@/styles/style.module.css'
 import React, { useState } from "react";
 
 { /* Entries */ }
@@ -60,7 +61,9 @@ export const PaginationTable: React.FC<PaginationTableProps> = ({
         onClick={() => handlePageChange(currentPage - 1)}
         disabled={currentPage === 1}
       >
-        Previous
+        <span className={`${styles.fontSize}`}>
+          Previous
+        </span>
       </button>
 
       {/* หมายเลขหน้า */}
@@ -71,18 +74,22 @@ export const PaginationTable: React.FC<PaginationTableProps> = ({
             }`}
           onClick={() => handlePageChange(page)}
         >
-          {page}
+          <span className={`${styles.fontSize}`}>
+            {page}
+          </span>
         </button>
       ))}
 
       {/* ปุ่ม Next */}
-      
+
       <button
         className="btn btn-outline-primary mx-1"
         onClick={() => handlePageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
       >
-        Next
+        <span className={`${styles.fontSize}`}>
+          Next
+        </span>
       </button>
     </div>
   );

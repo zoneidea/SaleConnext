@@ -5,10 +5,15 @@ type Props = {
     ItemDescription: string;
     ItemCode: string;
     SerialNo: string;
-    isSelected: boolean; 
+    isSelected: boolean;
+    EmpNameReq: string;
+    TeamSaleReq: string;
+    onCancelBorrow: () => void;
 }
 
-const CardMoveProduct: FC<Props> = ({ DescriptionTH, ItemDescription, ItemCode, SerialNo, isSelected }) => {
+const CardWatingAprroveBorrower: FC<Props> = ({
+    DescriptionTH, ItemDescription, ItemCode, SerialNo, isSelected, EmpNameReq, TeamSaleReq, onCancelBorrow,
+}) => {
     return (
         <>
             <div className="row">
@@ -17,6 +22,7 @@ const CardMoveProduct: FC<Props> = ({ DescriptionTH, ItemDescription, ItemCode, 
                         style={{
                             backgroundColor: isSelected ? '#ACE1AF' : '#dbdfe9',
                             transition: 'background-color 0.2s ease, color 0.2s ease'
+
                         }}>
                         <div className="d-flex align-items-center">
                             <div className="flex-grow-1">
@@ -46,6 +52,31 @@ const CardMoveProduct: FC<Props> = ({ DescriptionTH, ItemDescription, ItemCode, 
                                 </span>
                             </div>
                         </div>
+                        <div className="d-flex align-items-center">
+                            <div className="flex-grow-1">
+                                <span className={`fw-regular fs-7 d-block`}>
+                                    พนักงานที่เบิก: {EmpNameReq}
+                                </span>
+                            </div>
+                        </div>
+                        <div className="d-flex align-items-center">
+                            <div className="flex-grow-1">
+                                <span className={`fw-regular fs-7 d-block`}>
+                                    ทีมที่เบิก: {TeamSaleReq}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="d-flex justify-content-center gap-2 mt-10">
+                            <button
+                                type='button'
+                                className="btn btn-sm btn-danger w-150px"
+                                onClick={onCancelBorrow}
+                            >
+                                ยกเลิกการยืม
+                            </button>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -61,4 +92,4 @@ const CardMoveProduct: FC<Props> = ({ DescriptionTH, ItemDescription, ItemCode, 
     );
 }
 
-export { CardMoveProduct };
+export { CardWatingAprroveBorrower };

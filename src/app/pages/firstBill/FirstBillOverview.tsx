@@ -18,14 +18,15 @@ const FirstBillOverview: React.FC = () => {
   const { SETREFNO } = useUUIDStore();
 
   const { auth } = useAuth();
-  const EmpId = auth?.data?.[0]?.EmpId || '';
-  const TeamSale = auth?.data?.[0]?.TeamSale || '';
-  const SaleCode = auth?.data?.[0]?.SaleCode || '';
+  const EmpId = auth?.data?.[0]?.EmpId
+  const TeamSale = auth?.data?.[0]?.TeamSale
+  const SaleCode = auth?.data?.[0]?.SaleCode
+  const TeamCode = auth?.data?.[0]?.TeamCode
 
-  const API_URL_GET_ALLCONTRACT = import.meta.env.VITE_APP_API_MONGO;
+  const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
 
   // const FINISH_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=FINISH&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`;
-  const GET_PAYMENT_URL = `${API_URL_GET_ALLCONTRACT}/Payment/GetPaymentPeriod`;
+  const GET_PAYMENT_URL = `${API_URL_MONGO}/Payment/GetPaymentPeriod`;
 
   const { fetchCategory } = useFetchCategoryStore();
   // console.log(`fetchCategory: `, fetchCategory);
@@ -48,11 +49,16 @@ const FirstBillOverview: React.FC = () => {
   const getDataFinish = async () => {
     setIsLoadingFinish(true);
     try {
-      const response = await axios.get(GET_PAYMENT_URL);
+      const response = await axios.get(GET_PAYMENT_URL, {
+        params: {
+          EMPID: EmpId,
+          TEAMCODE: TeamCode
+        }
+      });
       const data = Array.isArray(response.data.data) ? response.data.data : [];
       setFinish(data);
     } catch (error) {
-      console.error('Error fetching FINISH_ALLCONTRACT_URL:', error);
+      console.error('Error fetching GET_PAYMENT_URL:', error);
     } finally {
       setIsLoadingFinish(false);
     }

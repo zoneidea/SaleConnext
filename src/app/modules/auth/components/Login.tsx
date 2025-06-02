@@ -1,3 +1,4 @@
+import styles from '@/styles/style.module.css'
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import * as Yup from 'yup'
@@ -14,8 +15,8 @@ import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 
 const loginSchema = Yup.object().shape({
-  username: Yup.string().required('Username is required'),
-  password: Yup.string().required('Password is required'),
+  username: Yup.string().required('กรุณากรอก Username'),
+  password: Yup.string().required('กรุณากรอก Password'),
 })
 
 // const initialValues = {
@@ -183,7 +184,7 @@ export function Login() {
           const authData = JSON.stringify(response.data)
           const encryptedAuthData = CryptoJS.AES.encrypt(authData, SECRET_KEY).toString()
           const loginTimestamp = new Date().getTime(); // บันทึกเวลาล็อกอิน
-          
+
           localStorage.setItem('authData', encryptedAuthData)
           localStorage.setItem('loginTimestamp', loginTimestamp.toString()); // บันทึกเวลาใน localStorage
 
@@ -244,55 +245,45 @@ export function Login() {
             className="h-150px w-150px"
           />
         </div>
-        {/* {formik.status ? (
-        <div className='mb-lg-15 alert alert-danger rounded'>
-          <div className='alert-text font-weight-bold'>{formik.status}</div>
-        </div>
-      ) : (
-        <div className='mb-10 bg-light-info p-8 rounded'>
-          <div className='text-info'>
-            Use username <strong>058488</strong> and password <strong>Bb1234567</strong> to continue.
-          </div>
-        </div>
-      )} */}
+
 
         <div className='fv-row mb-3 w-lg-500px w-300px w-md-500px'>
-          <label className='d-flex form-label fw-bolder text-gray-900 fs-6 mb-0'>Username</label>
+          <label className={`d-flex form-label fw-bolder text-gray-900 mb-0 ${styles.fontSize}`}>Username</label>
           <input
-            type='text'
-            autoComplete='off'
+            type="text"
+            autoComplete="off"
             {...formik.getFieldProps('username')}
             className={clsx(
               'form-control bg-transparent',
+              styles.fontSize,
               {
                 'is-invalid': formik.touched.username && formik.errors.username,
-              },
-              {
                 'is-valid': formik.touched.username && !formik.errors.username,
               }
             )}
+            placeholder="Username"
           />
           {formik.touched.username && formik.errors.username && (
             <div className='fv-plugins-message-container'>
               <div className='fv-help-block d-flex'>
-                <span role='alert'>{formik.errors.username}</span>
+                <span role='alert' className={`${styles.fontSize}`}>{formik.errors.username}</span>
               </div>
             </div>
           )}
         </div>
 
         <div className='fv-row mb-3 w-lg-500px w-300px w-md-500px'>
-          <label className='d-flex form-label fw-bolder text-gray-900 fs-6 mb-0'>Password</label>
+          <label className={`d-flex form-label fw-bolder text-gray-900 mb-0 ${styles.fontSize}`}>Password</label>
           <input
-            type='password'
-            autoComplete='off'
+            type="text"
+            placeholder="Password"
+            autoComplete="off"
             {...formik.getFieldProps('password')}
             className={clsx(
-              'form-control bg-transparent',
+              'form-control bg-transparent',   // ต้องมี form-control อยู่ด้วย
+              styles.fontSize,                  // เอาคลาส .fontSize มาด้วย
               {
                 'is-invalid': formik.touched.password && formik.errors.password,
-              },
-              {
                 'is-valid': formik.touched.password && !formik.errors.password,
               }
             )}
@@ -300,7 +291,10 @@ export function Login() {
           {formik.touched.password && formik.errors.password && (
             <div className='fv-plugins-message-container'>
               <div className='fv-help-block d-flex'>
-                <span role='alert'>{formik.errors.password}</span>
+                {/* ห้ามใส่ role ผสมกับ className นะ */}
+                <span role="alert" className={styles.fontSize}>
+                  {formik.errors.password}
+                </span>
               </div>
             </div>
           )}
@@ -313,9 +307,9 @@ export function Login() {
             className='btn btn-primary'
             disabled={formik.isSubmitting || !formik.isValid}
           >
-            {!loading && <span className='indicator-label'>เข้าสู่ระบบ</span>}
+            {!loading && <span className={`indicator-label ${styles.fontSize}`}>เข้าสู่ระบบ</span>}
             {loading && (
-              <span className='indicator-progress' style={{ display: 'block' }}>
+              <span className={`indicator-progress ${styles.fontSize} style={{ display: 'block' }}`}>
                 โปรดรอสักครู่...
                 <span className='spinner-border spinner-border-sm align-middle ms-2'></span>
               </span>

@@ -89,9 +89,12 @@ const PrivateRoutes = () => {
   const InstallationPhotoGallery = lazy(() => import('../pages/sales/components/photo/gallery/InstallationPhotoGallery'))
   const TurnPhotoGallery = lazy(() => import('../pages/sales/components/photo/gallery/TurnPhotoGallery'))
 
+  //หัวข้อ ระบบยืม
+  const BorrowProduct = lazy(() => import('../pages/borrowProduct/BorrowProduct'))
+  const BorrowScanBarCode = lazy(() => import('../pages/borrowProduct/BorrowScanBarCode'))
+
   //หัวข้อ สินค้าในสต๊อก + ระบบยืม
   const ProductStock = lazy(() => import('../pages/productstock/ProductStock'))
-  const ScanBarCodeMoveProduct = lazy(() => import('../pages/productstock/ScanBarCodeMoveProduct'))
 
   //หัวข้อ ระบบตรวจสัญญา
   const ContractChecker = lazy(() => import('../pages/contractChecker/ContractChecker'))
@@ -239,14 +242,6 @@ const PrivateRoutes = () => {
           element={
             <SuspensedView>
               <SalesDiscount />
-            </SuspensedView>
-          }
-        />
-        <Route
-          path='productstock/moveProductInStock'
-          element={
-            <SuspensedView>
-              <ScanBarCodeMoveProduct />
             </SuspensedView>
           }
         />
@@ -404,7 +399,7 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
-         <Route
+        <Route
           path='sale/cancel'
           element={
             <SuspensedView>
@@ -412,7 +407,7 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
-         <Route
+        <Route
           path='sale/billRecieveMoney'
           element={
             <SuspensedView>
@@ -576,7 +571,7 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
-         <Route
+        <Route
           path='sendmoney/SendMoneySummary'
           element={
             <SuspensedView>
@@ -596,6 +591,25 @@ const PrivateRoutes = () => {
           }
         />
         {/* End โครงสร้างพนักงาน */}
+
+        {/* Start ระบบยืม */}
+        <Route
+          path='borrowproduct'
+          element={
+            <SuspensedView>
+              <BorrowProduct />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path='borrowproduct/scanbarcode'
+          element={
+            <SuspensedView>
+              <BorrowScanBarCode />
+            </SuspensedView>
+          }
+        />
+        {/* End ระบบยืม */}
 
         {/* Start รายงานระบบขาย */}
         <Route

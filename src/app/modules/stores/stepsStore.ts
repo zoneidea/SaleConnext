@@ -137,6 +137,7 @@ interface CustomerType {
     CUSTOMERTYPENAME: string;
     CUSTOMERID: string;
     CUSTOMERNAME: string;
+    CUSTOMERLASTNAME: string;
     CUSTOMERMD: string; // Managing Director
     CUSTOMERDOB: string;
     CUSTOMERRAGE: string;

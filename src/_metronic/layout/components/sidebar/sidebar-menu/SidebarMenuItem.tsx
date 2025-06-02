@@ -1,3 +1,4 @@
+import styles from '@/styles/style.module.css'
 import { FC } from 'react'
 import clsx from 'clsx'
 import { Link } from 'react-router-dom'
@@ -41,7 +42,7 @@ const SidebarMenuItem: FC<Props & WithChildren> = ({
             <img src={imageSrc} alt={title} style={{ width: 25, height: 25 }} />
           </span>
         )}
-        <span className='menu-title'>{title}</span>
+        <span className={`menu-title ${styles.fontSize}`}>{title}</span>
       </Link>
     </div>
   )

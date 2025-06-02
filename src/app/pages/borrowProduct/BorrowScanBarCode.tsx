@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
 import axios from 'axios';
 
-const ScanBarCodeMoveProduct: React.FC = () => {
+const BorrowScanBarCode: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -59,14 +59,14 @@ const ScanBarCodeMoveProduct: React.FC = () => {
     }, [isIOSorAndroid, isScannerRunning]);
 
     const handleNavigateBack = () => {
-        navigate("/productstock", {
+        navigate("/borrowproduct", {
             state: { tab: "borrowing" },
         });
     };
 
     useEffect(() => {
         if (barCode) {
-            navigate("/productstock", {
+            navigate("/borrowproduct", {
                 state: { barCode },
             });
         }
@@ -107,7 +107,7 @@ const ScanBarCodeMoveProduct: React.FC = () => {
                         ฟีเจอร์สแกนบาร์โค้ด สามารถใช้งานได้เฉพาะบนมือถือหรือแท็บเล็ตเท่านั้น
                     </div>
                     <button className="btn btn-secondary mx-10"
-                        onClick={() => navigate("/productstock")}
+                        onClick={() => navigate("/borrowproduct")}
                     >
                         ย้อนกลับ
                     </button>
@@ -117,4 +117,4 @@ const ScanBarCodeMoveProduct: React.FC = () => {
     );
 };
 
-export default ScanBarCodeMoveProduct;
+export default BorrowScanBarCode;

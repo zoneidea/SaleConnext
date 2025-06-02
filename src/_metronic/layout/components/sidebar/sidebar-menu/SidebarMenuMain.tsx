@@ -4,10 +4,16 @@ import clsx from 'clsx'
 import { Link } from 'react-router-dom'
 import { toAbsoluteUrl } from '../../../../../_metronic/helpers'
 import { SidebarMenuItem } from './SidebarMenuItem'
+import { useAuth } from '../../../../../app/modules/auth'
 
 const SidebarMenuMain = () => {
   const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT
   const GET_MENU_URL = `${API_SALECONNEXT}/GetMenu`
+
+  const { auth } = useAuth()
+  const EmpId = auth?.data?.[0]?.EmpId || ''
+  const TeamSale = auth?.data?.[0]?.TeamSale || ''
+  const SaleCode = auth?.data?.[0]?.SaleCode || ''
 
   // เก็บข้อมูลเมนูเป็น array
   const [menu, setMenu] = useState<any[]>([])
@@ -15,25 +21,29 @@ const SidebarMenuMain = () => {
 
   // GET GetMenu
   useEffect(() => {
+    // ถ้ายังไม่มี EmpId/TeamSale ก็ไม่ต้องไปเรียก API
+    if (!EmpId || !TeamSale) return;
+
     const getData = async () => {
       try {
-        const response = await axios.get(GET_MENU_URL, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
-        // ตรวจสอบว่า response.data เป็น array หรือไม่
-        if (Array.isArray(response.data)) {
-          setMenu(response.data)
+        const response = await axios.post(
+          GET_MENU_URL,
+          { EmpId, TeamSale },
+          { headers: { 'Content-Type': 'application/json' } }
+        );
+        // สมมติ API ของคุณคืนเป็น { status, message, data: [ … ] }
+        const payload = response.data?.data ?? response.data;
+        if (Array.isArray(payload)) {
+          setMenu(payload);
         } else {
-          console.error('Response is not an array:', response.data)
+          console.error('Response payload is not an array:', payload);
         }
       } catch (error) {
-        console.error('Error fetching menu data:', error)
+        console.error('Error fetching menu data:', error);
       }
-    }
-    getData()
-  }, [])
+    };
+    getData();
+  }, [EmpId, TeamSale]);  // เพิ่ม EmpId กับ TeamSale ใน dependency array
 
   // แก้ฟอนต์ตามขนาดหน้าจอ เฉพาะเมนูที่ไม่ได้ดึงจาก api
   useEffect(() => {
@@ -79,6 +89,8 @@ const SidebarMenuMain = () => {
       return toAbsoluteUrl('media/iconSidebar/report-linechart-svgrepo-com.png')
     } else if (menuName.includes('ระบบส่งเงิน')) {
       return toAbsoluteUrl('media/iconSidebar/money-send-svgrepo-com.png')
+    } else if (menuName.includes('ระบบยืมสินค้า')) {
+      return toAbsoluteUrl('media/iconSidebar/product-transfer-svgrepo-com.png')
     }
   }
 
@@ -95,7 +107,9 @@ const SidebarMenuMain = () => {
     <>
       {/* เมนูทั่วไป */}
       {menu
-        .filter((item) => item.MENU_NAME !== 'รายงานการขายประจำวัน') // กรองเมนูที่ไม่ใช่ "รายงานการขายประจำวัน"
+        .filter((item) => item.MENU_NAME !== 'รายงานการขายประจำวัน' &&
+          item.MENU_NAME !== 'ระบบตรวจสัญญา'
+        )
         .map((item) => (
           <SidebarMenuItem
             key={item.MENU_ID}

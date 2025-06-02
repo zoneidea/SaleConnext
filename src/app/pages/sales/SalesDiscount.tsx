@@ -75,6 +75,7 @@ const SalesDiscount: React.FC = () => {
     // EmpInTeam
     const [empInTeam, setEmpInTeam] = useState<any[]>([]);
     const [adviserList, setAdviserList] = useState<any[]>([]);
+    const [installerList, setInstallerList] = useState<any[]>([]);
 
     // อัปเดต selectedTradeInBrandName เมื่อ selectedTurnId หรือ tradeInBrand เปลี่ยน
     useEffect(() => {
@@ -192,60 +193,79 @@ const SalesDiscount: React.FC = () => {
         }
     }, [SaveDiscountData, DISCOUNT, SETDISCOUNT]);
 
-    // GET Trade-in brands
     useEffect(() => {
-        const getData = async () => {
-            try {
-                const response = await axios.get(TRADEINBRAND_URL, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                });
-                const data = Array.isArray(response.data.data) ? response.data.data : [];
-                setTradeInBrand(data);
-            } catch (error) {
-                console.error('Error fetching TRADEINBRAND_URL:', error);
-            }
-        };
-        getData();
-    }, []);
+        getData()
+        getEmpInTeam();
+        getAdviserData()
+        getInstallerData()
+    }, [])
+
+    // GET Trade-in brands
+    const getData = async () => {
+        try {
+            const response = await axios.get(TRADEINBRAND_URL, {
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+            const data = Array.isArray(response.data.data) ? response.data.data : [];
+            setTradeInBrand(data);
+        } catch (error) {
+            console.error('Error fetching TRADEINBRAND_URL:', error);
+        }
+    };
 
     // GET EmpInTeam
-    useEffect(() => {
-        const getEmpInTeam = async () => {
-            try {
-                const response = await axios.post(EMP_IN_TEAM_URL, { EmpId }, {
+    const getEmpInTeam = async () => {
+        try {
+            const formData = new FormData();
+            formData.append('EmpId', EmpId);
+
+            const response = await axios.post(
+                EMP_IN_TEAM_URL,
+                formData,            // ส่ง FormData
+                {
                     headers: {
                         'Content-Type': 'multipart/form-data',
-                        'Accept': 'multipart/form-data',
                     },
-                });
-                const data = Array.isArray(response.data.data) ? response.data.data : [];
-                setEmpInTeam(data);
-            } catch (error) {
-                console.error('Error fetching EMP_IN_TEAM_URL:', error);
-            }
-        };
-        getEmpInTeam();
-    }, []);
+                }
+            );
+            const data = Array.isArray(response.data.data) ? response.data.data : [];
+            setEmpInTeam(data);
+        } catch (error) {
+            console.error('Error fetching EMP_IN_TEAM_URL:', error);
+        }
+    };
 
-    useEffect(() => {
-        const getAdviserData = async () => {
-            try {
-                const formData = new FormData();
-                formData.append('EmpId', EmpId);
+    const getAdviserData = async () => {
+        try {
+            const formData = new FormData();
+            formData.append('EmpId', EmpId);
 
-                const response = await axios.post(ADVISER_URL, formData, {
-                    headers: { 'Content-Type': 'multipart/form-data' },
-                });
-                const data = Array.isArray(response.data.data) ? response.data.data : [];
-                setAdviserList(data);
-            } catch (error) {
-                console.error('Error fetching ADVISER_URL:', error);
-            }
-        };
-        getAdviserData();
-    }, []);
+            const response = await axios.post(ADVISER_URL, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            const data = Array.isArray(response.data.data) ? response.data.data : [];
+            setAdviserList(data);
+        } catch (error) {
+            console.error('Error fetching ADVISER_URL:', error);
+        }
+    };
+
+    const getInstallerData = async () => {
+        try {
+            const formData = new FormData();
+            formData.append('EmpId', EmpId);
+
+            const response = await axios.post(ADVISER_URL, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            const data = Array.isArray(response.data.data) ? response.data.data : [];
+            setInstallerList(data);
+        } catch (error) {
+            console.error('Error fetching ADVISER_URL:', error);
+        }
+    };
 
     // POST Contract/updateContract
     const handleNextClick = async () => {
@@ -267,9 +287,15 @@ const SalesDiscount: React.FC = () => {
                         .map(([key, value]) => `<option value="${key}">${value}</option>`)
                         .join('')}
                   </select>
-                  <select id="swal-adviser" class="swal2-input" style="width: 100%;">
+                  <select id="swal-adviser" class="swal2-input" style="width: 100%; margin-bottom: 1rem;">
                     <option value="">เลือกผู้แนะนำ (ถ้ามี)...</option>
                     ${adviserList
+                        .map(emp => `<option value="${emp.SaleEmp}">${emp.FName} ${emp.LName}</option>`)
+                        .join('')}
+                  </select>
+                     <select id="swal-installer" class="swal2-input" style="width: 100%; margin-bottom: 1rem;">
+                    <option value="">เลือกช่างติดตั้ง (ถ้ามี)...</option>
+                    ${installerList
                         .map(emp => `<option value="${emp.SaleEmp}">${emp.FName} ${emp.LName}</option>`)
                         .join('')}
                   </select>
@@ -281,10 +307,11 @@ const SalesDiscount: React.FC = () => {
                 preConfirm: () => {
                     const employee = (document.getElementById('swal-employee') as HTMLSelectElement).value;
                     const adviser = (document.getElementById('swal-adviser') as HTMLSelectElement).value;
+                    const installer = (document.getElementById('swal-installer') as HTMLSelectElement).value;
                     if (!employee) {
                         Swal.showValidationMessage('กรุณาเลือกพนักงานขาย');
                     }
-                    return { employee, adviser };
+                    return { employee, adviser, installer };
                 },
             });
 
@@ -299,6 +326,10 @@ const SalesDiscount: React.FC = () => {
                         SaleEmp: string;
                         SaleCode: string;
                     };
+                    INSTALLER?: {
+                        SaleEmp: string;
+                        SaleCode: string;
+                    };
                 } = {
                     SALEEMPLOYEE: selectedEmployee,
                 };
@@ -308,6 +339,13 @@ const SalesDiscount: React.FC = () => {
                     const selectedAdviser = adviserList.find((emp) => emp.SaleEmp === formValues.adviser);
                     if (selectedAdviser) {
                         payload.ADVISER = selectedAdviser;
+                    }
+                }
+
+                if (formValues.installer) {
+                    const selectedInstaller = installerList.find((emp) => emp.SaleEmp === formValues.installer);
+                    if (selectedInstaller) {
+                        payload.INSTALLER = selectedInstaller;
                     }
                 }
 
@@ -330,8 +368,7 @@ const SalesDiscount: React.FC = () => {
                 await MySwal.fire({
                     icon: 'success',
                     title: 'บันทึกสำเร็จ!',
-                    text: `ข้อมูลพนักงานขาย "${selectedEmployee.FName} ${selectedEmployee.LName}"${formValues.adviser ? ` และ ผู้แนะนำถูกบันทึกเรียบร้อยแล้ว` : ''
-                        }`,
+                    text: `ข้อมูลพนักงานขาย ถูกบันทึกเรียบร้อยแล้ว`,
                     timer: 2000,
                     showConfirmButton: false,
                 });

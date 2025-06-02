@@ -1,0 +1,88 @@
+:global(.form-control)::placeholder {
+  font-size: 1.5rem;
+  opacity: 0.7;
+}
+
+:global(.form-control-lg) {
+  font-size: 1.5rem;
+}
+
+.titlePage {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #071437;
+}
+
+.fontSize {
+  font-size: 1.5rem;
+}
+
+.label {
+  display: inline-block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  font-size: 1.5rem;
+}
+
+.required {
+  position: relative;
+}
+.required::after {
+  content: "*";
+  color: red;
+  margin-left: 0.25rem;
+}
+
+.btnPrimary {
+  background-color: #1E90FF;
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color .2s;
+}
+
+.btnSecondary {
+  background-color: #F1F1F4;
+  color: black;
+  font-size: 1.5rem;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color .2s;
+}
+
+.btnSuccess {
+  background-color: #17c653;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color .2s;
+}
+
+.btnOutlinePrimary {
+  background-color: #fff;
+  /* พื้นหลังขาว */
+  color: black;
+  /* ตัวหนังสือสีน้ำเงิน */
+  font-size: 1.5rem;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border: 2px solid #1E90FF;
+  /* ขอบสีน้ำเงิน หนา 2px */
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color .2s, color .2s;
+  text-align: left;
+  width: 100%;
+  margin-top: 10px;
+}

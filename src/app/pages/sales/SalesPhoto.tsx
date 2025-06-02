@@ -135,30 +135,82 @@ const SalesPhoto: React.FC = () => {
                 EMPID: EmpId,
                 TEAMSALE: TeamSale,
                 FIELD: 'STATUS',
-                DATA: 'PENDING',
+                DATA: 'FINISH',  //finish
             },
                 {
                     headers: { 'Content-Type': 'application/json' },
                 })
 
+            MySwal.fire({
+                icon: 'error',
+                title: 'เกิดข้อผิดพลาด',
+                html: `
+                      ${response.data}
+                    `
+            })
+
             // เมื่อสำเร็จ ปิด Loading ก่อน
-            Swal.close()
+            // Swal.close()
 
             // ตรวจสอบ status
-            if (response.status === 200) {
-                if (!response.data.data) {
-                    MySwal.fire('เกิดข้อผิดพลาด', 'ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error')
-                } else {
-                    MySwal.fire('สำเร็จ', 'ส่งข้อมูลตรวจสอบแล้ว', 'success')
-                    navigate('/sale/overview')
-                }
-            } else {
-                MySwal.fire('เกิดข้อผิดพลาด', response.data.message, 'error')
-            }
+            // if (response.status === 200) {
+            //     if (!response.data.data) {
+            //         MySwal.fire('เกิดข้อผิดพลาด', 'ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error')
+            //     } else {
+            //         MySwal.fire('สำเร็จ', 'ทำสัญญาเรียบร้อยแล้ว', 'success')
+            //         navigate('/sale/overview')
+            //     }
+            // } else {
+            //     MySwal.fire('เกิดข้อผิดพลาด', response.data.message, 'error')
+            // }
+
+            // if (response.status === 200) {
+            //     if (!response.data.data) {
+            //         MySwal.fire({
+            //             icon: 'error',
+            //             title: 'เกิดข้อผิดพลาด 1',
+            //             html: `
+            //           <b>HTTP status:</b> ${response.status}<br/>
+            //           <b>response.data:</b><br/>
+            //           <pre style="text-align:left;white-space:pre-wrap;">${JSON.stringify(response.data, null, 2)}</pre>
+            //         `
+            //         })
+            //     } else {
+            //         MySwal.fire({
+            //             icon: 'success',
+            //             title: 'สำเร็จ',
+            //             html: `
+            //           <b>HTTP status:</b> ${response.status}<br/>
+            //           <b>response.data.data:</b><br/>
+            //           <pre style="text-align:left;white-space:pre-wrap;">${JSON.stringify(response.data.data, null, 2)}</pre>
+            //         `
+            //         }).then(() => {
+            //             navigate('/sale/overview')
+            //         })
+            //     }
+            // } else {
+            //     MySwal.fire({
+            //         icon: 'error',
+            //         title: 'เกิดข้อผิดพลาด 2',
+            //         html: `
+            //         <b>HTTP status:</b> ${response.status}<br/>
+            //         <b>response.data.message:</b><br/>
+            //         <pre style="text-align:left;white-space:pre-wrap;">${response.data.message}</pre>
+            //       `
+            //     })
+            // }
+
         } catch (error) {
             // กรณีเกิด Error ให้ปิด Loading ก่อน แล้วแจ้ง
             Swal.close()
-            MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถส่งข้อมูลได้', 'error')
+            // MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถส่งข้อมูลได้', 'error')
+            MySwal.fire({
+                icon: 'error',
+                title: 'เกิดข้อผิดพลาด 3',
+                html: `
+                  ${error}
+                `
+            })
         }
     }
 
@@ -180,31 +232,49 @@ const SalesPhoto: React.FC = () => {
                 EMPID: EmpId,
                 TEAMSALE: TeamSale,
                 FIELD: 'STATUS',
-                DATA: 'PENDING',
+                DATA: 'FINISH', //finish
             },
                 {
                     headers: { 'Content-Type': 'application/json' },
                 })
 
+            MySwal.fire({
+                icon: 'error',
+                title: 'เกิดข้อผิดพลาด',
+                html: `
+                          ${response.data}
+                        `
+            })
+
             // เมื่อสำเร็จ ปิด Loading ก่อน
-            Swal.close()
+            // Swal.close()
 
             // ตรวจสอบ status
-            if (response.status === 200) {
-                if (!response.data.data) {
-                    MySwal.fire('เกิดข้อผิดพลาด', 'ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error')
-                } else {
-                    MySwal.fire('สำเร็จ', 'ส่งข้อมูลตรวจสอบแล้ว', 'success')
-                    navigate('/sale/overview')
-                }
-            } else {
-                MySwal.fire('เกิดข้อผิดพลาด', response.data.message, 'error')
-            }
+            // if (response.status === 200) {
+            //     if (!response.data.data) {
+            //         MySwal.fire('เกิดข้อผิดพลาด', 'ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error')
+            //     } else {
+            //         MySwal.fire('สำเร็จ', 'ส่งข้อมูลตรวจสอบแล้ว', 'success')
+            //         navigate('/sale/overview')
+            //     }
+            // } else {
+            //     MySwal.fire('เกิดข้อผิดพลาด', response.data.message, 'error')
+            // }
         } catch (error) {
             // กรณีเกิด Error ให้ปิด Loading ก่อน แล้วแจ้ง
-            Swal.close()
-            MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถส่งข้อมูลได้', 'error')
+            // Swal.close()
+            // MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถส่งข้อมูลได้', 'error')
+
+            MySwal.fire({
+                icon: 'error',
+                title: 'เกิดข้อผิดพลาด 3',
+                html: `
+                          ${error}
+                        `
+            })
         }
+
+
     }
 
     // เช็คว่า data ใน item มีครบทุกขั้นตอน (ไม่เป็น array เปล่า) ใช่ไหม ถ้าเป็นจะ disabled ปุ่มส่งตรวจสอบ
@@ -513,7 +583,7 @@ const SalesPhoto: React.FC = () => {
                                 disabled={!isDataComplete}
                                 onClick={handleUpdateCheckerClick}
                             >
-                                ส่งตรวจสอบ
+                                บันทึกข้อมูลสัญญา
                             </button>
                         </div>
                     ) : (
@@ -529,7 +599,7 @@ const SalesPhoto: React.FC = () => {
                                 disabled={!isDataComplete}
                                 onClick={handleCheckerClick}
                             >
-                                ส่งตรวจสอบ
+                                บันทึกข้อมูลสัญญา
                             </button>
                         </div>
                     )}
@@ -558,7 +628,7 @@ const SalesPhoto: React.FC = () => {
                                 disabled={!isDataComplete}
                                 onClick={handleUpdateCheckerClick}
                             >
-                                ส่งตรวจสอบ
+                                บันทึกข้อมูลสัญญา
                             </button>
                         </div>
                     ) : (
@@ -583,7 +653,7 @@ const SalesPhoto: React.FC = () => {
                                 disabled={!isDataComplete}
                                 onClick={handleCheckerClick}
                             >
-                                ส่งตรวจสอบ
+                                บันทึกข้อมูลสัญญา
                             </button>
                         </div>
                     )}

@@ -5,9 +5,11 @@ type Props = {
     ItemDescription: string;
     ItemCode: string;
     SerialNo: string;
+    TransDate: string;
+    ExtDate: string;
 }
 
-const CardProductStockOnlyMe: FC<Props> = ({ DescriptionTH, ItemDescription, ItemCode, SerialNo }) => {
+const CardProductStockOnlyMe: FC<Props> = ({ DescriptionTH, ItemDescription, ItemCode, SerialNo, TransDate, ExtDate }) => {
     return (
         <>
             <div className="row">
@@ -42,6 +44,20 @@ const CardProductStockOnlyMe: FC<Props> = ({ DescriptionTH, ItemDescription, Ite
                             <div className="flex-grow-1">
                                 <span className={`fw-regular fs-7 d-block`}>
                                     S/N: {SerialNo}
+                                </span>
+                            </div>
+                        </div>
+                        <div className="d-flex align-items-center">
+                            <div className="flex-grow-1">
+                                <span className={`fw-regular fs-7 d-block`}>
+                                    วันที่เบิก: {TransDate}
+                                </span>
+                            </div>
+                        </div>
+                        <div className="d-flex align-items-center">
+                            <div className="flex-grow-1">
+                                <span className={`fw-regular fs-7 d-block`}>
+                                    วันที่รับ: {ExtDate}
                                 </span>
                             </div>
                         </div>

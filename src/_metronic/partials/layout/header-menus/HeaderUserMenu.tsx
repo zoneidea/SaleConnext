@@ -1,8 +1,10 @@
+import styles from '@/styles/style.module.css'
 import { FC } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../../../app/modules/auth'
 import { Languages } from './Languages'
 import { toAbsoluteUrl } from '../../../helpers'
+import styled from 'styled-components'
 
 const HeaderUserMenu: FC = () => {
   const { currentUser, logout, auth } = useAuth()
@@ -20,19 +22,23 @@ const HeaderUserMenu: FC = () => {
           </div>
 
           <div className='d-flex flex-column'>
-            <div className='fw-bolder d-flex align-items-center fs-5'>
+            <div className={`fw-bolder d-flex align-items-center ${styles.fontSize}`}>
               {auth.data[0].EmpId}
-              <span className='badge badge-light-success fw-bolder fs-8 px-2 py-1 ms-2'>{auth.data[0].PositionName}</span>
             </div>
-            <p className='fw-bold text-muted text-hover-primary fs-7'>{auth.data[0].EmpName}</p>
+            <p className={`fw-bold text-muted text-hover-primary ${styles.fontSize}`}>
+              {auth.data[0].EmpName}
+            </p>
           </div>
         </div>
+        <span className={`badge badge-light-success fw-bolder px-2 py-1 ms-2 ${styles.fontSize}`}>
+          {auth.data[0].PositionName}
+        </span>
       </div>
 
       <div className='separator my-2'></div>
 
       <div className='menu-item px-5'>
-        <a onClick={logout} className='menu-link px-5'>
+        <a onClick={logout} className={`menu-link px-5 ${styles.fontSize}`}>
           ออกจากระบบ
         </a>
       </div>
