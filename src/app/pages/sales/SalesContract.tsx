@@ -730,12 +730,7 @@ const SalesContract: React.FC = () => {
             data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
             className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
             <div className={`breadcrumb-item ${styles.titlePage}`}>
-              {PRODUCT[0]?.Package[0]?.PACKAGETYPEID === 1 ? (
-                <span>ใบสัญญา</span>
-              ) : (
-                <span>ใบสัญญาเช่าซื้อ</span>
-              )}
-
+              <span>ใบสัญญาเช่าซื้อ</span>
             </div>
           </div>
         </div>
@@ -752,12 +747,12 @@ const SalesContract: React.FC = () => {
               </div>
             </div>
 
-            <div className='row mb-7'>
+            {/* <div className='row mb-7'>
               <label className={`col-lg-4 fw-bold text-muted ${styles.fontSize}`}>เลขที่สัญญา</label>
               <div className='col-lg-8 fv-row'>
                 <span className={`fw-bolder text-gray-900 ${styles.fontSize}`}>{contNoNew}</span>
               </div>
-            </div>
+            </div> */}
 
             <div className='row mb-7'>
               <label className={`col-lg-4 fw-bold text-muted ${styles.fontSize}`}>REFNO</label>
@@ -1029,12 +1024,12 @@ const SalesContract: React.FC = () => {
         {/* End Card Body */}
 
         <div className='d-none d-xl-flex justify-content-between align-items-center mt-5 mb-10'>
-          <button
+          {/* <button
             className={`${styles.btnSecondary}`}
             onClick={handleNextClick}
           >
             ย้อนกลับ
-          </button>
+          </button> */}
           <button
             className={`${styles.btnPrimary}`}
             type='button'
@@ -1055,12 +1050,12 @@ const SalesContract: React.FC = () => {
             zIndex: 1050,
           }}
         >
-          <button
+          {/* <button
             className={`${styles.btnSecondary}`}
             onClick={handleNextClick}
           >
             ย้อนกลับ
-          </button>
+          </button> */}
           <button
             className={`${styles.btnPrimary}`}
             onClick={handleNextClick}

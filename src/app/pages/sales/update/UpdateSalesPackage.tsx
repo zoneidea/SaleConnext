@@ -1097,7 +1097,7 @@
 
 // export default UpdateSalesPackage;
 
-
+import styles from '@/styles/style.module.css'
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { useState, useEffect, useRef, useMemo } from 'react';
@@ -1167,12 +1167,8 @@ const UpdateSalesPackage: React.FC = () => {
     const { auth } = useAuth();
     const MySwal = withReactContent(Swal);
 
-    const item = location.state as ItemProps || [];
-
-    // console.log(`item`, item);
-
-    // const itemFromStore = (location.state || {}) as { item?: { REFNO?: string } };
-    // console.log(`itemFromStore`, itemFromStore);
+    const item = location.state as ItemProps & { fromDiscount?: boolean };
+    const fromDiscount = item.fromDiscount === true;
 
     const { refno, barCode, setRefno, setBarCode } = useRefnoBarcodeStore((state) => ({
         refno: state.refno,
@@ -1180,15 +1176,8 @@ const UpdateSalesPackage: React.FC = () => {
         setRefno: state.setRefno,
         setBarCode: state.setBarCode,
     }));
-    // console.log(`barCode`, barCode);
-    // console.log(`refno`, item.REFNO);
-
-    // const memoizedRefno: string = useMemo(() => {
-    //     return refno || itemFromStore?.REFNO || ""; // ใช้ "" เป็นค่าเริ่มต้นหากไม่มีค่า
-    // }, [refno, item?.REFNO]);
 
     const productContract = item?.PRODUCT || [];
-    // console.log(productContract, productContract);
 
     const [loadingCategories, setLoadingCategories] = useState(true); // เพิ่ม state สำหรับการโหลดหมวดหมู่
     const [loadingProducts, setLoadingProducts] = useState(false); // เพิ่ม state สำหรับการโหลดสินค้า
@@ -1486,29 +1475,65 @@ const UpdateSalesPackage: React.FC = () => {
         fetchImages();
     }, [refno]);
 
+    useEffect(() => {
+        // รอจนกว่าทั้ง 2 ตัวนี้จะมีค่า
+        if (EmpId && TeamSale) {
+            postData();
+        }
+    }, [EmpId, TeamSale]);
+
+    // const postData = async () => {
+    //     setLoadingCategories(true);
+    //     try {
+    //         const response = await axios.get(GET_STOCK_URL, {
+    //             params: {
+    //                 empid: EmpId,
+    //                 teamSale: TeamSale,
+    //             },
+    //         });
+    //         // แยก data จาก response
+    //         const raw = Array.isArray(response.data.data) ? response.data.data : [];
+    //         setCategories(raw);
+
+    //     } catch (error) {
+    //         console.error('Error fetching stock:', error);
+    //     } finally {
+    //         setLoadingCategories(false);
+    //     }
+    // };
+
+    // useEffect(() => {
+    //     postData()
+    // }, [])
+
     const postData = async () => {
         setLoadingCategories(true);
         try {
             const response = await axios.get(GET_STOCK_URL, {
-                params: {
-                    empid: EmpId,
-                    teamSale: TeamSale,
-                },
+                params: { empid: EmpId, teamSale: TeamSale },
             });
-            // แยก data จาก response
-            const raw = Array.isArray(response.data.data) ? response.data.data : [];
-            setCategories(raw);
+            const raw: any[] = Array.isArray(response.data.data)
+                ? response.data.data
+                : [];
 
+            // ดึงเฉพาะ { CategoriesId, DescriptionTH } ไม่ซ้ำกัน
+            const cats = raw.reduce((acc: any[], item) => {
+                if (!acc.some(c => c.CategoriesId === item.CategoriesId)) {
+                    acc.push({
+                        CategoriesId: item.CategoriesId,
+                        DescriptionTH: item.DescriptionTH   // หรือชื่อ field จริงจาก API
+                    });
+                }
+                return acc;
+            }, []);
+
+            setCategories(cats);
         } catch (error) {
-            console.error('Error fetching stock:', error);
+            console.error('Error fetching stock for categories:', error);
         } finally {
             setLoadingCategories(false);
         }
     };
-
-    useEffect(() => {
-        postData()
-    }, [])
 
     // GET Product/GetStock?
     useEffect(() => {
@@ -1856,6 +1881,21 @@ const UpdateSalesPackage: React.FC = () => {
                         showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
                     })
                 }
+                if (!fromDiscount) {
+                    navigate('/sale/update/updateSaleDiscount', {
+                        state: {
+                            SaveProductData,
+                            REFNO: refno ? refno : item.REFNO
+                        }
+                    });
+                } else {
+                    navigate('/sale/discount', {
+                        state: {
+                            SaveProductData,
+                            REFNO: refno ? refno : item.REFNO
+                        }
+                    });
+                }
             } else {
                 MySwal.fire('เกิดข้อผิดพลาด', response.data.message, 'error');
             }
@@ -1896,7 +1936,6 @@ const UpdateSalesPackage: React.FC = () => {
                     timer: 2000, // แสดงผล 3 วินาที
                     showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
                 })
-                navigate("/sale/overview")
             }
         } else {
             MySwal.fire('เกิดข้อผิดพลาด', response.data.message, 'error');
@@ -1923,50 +1962,17 @@ const UpdateSalesPackage: React.FC = () => {
 
     return (
         <>
-            {/* สแกนบาร์โค้ด */}
-            <div
-                className="d-flex justify-content-center align-items-center mt-5 mx-7"
-                style={{
-                    border: "1px solid #ccc",
-                    borderRadius: "10px",
-                    padding: "10px",
-                    backgroundColor: "#f9f9f9",
-                }}
-                onClick={handleScanBarcodeClick}
-            >
-                <label
-                    className="btn btn-success px-5 w-200px"
-                    htmlFor="camera-input"
-                    style={{
-                        cursor: "pointer",
-                        borderRadius: "10px",
-                        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                    }}
-                >
-                    สแกนบาร์โค้ด
-                </label>
-            </div>
-            {/* สแกนบาร์โค้ด */}
-
             <Content>
-                <div className='d-flex justify-content-between align-items-center mb-7 mt-7'>
+                <div className='d-flex justify-content-between align-items-center my-5'>
                     <div id="kt_page_title" data-kt-swapper="true" data-kt-swapper-mode="prepend"
                         data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
                         className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
-                        <h1 className="page-heading d-flex text-gray-900 fw-bold fs-3 my-0 flex-column justify-content-center">
-                            แก้ไขแพ็คเกจ
-                        </h1>
                         <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
-                            <li className="breadcrumb-item text-muted">
-                                <span className="text-muted text-hover-primary">
-                                    ระบบขาย
-                                </span></li>
-                            <li className="breadcrumb-item"><span className="bullet bg-gray-500 w-5px h-2px"></span></li>
-                            <li className="breadcrumb-item text-gray-900">แก้ไขแพ็คเกจ</li>
+                            <li className={`${styles.titlePage}`}>แก้ไขแพ็คเกจ</li>
                         </ul>
                     </div>
                 </div>
-                <p>REFNO: {item?.REFNO || item?.item?.REFNO}</p>
+                <span className={`${styles.fontSize}`}>เลขที่ขาย: </span><span className={`${styles.titlePage}`}>{item?.REFNO || item?.item?.REFNO}</span>
 
                 <div className='accordion mb-10' id='kt_accordion_1'>
                     <div className='accordion-item mb-10'>
@@ -1992,24 +1998,49 @@ const UpdateSalesPackage: React.FC = () => {
                                     <div className='card-body px-lg-9 px-1'>
                                         <div className='row'>
 
+                                            {/* สแกนบาร์โค้ด */}
+                                            <div
+                                                className="d-flex justify-content-center align-items-center mt-5"
+                                                // style={{
+                                                //     border: "1px solid #ccc",
+                                                //     borderRadius: "10px",
+                                                //     padding: "10px",
+                                                //     backgroundColor: "#f9f9f9",
+                                                // }}
+                                                onClick={handleScanBarcodeClick}
+                                            >
+                                                <label
+                                                    className={`btn btn-success px-5 w-200px ${styles.label}`}
+                                                    htmlFor="camera-input"
+                                                    style={{
+                                                        cursor: "pointer",
+                                                        borderRadius: "10px",
+                                                        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                                                    }}
+                                                >
+                                                    สแกน S/N
+                                                </label>
+                                            </div>
+                                            {/* สแกนบาร์โค้ด */}
+
                                             {item?.barCode && (
                                                 <label className='form-label fw-bold fs-3 mt-3'>S/N ที่สแกนได้: {item?.barCode}</label>
                                             )}
 
-                                            {/* <div className='col-lg-6 my-7 my-xl-10'>
+                                            <div className='col-lg-6 my-7 my-xl-10'>
                                                 <label className='form-label required fw-bold fs-3'>หมวดหมู่สินค้า</label>
                                                 <select
-                                                    value={selectedCategoryId}
-                                                    className='form-select form-select-solid form-select-lg'
-                                                    onChange={handleCateOptionChange} >
+                                                    className='form-select'
+                                                    onChange={handleCateOptionChange}
+                                                >
                                                     <option value=''>เลือกหมวดหมู่สินค้า...</option>
-                                                    {(fetchCategory.length > 0 ? fetchCategory : categories).map((item: any, index: number) => (
-                                                        <option key={index} value={item.CATEGORIES_ID}>
-                                                            {item.CATEGORIES_NAME_TH}
+                                                    {categories.map((item: any, index: number) => (
+                                                        <option key={index} value={item.CategoriesId}>
+                                                            {item.DescriptionTH}
                                                         </option>
                                                     ))}
                                                 </select>
-                                            </div> */}
+                                            </div>
 
                                         </div>
 
@@ -2051,9 +2082,9 @@ const UpdateSalesPackage: React.FC = () => {
 
                                                 <div className='row'>
                                                     <div className='col-lg-6 my-7 my-xl-10'>
-                                                        <label className='form-label required fw-bold fs-3'>โปรโมชั่น</label>
+                                                        <label className={`form-label required ${styles.label}`}>โปรโมชั่น</label>
                                                         <select
-                                                            className="form-select"
+                                                            className={`${styles.fontSize} form-select`}
                                                             value={selectedPromotion}
                                                             onChange={(e) => setSelectedPromotion(Number(e.target.value))}
                                                         >
@@ -2070,7 +2101,7 @@ const UpdateSalesPackage: React.FC = () => {
                                                 {product.length !== 0 && (
                                                     <div className='container my-10 my-xl-10'>
                                                         <div className='row d-flex'>
-                                                            <label className='form-label required fw-bold fs-3'>ประเภทการชำระ</label>
+                                                            <label className={`form-label required ${styles.label}`}>ประเภทการชำระ</label>
                                                             {packageType.map((item) => (
                                                                 <div className='col-6 col-md-auto mb-2 d-flex align-items-center' key={item.PACKAGETYPEID}>
                                                                     <div
@@ -2085,7 +2116,7 @@ const UpdateSalesPackage: React.FC = () => {
                                                                             handlePackageTypeClick(item.PACKAGETYPEID);
                                                                         }}
                                                                     >
-                                                                        {item.PACKAGETYPENAME}
+                                                                        <p className={`${styles.fontSize}`}>{item.PACKAGETYPENAME}</p>
                                                                     </div>
                                                                 </div>
                                                             ))}
@@ -2096,7 +2127,7 @@ const UpdateSalesPackage: React.FC = () => {
                                                 {/* หากไม่มีแพ็คเกจให้แสดงข้อความนี้ */}
                                                 {!loadingPackages && packageList.length === 0 && selectedCategoryId !== null && selectedProductIndex !== null && (
                                                     <div className='text-center my-7'>
-                                                        <h5>ไม่มีรายการแพ็คเกจ</h5>
+                                                        <h5 className={`${styles.fontSize}`}>ไม่มีรายการแพ็คเกจ</h5>
                                                     </div>
                                                 )}
                                             </div>
@@ -2114,7 +2145,7 @@ const UpdateSalesPackage: React.FC = () => {
                                         {!loadingPackages && packageList.length > 0 && selectedPromotion !== null && selectedPackageTypeId !== null && (
                                             <div className='my-10 my-xl-10' ref={packageSectionRef}>
                                                 <div className='row d-flex'>
-                                                    <label className='form-label required fw-bold fs-3'>แพ็คเกจ</label>
+                                                    <label className={`form-label required ${styles.label}`}>แพ็คเกจ</label>
                                                     {packageList.map((item, index) => (
                                                         <div
                                                             className='col-12 col-md-4 col-sm-4 mb-2'
@@ -2138,62 +2169,117 @@ const UpdateSalesPackage: React.FC = () => {
                     </div>
                 </div>
 
-                <div className='d-none d-xl-flex justify-content-between align-items-center my-5'>
-                    <button
-                        className='btn btn-secondary w-100 w-md-auto align-self-center h-50px'
-                        onClick={() => navigate('/sale/step', { state: item })}
-                    >
-                        ย้อนกลับ
-                    </button>
-                    <button
-                        className={`btn btn-warning w-100 w-md-auto align-self-center h-50px m-5 
+                {!fromDiscount && (
+                    <>
+                        <div className='d-none d-xl-flex justify-content-between align-items-center my-5'>
+                            <button
+                                className={`${styles.btnSecondary}`}
+                                onClick={() => navigate('/sale/step', { state: item })}
+                            >
+                                ย้อนกลับ
+                            </button>
+                            <button
+                                className={`${styles.btnPrimary} 
                         ${product.length === 0 || selectedProductIndex === null ? 'disabled' : ''}`}
-                        disabled={product.length === 0 || selectedProductIndex === null}
-                        onClick={handleNextClick}
-                    >
-                        อัพเดทข้อมูล
-                    </button>
-                    <button
-                        className={`btn btn-primary w-100 w-md-auto align-self-center h-50px ${!isDataComplete ? 'disabled' : ''}`}
-                        disabled={!isDataComplete}
-                        onClick={handleCheckerClick}
-                    >
-                        ส่งตรวจสอบ
-                    </button>
-                </div>
+                                disabled={product.length === 0 || selectedProductIndex === null}
+                                onClick={handleNextClick}
+                            >
+                                ถัดไป
+                            </button>
+                            {/* {isDataComplete && (
+                                <button
+                                    className={`${styles.btnPrimary} ${!isDataComplete ? 'disabled' : ''}`}
+                                    onClick={handleCheckerClick}
+                                >
+                                    ส่งตรวจสอบ
+                                </button>
+                            )} */}
+                        </div>
 
-                {/* ปุ่มในหน้าจอเล็ก */}
-                <div
-                    className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
-                    style={{
-                        position: "fixed",
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        zIndex: 1050,
-                    }}
-                >
-                    <button
-                        className="btn btn-secondary w-auto me-2"
-                        onClick={() => navigate('/sale/step', { state: item })}
-                    >
-                        ย้อนกลับ
-                    </button>
-                    <button
-                        className={`btn btn-warning w-auto me-2 ${product.length === 0 || selectedProductIndex === null ? 'disabled' : ''}`}
-                        disabled={product.length === 0 || selectedProductIndex === null}
-                        onClick={handleNextClick}
-                    >
-                        อัพเดทข้อมูล
-                    </button>
-                    <button
-                        className={`btn btn-primary w-auto ${!isDataComplete ? `disabled` : ``}`}
-                        disabled={!isDataComplete}
-                        onClick={handleCheckerClick}
-                    >
-                        ส่งตรวจสอบ
-                    </button>
-                </div >
+                        {/* ปุ่มในหน้าจอเล็ก */}
+                        <div
+                            className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
+                            style={{
+                                position: "fixed",
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                zIndex: 1050,
+                            }}
+                        >
+                            <button
+                                className={`${styles.btnSecondary}`}
+                                onClick={() => navigate('/sale/step', { state: item })}
+                            >
+                                ย้อนกลับ
+                            </button>
+                            <button
+                                className={`${styles.btnPrimary} ${product.length === 0 || selectedProductIndex === null ? 'disabled' : ''}`}
+                                disabled={product.length === 0 || selectedProductIndex === null}
+                                onClick={handleNextClick}
+                            >
+                                ถัดไป
+                            </button>
+                            {/* {isDataComplete && (
+                                <button
+                                    className={`${styles.btnPrimary} ${!isDataComplete ? 'disabled' : ''}`}
+                                    onClick={handleCheckerClick}
+                                >
+                                    ส่งตรวจสอบ
+                                </button>
+                            )} */}
+                        </div >
+                    </>
+                )}
+
+                {fromDiscount && (
+                    <>
+                        <div className='d-none d-xl-flex justify-content-between align-items-center my-5'>
+                            <button
+                                className={`${styles.btnSecondary}`}
+                                onClick={() => navigate('/sale/overview')}
+                            >
+                                กลับหน้าแรก
+                            </button>
+                            <button
+                                className={`${styles.btnPrimary} 
+                ${product.length === 0 || selectedProductIndex === null ? 'disabled' : ''}`}
+                                disabled={product.length === 0 || selectedProductIndex === null}
+                                onClick={handleNextClick}
+                            >
+                                ถัดไป
+                            </button>
+                        </div>
+
+                        {/* ปุ่มในหน้าจอเล็ก */}
+                        <div
+                            className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
+                            style={{
+                                position: "fixed",
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                zIndex: 1050,
+                            }}
+                        >
+                            <button
+                                className={`${styles.btnSecondary}`}
+                                onClick={() => navigate('/sale/overview')}
+                            >
+                                กลับหน้าแรก
+                            </button>
+                            <button
+                                className={`${styles.btnPrimary} 
+                ${product.length === 0 || selectedProductIndex === null ? 'disabled' : ''}`}
+                                disabled={product.length === 0 || selectedProductIndex === null}
+                                onClick={handleNextClick}
+                            >
+                                ถัดไป
+                            </button>
+                        </div >
+                    </>
+                )}
+
             </Content >
         </>
     );

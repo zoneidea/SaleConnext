@@ -854,29 +854,51 @@ const SalesPDPA: React.FC = () => {
     }
 
     try {
-      const response = await axios.post(SEND_SMS_API, {
-        RefNo: REFNO,
-        Alllow_Contract,
-        PDPA_Code,
-        TelMobile: telCustomer,
-      }, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const response = await axios.post(
+        SEND_SMS_API,
+        {
+          RefNo: REFNO,
+          Alllow_Contract,
+          PDPA_Code,
+          TelMobile: telCustomer,
+        },
+        {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        }
+      );
 
       console.log(`response SEND_SMS_API`, response.data);
 
-      setContNo(response.data.ContNo);
-      setIsOTPRequested(true);
+      // ตรวจสอบว่ามี OTP คืนมาจริง ๆ หรือไม่
+      if (response.data.OTP) {
+        setContNo(response.data.ContNo);
+        setIsOTPRequested(true);
 
-      Swal.fire({
-        icon: 'success',
-        title: 'ส่ง OTP ไปยังเบอร์โทรลูกค้าสำเร็จ'
-      });
+        MySwal.fire({
+          // 1) แสดงเป็น Toast
+          toast: true,
+          icon: 'success',
+          title: 'ส่ง OTP ไปยังเบอร์โทรลูกค้าสำเร็จ',
+          timer: 2000,
+          showConfirmButton: false,
+        })
+          .then(() => {
+            // 3) เมื่อ Modal ปิด ให้โฟกัสที่ input ของ OTP
+            otpInputRef.current?.focus();
+          });
+      } else {
+        // กรณี API ตอบมาแต่ไม่มี OTP
+        Swal.fire({
+          icon: 'error',
+          title: 'ไม่พบรหัส OTP กรุณาลองใหม่อีกครั้ง',
+        });
+      }
     } catch (error) {
       console.error('ส่ง OTP ไม่สำเร็จ:', error);
       Swal.fire({ icon: 'error', title: 'ไม่สามารถส่ง OTP ได้' });
     }
   };
+
 
   const checkOTP = async () => {
     try {
@@ -897,14 +919,14 @@ const SalesPDPA: React.FC = () => {
         console.log(`inputOTP`, inputOTP);
         console.log(`contNo`, contNo);
 
-        await axios.post(SAVEPRODUCTPACKAGE, {
+        await axios.post(UPDATECONTACT, {
           REFNO,
           EMPID: EmpId,
           TEAMSALE: TeamSale,
           SALECODE: SaleCode,
           SUPEMPID: SupEmpId,
           SECEMPID: SecEmpId,
-          STATUS: "DRAFT",
+          FIELD: "PDPA",
           DATA: [{
             "CONSENTGIVEN": consentGiven,
             "TELCUSTOMER": telCustomer,
@@ -920,7 +942,7 @@ const SalesPDPA: React.FC = () => {
         });
 
         console.log(`res`, response.data);
-        navigate('/sale/statuscust');
+        navigate('/sale/contract-cash');
       }
     } catch (error) {
       console.error('ตรวจสอบ OTP ล้มเหลว:', error);
@@ -940,7 +962,7 @@ const SalesPDPA: React.FC = () => {
             </ul>
           </div>
         </div>
-        <p className={`${styles.fontSize}`}>เลขที่ขาย:</p><p className={`${styles.titlePage}`}>{REFNO}</p>
+        <span className={`${styles.fontSize}`}>เลขที่ขาย: </span><span className={`${styles.titlePage}`}>{REFNO}</span>
 
         <div className='card mb-10 px-4'>
           <div className='card-body flex justify-between items-center p-5'>
@@ -1006,6 +1028,8 @@ const SalesPDPA: React.FC = () => {
                   value={inputOTP}
                   onChange={(e) => setInputOTP(e.target.value)}
                   type='text'
+                  inputMode='numeric'
+                  pattern='[0-9]*'
                   className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
                 />
               </div>

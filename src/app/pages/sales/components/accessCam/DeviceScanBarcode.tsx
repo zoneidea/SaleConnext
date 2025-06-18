@@ -1,3 +1,4 @@
+import styles from '@/styles/style.module.css'
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
@@ -127,11 +128,11 @@ const DeviceScanBarcode: React.FC = () => {
                         }}
                     />
                     <div className="d-flex justify-content-center align-items-center mt-20">
-                        <h3>S/N ที่สแกนได้: {barCode}</h3>
+                        {/* <h3 className={`${styles.fontSize}`}>S/N ที่สแกนได้: {barCode}</h3> */}
                     </div>
                     <div className="d-flex justify-content-center align-items-center mt-5">
                         <button className="btn btn-danger w-150px" onClick={handleNavigateBack}>
-                            ปิด
+                           <p className={`${styles.fontSize}`}>ปิด</p>
                         </button>
                     </div>
                 </>

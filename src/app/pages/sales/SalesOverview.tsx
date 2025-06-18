@@ -470,7 +470,7 @@ const SalesOverview: React.FC = () => {
   // เพิ่มรายการใหม่
   const handleAddItemClick = () => {
     SETREFNO()
-    navigate('/sale/pdpa')
+    navigate('/sale/statuscust')
   }
 
   // ฟิลเตอร์ข้อมูลตาม search

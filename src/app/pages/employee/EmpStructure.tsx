@@ -22,6 +22,7 @@ const EmpStructure: React.FC = () => {
     const teamSale = auth.data[0].TeamSale;
 
     const [adviser, setAdviser] = useState<any[]>([]);
+    console.log(`adviser`, adviser);
     
     const {
         EmpId, setEmpId,

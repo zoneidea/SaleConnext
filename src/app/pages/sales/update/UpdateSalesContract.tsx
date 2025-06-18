@@ -549,6 +549,7 @@
 
 // export default UpdateSalesContract
 
+import styles from '@/styles/style.module.css'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import axios from 'axios';
 import clsx from 'clsx'
@@ -623,13 +624,13 @@ const UpdateSalesContract: React.FC = () => {
     const { REFNO } = useUUIDStore();
 
     const item = location.state as ItemProps || [];
-    // console.log(`item`, item);
+    console.log(`item`, item);
     const refno = item?.REFNO
     // console.log(`refno`, refno);
 
     const product = item?.PRODUCT
     // console.log(`product`, product);
-    const contNo = item?.CUSTOMERSTATUS[0]?.CONTNO
+    const newRefNo = item?.CUSTOMERSTATUS[0]?.NEWREFNO
     // console.log(`contNo`, contNo);
     const customerDetail = item?.CUSTOMERDETAIL
     const address = item?.ADDRESS
@@ -846,19 +847,14 @@ const UpdateSalesContract: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className='row mb-7'>
-                            <label className='col-lg-4 fw-bold text-muted'>เลขที่สัญญา</label>
-                            <div className='col-lg-8 fv-row'>
-                                <span className='fw-bold fs-6'>{contNo}</span>
+                        {newRefNo && (
+                            <div className='row mb-7'>
+                                <label className='col-lg-4 fw-bold text-muted'>เลขที่สัญญา</label>
+                                <div className='col-lg-8 fv-row'>
+                                    <span className='fw-bold fs-6'>{newRefNo}</span>
+                                </div>
                             </div>
-                        </div>
-
-                        <div className='row mb-7'>
-                            <label className='col-lg-4 fw-bold text-muted'>REFNO</label>
-                            <div className='col-lg-8 fv-row'>
-                                <span className='fw-bold fs-6'>{refno}</span>
-                            </div>
-                        </div>
+                        )}
 
                         <div className='row mb-7'>
                             <label className='col-lg-4 fw-bold text-muted'>ชื่อลูกค้า</label>
@@ -949,7 +945,12 @@ const UpdateSalesContract: React.FC = () => {
                         < div className='row mb-10'>
                             <label className='col-lg-4 fw-bold text-muted'>เบอร์โทรติดต่อ</label>
                             <div className='col-lg-8'>
-                                <span className='fw-bold fs-6'>{customerDetail[0]?.CUSTOMERMOBILE}</span>
+                                <span
+                                    className='fw-bold fs-6'>
+                                    {customerDetail[0]?.CUSTOMERMOBILE ?
+                                        customerDetail[0]?.CUSTOMERMOBILE :
+                                        address[0]?.ADDRESSINSTALLATION?.ADDRESSPHONE}
+                                </span>
                             </div>
                         </div>
 
@@ -1054,17 +1055,17 @@ const UpdateSalesContract: React.FC = () => {
 
                 <div className='d-none d-xl-flex justify-content-between align-items-center my-5'>
                     <button
-                        className='btn btn-secondary w-100 w-md-auto align-self-center h-50px'
+                        className={`${styles.btnSecondary}`}
                         onClick={() => navigate('/sale/step', { state: item })}>
                         ย้อนกลับ
                     </button>
-                    <button
+                    {/* <button
                         className={`btn btn-primary w-100 w-md-auto align-self-center h-50px ${!isDataComplete ? `disabled` : ``}`}
                         disabled={!isDataComplete}
                         onClick={handleCheckerClick}
                     >
                         ส่งตรวจสอบ
-                    </button>
+                    </button> */}
                 </div>
 
                 {/* ปุ่มในหน้าจอเล็ก */}
@@ -1079,18 +1080,18 @@ const UpdateSalesContract: React.FC = () => {
                     }}
                 >
                     <button
-                        className="btn btn-secondary w-auto me-2"
+                        className={`${styles.btnSecondary}`}
                         onClick={() => navigate('/sale/step', { state: item })}
                     >
                         ย้อนกลับ
                     </button>
-                    <button
+                    {/* <button
                         className={`btn btn-primary w-auto ${!isDataComplete ? `disabled` : ``}`}
                         disabled={!isDataComplete}
                         onClick={handleCheckerClick}
                     >
                         ส่งตรวจสอบ
-                    </button>
+                    </button> */}
                 </div>
 
             </Content >

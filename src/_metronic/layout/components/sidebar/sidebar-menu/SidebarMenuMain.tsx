@@ -107,8 +107,7 @@ const SidebarMenuMain = () => {
     <>
       {/* เมนูทั่วไป */}
       {menu
-        .filter((item) => item.MENU_NAME !== 'รายงานการขายประจำวัน' &&
-          item.MENU_NAME !== 'ระบบตรวจสัญญา'
+        .filter((item) => item.MENU_NAME !== 'รายงานการขายประจำวัน'
         )
         .map((item) => (
           <SidebarMenuItem

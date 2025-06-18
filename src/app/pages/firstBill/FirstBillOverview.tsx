@@ -22,6 +22,8 @@ const FirstBillOverview: React.FC = () => {
   const TeamSale = auth?.data?.[0]?.TeamSale
   const SaleCode = auth?.data?.[0]?.SaleCode
   const TeamCode = auth?.data?.[0]?.TeamCode
+  // console.log(`EmpId: `, EmpId);
+  // console.log(`TeamCode: `, TeamCode);
 
   const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
 
@@ -52,7 +54,7 @@ const FirstBillOverview: React.FC = () => {
       const response = await axios.get(GET_PAYMENT_URL, {
         params: {
           EMPID: EmpId,
-          TEAMCODE: TeamCode
+          TEAMSALE: TeamSale
         }
       });
       const data = Array.isArray(response.data.data) ? response.data.data : [];

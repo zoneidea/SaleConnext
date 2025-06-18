@@ -1,3 +1,4 @@
+import styles from '@/styles/style.module.css'
 import { useState, ChangeEvent, useEffect, useMemo, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import axios from 'axios';
@@ -1839,7 +1840,7 @@ const UpdateSaleAddress: React.FC = () => {
                             className='form-check-label fw-bold fs-6 mx-2' style={{ color: "black" }}
                             htmlFor='showBillTaxCheckbox'
                         >
-                            ใช้ที่อยู่ออกใบกำกับภาษี
+                            ต้องการใบกำกับภาษี
                         </label>
                     </div>
 
@@ -2127,24 +2128,24 @@ const UpdateSaleAddress: React.FC = () => {
 
                 <div className='d-none d-xl-flex justify-content-between align-items-center my-5'>
                     <button
-                        className='btn btn-secondary w-100 w-md-auto align-self-center h-50px'
+                        className={`${styles.btnSecondary}`}
                         onClick={() => navigate('/sale/step', { state: item })}>
                         ย้อนกลับ
                     </button>
                     <button
-                        className='btn btn-warning w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'
+                        className={`${styles.btnPrimary}`}
                         onClick={handleNextClick}
                         disabled={!isAddressCardValid}  // ปุ่มอัพเดทจะถูก disabled หากข้อมูลที่อยู่ (ตามบัตร) ไม่ครบ
                     >
                         อัพเดทข้อมูล
                     </button>
-                    <button
+                    {/* <button
                         className={`btn btn-primary w-100 w-md-auto align-self-center h-50px ${!isDataComplete ? `disabled` : ``}`}
                         disabled={!isDataComplete}
                         onClick={handleCheckerClick}
                     >
                         ส่งตรวจสอบ
-                    </button>
+                    </button> */}
                 </div>
 
                 {/* ปุ่มในหน้าจอเล็ก */}
@@ -2159,25 +2160,25 @@ const UpdateSaleAddress: React.FC = () => {
                     }}
                 >
                     <button
-                        className="btn btn-secondary w-auto me-2"
+                        className={`${styles.btnSecondary}`}
                         onClick={() => navigate('/sale/step', { state: item })}
                     >
                         ย้อนกลับ
                     </button>
                     <button
-                        className="btn btn-warning w-auto me-2"
+                        className={`${styles.btnPrimary}`}
                         onClick={handleNextClick}
                         disabled={!isAddressCardValid}  // ปุ่มอัพเดทจะถูก disabled หากข้อมูลที่อยู่ (ตามบัตร) ไม่ครบ
                     >
                         อัพเดทข้อมูล
                     </button>
-                    <button
+                    {/* <button
                         className={`btn btn-primary w-auto ${!isDataComplete ? `disabled` : ``}`}
                         disabled={!isDataComplete}
                         onClick={handleCheckerClick}
                     >
                         ส่งตรวจสอบ
-                    </button>
+                    </button> */}
                 </div>
 
                 {/* </form> */}

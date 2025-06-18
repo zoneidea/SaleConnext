@@ -1273,7 +1273,7 @@ const SalesPackage: React.FC = () => {
                                 type='checkbox'
                                 checked={cbxApproveSelected}
                             />
-                            <span className='fw-bold ps-2 fs-6 mb-sm-5'>ผ่าน</span>
+                            <span className='fw-bold ps-2 fs-6 mb-sm-5'>ข้อมูลถูกต้อง</span>
                         </label>
                     </div>
                     <div className='col-lg-4 mb-3'>
@@ -1285,10 +1285,10 @@ const SalesPackage: React.FC = () => {
                                 type='checkbox'
                                 checked={cbxRejectSelected}
                             />
-                            <span className='fw-bold ps-2 fs-6'>ไม่ผ่าน</span>
+                            <span className='fw-bold ps-2 fs-6'>ข้อมูลไม่ถูกต้อง (ให้แก้ไข)</span>
                         </label>
                     </div>
-                    <div className='col-lg-4 mb-3'>
+                    {/* <div className='col-lg-4 mb-3'>
                         <label className='form-check form-check-inline me-5 mt-3 mt-sm-0'>
                             <input
                                 onChange={handleCheckboxChange}
@@ -1299,7 +1299,7 @@ const SalesPackage: React.FC = () => {
                             />
                             <span className='fw-bold ps-2 fs-6'>ยกเลิกสัญญา</span>
                         </label>
-                    </div>
+                    </div> */}
                 </div>
 
                 <div className='row mb-10'>

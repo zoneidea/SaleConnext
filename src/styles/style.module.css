@@ -27,6 +27,7 @@
 .required {
   position: relative;
 }
+
 .required::after {
   content: "*";
   color: red;
@@ -57,8 +58,32 @@
   transition: background-color .2s;
 }
 
+.btnWarning {
+  background-color: #F6C000;
+  color: black;
+  font-size: 1.5rem;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color .2s;
+}
+
 .btnSuccess {
   background-color: #17c653;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color .2s;
+}
+
+.btnDanger {
+  background-color: #f8285a;
   color: white;
   font-size: 1.5rem;
   font-weight: 600;

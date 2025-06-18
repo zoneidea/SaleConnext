@@ -1,3 +1,4 @@
+import styles from '@/styles/style.module.css'
 import { FC } from 'react';
 
 type Props = {
@@ -10,7 +11,7 @@ const CardPackage: FC<Props> = ({ PackageTitle, isSelected }) => {
         <>
             <div className="row">
                 <div className="col-12">
-                    <div className={`rounded border mb-3 px-7 py-7 align-items-center`}
+                    <div className={`rounded border mb-3 px-3 py-3 align-items-center h-150px`}
                         style={{
                             height: '80px',
                             backgroundColor: isSelected ? '#ACE1AF' : '#dbdfe9',
@@ -18,7 +19,7 @@ const CardPackage: FC<Props> = ({ PackageTitle, isSelected }) => {
                         }}>
                         <div className="d-flex align-items-center">
                             <div className="flex-grow-1">
-                                <p className={`fw-bold fs-6 m-0`}>
+                                <p className={`${styles.label}`}>
                                     {PackageTitle}
                                 </p>
                             </div>

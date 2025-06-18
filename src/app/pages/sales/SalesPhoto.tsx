@@ -1,3 +1,4 @@
+import styles from '@/styles/style.module.css'
 import { useState, useMemo, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { KTIcon, toAbsoluteUrl } from '../../../_metronic/helpers'
@@ -58,9 +59,9 @@ const SalesPhoto: React.FC = () => {
 
     const location = useLocation() as any;
     const fromStep = location.state?.fromStep || false;
-    // console.log(`fromStep`, fromStep);
+    console.log(`fromStep`, fromStep);
     const item = location.state?.data as ItemProps || [];
-    // console.log(`item`, item);
+    console.log(`item`, item);
 
     // กำหนด REFNO
     const refno = fromStep ? item.REFNO : REFNO;
@@ -141,64 +142,65 @@ const SalesPhoto: React.FC = () => {
                     headers: { 'Content-Type': 'application/json' },
                 })
 
+            const payload = response.data.data;
+            const jsonString = JSON.stringify(payload, null, 2);
+
             MySwal.fire({
                 icon: 'error',
                 title: 'เกิดข้อผิดพลาด',
-                html: `
-                      ${response.data}
-                    `
+                html: `<pre style="text-align:left;white-space:pre-wrap;">${jsonString}</pre>`,
             })
 
             // เมื่อสำเร็จ ปิด Loading ก่อน
             // Swal.close()
 
             // ตรวจสอบ status
-            // if (response.status === 200) {
-            //     if (!response.data.data) {
-            //         MySwal.fire('เกิดข้อผิดพลาด', 'ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error')
-            //     } else {
-            //         MySwal.fire('สำเร็จ', 'ทำสัญญาเรียบร้อยแล้ว', 'success')
-            //         navigate('/sale/overview')
-            //     }
-            // } else {
-            //     MySwal.fire('เกิดข้อผิดพลาด', response.data.message, 'error')
-            // }
+            if (response.status === 200) {
+                if (!response.data.data) {
+                    MySwal.fire('เกิดข้อผิดพลาด', 'ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error')
+                } else {
+                    MySwal.fire('สำเร็จ', 'ทำสัญญาเรียบร้อยแล้ว', 'success')
+                    navigate('/sale/overview')
+                }
+            } else {
+                MySwal.fire('เกิดข้อผิดพลาด', response.data.message, 'error')
+            }
 
-            // if (response.status === 200) {
-            //     if (!response.data.data) {
-            //         MySwal.fire({
-            //             icon: 'error',
-            //             title: 'เกิดข้อผิดพลาด 1',
-            //             html: `
-            //           <b>HTTP status:</b> ${response.status}<br/>
-            //           <b>response.data:</b><br/>
-            //           <pre style="text-align:left;white-space:pre-wrap;">${JSON.stringify(response.data, null, 2)}</pre>
-            //         `
-            //         })
-            //     } else {
-            //         MySwal.fire({
-            //             icon: 'success',
-            //             title: 'สำเร็จ',
-            //             html: `
-            //           <b>HTTP status:</b> ${response.status}<br/>
-            //           <b>response.data.data:</b><br/>
-            //           <pre style="text-align:left;white-space:pre-wrap;">${JSON.stringify(response.data.data, null, 2)}</pre>
-            //         `
-            //         }).then(() => {
-            //             navigate('/sale/overview')
-            //         })
-            //     }
-            // } else {
-            //     MySwal.fire({
-            //         icon: 'error',
-            //         title: 'เกิดข้อผิดพลาด 2',
-            //         html: `
-            //         <b>HTTP status:</b> ${response.status}<br/>
-            //         <b>response.data.message:</b><br/>
-            //         <pre style="text-align:left;white-space:pre-wrap;">${response.data.message}</pre>
-            //       `
-            //     })
-            // }
+            if (response.status === 200) {
+                if (!response.data.data) {
+                    MySwal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                            html: `
+                          <b>HTTP status:</b> ${response.status}<br/>
+                          <b>response.data:</b><br/>
+                          <pre style="text-align:left;white-space:pre-wrap;">${JSON.stringify(response.data, null, 2)}</pre>
+                        `
+                    })
+                } else {
+                    MySwal.fire({
+                        icon: 'success',
+                        title: 'สำเร็จ',
+                            html: `
+                          <b>HTTP status:</b> ${response.status}<br/>
+                          <b>response.data.data:</b><br/>
+                          <pre style="text-align:left;white-space:pre-wrap;">${JSON.stringify(response.data.data, null, 2)}</pre>
+                        `
+                    }).then(() => {
+                        navigate('/sale/overview')
+                    })
+                }
+            } else {
+                MySwal.fire({
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาด',
+                        html: `
+                        <b>HTTP status:</b> ${response.status}<br/>
+                        <b>response.data.message:</b><br/>
+                        <pre style="text-align:left;white-space:pre-wrap;">${response.data.message}</pre>
+                      `
+                })
+            }
 
         } catch (error) {
             // กรณีเกิด Error ให้ปิด Loading ก่อน แล้วแจ้ง
@@ -206,7 +208,7 @@ const SalesPhoto: React.FC = () => {
             // MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถส่งข้อมูลได้', 'error')
             MySwal.fire({
                 icon: 'error',
-                title: 'เกิดข้อผิดพลาด 3',
+                title: 'เกิดข้อผิดพลาด',
                 html: `
                   ${error}
                 `
@@ -238,43 +240,41 @@ const SalesPhoto: React.FC = () => {
                     headers: { 'Content-Type': 'application/json' },
                 })
 
+            const payload = response.data.data;
+            const jsonString = JSON.stringify(payload, null, 2);
+
             MySwal.fire({
                 icon: 'error',
                 title: 'เกิดข้อผิดพลาด',
-                html: `
-                          ${response.data}
-                        `
+                html: `<pre style="text-align:left;white-space:pre-wrap;">${jsonString}</pre>`,
             })
 
             // เมื่อสำเร็จ ปิด Loading ก่อน
-            // Swal.close()
+            Swal.close()
 
-            // ตรวจสอบ status
-            // if (response.status === 200) {
-            //     if (!response.data.data) {
-            //         MySwal.fire('เกิดข้อผิดพลาด', 'ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error')
-            //     } else {
-            //         MySwal.fire('สำเร็จ', 'ส่งข้อมูลตรวจสอบแล้ว', 'success')
-            //         navigate('/sale/overview')
-            //     }
-            // } else {
-            //     MySwal.fire('เกิดข้อผิดพลาด', response.data.message, 'error')
-            // }
+            if (response.status === 200) {
+                if (!response.data.data) {
+                    MySwal.fire('เกิดข้อผิดพลาด', 'ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error')
+                } else {
+                    MySwal.fire('สำเร็จ', 'ส่งข้อมูลตรวจสอบแล้ว', 'success')
+                    navigate('/sale/overview')
+                }
+            } else {
+                MySwal.fire('เกิดข้อผิดพลาด', response.data.message, 'error')
+            }
         } catch (error) {
             // กรณีเกิด Error ให้ปิด Loading ก่อน แล้วแจ้ง
-            // Swal.close()
-            // MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถส่งข้อมูลได้', 'error')
+            Swal.close()
+            MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถส่งข้อมูลได้', 'error')
 
-            MySwal.fire({
-                icon: 'error',
-                title: 'เกิดข้อผิดพลาด 3',
-                html: `
-                          ${error}
-                        `
-            })
+            // MySwal.fire({
+            //     icon: 'error',
+            //     title: 'เกิดข้อผิดพลาด',
+            //     html: `
+            //               ${error}
+            //             `
+            // })
         }
-
-
     }
 
     // เช็คว่า data ใน item มีครบทุกขั้นตอน (ไม่เป็น array เปล่า) ใช่ไหม ถ้าเป็นจะ disabled ปุ่มส่งตรวจสอบ
@@ -282,29 +282,32 @@ const SalesPhoto: React.FC = () => {
 
     const isDataComplete = useMemo(() => {
         // ตรวจสอบว่ามีอย่างน้อย 1 รูปใน images category ไหนก็ได้
-        const hasImages = images && Object.values(images).some(isNotEmptyArray);
+        // const hasImages = images && Object.values(images).some(isNotEmptyArray);
 
-        // ถ้า hasImages เป็น true ให้ isDataComplete เป็น true
-        if (hasImages) {
-            console.log("Has Images:", hasImages);
-            return true;
-        }
+        // // ถ้า hasImages เป็น true ให้ isDataComplete เป็น true
+        // if (hasImages) {
+        //     console.log("Has Images:", hasImages);
+        //     return true;
+        // }
 
         // ตรวจสอบว่า fields ต่าง ๆ ใน item ไม่เป็น array เปล่า
         const isItemComplete = (
             isNotEmptyArray(item.ADDRESS) &&
-            isNotEmptyArray(item.CUSTOMERDETAIL) &&
+            // isNotEmptyArray(item.CUSTOMERDETAIL) &&
             isNotEmptyArray(item.CUSTOMERSTATUS) &&
-            isNotEmptyArray(item.DISCOUNT) &&
+            // isNotEmptyArray(item.DISCOUNT) &&
             isNotEmptyArray(item.PDPA) &&
             isNotEmptyArray(item.PRODUCT)
         );
 
-        console.log("Has Images:", hasImages);
-        console.log("Is Item Complete:", isItemComplete);
+        // console.log("Has Images:", hasImages);
+        // console.log("Is Item Complete:", isItemComplete);
 
         return isItemComplete;
     }, [item, images]);
+
+    console.log(`isDataComplete`, isDataComplete);
+    
 
     return (
         <>
@@ -318,20 +321,12 @@ const SalesPhoto: React.FC = () => {
                         <div id="kt_page_title" data-kt-swapper="true" data-kt-swapper-mode="prepend"
                             data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
                             className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
-                            <h1 className="page-heading d-flex text-gray-900 fw-bold fs-3 my-0 flex-column justify-content-center">
-                                ถ่ายรูป
-                            </h1>
-                            <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
-                                <li className="breadcrumb-item text-muted">
-                                    <span className="text-muted text-hover-primary">
-                                        ระบบขาย
-                                    </span></li>
-                                <li className="breadcrumb-item"><span className="bullet bg-gray-500 w-5px h-2px"></span></li>
-                                <li className="breadcrumb-item text-gray-900">ถ่ายรูป</li>
-                            </ul>
+                            <div className={`breadcrumb-item ${styles.titlePage}`}>
+                                <span>ถ่ายรูป</span>
+                            </div>
                         </div>
                     </div>
-                    <p>เลขที่ขาย: {refno}</p>
+                    <span className={`${styles.fontSize}`}>เลขที่ขาย: </span><span className={`${styles.titlePage}`}>{refno}</span>
 
                     <div className='row'>
                         {/* Card Body */}
@@ -348,8 +343,8 @@ const SalesPhoto: React.FC = () => {
                                 onClick={() => navigate('/sale/photo/gallery/idcard', { state: { fromStep, data: item } })}
                             >
                                 <div className='mb-10 mt-7'>
-                                    <div className='fw-bold text-gray-800 text-center'>
-                                        <span className='position-relative d-inline-block text-dangeropacity-75-hover fs-lg-2 fs-28'>
+                                    <div className='text-gray-800 text-center'>
+                                        <span className={`position-relative d-inline-block text-dangeropacity-75-hover ${styles.fontSize}`}>
                                             รูปบัตรประชาชน
                                         </span>
                                     </div>
@@ -377,8 +372,8 @@ const SalesPhoto: React.FC = () => {
                                 onClick={() => navigate('/sale/photo/gallery-gps', { state: { fromStep, data: item } })}
                             >
                                 <div className='mb-10 mt-7'>
-                                    <div className='fw-bold text-gray-800 text-center'>
-                                        <span className='position-relative d-inline-block text-dangeropacity-75-hover fs-lg-2 fs-28'>
+                                    <div className='text-gray-800 text-center'>
+                                        <span className={`position-relative d-inline-block text-dangeropacity-75-hover ${styles.fontSize}`}>
                                             รูปแผนที่ GPS
                                         </span>
                                     </div>
@@ -406,8 +401,8 @@ const SalesPhoto: React.FC = () => {
                                 onClick={() => navigate('/sale/photo/gallery/drawingMap', { state: { fromStep, data: item } })}
                             >
                                 <div className='mb-10 mt-7'>
-                                    <div className='fw-bold text-gray-800 text-center'>
-                                        <span className='position-relative d-inline-block text-dangeropacity-75-hover fs-lg-2 fs-28'>
+                                    <div className='text-gray-800 text-center'>
+                                        <span className={`position-relative d-inline-block text-dangeropacity-75-hover ${styles.fontSize}`}>
                                             รูปวาดแผนที่
                                         </span>
                                     </div>
@@ -435,8 +430,8 @@ const SalesPhoto: React.FC = () => {
                                 onClick={() => navigate('/sale/photo/gallery/turn', { state: { fromStep, data: item } })}
                             >
                                 <div className='mb-10 mt-7'>
-                                    <div className='fw-bold text-gray-800 text-center'>
-                                        <span className='position-relative d-inline-block text-dangeropacity-75-hover fs-lg-2 fs-28'>
+                                    <div className='text-gray-800 text-center'>
+                                        <span className={`position-relative d-inline-block text-dangeropacity-75-hover ${styles.fontSize}`}>
                                             รูปเครื่องเทิร์น
                                         </span>
                                     </div>
@@ -466,8 +461,8 @@ const SalesPhoto: React.FC = () => {
                                 onClick={() => navigate('/sale/photo/gallery/installation', { state: { fromStep, data: item } })}
                             >
                                 <div className='mb-10 mt-7'>
-                                    <div className='fw-bold text-gray-800 text-center'>
-                                        <span className='position-relative d-inline-block text-dangeropacity-75-hover fs-lg-2 fs-28'>
+                                    <div className='text-gray-800 text-center'>
+                                        <span className={`position-relative d-inline-block text-dangeropacity-75-hover ${styles.fontSize}`}>
                                             รูปติดตั้งเครื่อง
                                         </span>
                                     </div>
@@ -495,8 +490,8 @@ const SalesPhoto: React.FC = () => {
                                 onClick={() => navigate('/sale/photo/gallery/customerHome', { state: { fromStep, data: item } })}
                             >
                                 <div className='mb-10 mt-7'>
-                                    <div className='fw-bold text-gray-800 text-center'>
-                                        <span className='position-relative d-inline-block text-dangeropacity-75-hover fs-lg-2 fs-28'>
+                                    <div className='text-gray-800 text-center'>
+                                        <span className={`position-relative d-inline-block text-dangeropacity-75-hover ${styles.fontSize}`}>
                                             รูปบ้านลูกค้า
                                         </span>
                                     </div>
@@ -524,8 +519,8 @@ const SalesPhoto: React.FC = () => {
                                 onClick={() => navigate('/sale/photo/gallery/customer', { state: { fromStep, data: item } })}
                             >
                                 <div className='mb-10 mt-7'>
-                                    <div className='fw-bold text-gray-800 text-center'>
-                                        <span className='position-relative d-inline-block text-dangeropacity-75-hover fs-lg-2 fs-28'>
+                                    <div className='text-gray-800 text-center'>
+                                        <span className={`position-relative d-inline-block text-dangeropacity-75-hover ${styles.fontSize}`}>
                                             รูปลูกค้า
                                         </span>
                                     </div>
@@ -553,8 +548,8 @@ const SalesPhoto: React.FC = () => {
                                 onClick={() => navigate('/sale/photo/gallery/equipment', { state: { fromStep, data: item } })}
                             >
                                 <div className='mb-10 mt-7'>
-                                    <div className='fw-bold text-gray-800 text-center'>
-                                        <span className='position-relative d-inline-block text-dangeropacity-75-hover fs-lg-2 fs-28'>
+                                    <div className='text-gray-800 text-center'>
+                                        <span className={`position-relative d-inline-block text-dangeropacity-75-hover ${styles.fontSize}`}>
                                             รูปอุปกรณ์วัดค่าน้ำ
                                         </span>
                                     </div>
@@ -573,34 +568,36 @@ const SalesPhoto: React.FC = () => {
                     {fromStep ? (
                         <div className='d-none d-xl-flex justify-content-between align-items-center mt-5 mb-10'>
                             <button
-                                className='btn btn-secondary w-100 w-md-auto align-self-center h-50px'
+                                className={`${styles.btnSecondary}`}
                                 onClick={() => navigate('/sale/step', { state: item })}
                             >
                                 ย้อนกลับ
                             </button>
-                            <button
-                                className='btn btn-primary w-100 w-md-auto align-self-center h-50px'
-                                disabled={!isDataComplete}
-                                onClick={handleUpdateCheckerClick}
-                            >
-                                บันทึกข้อมูลสัญญา
-                            </button>
+                            {isDataComplete && (
+                                <button
+                                    className={`${styles.btnPrimary}`}
+                                    onClick={handleUpdateCheckerClick}
+                                >
+                                    บันทึกสัญญา
+                                </button>
+                            )}
                         </div>
                     ) : (
                         <div className='d-none d-xl-flex justify-content-between align-items-center mt-5 mb-10'>
                             <button
-                                className='btn btn-secondary w-100 w-md-auto align-self-center h-50px'
+                                className={`${styles.btnSecondary}`}
                                 onClick={() => navigate('/sale/overview')}
                             >
                                 กลับหน้าแรก
                             </button>
-                            <button
-                                className='btn btn-primary w-100 w-md-auto align-self-center h-50px'
-                                disabled={!isDataComplete}
-                                onClick={handleCheckerClick}
-                            >
-                                บันทึกข้อมูลสัญญา
-                            </button>
+                            {isDataComplete && (
+                                <button
+                                    className={`${styles.btnPrimary}`}
+                                    onClick={handleCheckerClick}
+                                >
+                                    บันทึกสัญญา
+                                </button>
+                            )}
                         </div>
                     )}
 
@@ -618,18 +615,19 @@ const SalesPhoto: React.FC = () => {
                             }}
                         >
                             <button
-                                className="btn btn-secondary w-auto me-2"
+                                className={`${styles.btnSecondary}`}
                                 onClick={() => navigate('/sale/step', { state: item })}
                             >
                                 ย้อนกลับ
                             </button>
-                            <button
-                                className="btn btn-primary w-auto me-2"
-                                disabled={!isDataComplete}
-                                onClick={handleUpdateCheckerClick}
-                            >
-                                บันทึกข้อมูลสัญญา
-                            </button>
+                            {isDataComplete && (
+                                <button
+                                    className={`${styles.btnPrimary}`}
+                                    onClick={handleUpdateCheckerClick}
+                                >
+                                    บันทึกสัญญา
+                                </button>
+                            )}
                         </div>
                     ) : (
                         <div
@@ -643,18 +641,19 @@ const SalesPhoto: React.FC = () => {
                             }}
                         >
                             <button
-                                className="btn btn-secondary w-auto me-2"
+                                className={`${styles.btnSecondary}`}
                                 onClick={() => navigate('/sale/overview')}
                             >
                                 กลับหน้าแรก
                             </button>
-                            <button
-                                className="btn btn-primary w-auto me-2"
-                                disabled={!isDataComplete}
-                                onClick={handleCheckerClick}
-                            >
-                                บันทึกข้อมูลสัญญา
-                            </button>
+                            {isDataComplete && (
+                                <button
+                                    className={`${styles.btnPrimary}`}
+                                    onClick={handleCheckerClick}
+                                >
+                                    บันทึกสัญญา
+                                </button>
+                            )}
                         </div>
                     )}
                 </Content>

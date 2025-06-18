@@ -72,7 +72,7 @@
 // export { FirstBillItemNumber }
 
 
-
+import styles from '@/styles/style.module.css'
 import { KTIcon } from '../../../../../_metronic/helpers'
 import { Link, useNavigate } from 'react-router-dom'
 
@@ -81,7 +81,9 @@ interface StatusLabelProps {
 }
 
 const FirstBillItemNumber: React.FC<StatusLabelProps> = ({ item }) => {
-    let customer, telNo, product, productPackage, serialNumber, createdAt, statusTxt, dueDate;
+    console.log(`item: `, item);
+
+    let newRefNo, customer, telNo, product, productPackage, serialNumber, createdAt, statusTxt, dueDate;
 
     if (item.CUSTOMERDETAIL.length > 0) {
         if (item.CUSTOMERDETAIL[0].CUSTOMERTYPE == 1) {
@@ -123,35 +125,47 @@ const FirstBillItemNumber: React.FC<StatusLabelProps> = ({ item }) => {
                 <div className='flex-grow-1'>
                     <div className='row'>
                         {/* คอลัมน์ซ้าย: Label */}
-                        <div className='col-4'>
-                            <div className='fw-bold text-gray-700 d-block mb-2'>
+                        <div className='col-5'>
+                            <div className={`fw-bold text-gray-700 d-block mb-2 ${styles.fontSize}`}>
+                                เลขที่สัญญา:
+                            </div>
+                            <div className={`fw-bold text-gray-700 d-block mb-2 ${styles.fontSize}`}>
                                 ชื่อลูกค้า:
                             </div>
-                            <div className='fw-bold text-gray-700 d-block mb-2'>
+                            <div className={`fw-bold text-gray-700 d-block mb-2 ${styles.fontSize}`}>
                                 S/N:
                             </div>
-                            <div className='fw-bold text-gray-700 d-block mb-2'>
+                            {/* <div className={`fw-bold text-gray-700 d-block mb-2 ${styles.fontSize}`}>
                                 สินค้า:
-                            </div>
-                            <div className='fw-bold text-gray-700 d-block'>
+                            </div> */}
+                            <div className={`fw-bold text-gray-700 d-block ${styles.fontSize}`}>
                                 วันทำสัญญา:
                             </div>
+                            {/* <div className={`fw-bold text-gray-700 d-block ${styles.fontSize}`}>
+                                วันนัด:
+                            </div> */}
                         </div>
 
                         {/* คอลัมน์ขวา: Value */}
                         <div className='col-6'>
-                            <div className='text-gray-800 d-block mb-2'>
+                            <div className={`text-gray-800 d-block mb-2 ${styles.fontSize}`}>
+                                {'-'}
+                            </div>
+                            <div className={`text-gray-800 d-block mb-2 ${styles.fontSize}`}>
                                 {customer || '-'}
                             </div>
-                            <div className='text-gray-800 d-block mb-2'>
+                            <div className={`text-gray-800 d-block mb-2 ${styles.fontSize}`}>
                                 {serialNumber || '-'}
                             </div>
-                            <div className='text-gray-800 d-block mb-2'>
+                            {/* <div className={`text-gray-800 d-block mb-2 ${styles.fontSize}`}>
                                 {product || '-'}
-                            </div>
-                            <div className='text-gray-800 d-block'>
+                            </div> */}
+                            <div className={`text-gray-800 d-block ${styles.fontSize}`}>
                                 {createdAt || '-'}
                             </div>
+                            {/* <div className={`text-gray-800 d-block mb-2 ${styles.fontSize}`}>
+                                {'-'}
+                            </div> */}
                         </div>
                     </div>
                 </div>

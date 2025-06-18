@@ -476,14 +476,15 @@ const SalesCancel: React.FC = () => {
                         ย้อนกลับ
                     </button>
                     {/* ปุ่ม "ยกเลิกสัญญา" จะ disabled ถ้าวันนี้ != วันเดียวกับ createdAt */}
-                    <button
-                        className='btn btn-danger w-100 w-md-auto align-self-center mb-2 mb-md-0'
-                        type='button'
-                        disabled={!isTodayCreated} // ใช้เงื่อนไข
-                        onClick={handleCancelContract}
-                    >
-                        ยกเลิกสัญญา
-                    </button>
+                    {isTodayCreated && (
+                        <button
+                            className='btn btn-danger w-100 w-md-auto align-self-center mb-2 mb-md-0'
+                            type='button'
+                            onClick={handleCancelContract}
+                        >
+                            ยกเลิกสัญญา
+                        </button>
+                    )}
                     <button
                         className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
                         type='button'
@@ -510,13 +511,14 @@ const SalesCancel: React.FC = () => {
                     >
                         ย้อนกลับ
                     </button>
-                    <button
-                        className='btn btn-danger w-auto me-2'
-                        disabled={!isTodayCreated}
-                        onClick={handleCancelContract}
-                    >
-                        ยกเลิกสัญญา
-                    </button>
+                    {isTodayCreated && (
+                        <button
+                            className='btn btn-danger w-auto me-2'
+                            onClick={handleCancelContract}
+                        >
+                            ยกเลิกสัญญา
+                        </button>
+                    )}
                     <button
                         className="btn btn-primary w-auto me-2"
                         onClick={() => navigate("/sale/billRecieveMoney", { state: item })}

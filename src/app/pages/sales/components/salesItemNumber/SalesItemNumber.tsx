@@ -406,6 +406,18 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item, onDelete })
                 </div>
               </div>
             </div>
+            {/* แสดงไอคอนถังขยะเฉพาะหน้าจอใหญ่ */}
+            <span
+              className={`d-none d-md-inline me-5 ${!isDataIncomplete ? 'disabled' : ''}`}
+              onClick={(e) => isDataIncomplete && deleteDataDraft(e, item.REFNO)}
+              style={{ cursor: isDataIncomplete ? 'pointer' : 'not-allowed', opacity: isDataIncomplete ? 1 : 0.5 }}
+            >
+              <img
+                src={toAbsoluteUrl('media/settings/trash-svgrepo-com (2).png')}
+                style={{ width: 35, height: 35 }}
+                alt='Trash Icon'
+              />
+            </span>
 
             {/* แสดงคำว่า "ลบ" ในหน้าจอเล็ก */}
             <button
@@ -528,6 +540,14 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item, onDelete })
             {/* เนื้อหา */}
             <div className="flex-grow-1">
               <div className="row gx-2 gy-1 align-items-center">
+
+                <div className={`col-5 col-md-3 fw-semibold text-gray-700 ${styles.fontSize}`}>
+                  เลขที่สัญญา:
+                </div>
+                <div className={`col-7 col-md-9 fw-bold text-gray-800 ${styles.fontSize}`}>
+                  {item.NEWREFNO}
+                </div>
+
                 {/* label: ใช้ col-4 บนมือถือ, col-md-3 บน desktop */}
                 <div className={`col-5 col-md-3 fw-semibold text-gray-700 ${styles.fontSize}`}>
                   ชื่อลูกค้า:

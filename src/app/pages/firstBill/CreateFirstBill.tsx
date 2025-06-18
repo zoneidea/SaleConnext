@@ -5,6 +5,9 @@ import { Content } from '../../../_metronic/layout/components/content';
 import { useAuth } from '../../modules/auth/core/Auth';
 import { KTIcon } from '../../../_metronic/helpers'
 
+import { faLocationDot } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+
 import { useUUIDStore, useSaveProductStore } from '../../modules/stores/stepsStore';
 import { useSaveDiscountStore } from '../../modules/stores/stepsStore';
 
@@ -38,12 +41,82 @@ interface ItemProps {
     CUSTOMERSTATUS: [any],
     DISCOUNT: [any],
     CUSTOMERDETAIL: [any],
-    ADDRESS: [any],
+    ADDRESS: AddressItem[];
     PDPA: [any],
     CONTRACT: [any],
     IMAGE: [any],
     CHECKERCOMMENT: [any]
     TRANSACTION: [any]
+}
+
+interface AddressCard {
+    ADDRESSDISTRICT: string
+    ADDRESSDISTRICTNAME: string
+    ADDRESSMOO: string;
+    ADDRESSNUMBER: string;
+    ADDRESSPHONE: string;
+    ADDRESSPROVINCE: string;
+    ADDRESSPROVINCENAME: string;
+    ADDRESSROAD: string;
+    ADDRESSSOI: string;
+    ADDRESSSUBDISTRICT: string;
+    ADDRESSSUBDISTRICTNAME: string;
+    ADDRESSZIPCODE: string;
+    USETHISTAX: string;
+}
+interface AddressInstallation {
+    ADDRESSDISTRICT: string
+    ADDRESSDISTRICTNAME: string
+    ADDRESSMOO: string;
+    ADDRESSNUMBER: string;
+    ADDRESSPHONE: string;
+    ADDRESSPROVINCE: string;
+    ADDRESSPROVINCENAME: string;
+    ADDRESSROAD: string;
+    ADDRESSSOI: string;
+    ADDRESSSUBDISTRICT: string;
+    ADDRESSSUBDISTRICTNAME: string;
+    ADDRESSZIPCODE: string;
+    USETHISTAX: string;
+}
+interface AddressPayment {
+    ADDRESSDISTRICT: string
+    ADDRESSDISTRICTNAME: string
+    ADDRESSMOO: string;
+    ADDRESSNUMBER: string;
+    ADDRESSPHONE: string;
+    ADDRESSPROVINCE: string;
+    ADDRESSPROVINCENAME: string;
+    ADDRESSROAD: string;
+    ADDRESSSOI: string;
+    ADDRESSSUBDISTRICT: string;
+    ADDRESSSUBDISTRICTNAME: string;
+    ADDRESSZIPCODE: string;
+    USETHISTAX: string;
+}
+
+interface AddressTax {
+    ADDRESSDISTRICT: string
+    ADDRESSDISTRICTNAME: string
+    ADDRESSMOO: string;
+    ADDRESSNUMBER: string;
+    ADDRESSPHONE: string;
+    ADDRESSPROVINCE: string;
+    ADDRESSPROVINCENAME: string;
+    ADDRESSROAD: string;
+    ADDRESSSOI: string;
+    ADDRESSSUBDISTRICT: string;
+    ADDRESSSUBDISTRICTNAME: string;
+    ADDRESSZIPCODE: string;
+    USETHISTAX: string;
+}
+
+// ถ้าโครงสร้างในฐานข้อมูลเหมือนตัวอย่างข้างบน
+interface AddressItem {
+    ADDRESSCARD: AddressCard;
+    ADDRESSINSTALLATION: AddressInstallation;
+    ADDRESSPAYMENT: AddressPayment;
+    ADDRESSTAX: AddressTax;
 }
 
 const CreateFirstBill: React.FC = () => {
@@ -65,13 +138,20 @@ const CreateFirstBill: React.FC = () => {
     const SecEmpId = auth?.data?.[0]?.SecEmp || '';
 
     const item = location.state as ItemProps || [];
-    // console.log(`item`, item);
+    console.log(`item`, item);
+
     const refno = item?.REFNO
     const product = item?.PRODUCT
     const contNo = item?.CONTNO
     const customerDetail = item?.CUSTOMERDETAIL
     const discountAmount = item?.DISCOUNT[0]?.DISCOUNTAMOUNT || 0;
     const transaction = item?.TRANSACTION
+
+    const addressArray = item?.ADDRESS;
+    const firstAddress = addressArray?.[0];
+    const secondAddress = addressArray?.[1];
+    const thirdAddress = addressArray?.[2];
+    const fourthAddress = addressArray?.[3];
 
     const paymentPeriodDetailId = product[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTPERIODDETAILID
     const paymentPeriodNumber = product[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTPERIODNUMBER
@@ -278,23 +358,23 @@ const CreateFirstBill: React.FC = () => {
             Swal.fire("แจ้งเตือน", "กรุณาทำการสแกน qr code ก่อน", "warning");
             return;
         }
-        // try {
-        //     const response = await axios.post(POST_PAYMENT_TRANSACTION_URL, allData, {
-        //         headers: {
-        //             "Content-Type": "application/json",
-        //         },
-        //     });
+        try {
+            const response = await axios.post(POST_PAYMENT_TRANSACTION_URL, allData, {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
 
-        //     if (response.status === 200) {
-        //         Swal.fire("สำเร็จ", "บันทึกธุรกรรมการชำระเงินสำเร็จ", "success");
-        //         navigate("/firstBill/overview");
-        //     } else {
-        //         Swal.fire("เกิดข้อผิดพลาด", response.data.message || "ไม่สามารถบันทึกข้อมูลได้", "error");
-        //     }
-        // } catch (error) {
-        //     console.error("Error saving data:", error);
-        //     Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถส่งข้อมูลได้", "error");
-        // }
+            if (response.status === 200) {
+                Swal.fire("สำเร็จ", "บันทึกธุรกรรมการชำระเงินสำเร็จ", "success");
+                navigate("/firstBill/overview");
+            } else {
+                Swal.fire("เกิดข้อผิดพลาด", response.data.message || "ไม่สามารถบันทึกข้อมูลได้", "error");
+            }
+        } catch (error) {
+            console.error("Error saving data:", error);
+            Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถส่งข้อมูลได้", "error");
+        }
     };
 
     return (
@@ -667,24 +747,105 @@ const CreateFirstBill: React.FC = () => {
                                     </div>
 
                                     <div className='row mb-7'>
-                                        <label className='col-5 col-md-4 fw-bold text-muted'>ชื่อ</label>
+                                        <label className='col-5 col-md-4 fw-bold text-muted'>ชื่อ สกุล</label>
                                         <div className='col-7 col-md-8'>
                                             <a href='#' className='fw-bold fs-6 text-gray-900 text-hover-primary'>
-                                                {customerDetail[0]?.PREFIX[0]?.PREFIXNAME} {customerDetail[0]?.CUSTOMERNAME}
+                                                {customerDetail[0]?.PREFIX[0]?.PREFIXNAME} {customerDetail[0]?.CUSTOMERNAME} {customerDetail[0]?.CUSTOMERLASTNAME}
                                             </a>
                                         </div>
                                     </div>
 
-                                    {customerDetail[0]?.CUSTOMERLASTNAME && (
+                                    {/* {firstAddress?.ADDRESSCARD.ADDRESSPROVINCENAME && (
+                                        <div className="row mb-7">
+                                            <label className="col-5 col-md-4 fw-bold text-muted">ที่อยู่ตามบัตร</label>
+                                            <div className="col-7 col-md-8">
+                                                <div className="d-flex justify-content-between align-items-center">
+                                                    <a
+                                                        href="#"
+                                                        className="fw-bold fs-6 text-gray-900 text-hover-primary"
+                                                        style={{ wordBreak: "break-word" }} 
+                                                    >
+                                                        {firstAddress.ADDRESSCARD.ADDRESSNUMBER && firstAddress.ADDRESSCARD.ADDRESSNUMBER}{" "}
+                                                        {firstAddress.ADDRESSCARD.ADDRESSMOO && `หมู่ ${firstAddress.ADDRESSCARD.ADDRESSMOO}`}{" "}
+                                                        {firstAddress.ADDRESSCARD.ADDRESSSOI && `ซอย ${firstAddress.ADDRESSCARD.ADDRESSSOI}`}{" "}
+                                                        {firstAddress.ADDRESSCARD.ADDRESSROAD && `ถนน ${firstAddress.ADDRESSCARD.ADDRESSROAD}`}{" "}
+                                                        {firstAddress.ADDRESSCARD.ADDRESSDISTRICTNAME && `เขต ${firstAddress.ADDRESSCARD.ADDRESSDISTRICTNAME}`}{" "}
+                                                        {firstAddress.ADDRESSCARD.ADDRESSSUBDISTRICTNAME && `แขวง ${firstAddress.ADDRESSCARD.ADDRESSSUBDISTRICTNAME}`}{" "}
+                                                        {firstAddress.ADDRESSCARD.ADDRESSPROVINCENAME && `จังหวัด ${firstAddress.ADDRESSCARD.ADDRESSPROVINCENAME}`}{" "}
+                                                        {firstAddress.ADDRESSCARD.ADDRESSZIPCODE && firstAddress.ADDRESSCARD.ADDRESSZIPCODE}
+                                                    </a>
+
+                                                    <FontAwesomeIcon icon={faLocationDot} size="lg" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )} */}
+
+                                    {/* {firstAddress?.ADDRESSINSTALLATION.ADDRESSPROVINCENAME && (
                                         <div className='row mb-7'>
-                                            <label className='col-5 col-md-4 fw-bold text-muted'>นามสกุล</label>
+                                            <label className='col-5 col-md-4 fw-bold text-muted'>ที่อยู่ติดตั้ง</label>
                                             <div className='col-7 col-md-8'>
-                                                <a href='#' className='fw-bold fs-6 text-gray-900 text-hover-primary'>
-                                                    {customerDetail[0]?.CUSTOMERLASTNAME}
-                                                </a>
+                                                <div className="d-flex justify-content-between align-items-center">
+                                                    <a href='#' className='fw-bold fs-6 text-gray-900 text-hover-primary'>
+                                                        {firstAddress.ADDRESSINSTALLATION.ADDRESSNUMBER && firstAddress.ADDRESSINSTALLATION.ADDRESSNUMBER}{" "}
+                                                        {firstAddress.ADDRESSINSTALLATION.ADDRESSMOO && `หมู่ ${firstAddress.ADDRESSINSTALLATION.ADDRESSMOO}`}{" "}
+                                                        {firstAddress.ADDRESSINSTALLATION.ADDRESSSOI && `ซอย ${firstAddress.ADDRESSINSTALLATION.ADDRESSSOI}`}{" "}
+                                                        {firstAddress.ADDRESSINSTALLATION.ADDRESSROAD && `ถนน ${firstAddress.ADDRESSINSTALLATION.ADDRESSROAD}`}{" "}
+                                                        {firstAddress.ADDRESSINSTALLATION.ADDRESSDISTRICTNAME && `เขต ${firstAddress.ADDRESSINSTALLATION.ADDRESSDISTRICTNAME}`}{" "}
+                                                        {firstAddress.ADDRESSINSTALLATION.ADDRESSSUBDISTRICTNAME && `แขวง ${firstAddress.ADDRESSINSTALLATION.ADDRESSSUBDISTRICTNAME}`}{" "}
+                                                        {firstAddress.ADDRESSINSTALLATION.ADDRESSPROVINCENAME && `จังหวัด ${firstAddress.ADDRESSINSTALLATION.ADDRESSPROVINCENAME}`}{" "}
+                                                        {firstAddress.ADDRESSINSTALLATION.ADDRESSZIPCODE && firstAddress.ADDRESSINSTALLATION.ADDRESSZIPCODE}{" "}
+                                                    </a>
+
+                                                    <FontAwesomeIcon icon={faLocationDot} size="lg" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )} */}
+
+                                    {firstAddress?.ADDRESSPAYMENT.ADDRESSPROVINCENAME && (
+                                        <div className='row mb-7'>
+                                            <label className='col-5 col-md-4 fw-bold text-muted'>ที่อยู่เก็บเงิน</label>
+                                            <div className='col-7 col-md-8'>
+                                                <div className="d-flex justify-content-between align-items-center">
+                                                    <a href='#' className='fw-bold fs-6 text-gray-900 text-hover-primary'>
+                                                        {firstAddress.ADDRESSPAYMENT.ADDRESSNUMBER && firstAddress.ADDRESSPAYMENT.ADDRESSNUMBER}{" "}
+                                                        {firstAddress.ADDRESSPAYMENT.ADDRESSMOO && `หมู่ ${firstAddress.ADDRESSPAYMENT.ADDRESSMOO}`}{" "}
+                                                        {firstAddress.ADDRESSPAYMENT.ADDRESSSOI && `ซอย ${firstAddress.ADDRESSPAYMENT.ADDRESSSOI}`}{" "}
+                                                        {firstAddress.ADDRESSPAYMENT.ADDRESSROAD && `ถนน ${firstAddress.ADDRESSPAYMENT.ADDRESSROAD}`}{" "}
+                                                        {firstAddress.ADDRESSPAYMENT.ADDRESSDISTRICTNAME && `เขต ${firstAddress.ADDRESSPAYMENT.ADDRESSDISTRICTNAME}`}{" "}
+                                                        {firstAddress.ADDRESSPAYMENT.ADDRESSSUBDISTRICTNAME && `แขวง ${firstAddress.ADDRESSPAYMENT.ADDRESSSUBDISTRICTNAME}`}{" "}
+                                                        {firstAddress.ADDRESSPAYMENT.ADDRESSPROVINCENAME && `จังหวัด ${firstAddress.ADDRESSPAYMENT.ADDRESSPROVINCENAME}`}{" "}
+                                                        {firstAddress.ADDRESSPAYMENT.ADDRESSZIPCODE && firstAddress.ADDRESSPAYMENT.ADDRESSZIPCODE}{" "}
+                                                    </a>
+
+                                                    <FontAwesomeIcon icon={faLocationDot} size="2x" />
+                                                </div>
                                             </div>
                                         </div>
                                     )}
+
+                                    {/* {firstAddress?.ADDRESSTAX.ADDRESSPROVINCENAME && (
+                                        <div className='row mb-7'>
+                                            <label className='col-5 col-md-4 fw-bold text-muted'>ที่อยู่กำกับภาษี</label>
+                                            <div className='col-7 col-md-8'>
+                                                <div className="d-flex justify-content-between align-items-center">
+                                                    <a href='#' className='fw-bold fs-6 text-gray-900 text-hover-primary'>
+                                                        {firstAddress.ADDRESSTAX.ADDRESSNUMBER && firstAddress.ADDRESSTAX.ADDRESSNUMBER}{" "}
+                                                        {firstAddress.ADDRESSTAX.ADDRESSMOO && `หมู่ ${firstAddress.ADDRESSTAX.ADDRESSMOO}`}{" "}
+                                                        {firstAddress.ADDRESSTAX.ADDRESSSOI && `ซอย ${firstAddress.ADDRESSTAX.ADDRESSSOI}`}{" "}
+                                                        {firstAddress.ADDRESSTAX.ADDRESSROAD && `ถนน ${firstAddress.ADDRESSTAX.ADDRESSROAD}`}{" "}
+                                                        {firstAddress.ADDRESSTAX.ADDRESSDISTRICTNAME && `เขต ${firstAddress.ADDRESSTAX.ADDRESSDISTRICTNAME}`}{" "}
+                                                        {firstAddress.ADDRESSTAX.ADDRESSSUBDISTRICTNAME && `แขวง ${firstAddress.ADDRESSTAX.ADDRESSSUBDISTRICTNAME}`}{" "}
+                                                        {firstAddress.ADDRESSTAX.ADDRESSPROVINCENAME && `จังหวัด ${firstAddress.ADDRESSTAX.ADDRESSPROVINCENAME}`}{" "}
+                                                        {firstAddress.ADDRESSTAX.ADDRESSZIPCODE && firstAddress.ADDRESSTAX.ADDRESSZIPCODE}{" "}
+                                                    </a>
+
+                                                    <FontAwesomeIcon icon={faLocationDot} size="lg" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )} */}
 
                                     <div className='row mb-7'>
                                         <label className='col-5 col-md-4 fw-bold text-muted'>เบอร์โทรติดต่อ</label>

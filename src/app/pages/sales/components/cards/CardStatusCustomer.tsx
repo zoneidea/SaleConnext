@@ -33,17 +33,17 @@ const CardStatusCustomer: FC<Props> = ({ customerStatus, handleCheckStatusCustom
                                 }).then(() => handleCheckStatusCustomer(customer));
                             }}
                         >
-                            <div className="d-flex justify-content-between \
+                            <div className="d-flex justify-content-between
                                 flex-column flex-sm-row align-items-center h-auto h-sm-50px px-5 py-4 py-sm-0 rounded-top"
                                 style={{ backgroundColor: '#3777bc' }}>
-                                <div className="card-title flex-column flex-sm-row mb-2 mb-sm-0 \
+                                <div className="card-title flex-column flex-sm-row mb-2 mb-sm-0
                                     d-flex align-items-center pt-3 pt-sm-0">
                                     <KTIcon iconName="abstract-26" className="fs-3 me-2 me-sm-5 text-white d-none d-sm-block" />
                                     <span className="card-label fw-bold fs-lg-6 fs-sm-8 text-white">
                                         เลขที่สัญญา {customer.CONTNO}
                                     </span>
                                 </div>
-                                <div className="card-title flex-column flex-sm-row mb-2 mb-sm-0 \
+                                <div className="card-title flex-column flex-sm-row mb-2 mb-sm-0
                                     d-flex align-items-center pt-3 pt-sm-0">
                                     <KTIcon iconName="abstract-26" className="fs-3 me-2 me-sm-5 text-white d-none d-sm-block" />
                                     <span className="card-label fw-bold fs-lg-6 fs-sm-8 text-white">

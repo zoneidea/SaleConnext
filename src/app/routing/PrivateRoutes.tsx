@@ -66,6 +66,10 @@ const PrivateRoutes = () => {
   const SalesPDPA = lazy(() => import('../pages/sales/SalesPDPA'))
   const SalesCancel = lazy(() => import('../pages/sales/SalesCancel'))
   const SalesBillRecieveMoney = lazy(() => import('../pages/sales/SalesBillRecieveMoney'))
+  const SalesCreateCustCash = lazy(() => import('../pages/sales/SalesCreateCustCash'))
+  const SalesCreateAddressCash = lazy(() => import('../pages/sales/SalesCreateAddressCash'))
+  const SalesContractCash = lazy(() => import('../pages/sales/SalesContractCash'))
+  const SalesEmployee = lazy(() => import('../pages/sales/SalesEmployee'))
 
   //กล้อง + รูป
   const DeviceScanBarcode = lazy(() => import('../pages/sales/components/accessCam/DeviceScanBarcode'))
@@ -108,6 +112,7 @@ const PrivateRoutes = () => {
   const UpdateSaleAddress = lazy(() => import('../pages/sales/update/UpdateSaleAddress'))
   const UpdateSalesPDPA = lazy(() => import('../pages/sales/update/UpdateSalesPDPA'))
   const UpdateSalesContract = lazy(() => import('../pages/sales/update/UpdateSalesContract'))
+  const UpdateSalesEmployee = lazy(() => import('../pages/sales/update/UpdateSalesEmployee'))
 
   //หัวข้อ ระบบจอง
   const OrderCreateBooking = lazy(() => import('../pages/order/OrderCreateBooking'))
@@ -178,6 +183,22 @@ const PrivateRoutes = () => {
           }
         />
         <Route
+          path='sale/createcust-cash'
+          element={
+            <SuspensedView>
+              <SalesCreateCustCash />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path='sale/createaddress-cash'
+          element={
+            <SuspensedView>
+              <SalesCreateAddressCash />
+            </SuspensedView>
+          }
+        />
+        <Route
           path='sale/watermeas'
           element={
             <SuspensedView>
@@ -190,6 +211,14 @@ const PrivateRoutes = () => {
           element={
             <SuspensedView>
               <SalesContract />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path='sale/contract-cash'
+          element={
+            <SuspensedView>
+              <SalesContractCash />
             </SuspensedView>
           }
         />
@@ -242,6 +271,14 @@ const PrivateRoutes = () => {
           element={
             <SuspensedView>
               <SalesDiscount />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path='sale/salesemployee'
+          element={
+            <SuspensedView>
+              <SalesEmployee />
             </SuspensedView>
           }
         />
@@ -458,6 +495,14 @@ const PrivateRoutes = () => {
           element={
             <SuspensedView>
               <UpdateContractDiscount />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path='sale/update/updateSalesEmployee'
+          element={
+            <SuspensedView>
+              <UpdateSalesEmployee />
             </SuspensedView>
           }
         />
