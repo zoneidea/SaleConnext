@@ -4,7 +4,9 @@ import axios from "axios";
 // Server should return AuthModel
 
 const API_URL = import.meta.env.VITE_APP_API_THIENSURAT;
-export const LOGIN_URL = `${API_URL}/Login`;
+const API_URL_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
+// export const LOGIN_URL = `${API_URL}/Login`;
+export const LOGIN_URL = `${API_URL_SALECONNEXT}/Login`;
 
 // ฟังก์ชัน login
 export function login(username: string, password: string) {

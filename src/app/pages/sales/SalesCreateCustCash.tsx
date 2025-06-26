@@ -184,18 +184,18 @@ const SalesCreateCustCash: React.FC = () => {
 
         return [
             {
-                CUSTOMERTYPE: selectedCustomerType,
-                CUSTOMERTYPENAME: customerTypeData ? customerTypeData.CUSTOMERTYPENAME : '', // ตรวจสอบว่าข้อมูล customerTypeData มีหรือไม่
-                CUSTOMERID: idCard,
-                CUSTOMERNAME: fullName,
-                CUSTOMERLASTNAME: lastName,
-                CUSTOMERMD: nameMD,
+                CUSTOMERTYPE: selectedCustomerType ? selectedCustomerType : '',
+                CUSTOMERTYPENAME: customerTypeData ? customerTypeData.CUSTOMERTYPENAME : '',
+                CUSTOMERID: idCard ? idCard : '',
+                CUSTOMERNAME: fullName ? fullName : '',
+                CUSTOMERLASTNAME: lastName ? lastName : '',
+                CUSTOMERMD: nameMD ? nameMD : '',
                 CUSTOMERDOB: valueCalendar ? dayjs(valueCalendar).format('YYYY-MM-DD') : '',
                 CUSTOMERRAGE: valueAge ? valueAge.toString() : '',
-                CUSTOMERMOBILE: mobile,
-                CUSTOMERWORKPHONE: workPhone,
-                CUSTOMERPHONE: phone,
-                CUSTOMEREMAIL: email,
+                CUSTOMERMOBILE: mobile ? mobile : '',
+                CUSTOMERWORKPHONE: workPhone ? workPhone : '',
+                CUSTOMERPHONE: phone ? phone : '',
+                CUSTOMEREMAIL: email ? email : '',
                 CARDTYPE: customerTypeData?.CARDTYPE ? customerTypeData.CARDTYPE
                     .filter((cardType: any) => {
                         // console.log("Selected Card Type:", selectedCardType);
@@ -263,34 +263,6 @@ const SalesCreateCustCash: React.FC = () => {
         getData();
     }, []);
 
-    useEffect(() => {
-        // ถ้ามี CUSTOMERSTATUS อย่างน้อย 1 entry
-        const custData = matchedItem?.CUSTOMERSTATUS?.[0];
-        if (!custData?.Contract) {
-            // ไม่มี Contract ก็ออก
-            return;
-        }
-
-        const contract = custData.Contract;
-        const address = Array.isArray(contract.Address) ? contract.Address[0] : {};
-
-        // ดึง IDCard อย่างปลอดภัย
-        const newIdCard = contract.IDCard ?? '';
-        setIdCard(newIdCard);
-        setValue('idCard', newIdCard);
-
-        // ดึงชื่อเต็ม แล้ว split ก่อน/หลังช่องว่าง
-        const rawName = contract.CustomerName ?? '';
-        const [firstName = '', lastName = ''] = rawName.split(' ');
-        setFullName(firstName);
-
-        // ดึงเบอร์โทร (ลำดับ TelMobile, TelHome, TelOffice)
-        const rawMobile = address.TelMobile || address.TelHome || address.TelOffice || '';
-        const newMobile = rawMobile.replace(/-/g, '');
-        setMobile(newMobile);
-        setValue('telNo', newMobile);
-    }, [matchedItem]);
-
     // Handle Customer Type Change
     const handleCustTypeOptionChange = (event: ChangeEvent<HTMLSelectElement>) => {
         const value = event.target.value;
@@ -331,10 +303,22 @@ const SalesCreateCustCash: React.FC = () => {
     {/*-------------------- Start Validate --------------------*/ }
 
     const schema = yup.object({
+        fullName: yup
+            .string()
+            .required("กรุณากรอกชื่อ"),
         idCard: yup
             .string()
             .notRequired()
-            .test('is-13-digits', 'กรุณากรอกเลขบัตร 13 หลัก', v => !v || /^[A-Za-z0-9]{13}$/.test(v)),
+            .test('is-13-digits', 'กรุณากรอกเลขบัตร 13 หลัก', v => !v || /^[0-9]{13}$/.test(v))
+            .test(
+                'valid-thai-id',
+                'เลขบัตรประชาชนไม่ถูกต้อง',
+                v => {
+                    if (!v) return true;               // ถ้าไม่กรอก → ผ่านเลย
+                    if (selectedCardType !== '1') return true; // ถ้าไม่ใช่บัตรประชาชน → ผ่าน
+                    return isValidThaiId(v);           // ถ้าใช่บัตรประชาชนและมีค่า → ตรวจ checksum
+                }
+            ),
         telNo: yup
             .string()
             .notRequired()
@@ -358,11 +342,52 @@ const SalesCreateCustCash: React.FC = () => {
     } = useForm<FormValues>({
         resolver: yupResolver(schema),
         defaultValues: {
+            fullName: '',
             idCard: '',
             telNo: '',
             email: '',
         },
     });
+
+    // ตรง useEffect ที่ดึงค่า matchedItem เข้ามา
+    useEffect(() => {
+        const custData = matchedItem?.CUSTOMERSTATUS?.[0];
+        if (!custData?.Contract) {
+            return;
+        }
+
+        const contract = custData.Contract;
+
+        // — IDCard ตามเดิม —
+        const newIdCard = contract.IDCard ?? '';
+        setIdCard(newIdCard);
+        setValue('idCard', newIdCard);
+
+        // — ชื่อ–นามสกุล จาก contract.CustomerName —
+        // trim() + split ด้วย whitespace แล้วเอาตัวแรกเป็นชื่อ
+        // ส่วนที่เหลือ join กลับเป็นนามสกุล
+        const rawName = (contract as any).CustomerName ?? '';
+        const parts = rawName.trim().split(/\s+/);
+        const first = parts.shift() || '';
+        const last = parts.join(' ') || '';
+
+        setFullName(first);
+        setLastName(last);
+
+        // ถ้าคุณใช้ react-hook-form เก็บ fullName ก็ setValue ด้วย
+        setValue('fullName', first);
+        // ถ้ามี lastName ใน form ก็เรียก setValue('lastName', last) ด้วย
+
+        // — เบอร์โทร เหมือนเดิม —
+        const address = Array.isArray(contract.Address)
+            ? contract.Address[0]
+            : {};
+        const rawMobile = address.TelMobile || address.TelHome || address.TelOffice || '';
+        const cleanedMobile = rawMobile.replace(/-/g, '');
+        setMobile(cleanedMobile);
+        setValue('telNo', cleanedMobile);
+
+    }, [matchedItem, setValue]);
 
     {/*-------------------- End Validate --------------------*/ }
 
@@ -484,6 +509,18 @@ const SalesCreateCustCash: React.FC = () => {
         return `${y}-${m}-${dd}`;
     }
 
+    // นำเข้าเลยข้างบนของไฟล์
+    function isValidThaiId(id: string): boolean {
+        if (!/^\d{13}$/.test(id)) return false;
+        const digits = id.split('').map(d => parseInt(d, 10));
+        let sum = 0;
+        for (let i = 0; i < 12; i++) {
+            sum += digits[i] * (13 - i);
+        }
+        const check = (11 - (sum % 11)) % 10;
+        return check === digits[12];
+    }
+
     return (
         <>
             {/* Modal แสดง IDCardViewer เมื่อ showScanner === true */}
@@ -578,7 +615,7 @@ const SalesCreateCustCash: React.FC = () => {
                                                 <>
                                                     <div>
                                                         <div className='row mb-6'>
-                                                            <div className='col-lg-6 mb-3'>
+                                                            <div className='col-lg-6 my-3'>
                                                                 <label className={`${styles.label}`}>ประเภทลูกค้า</label>
                                                                 <select
                                                                     className={`form-select ${styles.label}`}
@@ -611,83 +648,16 @@ const SalesCreateCustCash: React.FC = () => {
                                                                 </select>
                                                             </div>
                                                         </div>
-
-                                                        {/* ปุ่มสแกนบัตรประชาชน */}
-                                                        {/* {selectedCardType === "1" && (
-                                                            <div
-                                                                className="d-flex justify-content-center align-items-center my-10 mx-7"
-                                                                onClick={() => setShowScanner(true)}
-                                                            >
-                                                                <label
-                                                                    className={`${styles.btnSuccess}`}
-                                                                    style={{
-                                                                        cursor: "pointer",
-                                                                        borderRadius: "10px",
-                                                                        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                                                                    }}
-                                                                >
-                                                                    สแกนบัตรประชาชน
-                                                                </label>
-                                                            </div>
-                                                        )} */}
                                                     </div>
 
                                                     <div className='row mb-6 mt-6'>
-                                                        {/* <div className='col-lg-6 mb-3'>
+                                                        <div className='col-lg-6 my-3'>
                                                             <label className={`${styles.label} `}>เลขบัตร</label>
                                                             <Controller
                                                                 name="idCard"
                                                                 control={control}
                                                                 render={({ field }) => (
-                                                                    <input
-                                                                        {...field}
-                                                                        className={`${styles.label} form-control mb-3 mb-lg-0 ${errors.idCard ? "is-invalid" : ""}`}
-                                                                        value={idCard}                // bind กับ state idCard
-                                                                        maxLength={13}
-                                                                        // ป้องกันไม่ให้พิมพ์เว้นวรรคหรือเครื่องหมายอื่นๆ ได้เลย
-                                                                        onKeyDown={(e) => {
-                                                                            // ถ้ากด spacebar → บล็อกไม่ให้เกิดขึ้น
-                                                                            if (e.key === " " || e.key === "Tab") {
-                                                                                e.preventDefault();
-                                                                            }
-                                                                        }}
-                                                                        onPaste={(e) => {
-                                                                            // ถ้าผู้ใช้พยายามวาง (paste) ข้อความที่มีช่องว่าง ให้กรองเอาช่องว่างทิ้ง
-                                                                            const pasted = e.clipboardData.getData("Text");
-                                                                            const cleaned = pasted.replace(/\s+/g, "");
-                                                                            e.preventDefault();
-                                                                            // อัปเดตทั้ง React Hook Form และ state
-                                                                            field.onChange(cleaned);
-                                                                            setIdCard(cleaned);
-                                                                            trigger("idCard");
-                                                                        }}
-                                                                        onChange={(e) => {
-                                                                            // 1. อ่านค่า raw
-                                                                            const raw = e.target.value;
-                                                                            // 2. กรองเอาช่องว่างทั้งหมดออกให้เหลือแต่ตัวเลขติดกัน
-                                                                            const cleaned = raw.replace(/\s+/g, "");
-                                                                            // 3. อัปเดต React Hook Form และ state idCard
-                                                                            field.onChange(cleaned);
-                                                                            setIdCard(cleaned);
-                                                                            // 4. สั่งเช็ค validation ชื่อฟิลด์ "idCard" ใหม่
-                                                                            trigger("idCard");
-                                                                        }}
-                                                                        type='text'
-                                                                        onBlur={field.onBlur}
-                                                                        ref={field.ref}
-                                                                    />
-                                                                )}
-                                                            />
-                                                            {errors.idCard && <p className={`text-danger ${styles.label}`}>{errors.idCard.message}</p>}
-                                                        </div> */}
-
-                                                        <div className='col-lg-6 mb-3'>
-                                                            <label className={`${styles.label} `}>เลขบัตร</label>
-                                                            <Controller
-                                                                name="idCard"
-                                                                control={control}
-                                                                render={({ field }) => (
-                                                                    <div className="input-group">
+                                                                    <div className={`input-group ${styles.customInputGroup}`}>
                                                                         <input
                                                                             {...field}
                                                                             className={`form-control ${styles.label} ${errors.idCard ? "is-invalid" : ""}`}
@@ -743,12 +713,26 @@ const SalesCreateCustCash: React.FC = () => {
                                                         </div>
 
                                                         <div className='col-lg-6 my-3'>
-                                                            <label className={`${styles.label} `}>ชื่อ</label>
-                                                            <input
-                                                                type="text"
-                                                                className={`${styles.label} form-control mb-3 mb-lg-0`}
-                                                                value={fullName}
-                                                                onChange={e => setFullName(e.target.value)}
+                                                            <label className={`${styles.label} ${styles.required}`}>ชื่อ</label>
+                                                            <Controller
+                                                                name="fullName"
+                                                                control={control}
+                                                                render={({ field }) => (
+                                                                    <>
+                                                                        <input
+                                                                            {...field}
+                                                                            type="text"
+                                                                            className={`form-control ${styles.label} ${errors.fullName ? "is-invalid" : ""}`}
+                                                                            onChange={e => {
+                                                                                field.onChange(e);
+                                                                                setFullName(e.target.value);
+                                                                            }}
+                                                                        />
+                                                                        {errors.fullName && (
+                                                                            <p className={`text-danger ${styles.label}`}>{errors.fullName.message}</p>
+                                                                        )}
+                                                                    </>
+                                                                )}
                                                             />
                                                         </div>
 
@@ -764,7 +748,7 @@ const SalesCreateCustCash: React.FC = () => {
                                                     </div>
 
                                                     <div className='row mb-6'>
-                                                        <div className="col-lg-4 mb-3">
+                                                        <div className="col-lg-4 my-3">
                                                             <div style={{ display: 'flex', flexDirection: 'column' }}>
                                                                 <label className={`${styles.label} `}>วันเดือนปีเกิด</label>
                                                                 <input
@@ -810,7 +794,7 @@ const SalesCreateCustCash: React.FC = () => {
                                                     </div>
 
                                                     <div className='row mb-6 mt-6'>
-                                                        <div className='col-lg-6 mb-3'>
+                                                        <div className='col-lg-6 my-3'>
                                                             <label className={`${styles.label} `}>เบอร์ที่ติดต่อได้</label>
                                                             <Controller
                                                                 name="telNo"
@@ -983,6 +967,8 @@ const SalesCreateCustCash: React.FC = () => {
                                                                                 value={mobile}
                                                                                 maxLength={10}
                                                                                 type='text'
+                                                                                inputMode='numeric'
+                                                                                pattern='[0-9]*'
                                                                                 onChange={(e) => {
                                                                                     field.onChange(e)
                                                                                     setMobile(e.target.value)
@@ -996,6 +982,8 @@ const SalesCreateCustCash: React.FC = () => {
                                                                 <div className='col-lg-6 mb-3'>
                                                                     <label className='form-label fw-bold fs-6'>เบอร์บ้าน</label>
                                                                     <input
+                                                                        inputMode='numeric'
+                                                                        pattern='[0-9]*'
                                                                         value={phone}
                                                                         type='text'
                                                                         className='form-control mb-3 mb-lg-0'
@@ -1011,6 +999,8 @@ const SalesCreateCustCash: React.FC = () => {
                                                                 <div className='col-lg-6 mb-3'>
                                                                     <label className='form-label fw-bold fs-6'>เบอร์ที่ทำงาน</label>
                                                                     <input
+                                                                        inputMode='numeric'
+                                                                        pattern='[0-9]*'
                                                                         value={workPhone}
                                                                         type='text'
                                                                         className='form-control mb-3 mb-lg-0'

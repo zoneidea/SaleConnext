@@ -30,7 +30,8 @@ const SalesEmployee: React.FC = () => {
 
     const API_URL_TSR = import.meta.env.VITE_APP_API_THIENSURAT
     const EMP_IN_TEAM_URL = `${API_URL_TSR}/Employee_Structure`
-    const ADVISER_URL = `${API_URL_TSR}/Employee_Structure/Emp_All`
+    const ADVISER_URL = `${API_URL_TSR}/Employee_Structure/Emp_Lead`
+    const TECHNICAL_URL = `${API_URL_TSR}/Employee_Structure/Emp_Technician`
 
     const { REFNO } = useUUIDStore()
     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
@@ -38,13 +39,8 @@ const SalesEmployee: React.FC = () => {
     const DRAFT_ALLCONTRACT_URL = `${API_URL_MONGO}/Contract/GetAllContract?status=DRAFT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`;
 
     const [empInTeam, setEmpInTeam] = useState<Employee[]>([])
-    console.log(`empInTeam`, empInTeam);
-
     const [adviserList, setAdviserList] = useState<Employee[]>([])
-    console.log(`adviserList`, adviserList);
-
     const [installerList, setInstallerList] = useState<Employee[]>([])
-    console.log(`installerList`, installerList);
 
     const [values, setValues] = useState({ employee: '', adviser: '', installer: '' })
 
@@ -86,12 +82,14 @@ const SalesEmployee: React.FC = () => {
         }
     }, [EmpId])
 
+    // โหลดตัวเลือกเมื่อ EmpId พร้อม
     useEffect(() => {
-        if (EmpId) {
-            fetchList(EMP_IN_TEAM_URL, setEmpInTeam)
-            fetchList(ADVISER_URL, setAdviserList)
-            fetchList(ADVISER_URL, setInstallerList)
-        }
+        if (!EmpId) return
+        setIsLoadingDraft(true)
+        fetchList(EMP_IN_TEAM_URL, setEmpInTeam)
+        fetchList(ADVISER_URL, setAdviserList)
+        fetchList(TECHNICAL_URL, setInstallerList)
+        setIsLoadingDraft(false)
     }, [EmpId, fetchList])
 
     const handleSelect = (key: keyof typeof values) => (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -105,16 +103,18 @@ const SalesEmployee: React.FC = () => {
             return
         }
 
+        if (!values.installer) {
+            return MySwal.fire('Warning', 'กรุณาเลือกพนักงานติดตั้งก่อน', 'warning')
+        }
+
         // เตรียม payload
         const payload: any = {
-            SALEEMPLOYEE: empInTeam.find(emp => emp.SaleEmp === values.employee)
+            SALEEMPLOYEE: empInTeam.find(emp => emp.SaleEmp === values.employee),
+            INSTALLER: installerList.find(e => e.SaleEmp === values.installer),
         }
-        if (values.adviser) {
-            payload.ADVISER = adviserList.find(emp => emp.SaleEmp === values.adviser)
-        }
-        if (values.installer) {
-            payload.INSTALLER = installerList.find(emp => emp.SaleEmp === values.installer)
-        }
+
+        if (values.adviser) payload.ADVISER = adviserList.find(e => e.SaleEmp === values.adviser)
+        if (values.installer) payload.INSTALLER = installerList.find(e => e.SaleEmp === values.installer)
 
         try {
             await axios.post(UPDATECONTACT, {
@@ -127,8 +127,14 @@ const SalesEmployee: React.FC = () => {
                 FIELD: 'SALEEMPLOYEE',
                 DATA: [payload],
             })
-            await MySwal.fire('สำเร็จ', 'บันทึกข้อมูลพนักงานขายเรียบร้อย', 'success')
-            navigate('/sale/discount')
+            await MySwal.fire({
+                icon: 'success',
+                title: 'สำเร็จ!',
+                text: 'บันทึกข้อมูลเรียบร้อยแล้ว',
+                timer: 2000,
+                showConfirmButton: false,
+            });
+            navigate('/sale/createcust-cash')
         } catch {
             MySwal.fire('Error', 'ไม่สามารถบันทึกข้อมูลได้', 'error')
         }
@@ -208,13 +214,13 @@ const SalesEmployee: React.FC = () => {
                                             </select>
                                         </div>
                                         <div className="col-lg-4 mb-3">
-                                            <label className={`form-label ${styles.label}`}>ช่างติดตั้ง</label>
+                                            <label className={`form-label ${styles.label} ${styles.required}`}>พนักงานติดตั้ง</label>
                                             <select
                                                 className={`form-select ${styles.label}`}
                                                 value={values.installer}
                                                 onChange={handleSelect('installer')}
                                             >
-                                                <option value="">เลือกช่างติดตั้ง</option>
+                                                <option value="">เลือกพนักงานติดตั้ง</option>
                                                 {installerList.map(emp => (
                                                     <option key={emp.SaleEmp} value={emp.SaleEmp}>
                                                         {emp.FName} {emp.LName}

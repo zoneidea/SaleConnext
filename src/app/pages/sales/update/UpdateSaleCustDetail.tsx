@@ -1,1073 +1,6 @@
-// import { useState, ChangeEvent, useEffect, useMemo, useRef } from 'react'
-// import { Link, useNavigate, useLocation } from 'react-router-dom'
-// import axios from 'axios';
-// import clsx from 'clsx'
-// import { KTIcon, toAbsoluteUrl } from '../../../../_metronic/helpers'
-// import { Content } from '../../../../_metronic/layout/components/content'
-// import { useAuth } from '../../../modules/auth/core/Auth';
-
-// import {
-//     useUUIDStore,
-//     useSaveCustomerStore,
-//     useSaveAddressStore
-// } from '../../../modules/stores/stepsStore';
-
-// import dayjs, { Dayjs } from 'dayjs';
-// import DatePicker from "react-datepicker";
-// import "react-datepicker/dist/react-datepicker.css";
-// import styles from "../../../../public/style.module.css";
-
-// import Swal from 'sweetalert2';
-// import withReactContent from 'sweetalert2-react-content';
-
-// interface ItemProps {
-//     REFNO: String,
-//     CONTNO: String,
-//     EMPID: String,
-//     TEAMSALE: String,
-//     SALECODE: String,
-//     SUPEMPID: String,
-//     SECEMPID: String,
-//     STATUS: String,
-//     PRODUCT: [any],
-//     CUSTOMERSTATUS: [any],
-//     DISCOUNT: [any],
-//     CUSTOMERDETAIL: [any],
-//     ADDRESS: [any],
-//     PDPA: [any],
-//     CONTRACT: [any],
-//     IMAGE: [any],
-//     CHECKERCOMMENT: [any]
-// }
-
-// interface ImagesType {
-//     IMAGECARD: string[];
-//     IMAGEGPS: string[];
-//     IMAGEMAP: string[];
-//     IMAGECUSTOMERHOME: string[];
-//     IMAGEINSTALLATION: string[];
-//     IMAGETDS: string[];
-//     IMAGECUSTOMER: string[];
-//     IMAGETRADEIN: string[];
-// }
-
-// const UpdateSaleCustDetail: React.FC = () => {
-//     const navigate = useNavigate()
-//     const MySwal = withReactContent(Swal);
-
-//     const location = useLocation();
-//     const item = location.state as ItemProps || [];
-
-//     const refno = item?.REFNO
-//     const customerDetail = item?.CUSTOMERDETAIL
-//     // console.log(`customerDetail`, customerDetail);
-
-//     let customerStatus = item?.CUSTOMERSTATUS
-//     // console.log(`customerStatus`, customerStatus);
-
-//     const product = item?.PRODUCT
-
-//     const { auth } = useAuth();
-//     const EmpId = auth?.data?.[0]?.EmpId || '';
-//     const TeamSale = auth?.data?.[0]?.TeamSale || '';
-//     const SaleCode = auth?.data?.[0]?.SaleCode || '';
-//     const SupEmpId = auth?.data?.[0]?.SupEmp || '';
-//     const SecEmpId = auth?.data?.[0]?.SecEmp || '';
-//     const DivisionId = auth?.data?.[0]?.DivisionId || '';
-//     const DepartId = auth?.data?.[0]?.DepartId || '';
-//     const DepartGroup = auth?.data?.[0]?.DepartGroup || '';
-
-//     const { saveCustomerTypes, setSaveCustomerTypes } = useSaveCustomerStore()
-//     // console.log(`saveCustomerTypes`,saveCustomerTypes);
-
-//     const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
-//     const CUSTOMER_TYPE_URL = `${API_SALECONNEXT}/GetCustomertype`;
-//     const API_URL_POST_CONDITIONSCHECKHISTORY = `${API_SALECONNEXT}/ConditionsCheckHistory`;
-
-//     const API_URL_POST_CHECKCUSTOMER = import.meta.env.VITE_APP_API_THIENSURAT;
-//     const CHECKCUSTOMER_URL = `${API_URL_POST_CHECKCUSTOMER}/CheckCustomer`;
-
-//     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
-//     const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
-//     const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage`;
-
-//     const [Model, setModel] = useState<string>('');
-//     const [checktype, setChecktype] = useState<number | null>(null);
-
-//     const [customerTypes, setCustomerTypes] = useState<any[]>([]);
-
-//     const [valueCalendar, setValueCalendar] = useState<Date | null>(null);
-//     const [valueAge, setValueAge] = useState<number | null>(customerDetail[0]?.CUSTOMERRAGE ?? null);
-//     // console.log(`valueAge`, valueAge);
-
-//     const [selectedCustomerType, setsSelectedCustomerType] = useState<string>('');
-//     const [selectedCardType, setSelectedCardType] = useState<string>('');
-//     const [selectedPrefixId, setSelectedPrefixId] = useState<number>();
-//     const [selectedSexId, setSelectedSexId] = useState<number>();
-
-//     const [idCard, setIdCard] = useState<string>('');
-//     const [fullName, setFullName] = useState<string>('');
-//     const [lastName, setLastName] = useState<string>('');
-//     const [nameMD, setNameMD] = useState<string>('');
-//     const [age, setAge] = useState<string>('');
-//     const [email, setEmail] = useState<string>('');
-//     const [mobile, setMobile] = useState<string>('');
-//     const [phone, setPhone] = useState<string>('');
-//     const [workPhone, setWorkPhone] = useState<string>('');
-
-//     const selectedCustomer = customerTypes.find((type) => type.CUSTOMERTYPE === selectedCustomerType) || { CARDTYPE: [], PREFIX: [], SEX: [] };
-
-//     const [errors, setErrors] = useState<{ [key: string]: string }>({});
-
-//     const [images, setImages] = useState<ImagesType | null>(null);
-
-//     // เช็ค validate ฟอร์ม
-//     const [formValid, setFormValid] = useState<boolean>(false);
-
-//     // เก็บข้อมูลส่วนลดใน state และ store
-//     const SaveCustomertData = useMemo(() => {
-//         const customerTypeData = customerTypes.find((type) => type.CUSTOMERTYPE === selectedCustomerType);
-//         // console.log("customerTypeData:", customerTypeData);
-
-//         return [
-//             {
-//                 CUSTOMERTYPE: selectedCustomerType,
-//                 CUSTOMERTYPENAME: customerTypeData ? customerTypeData.CUSTOMERTYPENAME : '', // ตรวจสอบว่าข้อมูล customerTypeData มีหรือไม่
-//                 CUSTOMERID: idCard,
-//                 CUSTOMERNAME: fullName,
-//                 CUSTOMERLASTNAME: lastName,
-//                 CUSTOMERMD: nameMD,
-//                 CUSTOMERDOB: valueCalendar ? dayjs(valueCalendar).format('YYYY-MM-DD') : '',
-//                 CUSTOMERRAGE: valueAge ? valueAge.toString() : '',
-//                 CUSTOMERMOBILE: mobile,
-//                 CUSTOMERWORKPHONE: workPhone,
-//                 CUSTOMERPHONE: phone,
-//                 CUSTOMEREMAIL: email,
-//                 CARDTYPE: customerTypeData?.CARDTYPE ? customerTypeData.CARDTYPE
-//                     .filter((cardType: any) => {
-//                         // console.log("Selected Card Type:", selectedCardType);
-//                         // console.log("Available Card Type:", cardType.CARDTYPE);
-//                         return String(cardType.CARDTYPE) === String(selectedCardType); // ใช้การเปรียบเทียบแบบ string
-//                     })
-//                     .map((cardType: any) => ({
-//                         CARDTYPE: selectedCardType,
-//                         CARDTYPECODE: cardType.CARDTYPECODE,
-//                         CARDTYPENAME: cardType.CARDTYPENAME,
-//                     })) : [],
-//                 PREFIX: customerTypeData?.PREFIX ? customerTypeData.PREFIX
-//                     .filter((prefix: any) => prefix.PREFIXID === selectedPrefixId) // ใช้เฉพาะค่าที่เลือก
-//                     .map((prefix: any) => ({
-//                         PREFIXID: selectedPrefixId,
-//                         PREFIXCODE: prefix.PREFIXCODE,
-//                         PREFIXNAME: prefix.PREFIXNAME,
-//                     })) : [],
-//                 SEX: customerTypeData?.SEX ? customerTypeData.SEX
-//                     .filter((sex: any) => sex.SEXID === selectedSexId) // ใช้เฉพาะค่าที่เลือก
-//                     .map((sex: any) => ({
-//                         SEXID: selectedSexId,
-//                         SEXCODE: sex.SEXCODE,
-//                         SEXNAME: sex.SEXNAME,
-//                     })) : [],
-//             }
-//         ];
-//     }, [customerTypes,
-//         selectedCustomerType,
-//         idCard,
-//         fullName,
-//         valueCalendar,
-//         valueAge,
-//         selectedCardType,
-//         selectedPrefixId,
-//         selectedSexId,
-//         email,
-//         mobile,
-//         phone,
-//         workPhone
-//     ]);
-
-//     // อัปเดตข้อมูลส่วน customer ลง store
-//     useEffect(() => {
-//         if (JSON.stringify(SaveCustomertData) !== JSON.stringify(saveCustomerTypes)) {
-//             setSaveCustomerTypes(SaveCustomertData); // อัปเดตข้อมูลลง store
-//         }
-//     }, [SaveCustomertData, saveCustomerTypes, setSaveCustomerTypes]);
-
-//     // GET Customertype
-//     useEffect(() => {
-//         const getData = async () => {
-//             try {
-//                 const response = await axios.get(CUSTOMER_TYPE_URL, {
-//                     headers: {
-//                         'Content-Type': 'application/json',
-//                     }
-//                 });
-//                 setCustomerTypes(response.data);
-//             } catch (error) {
-//                 console.error('Error fetching CUSTOMER_TYPE_URL:', error);
-//             }
-//         };
-
-//         getData();
-
-//         setsSelectedCustomerType(customerDetail?.[0]?.CUSTOMERTYPE)
-//         setSelectedCardType(customerDetail?.[0]?.CARDTYPE?.[0]?.CARDTYPE)
-//         setIdCard(customerDetail?.[0]?.CUSTOMERID)
-//         setFullName(customerDetail?.[0]?.CUSTOMERNAME)
-//         setLastName(customerDetail?.[0]?.CUSTOMERLASTNAME)
-//         setNameMD(customerDetail?.[0]?.CUSTOMERMD)
-//         setSelectedPrefixId(customerDetail?.[0]?.PREFIX?.[0]?.PREFIXID)
-//         setValueCalendar(customerDetail?.[0]?.CUSTOMERDOB)
-//         setAge(customerDetail?.[0]?.CUSTOMERRAGE)
-//         setSelectedSexId(customerDetail?.[0]?.SEX?.[0]?.SEXID)
-//         setMobile(customerDetail?.[0]?.CUSTOMERMOBILE)
-//         setPhone(customerDetail?.[0]?.CUSTOMERPHONE)
-//         setWorkPhone(customerDetail?.[0]?.CUSTOMERWORKPHONE)
-//         setEmail(customerDetail?.[0]?.CUSTOMEREMAIL)
-
-//         if (product?.[0]) {
-//             if (product?.[0].Package?.[0]) {
-//                 setModel(product?.[0].Package?.[0].MODEL)
-//             }
-//         }
-
-//         if (customerStatus.length > 0) {
-
-//         } else {
-//             customerValidation()
-//         }
-//     }, []);
-
-//     // fetch collection ContractImage
-//     useEffect(() => {
-//         const fetchImages = async () => {
-//             try {
-//                 const response = await axios.get(GET_IMAGES_API, {
-//                     params: { REFNO: refno },
-//                 });
-
-//                 // ตรวจสอบว่า response.data เป็นไปตามโครงสร้างของ ImagesType
-//                 const data = response.data;
-
-//                 if (
-//                     data &&
-//                     typeof data === 'object' &&
-//                     'IMAGECARD' in data &&
-//                     'IMAGEGPS' in data &&
-//                     'IMAGEMAP' in data &&
-//                     'IMAGECUSTOMERHOME' in data &&
-//                     'IMAGEINSTALLATION' in data &&
-//                     'IMAGETDS' in data &&
-//                     'IMAGETRADEIN' in data
-//                 ) {
-//                     setImages(data as ImagesType);
-//                 } else {
-//                     setImages(null);
-//                 }
-//             } catch (err) {
-//                 console.error('Error fetching images:', err);
-//                 setImages(null); // ตั้งค่าเป็น null หากมีข้อผิดพลาด
-//             }
-//         };
-
-//         fetchImages();
-//     }, [refno]);
-
-//     const customerValidation = async () => {
-//         const conditionCheckResponse = await axios.post(API_URL_POST_CONDITIONSCHECKHISTORY, {
-//             EmpId, DivisionId, DepartId, DepartGroup, TeamSale, Model
-//         }, {
-//             headers: {
-//                 'Content-Type': 'multipart/form-data',
-//             },
-//         });
-
-//         let updateData;
-
-//         // console.log(conditionCheckResponse)
-
-//         setChecktype(conditionCheckResponse.data.checktype);
-//         if (conditionCheckResponse.data.status == 200) {
-//             if (conditionCheckResponse.data.checktype !== 0) {
-//                 MySwal.fire({
-//                     title: 'กรุณาตรวจสอบประวัติลูกค้า',
-//                     html: `
-//                     <input 
-//                         id="idCardInput" 
-//                         type="text" 
-//                         class="form-control" 
-//                         placeholder="กรุณากรอกเลขบัตรประชาชน (13 หลัก)" 
-//                         maxlength="13"
-//                         oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,13);" 
-//                     />
-//                 `,
-//                     showDenyButton: true,
-//                     showCancelButton: true,
-//                     showCloseButton: false,
-//                     confirmButtonText: 'ตรวจสอบ',
-//                     cancelButtonText: 'กลับ',
-//                     denyButtonText: 'ยกลเลิก',
-//                     preConfirm: async () => {
-//                         const input = (document.getElementById('idCardInput') as HTMLInputElement).value;
-//                         if (input.length === 13) {
-//                             return input;
-//                         } else {
-//                             MySwal.showValidationMessage('กรุณากรอกเลขบัตรประชาชนให้ครบ 13 หลัก');
-//                             return null;
-//                         }
-//                     }
-//                 }).then(async (result) => {
-//                     // console.log(result)
-//                     if (result.isDismissed) {
-//                         navigate('/sale/step', { state: item })
-//                     } else if (result.isDenied) {
-//                         customerValidation()
-//                     } else {
-//                         const apiResponse = await axios.post(CHECKCUSTOMER_URL, { Search: result.value }, {
-//                             headers: {
-//                                 'Content-Type': 'multipart/form-data',
-//                             },
-//                         });
-
-//                         const { Customerstatus, message } = apiResponse.data;
-//                         await MySwal.fire({
-//                             text: message,
-//                             icon: Customerstatus ? 'error' : 'success',
-//                             confirmButtonText: 'ตกลง'
-//                         });
-
-//                         // console.log(apiResponse)
-
-//                         if (Customerstatus) {
-//                             navigate('/sale/step', { state: item })
-//                         } else {
-//                             setIdCard(result.value)
-
-//                             updateData = [result.value, conditionCheckResponse.data.checktype, message];
-//                         }
-//                     }
-//                 });
-//             } else {
-//                 updateData = ["", conditionCheckResponse.data.checktype, conditionCheckResponse.data.message];
-//             }
-//         }
-
-//         try {
-//             const updateContract = await axios.post(UPDATECONTACT, {
-//                 REFNO: refno,
-//                 EMPID: EmpId,
-//                 TEAMSALE: TeamSale,
-//                 FIELD: "CUSTOMERSTATUS",
-//                 DATA: updateData,
-//             }, {
-//                 headers: {
-//                     'Content-Type': 'application/json',
-//                 },
-//             });
-
-//             if (conditionCheckResponse.data.checktype !== 0) {
-//                 if (updateContract.status === 200) {
-//                     if (!updateContract.data.data) {
-//                         MySwal.fire('เกิดข้อผิดพลาด', 'ปรับปรุงข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
-//                     } else {
-//                         customerStatus = updateContract.data.data
-//                         MySwal.fire('สำเร็จ', 'ปรับปรุงข้อมูลการตรวจสอบสถานะแล้ว', 'success');
-//                     }
-//                 } else {
-//                     MySwal.fire('เกิดข้อผิดพลาด', updateContract.data.message, 'error');
-//                 }
-//             }
-//         } catch (error) {
-//             console.error('Error updating contract:', error);
-//             MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถอัปเดตข้อมูลได้', 'error');
-//         }
-//     }
-
-//     // validate filed
-//     const validateForm = () => {
-//         const newErrors: { [key: string]: string } = {};
-
-//         if (!idCard || !/^[A-Za-z0-9]{13}$/.test(idCard.trim())) {
-//             newErrors.idCard = 'กรุณากรอกเลขบัตร 13 หลัก';
-//         }
-
-//         if (!fullName || fullName.trim() === '') {
-//             newErrors.fullName = 'กรุณากรอกชื่อ';
-//         }
-
-//         if (email && !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
-//             newErrors.email = 'กรุณากรอกอีเมลให้ถูกต้อง';
-//         }
-
-//         if (!mobile || !/^\d{9,10}$/.test(mobile)) {
-//             newErrors.mobile = 'กรุณากรอกหมายเลขโทรศัพท์ที่ถูกต้อง (9-10 หลัก)';
-//         }
-
-//         // ตั้งค่าข้อผิดพลาดใน state เพื่อแสดงข้อความแจ้งเตือน
-//         setErrors(newErrors);
-
-//         // คืนค่าความถูกต้องของฟอร์ม (true ถ้าไม่มีข้อผิดพลาด)
-//         return Object.keys(newErrors).length === 0;
-//     };
-
-//     const validateField = (fieldName: string, value: string) => {
-//         let fieldError = '';
-
-//         switch (fieldName) {
-//             case 'idCard':
-//                 if (!/^[A-Za-z0-9]{13}$/.test(value.trim())) {
-//                     fieldError = 'กรุณากรอกเลขบัตร 13 หลัก';
-//                 }
-//                 break;
-//             case 'fullName':
-//                 if (value.trim() === '') {
-//                     fieldError = 'กรุณากรอกชื่อ';
-//                 }
-//                 break;
-//             case 'email':
-//                 if (value && !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value)) {
-//                     fieldError = 'กรุณากรอกอีเมลให้ถูกต้อง';
-//                 }
-//                 break;
-//             case 'mobile':
-//                 if (!/^\d{9,10}$/.test(value)) {
-//                     fieldError = 'กรุณากรอกหมายเลขโทรศัพท์ที่ถูกต้อง (9-10 หลัก)';
-//                 }
-//                 break;
-//             default:
-//                 break;
-//         }
-
-//         setErrors(prevErrors => ({
-//             ...prevErrors,
-//             [fieldName]: fieldError
-//         }));
-//     };
-
-//     // Handle Customer Type Change
-//     const handleCustTypeOptionChange = (event: ChangeEvent<HTMLSelectElement>) => {
-//         const value = event.target.value;
-//         setsSelectedCustomerType(value);
-//         setSelectedCardType('');
-//     }
-
-//     // Handle IdCard Change
-//     const handleIdCardChange = (event: ChangeEvent<HTMLInputElement>) => {
-//         const value = event.target.value.replace(/[^A-Za-z0-9]/g, ''); // ลบเฉพาะตัวที่ไม่ใช่ตัวเลขหรือตัวอักษรออก
-//         if (value.length <= 13) {
-//             setIdCard(value);
-//             validateField('idCard', value);  // ตรวจสอบความถูกต้องทันที
-//         }
-//     };
-
-//     // Handle Full Name Change
-//     const handleFullNameChange = (event: ChangeEvent<HTMLInputElement>) => {
-//         const value = event.target.value;
-//         setFullName(value);
-//         validateField('fullName', value);  // ตรวจสอบความถูกต้องทันที
-//     };
-
-//     // Handle Email Change
-//     const handleEmailChange = (event: ChangeEvent<HTMLInputElement>) => {
-//         const value = event.target.value;
-//         setEmail(value);
-//         validateField('email', value);  // ตรวจสอบความถูกต้องทันที
-//     };
-
-//     // Handle Mobile Change
-//     const handleMobileChange = (event: ChangeEvent<HTMLInputElement>) => {
-//         const value = event.target.value.replace(/\D/g, ''); // ลบตัวอักษรที่ไม่ใช่ตัวเลขออก
-//         if (value.length <= 10) {
-//             setMobile(value);
-//             validateField('mobile', value);  // ตรวจสอบความถูกต้องทันที
-//         }
-//     };
-
-//     const handleDateChange = (date: Date | null) => {
-//         if (date) {
-//             const calculatedAge = dayjs().diff(dayjs(date), 'year');
-//             if (calculatedAge <= 18) {
-//                 MySwal.fire({
-//                     icon: 'warning',
-//                     title: 'อายุไม่ถึงเกณฑ์',
-//                     text: 'อายุต้องมากกว่า 18 ปีขึ้นไปจึงทำรายการได้',
-//                 })
-//                 // เคลียร์ค่าใน DatePicker และอายุ
-//                 setValueCalendar(null);
-//                 setValueAge(null);
-//                 return; // ยกเลิกการ set ค่าอื่น ๆ ต่อ
-//             }
-//             // ถ้าอายุมากกว่า 18 ก็ set ค่าให้ปกติ
-//             setValueCalendar(date);
-//             setValueAge(calculatedAge);
-//         } else {
-//             // กรณีลบวันที่ทิ้ง
-//             setValueCalendar(null);
-//             setValueAge(null);
-//         }
-//     };
-
-//     const handleNextClick = async () => {
-//         // ตรวจสอบฟอร์มโดยตรงก่อนอัพเดทข้อมูล
-//         if (!validateForm()) {
-//             Swal.fire({
-//                 icon: 'error',
-//                 title: 'เกิดข้อผิดพลาด!',
-//                 text: 'กรุณากรอกข้อมูลให้ถูกต้องก่อนอัพเดท',
-//             });
-//             return;  // หยุดการทำงานถ้ามีข้อผิดพลาด
-//         }
-
-//         // ถ้าไม่มีข้อผิดพลาดให้ทำการอัพเดทข้อมูล
-//         try {
-//             const updateContract = await axios.post(UPDATECONTACT, {
-//                 REFNO: refno,
-//                 EMPID: EmpId,
-//                 TEAMSALE: TeamSale,
-//                 SALECODE: SaleCode,
-//                 SUPEMPID: SupEmpId,
-//                 SECEMPID: SecEmpId,
-//                 FIELD: "CUSTOMERDETAIL",
-//                 DATA: SaveCustomertData
-//             }, {
-//                 headers: {
-//                     'Content-Type': 'application/json',
-//                 },
-//             });
-
-//             if (updateContract.status === 200 && updateContract.data.data) {
-//                 Swal.fire({
-//                     icon: 'success',
-//                     title: 'สำเร็จ!',
-//                     text: 'ปรับปรุงข้อมูลลูกค้าแล้ว',
-//                     timer: 2000,
-//                     showConfirmButton: false,
-//                 });
-//             } else {
-//                 Swal.fire({
-//                     icon: 'error',
-//                     title: 'เกิดข้อผิดพลาด!',
-//                     text: updateContract.data.message || 'ไม่สามารถอัปเดตข้อมูลได้',
-//                 });
-//             }
-//         } catch (error) {
-//             console.error('Error updating data:', error);
-//             Swal.fire({
-//                 icon: 'error',
-//                 title: 'เกิดข้อผิดพลาด!',
-//                 text: 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง',
-//             });
-//         }
-//     };
-
-//     const handleCheckerClick = async () => {
-//         const response = await axios.post(UPDATECONTACT, {
-//             REFNO: item.REFNO,
-//             EMPID: EmpId,
-//             TEAMSALE: TeamSale,
-//             FIELD: "STATUS",
-//             DATA: "PENDING",
-//         }, {
-//             headers: {
-//                 'Content-Type': 'application/json',
-//             },
-//         });
-
-//         // console.log(response)
-
-//         if (response.status === 200) {
-//             if (!response.data.data) {
-//                 MySwal.fire('เกิดข้อผิดพลาด', 'ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
-//             } else {
-//                 Swal.fire({
-//                     icon: 'success',
-//                     title: 'สำเร็จ!',
-//                     text: 'ส่งข้อมูลตรวจสอบแล้ว',
-//                     timer: 2000, // แสดงผล 3 วินาที
-//                     showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
-//                 })
-//                 navigate("/sale/overview")
-//             }
-//         } else {
-//             MySwal.fire('เกิดข้อผิดพลาด', response.data.message, 'error');
-//         }
-//     }
-
-//     const handleSubmit = (e: React.FormEvent) => {
-//         e.preventDefault();
-//         if (validateForm()) {
-//             const formData = {
-//                 idCard,
-//                 fullName,
-//                 email,
-//                 mobile
-//             };
-//             setFormValid(true);  // ฟอร์มถูกต้อง
-//             console.log('Submitting form data:', formData);
-//         } else {
-//             setFormValid(false);  // ฟอร์มมีข้อผิดพลาด
-//             console.log('Form has errors');
-//         }
-//     };
-
-//     // เช็คว่า data ใน item มีครบทุกขั้นตอน (ไม่เป็น array เปล่า) ใช่ไหม ถ้าเป็นจะ disabled ปุ่มส่งตรวจสอบ
-//     const isDataComplete = useMemo(() => {
-//         // ตรวจสอบว่ามีรูปภาพในฟิลด์ใดฟิลด์หนึ่งใน images อย่างน้อย 1 รูป
-//         const hasImages = images && Object.values(images).some(
-//             (field) => Array.isArray(field) && field.length > 0
-//         );
-
-//         return (
-//             Array.isArray(item.ADDRESS) && item.ADDRESS.length > 0 &&
-//             Array.isArray(item.CUSTOMERDETAIL) && item.CUSTOMERDETAIL.length > 0 &&
-//             Array.isArray(item.CUSTOMERSTATUS) && item.CUSTOMERSTATUS.length > 0 &&
-//             Array.isArray(item.DISCOUNT) && item.DISCOUNT.length > 0 &&
-//             Array.isArray(item.PDPA) && item.PDPA.length > 0 &&
-//             Array.isArray(item.PRODUCT) && item.PRODUCT.length > 0 &&
-//             hasImages
-//         );
-//     }, [item, images]);
-
-//     return (
-//         <>
-//             <Content>
-//                 <div className='d-flex justify-content-between align-items-center mb-7 mt-7 mt-lg-0'>
-//                     <div id="kt_page_title" data-kt-swapper="true" data-kt-swapper-mode="prepend"
-//                         data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
-//                         className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
-//                         <h1 className="page-heading d-flex text-gray-900 fw-bold fs-3 my-0 flex-column justify-content-center">
-//                             ข้อมูลลูกค้า
-//                         </h1>
-//                         <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
-//                             <li className="breadcrumb-item text-muted">
-//                                 <span className="text-muted text-hover-primary">
-//                                     ระบบขาย
-//                                 </span></li>
-//                             <li className="breadcrumb-item"><span className="bullet bg-gray-500 w-5px h-2px"></span></li>
-//                             <li className="breadcrumb-item text-gray-900">แก้ไขข้อมูลลูกค้า</li>
-//                         </ul>
-//                     </div>
-//                 </div>
-//                 <p>REFNO: {refno}</p>
-
-//                 {/* Card Body */}
-//                 <form onSubmit={handleSubmit}>
-//                     <div className='accordion mb-10' id='kt_accordion_1'>
-//                         {/* Start accordion ข้อมูลลูกค้า*/}
-//                         <div className='accordion-item mb-10'>
-//                             <h2 className='accordion-header' id='kt_accordion_1_header_1'>
-//                                 <h3
-//                                     className='accordion-button fs-4 fw-bold collapsed border-0 h-50px pt-5 rounded-top px-lg-15 px-7'
-//                                     data-bs-toggle='collapse'
-//                                     data-bs-target='#kt_accordion_1_body_1'
-//                                     aria-expanded='true'
-//                                     aria-controls='kt_accordion_1_body_1'
-//                                     style={{ color: 'white', cursor: 'pointer', backgroundColor: '#3777bc' }}
-//                                 >
-//                                     ข้อมูลลูกค้า
-//                                 </h3>
-//                             </h2>
-//                             <div
-//                                 id='kt_accordion_1_body_1'
-//                                 className='accordion-collapse collapse show'
-//                                 aria-labelledby='kt_accordion_1_header_1'
-//                                 data-bs-parent='#kt_accordion_1'
-//                             >
-//                                 <div className='accordion-body'>
-//                                     {/* start form */}
-//                                     <form className='form'>
-//                                         <div className='card-body px-lg-9 px-1'>
-//                                             {selectedCustomerType !== "1" && (
-//                                                 <>
-//                                                     <div className="container">
-//                                                         <div className='row mb-6'>
-//                                                             <div className='col-lg-6 mb-3'>
-//                                                                 <label className='form-label fw-bold fs-6'>ประเภทลูกค้า</label>
-//                                                                 <select
-//                                                                     // disabled={customerDetail?.length > 0 ? true : false}
-//                                                                     className='form-select'
-//                                                                     onChange={handleCustTypeOptionChange}
-//                                                                     value={selectedCustomerType} >
-//                                                                     <option value=''>เลือกประเภทลูกค้า...</option>
-//                                                                     {customerTypes.map((item: any) => (
-//                                                                         <option key={item.CUSTOMERTYPE} value={item.CUSTOMERTYPE}>
-//                                                                             {item.CUSTOMERTYPENAME}
-//                                                                         </option>
-//                                                                     ))}
-//                                                                 </select>
-//                                                             </div>
-
-//                                                             <div className='col-lg-6 mb-3'>
-//                                                                 <label className='form-label required fw-bold fs-6'>ประเภทบัตร</label>
-//                                                                 <select
-//                                                                     className='form-select'
-//                                                                     value={selectedCardType}
-//                                                                     // disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.CARDTYPE.length > 0 ? true : false : false}
-//                                                                     onChange={(e) => setSelectedCardType(e.target.value)}
-//                                                                 >
-//                                                                     <option value=''>เลือกประเภทบัตร...</option>
-//                                                                     {selectedCustomer.CARDTYPE.map((cardType: any) => (
-//                                                                         <option key={cardType.CARDTYPE} value={cardType.CARDTYPE}>
-//                                                                             {cardType.CARDTYPENAME}
-//                                                                         </option>
-//                                                                     ))}
-//                                                                 </select>
-//                                                             </div>
-//                                                         </div>
-//                                                     </div>
-
-//                                                     <div className="container">
-//                                                         <div className='row mb-6'>
-//                                                             <div className='col-lg-6'>
-//                                                                 <label className='form-label required fw-bold fs-6'>เลขบัตร</label>
-//                                                                 <input
-//                                                                     // disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.CUSTOMERID !== "" ? true : false : false}
-//                                                                     value={idCard}
-//                                                                     onChange={handleIdCardChange}
-//                                                                     type='text'
-//                                                                     className='form-control mb-3 mb-lg-0'
-//                                                                     placeholder='บัตรประชาชน'
-//                                                                 />
-//                                                                 {errors.idCard && <p className='text-danger'>{errors.idCard}</p>}
-//                                                             </div>
-//                                                             <div className='col-lg-6 mb-3'>
-//                                                                 <label className='form-label required fw-bold fs-6'>คำนำหน้าชื่อ</label>
-//                                                                 <select
-//                                                                     value={selectedPrefixId}
-//                                                                     className='form-select'
-//                                                                     onChange={(e) => setSelectedPrefixId(Number(e.target.value))}
-//                                                                 // disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.PREFIX.length > 0 ? true : false : false}
-//                                                                 >
-//                                                                     <option value=''>เลือกคำนำหน้าชื่อ...</option>
-//                                                                     {selectedCustomer.PREFIX.map((prefix: any) => (
-//                                                                         <option key={prefix.PREFIXID} value={prefix.PREFIXID}>{prefix.PREFIXNAME}</option>
-//                                                                     ))}
-//                                                                 </select>
-//                                                             </div>
-//                                                             <div className='col-lg-6'>
-//                                                                 <label className='form-label required fw-bold fs-6'>ชื่อ</label>
-//                                                                 <input
-//                                                                     value={fullName}
-//                                                                     onChange={handleFullNameChange}
-//                                                                     type='text'
-//                                                                     className='form-control mb-3 mb-lg-0'
-//                                                                     placeholder='ชื่อ-สกุล'
-//                                                                 />
-//                                                                 {errors.fullName && <p className='text-danger'>{errors.fullName}</p>}
-//                                                             </div>
-
-//                                                             <div className='col-lg-6'>
-//                                                                 <label className='form-label required fw-bold fs-6'>นามสกุล</label>
-//                                                                 <input
-//                                                                     type="text"
-//                                                                     className="form-control mb-3 mb-lg-0"
-//                                                                     value={lastName}
-//                                                                     onChange={e => setLastName(e.target.value)}
-//                                                                 />
-//                                                             </div>
-//                                                         </div>
-//                                                     </div>
-
-//                                                     <div className="container">
-//                                                         <div className='row mb-6'>
-//                                                             <div className="col-lg-4 mb-3">
-//                                                                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-//                                                                     <label className="form-label required fw-bold fs-6">วันเดือนปีเกิด</label>
-//                                                                     <DatePicker
-//                                                                         selected={valueCalendar}
-//                                                                         onChange={handleDateChange}
-//                                                                         className="form-control custom-datepicker"
-//                                                                         placeholderText="วันเดือนปีเกิด"
-//                                                                         showYearDropdown
-//                                                                         showMonthDropdown
-//                                                                         dropdownMode="select"
-//                                                                         isClearable
-//                                                                         dateFormat="yyyy/MM/dd"
-//                                                                         withPortal
-//                                                                     />
-//                                                                 </div>
-//                                                             </div>
-
-//                                                             <div className="col-lg-4 mb-3">
-//                                                                 <label className="form-label required fw-bold fs-6">อายุ</label>
-//                                                                 <input
-//                                                                     value={valueAge !== null ? valueAge.toString() : ''}
-//                                                                     type="text"
-//                                                                     className="form-control mb-3 mb-lg-0"
-//                                                                     readOnly
-//                                                                 />
-
-//                                                             </div>
-//                                                             {selectedCustomerType !== "1" && (
-//                                                                 <div className='col-lg-4 mb-3'>
-//                                                                     <label className='form-label required fw-bold fs-6'>เพศ</label>
-//                                                                     <select
-//                                                                         value={selectedSexId}
-//                                                                         className='form-select mb-3 mb-lg-0'
-//                                                                         onChange={(e) => setSelectedSexId(Number(e.target.value))}
-//                                                                     // disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.SEX.length > 0 ? true : false : false}
-//                                                                     >
-//                                                                         <option value=''>เลือกเพศ...</option>
-//                                                                         {selectedCustomer.SEX.map((sex: any) => (
-//                                                                             <option key={sex.SEXID} value={sex.SEXID}>{sex.SEXNAME}</option>
-//                                                                         ))}
-//                                                                     </select>
-//                                                                 </div>
-//                                                             )}
-
-//                                                             <div className="container">
-//                                                                 <div className='row mt-6'>
-//                                                                     <div className='col-lg-6 mb-3'>
-//                                                                         <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
-//                                                                         <input
-//                                                                             value={mobile}
-//                                                                             onChange={handleMobileChange}
-//                                                                             type='text'
-//                                                                             className='form-control mb-3 mb-lg-0'
-//                                                                             maxLength={10}
-//                                                                         />
-//                                                                         {errors.mobile && <p className='text-danger'>{errors.mobile}</p>}
-//                                                                     </div>
-//                                                                     <div className='col-lg-6 mb-3'>
-//                                                                         <label className='form-label fw-bold fs-6'>เบอร์บ้าน</label>
-//                                                                         <input
-//                                                                             value={phone}
-//                                                                             onChange={(e) => setPhone(e.target.value)}
-//                                                                             type='text'
-//                                                                             className='form-control mb-3 mb-lg-0'
-//                                                                             maxLength={10}
-//                                                                         />
-//                                                                     </div>
-//                                                                 </div>
-//                                                             </div>
-//                                                         </div>
-
-//                                                         <div className="container">
-//                                                             <div className='row mb-6'>
-//                                                                 <div className='col-lg-6 mb-3'>
-//                                                                     <label className='form-label fw-bold fs-6'>เบอร์ที่ทำงาน</label>
-//                                                                     <input
-//                                                                         value={workPhone}
-//                                                                         onChange={(e) => setWorkPhone(e.target.value)}
-//                                                                         type='text'
-//                                                                         className='form-control mb-3 mb-lg-0'
-//                                                                         maxLength={10}
-//                                                                     />
-//                                                                 </div>
-//                                                                 <div className='col-lg-6 mb-3'>
-//                                                                     <label className='form-label fw-bold fs-6'>อีเมล์</label>
-//                                                                     <input
-//                                                                         value={email}
-//                                                                         onChange={handleEmailChange}
-//                                                                         type='text'
-//                                                                         className='form-control mb-3 mb-lg-0'
-//                                                                     />
-//                                                                     {errors.email && <p className='text-danger'>{errors.email}</p>}
-//                                                                 </div>
-//                                                             </div>
-//                                                         </div>
-//                                                     </div>
-//                                                 </>
-//                                             )}
-
-//                                             {/* Start กรณีประเภทลูกค้าเป็น นิติบุคคล */}
-//                                             {selectedCustomerType == "1" && (
-//                                                 <>
-//                                                     <div className="container">
-//                                                         <div className='row mb-6'>
-//                                                             <div className='col-lg-6 mb-3'>
-//                                                                 <label className='form-label required fw-bold fs-6'>ประเภทลูกค้า</label>
-//                                                                 <select
-//                                                                     className='form-select'
-//                                                                     onChange={handleCustTypeOptionChange}
-//                                                                     value={selectedCustomerType}
-//                                                                 >
-//                                                                     <option value=''>เลือกประเภทลูกค้า...</option>
-//                                                                     {customerTypes.map((item: any) => (
-//                                                                         <option key={item.CUSTOMERTYPE} value={item.CUSTOMERTYPE}>
-//                                                                             {item.CUSTOMERTYPENAME}
-//                                                                         </option>
-//                                                                     ))}
-//                                                                 </select>
-//                                                             </div>
-//                                                             <div className='col-lg-6'>
-//                                                                 <label className='form-label required fw-bold fs-6'>เลขประจำตัวผู้เสียภาษี</label>
-//                                                                 <input
-//                                                                     value={idCard}
-//                                                                     onChange={handleIdCardChange}
-//                                                                     type='text'
-//                                                                     className='form-control mb-3 mb-lg-0'
-//                                                                 // disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.CUSTOMERID !== "" ? true : false : false}
-//                                                                 />
-//                                                                 {errors.idCard && <p className='text-danger'>{errors.idCard}</p>}
-//                                                             </div>
-//                                                         </div>
-//                                                     </div>
-
-//                                                     <div className="container">
-//                                                         <div className='row mb-6'>
-//                                                             <div className='col-lg-4 mb-3'>
-//                                                                 <label className='form-label required fw-bold fs-6'>คำนำหน้า</label>
-//                                                                 <select
-//                                                                     className='form-select'
-//                                                                     onChange={(e) => setSelectedPrefixId(Number(e.target.value))}
-//                                                                     value={selectedPrefixId}
-//                                                                 // disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.PREFIX.length > 0 ? true : false : false}
-//                                                                 >
-//                                                                     <option value=''>เลือกคำนำหน้า...</option>
-//                                                                     {selectedCustomer.PREFIX.map((prefix: any) => (
-//                                                                         <option key={prefix.PREFIXID} value={prefix.PREFIXID}>{prefix.PREFIXNAME}</option>
-//                                                                     ))}
-//                                                                 </select>
-//                                                             </div>
-//                                                             <div className='col-lg-4'>
-//                                                                 <label className='form-label required fw-bold fs-6'>ชื่อบริษัท</label>
-//                                                                 <input
-//                                                                     value={fullName}
-//                                                                     onChange={handleFullNameChange}
-//                                                                     type='text'
-//                                                                     className='form-control mb-3 mb-lg-0'
-//                                                                 />
-//                                                                 {errors.fullName && <p className='text-danger'>{errors.fullName}</p>}
-//                                                             </div>
-//                                                             <div className='col-lg-4 mb-3'>
-//                                                                 <label className='form-label required fw-bold fs-6'>กรรมการผู้มีอำนาจ</label>
-//                                                                 <input
-//                                                                     value={nameMD}
-//                                                                     onChange={(e) => setNameMD(e.target.value)}
-//                                                                     type='text'
-//                                                                     className='form-control mb-3 mb-lg-0'
-//                                                                 // disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.CUSTOMERMD !== "" ? true : false : false}
-//                                                                 />
-//                                                             </div>
-//                                                         </div>
-
-//                                                         <div className="container">
-//                                                             <div className='row mb-6 mt-6'>
-//                                                                 <div className='col-lg-6 mb-3'>
-//                                                                     <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
-//                                                                     <input
-//                                                                         value={mobile}
-//                                                                         type='text'
-//                                                                         className='form-control mb-3 mb-lg-0'
-//                                                                         onChange={handleMobileChange}
-//                                                                         maxLength={10}
-//                                                                     />
-//                                                                     {errors.mobile && <p className='text-danger'>{errors.mobile}</p>}
-//                                                                 </div>
-//                                                                 <div className='col-lg-6 mb-3'>
-//                                                                     <label className='form-label fw-bold fs-6'>เบอร์บ้าน</label>
-//                                                                     <input
-//                                                                         value={phone}
-//                                                                         type='text'
-//                                                                         className='form-control mb-3 mb-lg-0'
-//                                                                         onChange={(e) => setPhone(e.target.value)}
-//                                                                         maxLength={10}
-//                                                                     />
-//                                                                 </div>
-//                                                             </div>
-//                                                         </div>
-
-//                                                         <div className="container">
-//                                                             <div className='row mb-6'>
-//                                                                 <div className='col-lg-6 mb-3'>
-//                                                                     <label className='form-label fw-bold fs-6'>เบอร์ที่ทำงาน</label>
-//                                                                     <input
-//                                                                         value={workPhone}
-//                                                                         type='text'
-//                                                                         className='form-control mb-3 mb-lg-0'
-//                                                                         onChange={(e) => setWorkPhone(e.target.value)}
-//                                                                         maxLength={10}
-//                                                                     />
-//                                                                 </div>
-//                                                                 <div className='col-lg-6 mb-3'>
-//                                                                     <label className='form-label fw-bold fs-6'>อีเมล์</label>
-//                                                                     <input
-//                                                                         value={email}
-//                                                                         onChange={handleEmailChange}
-//                                                                         type='text'
-//                                                                         className='form-control mb-3 mb-lg-0'
-//                                                                     />
-//                                                                     {/* {errors.email && <p className='text-danger'>{errors.email.message}</p>} */}
-//                                                                 </div>
-//                                                             </div>
-//                                                         </div>
-//                                                     </div>
-//                                                 </>
-//                                             )}
-//                                             {/* End กรณีประเภทลูกค้าเป็น นิติบุคคล */}
-//                                         </div>
-//                                     </form>
-//                                     {/* end form */}
-//                                 </div>
-//                             </div>
-//                         </div>
-//                         {/* End accordion ข้อมูลลูกค้า*/}
-//                     </div>
-//                     {/* End Card */}
-
-//                     <div className='d-none d-xl-flex justify-content-between align-items-center my-5'>
-//                         <button
-//                             className='btn btn-secondary w-100 w-md-auto align-self-center h-50px'
-//                             onClick={() => navigate('/sale/step', { state: item })}>
-//                             ย้อนกลับ
-//                         </button>
-//                         <button
-//                             className='btn btn-warning w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'
-//                             onClick={handleNextClick}>
-//                             อัพเดทข้อมูล
-//                         </button>
-//                         <button
-//                             className={`btn btn-primary w-100 w-md-auto align-self-center h-50px ${!isDataComplete ? `disabled` : ``}`}
-//                             disabled={!isDataComplete}
-//                             onClick={handleCheckerClick}
-//                         >
-//                             ส่งตรวจสอบ
-//                         </button>
-//                     </div>
-
-//                     {/* ปุ่มในหน้าจอเล็ก */}
-//                     <div
-//                         className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
-//                         style={{
-//                             position: "fixed",
-//                             bottom: 0,
-//                             left: 0,
-//                             right: 0,
-//                             zIndex: 1050,
-//                         }}
-//                     >
-//                         <button
-//                             className="btn btn-secondary w-auto me-2"
-//                             onClick={() => navigate('/sale/step', { state: item })}
-//                         >
-//                             ย้อนกลับ
-//                         </button>
-//                         <button
-//                             className="btn btn-warning w-auto me-2"
-//                             onClick={handleNextClick}
-//                         >
-//                             อัพเดทข้อมูล
-//                         </button>
-//                         <button
-//                             className={`btn btn-primary w-auto ${!isDataComplete ? `disabled` : ``}`}
-//                             disabled={!isDataComplete}
-//                             onClick={handleCheckerClick}
-//                         >
-//                             ส่งตรวจสอบ
-//                         </button>
-//                     </div>
-
-//                 </form>
-//             </Content >
-//         </>
-//     )
-// }
-
-// export default UpdateSaleCustDetail
-
-
-
 import styles from '@/styles/style.module.css'
+import IDCardOCR from '../components/ocr/IDCardOCR'
+
 import { useState, ChangeEvent, useEffect, useMemo, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import axios from 'axios';
@@ -1087,6 +20,13 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
+
+import { useForm, Controller } from "react-hook-form";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faBarcode } from '@fortawesome/free-solid-svg-icons'
 
 interface ItemProps {
     REFNO: String,
@@ -1117,6 +57,11 @@ interface ImagesType {
     IMAGETDS: string[];
     IMAGECUSTOMER: string[];
     IMAGETRADEIN: string[];
+}
+
+interface OCRResultState {
+    rawText: string;
+    error?: string;
 }
 
 const UpdateSaleCustDetail: React.FC = () => {
@@ -1157,6 +102,7 @@ const UpdateSaleCustDetail: React.FC = () => {
 
     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
     const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
+    const DRAFT_ALLCONTRACT_URL = `${API_URL_MONGO}/Contract/GetAllContract?status=DRAFT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`
     const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage`;
 
     const [Model, setModel] = useState<string>('');
@@ -1185,12 +131,109 @@ const UpdateSaleCustDetail: React.FC = () => {
 
     const selectedCustomer = customerTypes.find((type) => type.CUSTOMERTYPE === selectedCustomerType) || { CARDTYPE: [], PREFIX: [], SEX: [] };
 
-    const [errors, setErrors] = useState<{ [key: string]: string }>({});
-
     const [images, setImages] = useState<ImagesType | null>(null);
 
     // เช็ค validate ฟอร์ม
     const [formValid, setFormValid] = useState<boolean>(false);
+
+    {/************ สแกนบัตร ************/ }
+    const [showScanner, setShowScanner] = useState(false);
+    // เมื่อ user ถ่ายภาพบัตร เราเก็บ base64 ลง state นี้
+    const [idCardBase64, setIdCardBase64] = useState<string | null>(null);
+
+    // state สำหรับเก็บผลลัพธ์ Text จาก OCR.space
+    const [ocrResult, setOcrResult] = useState<OCRResultState | null>(null);
+
+    const [isLoadingOCR, setIsLoadingOCR] = useState(false);
+
+    {/****** matchedItem *******/ }
+    const [isLoadingDraft, setIsLoadingDraft] = useState<boolean>(false);
+    const [draft, setDraft] = useState<any[]>([]);
+
+    useEffect(() => {
+        const getDataDraft = async () => {
+            setIsLoadingDraft(true);
+            try {
+                const response = await axios.get(DRAFT_ALLCONTRACT_URL);
+                const data = Array.isArray(response.data.data) ? response.data.data : [];
+                setDraft(data);
+            } catch (error) {
+                console.error('Error fetching DRAFT_ALLCONTRACT_URL:', error);
+            } finally {
+                setIsLoadingDraft(false);
+            }
+        };
+        getDataDraft();
+    }, []);
+
+    // เลือก item ที่ REFNO ตรงกัน (find สำหรับ 1 item หรือ filter สำหรับหลาย item)
+    const matchedItem = draft.find(item => item.REFNO === refno);
+    console.log(`matchedItem`, matchedItem);
+
+    {/****** matchedItem *******/ }
+
+    // เมื่อได้รับ base64 จาก IDCardViewer ให้มา preview ที่หน้า SalesCreateCust
+    const handleCapturedImage = (base64Image: string) => {
+        setIdCardBase64(base64Image);
+        setShowScanner(false);
+        setOcrResult(null);
+    };
+
+    // ฟังก์ชันเรียก OCR.space API (เมื่อมี idCardBase64)
+    const callOCRSpace = async (base64Image: string) => {
+        try {
+            setIsLoadingOCR(true);
+            const API_OCR = import.meta.env.VITE_APP_API_OCR;
+
+            // เตรียม payload ในรูปแบบ FormData
+            const formData = new FormData();
+            formData.append('apikey', API_OCR);
+            formData.append('base64Image', base64Image);
+            formData.append('language', 'tha');            // อ่านภาษาไทย
+            formData.append('isOverlayRequired', 'false');
+            formData.append('filetype', 'PNG');            // หรือ 'JPG' ตาม screenshotFormat 
+            formData.append('detectOrientation', 'true');
+            formData.append('isCreateSearchablePdf', 'false');
+            formData.append('scale', 'false');
+            formData.append('isTable', 'false');
+            formData.append('OCREngine', '2');             // ใช้ OCR Engine 2
+
+            const response = await axios.post(
+                'https://api.ocr.space/parse/image',
+                formData,
+                {
+                    headers: {
+                        // 'Content-Type' จะถูกเซ็ตเป็น multipart/form-data โดย axios เอง
+                    },
+                }
+            );
+
+            const data = response.data;
+            if (data.OCRExitCode === 1 && data.ParsedResults) {
+                const allText = data.ParsedResults
+                    .map((res: any) => res.ParsedText)
+                    .join('\n');
+                setOcrResult({ rawText: allText });
+            } else {
+                const errMsg = data.ErrorMessage || 'Unknown OCR error';
+                setOcrResult({ rawText: '', error: errMsg });
+            }
+        } catch (error: any) {
+            setOcrResult({ rawText: '', error: error.message || 'Request failed' });
+        } finally {
+            setIsLoadingOCR(false);
+        }
+    };
+
+    // เมื่อ selected idCardBase64 เปลี่ยน → เรียก OCR.space
+    useEffect(() => {
+        if (idCardBase64) {
+            callOCRSpace(idCardBase64);
+        }
+    }, [idCardBase64]);
+
+
+    {/************ สแกนบัตร ************/ }
 
     function formatLocalDate(d: Date): string {
         const y = d.getFullYear();
@@ -1464,67 +507,6 @@ const UpdateSaleCustDetail: React.FC = () => {
         }
     }
 
-    // validate filed
-    const validateForm = () => {
-        const newErrors: { [key: string]: string } = {};
-
-        if (!idCard || !/^[A-Za-z0-9]{13}$/.test(idCard.trim())) {
-            newErrors.idCard = 'กรุณากรอกเลขบัตร 13 หลัก';
-        }
-
-        if (!fullName || fullName.trim() === '') {
-            newErrors.fullName = 'กรุณากรอกชื่อ';
-        }
-
-        if (email && !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
-            newErrors.email = 'กรุณากรอกอีเมลให้ถูกต้อง';
-        }
-
-        if (!mobile || !/^\d{9,10}$/.test(mobile)) {
-            newErrors.mobile = 'กรุณากรอกหมายเลขโทรศัพท์ที่ถูกต้อง (9-10 หลัก)';
-        }
-
-        // ตั้งค่าข้อผิดพลาดใน state เพื่อแสดงข้อความแจ้งเตือน
-        setErrors(newErrors);
-
-        // คืนค่าความถูกต้องของฟอร์ม (true ถ้าไม่มีข้อผิดพลาด)
-        return Object.keys(newErrors).length === 0;
-    };
-
-    const validateField = (fieldName: string, value: string) => {
-        let fieldError = '';
-
-        switch (fieldName) {
-            case 'idCard':
-                if (!/^[A-Za-z0-9]{13}$/.test(value.trim())) {
-                    fieldError = 'กรุณากรอกเลขบัตร 13 หลัก';
-                }
-                break;
-            case 'fullName':
-                if (value.trim() === '') {
-                    fieldError = 'กรุณากรอกชื่อ';
-                }
-                break;
-            case 'email':
-                if (value && !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(value)) {
-                    fieldError = 'กรุณากรอกอีเมลให้ถูกต้อง';
-                }
-                break;
-            case 'mobile':
-                if (!/^\d{9,10}$/.test(value)) {
-                    fieldError = 'กรุณากรอกหมายเลขโทรศัพท์ที่ถูกต้อง (9-10 หลัก)';
-                }
-                break;
-            default:
-                break;
-        }
-
-        setErrors(prevErrors => ({
-            ...prevErrors,
-            [fieldName]: fieldError
-        }));
-    };
-
     // Handle Customer Type Change
     const handleCustTypeOptionChange = (event: ChangeEvent<HTMLSelectElement>) => {
         const value = event.target.value;
@@ -1532,46 +514,14 @@ const UpdateSaleCustDetail: React.FC = () => {
         setSelectedCardType('');
     }
 
-    // Handle IdCard Change
-    const handleIdCardChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const value = event.target.value.replace(/[^A-Za-z0-9]/g, ''); // ลบเฉพาะตัวที่ไม่ใช่ตัวเลขหรือตัวอักษรออก
-        if (value.length <= 13) {
-            setIdCard(value);
-            validateField('idCard', value);  // ตรวจสอบความถูกต้องทันที
-        }
-    };
-
-    // Handle Full Name Change
-    const handleFullNameChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const value = event.target.value;
-        setFullName(value);
-        validateField('fullName', value);  // ตรวจสอบความถูกต้องทันที
-    };
-
-    // Handle Email Change
-    const handleEmailChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const value = event.target.value;
-        setEmail(value);
-        validateField('email', value);  // ตรวจสอบความถูกต้องทันที
-    };
-
-    // Handle Mobile Change
-    const handleMobileChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const value = event.target.value.replace(/\D/g, ''); // ลบตัวอักษรที่ไม่ใช่ตัวเลขออก
-        if (value.length <= 10) {
-            setMobile(value);
-            validateField('mobile', value);  // ตรวจสอบความถูกต้องทันที
-        }
-    };
-
     const handleDateChange = (date: Date | null) => {
         if (date) {
             const calculatedAge = dayjs().diff(dayjs(date), 'year');
-            if (calculatedAge <= 18) {
+            if (calculatedAge <= 20) {
                 MySwal.fire({
                     icon: 'warning',
                     title: 'อายุไม่ถึงเกณฑ์',
-                    text: 'อายุต้องมากกว่า 18 ปีขึ้นไปจึงทำรายการได้',
+                    text: 'อายุต้องมากกว่า 20 ปีขึ้นไปจึงทำรายการได้',
                 })
                 // เคลียร์ค่าใน DatePicker และอายุ
                 setValueCalendar(null);
@@ -1588,17 +538,7 @@ const UpdateSaleCustDetail: React.FC = () => {
         }
     };
 
-    const handleNextClick = async () => {
-        // ตรวจสอบฟอร์มโดยตรงก่อนอัพเดทข้อมูล
-        if (!validateForm()) {
-            Swal.fire({
-                icon: 'error',
-                title: 'เกิดข้อผิดพลาด!',
-                text: 'กรุณากรอกข้อมูลให้ถูกต้องก่อนอัพเดท',
-            });
-            return;  // หยุดการทำงานถ้ามีข้อผิดพลาด
-        }
-
+    const onSubmit = async () => {
         // ถ้าไม่มีข้อผิดพลาดให้ทำการอัพเดทข้อมูล
         try {
             const updateContract = await axios.post(UPDATECONTACT, {
@@ -1624,6 +564,11 @@ const UpdateSaleCustDetail: React.FC = () => {
                     timer: 2000,
                     showConfirmButton: false,
                 });
+                navigate("/sale/update/updateAddress", {
+                    state: {
+                        ...matchedItem,
+                    }
+                })
             } else {
                 Swal.fire({
                     icon: 'error',
@@ -1674,23 +619,6 @@ const UpdateSaleCustDetail: React.FC = () => {
         }
     }
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (validateForm()) {
-            const formData = {
-                idCard,
-                fullName,
-                email,
-                mobile
-            };
-            setFormValid(true);  // ฟอร์มถูกต้อง
-            console.log('Submitting form data:', formData);
-        } else {
-            setFormValid(false);  // ฟอร์มมีข้อผิดพลาด
-            console.log('Form has errors');
-        }
-    };
-
     // เช็คว่า data ใน item มีครบทุกขั้นตอน (ไม่เป็น array เปล่า) ใช่ไหม ถ้าเป็นจะ disabled ปุ่มส่งตรวจสอบ
     const isDataComplete = useMemo(() => {
         // ตรวจสอบว่ามีรูปภาพในฟิลด์ใดฟิลด์หนึ่งใน images อย่างน้อย 1 รูป
@@ -1709,8 +637,222 @@ const UpdateSaleCustDetail: React.FC = () => {
         );
     }, [item, images]);
 
+    {/*-------------------- Start Validate --------------------*/ }
+
+    const schema = yup.object({
+        fullName: yup
+            .string()
+            .required("กรุณากรอกชื่อ"),
+        idCard: yup
+            .string()
+            .notRequired()
+            .test('is-13-digits', 'กรุณากรอกเลขบัตร 13 หลัก', v => !v || /^[0-9]{13}$/.test(v))
+            .test(
+                'valid-thai-id',
+                'เลขบัตรประชาชนไม่ถูกต้อง',
+                v => {
+                    if (!v) return true;               // ถ้าไม่กรอก → ผ่านเลย
+                    if (selectedCardType !== '1') return true; // ถ้าไม่ใช่บัตรประชาชน → ผ่าน
+                    return isValidThaiId(v);           // ถ้าใช่บัตรประชาชนและมีค่า → ตรวจ checksum
+                }
+            ),
+        telNo: yup
+            .string()
+            .notRequired()
+            .test('is-9-10-digits', 'เบอร์โทรต้องเป็นตัวเลข 9–10 หลัก', v => !v || /^[0-9]{9,10}$/.test(v)),
+        email: yup
+            .string()
+            .notRequired()
+            .email('รูปแบบอีเมลไม่ถูกต้อง'),
+    });
+
+    // 2) infer type
+    type FormValues = yup.InferType<typeof schema>;
+
+    // 3. เรียก useForm พร้อม resolver
+    const {
+        control,
+        handleSubmit,
+        setValue,
+        reset,
+        trigger,
+        getValues,
+        formState: { errors },
+    } = useForm<FormValues>({
+        resolver: yupResolver(schema),
+        defaultValues: {
+            fullName: '',
+            idCard: '',
+            telNo: '',
+            email: '',
+        },
+    });
+
+    useEffect(() => {
+        if (customerDetail?.length) {
+            const cd = customerDetail[0];
+            setValue("fullName", cd.CUSTOMERNAME);
+            setValue("idCard", cd.CUSTOMERID);
+            setValue("telNo", cd.CUSTOMERMOBILE);
+            setValue("email", cd.CUSTOMEREMAIL);
+
+            setsSelectedCustomerType(cd.CUSTOMERTYPE)
+            setSelectedCardType(cd.CARDTYPE?.[0]?.CARDTYPE)
+            setIdCard(cd.CUSTOMERID)
+            setFullName(cd.CUSTOMERNAME)
+            setLastName(cd.CUSTOMERLASTNAME)
+            setNameMD(cd.CUSTOMERMD)
+            setSelectedPrefixId(cd.PREFIX?.[0]?.PREFIXID)
+            setAge(cd.CUSTOMERRAGE)
+            setSelectedSexId(cd.SEX?.[0]?.SEXID)
+            setMobile(cd.CUSTOMERMOBILE)
+            setPhone(cd.CUSTOMERPHONE)
+            setWorkPhone(cd.CUSTOMERWORKPHONE)
+            setEmail(cd.CUSTOMEREMAIL)
+        }
+    }, [customerDetail, setValue]);
+      
+    {/*-------------------- End Validate --------------------*/ }
+
+    useEffect(() => {
+        if (ocrResult && ocrResult.rawText) {
+            const text = ocrResult.rawText;
+
+            // 1) ดึงเลขบัตรเหมือนเดิม (กรองช่องว่าง/ขีดออก)
+            const match = text.match(/(\d[\d\s\-]{11,}\d)/);
+            if (match && match[1]) {
+                // 1. ดึงค่าที่จับได้
+                const rawId = match[1]; // อาจเป็น "1 103000 078735" หรือ "1103 0000787 35"
+                // 2. กรองเอาช่องว่างและขีดออกเหลือตัวเลขติดกัน
+                const cleanedId = rawId.replace(/[\s\-]/g, "");
+
+                // 3. เซ็ตลง state และ React Hook Form
+                setIdCard(cleanedId);
+                setValue("idCard", cleanedId);
+                trigger("idCard");
+            }
+
+            // 2) ดึงชื่อ-นามสกุล (สมมติว่าชื่อและนามสกุลใน OCR เป็นตัวอักษรไทย แยกด้วยเว้นวรรค)
+            //    เราจะจับกลุ่มอักษรไทยสองกลุ่ม ที่คั่นด้วยเว้นวรรคอย่างน้อยหนึ่งตัว
+            const nameRegex = /(?:น(?:าย|าง|\.ส\.))\s*([ก-์]+)\s+([ก-์]+)/;
+            const nameMatch = text.match(nameRegex);
+
+            if (nameMatch) {
+                const firstNameFromOCR = nameMatch[1].trim();
+                const lastNameFromOCR = nameMatch[2].trim();
+
+                // เซ็ตลง state และ React Hook Form
+                setFullName(firstNameFromOCR);
+                setLastName(lastNameFromOCR);
+            }
+
+            // 3) ดึงวันเกิด
+            const thaiDateRe = /เกิดวันที่\s*([0-9]{1,2})\s*(ม\.ค\.|ก\.พ\.|มี\.ค\.|เม\.ย\.|พ\.ค\.|มิ\.ย\.|ก\.ค\.|ส\.ค\.|ก\.ย\.|ต\.ค\.|พ\.ย\.|ธ\.ค\.)\s*([0-9]{4})/;
+            const thaiMatch = text.match(thaiDateRe);
+            if (thaiMatch) {
+                const day = parseInt(thaiMatch[1], 10);
+                const thaiMonthMap: Record<string, number> = {
+                    'ม.ค.': 1, 'ก.พ.': 2, 'มี.ค.': 3, 'เม.ย.': 4,
+                    'พ.ค.': 5, 'มิ.ย.': 6, 'ก.ค.': 7, 'ส.ค.': 8,
+                    'ก.ย.': 9, 'ต.ค.': 10, 'พ.ย.': 11, 'ธ.ค.': 12
+                };
+                const rawMonth = thaiMatch[2];           // type string
+                const month = thaiMonthMap[rawMonth]; // ไม่เตือนแล้ว
+                let year = parseInt(thaiMatch[3], 10);
+                if (year > 2400) year -= 543;                  // ถ้าเป็น พ.ศ. ลบ 543
+
+                const parsed = new Date(year, month - 1, day);
+                if (!isNaN(parsed.getTime())) {
+                    setValueCalendar(parsed);
+                    handleDateChange(parsed);
+                    return;  // จบเลย ไม่ต้อง fallback English
+                }
+            }
+
+            // 2) ถ้าไม่เจอวันที่ไทย จึงค่อย fallback English แบบเดิม (optional)
+            const engDateRe = /Date of (?:surth|birth)\s*([0-9]{1,2})\s*(Jan\.?|Feb\.?|Mar\.?|Apr\.?|May\.?|Jun\.?|Jul\.?|Aug\.?|Sep\.?|Oct\.?|Nov\.?|Dec\.?)\.?\s*([0-9]{4})/i;
+            const engMatch = text.match(engDateRe);
+            if (engMatch) {
+                const day = parseInt(engMatch[1], 10);
+                const engMonthMap: Record<string, number> = {
+                    'Jan': 1, 'Jan.': 1, 'Feb': 2, 'Feb.': 2, 'Mar': 3, 'Mar.': 3,
+                    'Apr': 4, 'Apr.': 4, 'May': 5, 'May.': 5, 'Jun': 6, 'Jun.': 6,
+                    'Jul': 7, 'Jul.': 7, 'Aug': 8, 'Aug.': 8, 'Sep': 9, 'Sep.': 9,
+                    'Oct': 10, 'Oct.': 10, 'Nov': 11, 'Nov.': 11, 'Dec': 12, 'Dec.': 12
+                };
+                const month = engMonthMap[engMatch[2]];
+                const year = parseInt(engMatch[3], 10);
+                const parsed = new Date(year, (month || 1) - 1, day);
+                if (!isNaN(parsed.getTime())) {
+                    setValueCalendar(parsed);
+                    handleDateChange(parsed);
+                }
+            }
+        }
+    }, [ocrResult]);
+
+    // นำเข้าเลยข้างบนของไฟล์
+    function isValidThaiId(id: string): boolean {
+        if (!/^\d{13}$/.test(id)) return false;
+        const digits = id.split('').map(d => parseInt(d, 10));
+        let sum = 0;
+        for (let i = 0; i < 12; i++) {
+            sum += digits[i] * (13 - i);
+        }
+        const check = (11 - (sum % 11)) % 10;
+        return check === digits[12];
+    }
+
     return (
         <>
+            {/* Modal แสดง IDCardViewer เมื่อ showScanner === true */}
+            {showScanner && (
+                <IDCardOCR
+                    onCapture={handleCapturedImage}
+                    onClose={() => setShowScanner(false)}
+                />
+            )}
+
+            {/* Preview ภาพบัตรที่ถ่ายได้ (Base64) */}
+            {idCardBase64 && (
+                <div style={{ marginTop: 20, textAlign: 'center' }}>
+                    <h4 className={`${styles.fontSize}`}>ภาพที่ถ่ายจากกล้อง:</h4>
+                    <img
+                        src={idCardBase64}
+                        alt="ID Card Preview"
+                        style={{
+                            maxWidth: '100%',
+                            border: '1px solid #ccc',
+                            borderRadius: 4,
+                        }}
+                    />
+                </div>
+            )}
+
+            {/* แสดงสถานะการเรียก OCR.space */}
+            {idCardBase64 && (
+                <div style={{ textAlign: 'center', marginTop: 12 }}>
+                    {isLoadingOCR ? (
+                        <p className={`${styles.fontSize}`}>กำลังอ่านข้อมูลจากบัตร (OCR)...</p>
+                    ) : ocrResult ? (
+                        <>
+                            {ocrResult.error ? (
+                                <div style={{ color: 'red' }}>
+                                    <h5>เกิดข้อผิดพลาดจาก OCR:</h5>
+                                    <p>{ocrResult.error}</p>
+                                </div>
+                            ) : (
+                                <div style={{ textAlign: 'left', whiteSpace: 'pre-wrap', backgroundColor: '#f5f5f5', padding: 12, borderRadius: 4 }}>
+                                    <h5 className={`${styles.fontSize}`}>ผลลัพธ์:</h5>
+                                    <pre className={`${styles.fontSize}`}>{ocrResult.rawText}</pre>
+                                </div>
+                            )}
+                        </>
+                    ) : null}
+                </div>
+            )}
+            {/* สแกนบัตร */}
+
             <Content>
                 <div className='d-flex justify-content-between align-items-center my-5'>
                     <div id="kt_page_title" data-kt-swapper="true" data-kt-swapper-mode="prepend"
@@ -1724,7 +866,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                 <span className={`${styles.fontSize}`}>เลขที่ขาย: </span><span className={`${styles.titlePage}`}>{refno}</span>
 
                 {/* Card Body */}
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit(onSubmit)}>
                     <div className='accordion mb-10' id='kt_accordion_1'>
                         {/* Start accordion ข้อมูลลูกค้า*/}
                         <div className='accordion-item mb-10'>
@@ -1791,7 +933,7 @@ const UpdateSaleCustDetail: React.FC = () => {
 
                                                     <div className="">
                                                         <div className='row mb-6'>
-                                                            <div className='col-lg-6'>
+                                                            {/* <div className='col-lg-6'>
                                                                 <label className={`form-label ${styles.label}`}>เลขบัตร</label>
                                                                 <input
                                                                     // disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.CUSTOMERID !== "" ? true : false : false}
@@ -1802,7 +944,54 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                     placeholder='บัตรประชาชน'
                                                                 />
                                                                 {errors.idCard && <p className='text-danger'>{errors.idCard}</p>}
+                                                            </div> */}
+                                                            <div className='col-lg-6 mb-3'>
+                                                                <label className={`${styles.label} `}>เลขบัตร</label>
+                                                                <Controller
+                                                                    name="idCard"
+                                                                    control={control}
+                                                                    render={({ field }) => (
+                                                                        <div className={`input-group ${styles.customInputGroup}`}>
+                                                                            <input
+                                                                                {...field}
+                                                                                className={`form-control ${styles.label} ${errors.idCard ? "is-invalid" : ""}`}
+                                                                                value={idCard}
+                                                                                maxLength={13}
+                                                                                onKeyDown={e => {
+                                                                                    if (e.key === " " || e.key === "Tab") e.preventDefault();
+                                                                                }}
+                                                                                onPaste={e => {
+                                                                                    const cleaned = e.clipboardData.getData("Text").replace(/\s+/g, "");
+                                                                                    e.preventDefault();
+                                                                                    field.onChange(cleaned);
+                                                                                    setIdCard(cleaned);
+                                                                                    trigger("idCard");
+                                                                                }}
+                                                                                onChange={e => {
+                                                                                    const cleaned = e.target.value.replace(/\s+/g, "");
+                                                                                    field.onChange(cleaned);
+                                                                                    setIdCard(cleaned);
+                                                                                    trigger("idCard");
+                                                                                }}
+                                                                                type="text"
+                                                                                onBlur={field.onBlur}
+                                                                                ref={field.ref}
+                                                                            />
+                                                                            {selectedCardType === "1" && (
+                                                                                <span
+                                                                                    className="input-group-text"
+                                                                                    style={{ cursor: 'pointer' }}
+                                                                                    onClick={() => setShowScanner(true)}
+                                                                                >
+                                                                                    <FontAwesomeIcon icon={faBarcode} />
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                />
+                                                                {errors.idCard && <p className={`text-danger ${styles.label}`}>{errors.idCard.message}</p>}
                                                             </div>
+
                                                             <div className='col-lg-6 mb-3'>
                                                                 <label className={`form-label ${styles.label}`}>คำนำหน้าชื่อ</label>
                                                                 <select
@@ -1817,7 +1006,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                     ))}
                                                                 </select>
                                                             </div>
-                                                            <div className='col-lg-6'>
+                                                            {/* <div className='col-lg-6'>
                                                                 <label className={`form-label ${styles.label}`}>ชื่อ</label>
                                                                 <input
                                                                     value={fullName}
@@ -1827,9 +1016,32 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                     placeholder='ชื่อ-สกุล'
                                                                 />
                                                                 {errors.fullName && <p className='text-danger'>{errors.fullName}</p>}
+                                                            </div> */}
+                                                            <div className='col-lg-6 my-3'>
+                                                                <label className={`${styles.label} ${styles.required}`}>ชื่อ</label>
+                                                                <Controller
+                                                                    name="fullName"
+                                                                    control={control}
+                                                                    render={({ field }) => (
+                                                                        <>
+                                                                            <input
+                                                                                {...field}
+                                                                                type="text"
+                                                                                className={`form-control ${styles.label} ${errors.fullName ? "is-invalid" : ""}`}
+                                                                                onChange={e => {
+                                                                                    field.onChange(e);
+                                                                                    setFullName(e.target.value);
+                                                                                }}
+                                                                            />
+                                                                            {errors.fullName && (
+                                                                                <p className={`text-danger ${styles.label}`}>{errors.fullName.message}</p>
+                                                                            )}
+                                                                        </>
+                                                                    )}
+                                                                />
                                                             </div>
 
-                                                            <div className='col-lg-6'>
+                                                            <div className='col-lg-6 my-3'>
                                                                 <label className={`form-label ${styles.label}`}>นามสกุล</label>
                                                                 <input
                                                                     type="text"
@@ -1890,7 +1102,7 @@ const UpdateSaleCustDetail: React.FC = () => {
 
                                                             <div className="">
                                                                 <div className='row mt-6'>
-                                                                    <div className='col-lg-6 mb-3'>
+                                                                    {/* <div className='col-lg-6 mb-3'>
                                                                         <label className={`form-label ${styles.label}`}>เบอร์ที่ติดต่อได้</label>
                                                                         <input
                                                                             value={mobile}
@@ -1900,14 +1112,44 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                             maxLength={10}
                                                                         />
                                                                         {errors.mobile && <p className='text-danger'>{errors.mobile}</p>}
+                                                                    </div> */}
+
+                                                                    <div className='col-lg-6 mb-3'>
+                                                                        <label className={`${styles.label} `}>เบอร์ที่ติดต่อได้</label>
+                                                                        <Controller
+                                                                            name="telNo"
+                                                                            control={control}
+                                                                            render={({ field }) => (
+                                                                                <input
+                                                                                    {...field}
+                                                                                    className={`${styles.label} form-control ${errors.telNo ? "is-invalid" : ""}`}
+                                                                                    value={mobile}
+                                                                                    maxLength={10}
+                                                                                    onChange={(e) => {
+                                                                                        field.onChange(e.target.value)
+                                                                                        setMobile(e.target.value)
+                                                                                        trigger("telNo")
+                                                                                    }}
+                                                                                    type='text'
+                                                                                    inputMode='numeric'
+                                                                                    pattern='[0-9]*'
+                                                                                    onBlur={field.onBlur}
+                                                                                    ref={field.ref}
+                                                                                />
+                                                                            )}
+                                                                        />
+                                                                        {errors.telNo && <p className={`text-danger ${styles.label}`}>{errors.telNo.message}</p>}
                                                                     </div>
+
                                                                     <div className='col-lg-6 mb-3'>
                                                                         <label className={`form-label ${styles.label}`}>เบอร์บ้าน</label>
                                                                         <input
                                                                             value={phone}
                                                                             onChange={(e) => setPhone(e.target.value)}
                                                                             type='text'
-                                                                            className={`form-control mb-3 mb-lg-0 ${styles.label}`}
+                                                                            inputMode='numeric'
+                                                                            pattern='[0-9]*'
+                                                                            className={`form-control ${styles.label}`}
                                                                             maxLength={10}
                                                                         />
                                                                     </div>
@@ -1917,17 +1159,19 @@ const UpdateSaleCustDetail: React.FC = () => {
 
                                                         <div className="">
                                                             <div className='row mb-6'>
-                                                                <div className='col-lg-6 mb-3'>
+                                                                <div className='col-lg-6 my-3'>
                                                                     <label className={`form-label ${styles.label}`}>เบอร์ที่ทำงาน</label>
                                                                     <input
                                                                         value={workPhone}
                                                                         onChange={(e) => setWorkPhone(e.target.value)}
                                                                         type='text'
-                                                                        className={`form-control mb-3 mb-lg-0 ${styles.label}`}
+                                                                        inputMode='numeric'
+                                                                        pattern='[0-9]*'
+                                                                        className={`form-control ${styles.label}`}
                                                                         maxLength={10}
                                                                     />
                                                                 </div>
-                                                                <div className='col-lg-6 mb-3'>
+                                                                {/* <div className='col-lg-6 mb-3'>
                                                                     <label className={`form-label ${styles.label}`}>อีเมล์</label>
                                                                     <input
                                                                         value={email}
@@ -1936,6 +1180,27 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                         className={`form-control mb-3 mb-lg-0 ${styles.label}`}
                                                                     />
                                                                     {errors.email && <p className='text-danger'>{errors.email}</p>}
+                                                                </div> */}
+                                                                <div className='col-lg-6 my-3'>
+                                                                    <label className={`${styles.label}`}>อีเมล์</label>
+                                                                    <Controller
+                                                                        name="email"
+                                                                        control={control}
+                                                                        render={({ field }) => (
+                                                                            <input
+                                                                                {...field}
+                                                                                className={`${styles.label} form-control ${errors.email ? "is-invalid" : ""}`}
+                                                                                value={email}
+                                                                                onChange={(e) => {
+                                                                                    field.onChange(e)
+                                                                                    setEmail(e.target.value)
+                                                                                    trigger("email")
+                                                                                }}
+                                                                                type='text'
+                                                                            />
+                                                                        )}
+                                                                    />
+                                                                    {errors.email && <p className={`text-danger ${styles.label}`}>{errors.email.message}</p>}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -1963,7 +1228,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                     ))}
                                                                 </select>
                                                             </div>
-                                                            <div className='col-lg-6'>
+                                                            {/* <div className='col-lg-6'>
                                                                 <label className={`form-label ${styles.label}`}>เลขประจำตัวผู้เสียภาษี</label>
                                                                 <input
                                                                     value={idCard}
@@ -1973,6 +1238,27 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                 // disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.CUSTOMERID !== "" ? true : false : false}
                                                                 />
                                                                 {errors.idCard && <p className='text-danger'>{errors.idCard}</p>}
+                                                            </div> */}
+                                                            <div className='col-lg-4'>
+                                                                <label className='form-label required fw-bold fs-6'>เลขประจำตัวผู้เสียภาษี</label>
+                                                                <Controller
+                                                                    name="idCard"
+                                                                    control={control}
+                                                                    render={({ field }) => (
+                                                                        <input
+                                                                            {...field}
+                                                                            className={`form-control ${errors.idCard ? "is-invalid" : ""}`}
+                                                                            value={idCard}
+                                                                            onChange={(e) => {
+                                                                                field.onChange(e)
+                                                                                setIdCard(e.target.value)
+                                                                                trigger("idCard");
+                                                                            }}
+                                                                            type='text'
+                                                                        />
+                                                                    )}
+                                                                />
+                                                                {errors.idCard && <p className="text-danger">{errors.idCard.message}</p>}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1993,7 +1279,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                     ))}
                                                                 </select>
                                                             </div>
-                                                            <div className='col-lg-4'>
+                                                            {/* <div className='col-lg-4'>
                                                                 <label className={`form-label ${styles.label}`}>ชื่อบริษัท</label>
                                                                 <input
                                                                     value={fullName}
@@ -2002,6 +1288,15 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                     className={`form-control mb-3 mb-lg-0 ${styles.label}`}
                                                                 />
                                                                 {errors.fullName && <p className='text-danger'>{errors.fullName}</p>}
+                                                            </div> */}
+                                                            <div className='col-lg-6'>
+                                                                <label className='form-label required fw-bold fs-6'>ชื่อบริษัท</label>
+                                                                <input
+                                                                    type="text"
+                                                                    className="form-control mb-3 mb-lg-0"
+                                                                    value={fullName}
+                                                                    onChange={e => setFullName(e.target.value)}
+                                                                />
                                                             </div>
                                                             <div className='col-lg-4 mb-3'>
                                                                 <label className={`form-label ${styles.label}`}>กรรมการผู้มีอำนาจ</label>
@@ -2017,7 +1312,7 @@ const UpdateSaleCustDetail: React.FC = () => {
 
                                                         <div className="">
                                                             <div className='row mb-6 mt-6'>
-                                                                <div className='col-lg-6 mb-3'>
+                                                                {/* <div className='col-lg-6 mb-3'>
                                                                     <label className={`form-label ${styles.label}`}>เบอร์ที่ติดต่อได้</label>
                                                                     <input
                                                                         value={mobile}
@@ -2027,13 +1322,39 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                         maxLength={10}
                                                                     />
                                                                     {errors.mobile && <p className='text-danger'>{errors.mobile}</p>}
+                                                                </div> */}
+                                                                <div className='col-lg-6 mb-3'>
+                                                                    <label className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
+                                                                    <Controller
+                                                                        name="telNo"
+                                                                        control={control}
+                                                                        render={({ field }) => (
+                                                                            <input
+                                                                                {...field}
+                                                                                className={`form-control ${errors.telNo ? "is-invalid" : ""}`}
+                                                                                value={mobile}
+                                                                                maxLength={10}
+                                                                                type='text'
+                                                                                inputMode='numeric'
+                                                                                pattern='[0-9]*'
+                                                                                onChange={(e) => {
+                                                                                    field.onChange(e)
+                                                                                    setMobile(e.target.value)
+                                                                                    trigger("telNo")
+                                                                                }}
+                                                                            />
+                                                                        )}
+                                                                    />
+                                                                    {errors.telNo && <p className="text-danger">{errors.telNo.message}</p>}
                                                                 </div>
                                                                 <div className='col-lg-6 mb-3'>
                                                                     <label className={`form-label ${styles.label}`}>เบอร์บ้าน</label>
                                                                     <input
                                                                         value={phone}
                                                                         type='text'
-                                                                        className={`form-control mb-3 mb-lg-0 ${styles.label}`}
+                                                                        inputMode='numeric'
+                                                                        pattern='[0-9]*'
+                                                                        className='form-control mb-3 mb-lg-0'
                                                                         onChange={(e) => setPhone(e.target.value)}
                                                                         maxLength={10}
                                                                     />
@@ -2048,12 +1369,14 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                     <input
                                                                         value={workPhone}
                                                                         type='text'
+                                                                        inputMode='numeric'
+                                                                        pattern='[0-9]*'
                                                                         className={`form-control mb-3 mb-lg-0 ${styles.label}`}
                                                                         onChange={(e) => setWorkPhone(e.target.value)}
                                                                         maxLength={10}
                                                                     />
                                                                 </div>
-                                                                <div className='col-lg-6 mb-3'>
+                                                                {/* <div className='col-lg-6 mb-3'>
                                                                     <label className={`form-label ${styles.label}`}>อีเมล์</label>
                                                                     <input
                                                                         value={email}
@@ -2061,7 +1384,28 @@ const UpdateSaleCustDetail: React.FC = () => {
                                                                         type='text'
                                                                         className={`form-control mb-3 mb-lg-0 ${styles.label}`}
                                                                     />
-                                                                    {/* {errors.email && <p className='text-danger'>{errors.email.message}</p>} */}
+                                                                    {errors.email && <p className='text-danger'>{errors.email.message}</p>}
+                                                                </div> */}
+                                                                <div className='col-lg-6 my-3'>
+                                                                    <label className={`${styles.label}`}>อีเมล์</label>
+                                                                    <Controller
+                                                                        name="email"
+                                                                        control={control}
+                                                                        render={({ field }) => (
+                                                                            <input
+                                                                                {...field}
+                                                                                className={`${styles.label} form-control ${errors.email ? "is-invalid" : ""}`}
+                                                                                value={email}
+                                                                                onChange={(e) => {
+                                                                                    field.onChange(e)
+                                                                                    setEmail(e.target.value)
+                                                                                    trigger("email")
+                                                                                }}
+                                                                                type='text'
+                                                                            />
+                                                                        )}
+                                                                    />
+                                                                    {errors.email && <p className={`text-danger ${styles.label}`}>{errors.email.message}</p>}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -2082,13 +1426,19 @@ const UpdateSaleCustDetail: React.FC = () => {
                     <div className='d-none d-xl-flex justify-content-between align-items-center my-5'>
                         <button
                             className={`${styles.btnSecondary}`}
-                            onClick={() => navigate('/sale/step', { state: item })}>
-                            ย้อนกลับ
+                            onClick={() => navigate('/sale/update/updateSalesEmployee', {
+                            state: {
+                                ...matchedItem,
+                            }
+                        })}
+                        >
+                            แก้ไขพนักงานขาย
                         </button>
                         <button
                             className={`${styles.btnPrimary}`}
-                            onClick={handleNextClick}>
-                            อัพเดทข้อมูล
+                            onClick={handleSubmit(onSubmit)}
+                        >
+                            ถัดไป
                         </button>
                         {/* <button
                             className={`btn btn-primary w-100 w-md-auto align-self-center h-50px ${!isDataComplete ? `disabled` : ``}`}
@@ -2112,15 +1462,19 @@ const UpdateSaleCustDetail: React.FC = () => {
                     >
                         <button
                             className={`${styles.btnSecondary}`}
-                            onClick={() => navigate('/sale/step', { state: item })}
+                            onClick={() => navigate('/sale/update/updateSalesEmployee', {
+                                state: {
+                                    ...matchedItem,
+                                }
+                            })}
                         >
-                            ย้อนกลับ
+                            แก้ไขพนักงานขาย
                         </button>
                         <button
                             className={`${styles.btnPrimary}`}
-                            onClick={handleNextClick}
+                            onClick={handleSubmit(onSubmit)}
                         >
-                            อัพเดทข้อมูล
+                            ถัดไป
                         </button>
                         {/* <button
                             className={`btn btn-primary w-auto ${!isDataComplete ? `disabled` : ``}`}
@@ -2138,3 +1492,1516 @@ const UpdateSaleCustDetail: React.FC = () => {
 }
 
 export default UpdateSaleCustDetail
+
+
+
+
+
+
+
+
+
+
+
+// import styles from '@/styles/style.module.css'
+// import IDCardOCR from '../components/ocr/IDCardOCR'
+
+// import { useState, ChangeEvent, useEffect, useMemo, useRef } from 'react'
+// import { Link, useNavigate, useLocation } from 'react-router-dom'
+// import axios from 'axios';
+// import clsx from 'clsx'
+// import { KTIcon, toAbsoluteUrl } from '../../../../_metronic/helpers'
+// import { Content } from '../../../../_metronic/layout/components/content'
+// import { useAuth } from '../../../modules/auth/core/Auth';
+
+// import {
+//     useUUIDStore,
+//     useSaveCustomerStore,
+//     useSaveAddressStore
+// } from '../../../modules/stores/stepsStore';
+
+// import dayjs, { Dayjs } from 'dayjs';
+// import DatePicker from "react-datepicker";
+// import "react-datepicker/dist/react-datepicker.css";
+// import Swal from 'sweetalert2';
+// import withReactContent from 'sweetalert2-react-content';
+
+// import { useForm, Controller } from "react-hook-form";
+// import * as yup from "yup";
+// import { yupResolver } from "@hookform/resolvers/yup";
+
+// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+// import { faBarcode } from '@fortawesome/free-solid-svg-icons'
+
+// interface ItemProps {
+//     REFNO: string;
+//     CONTNO: string;
+//     EMPID: string;
+//     TEAMSALE: string;
+//     SALECODE: string;
+//     SUPEMPID: string;
+//     SECEMPID: string;
+//     STATUS: string;
+//     PRODUCT: [any];
+//     CUSTOMERSTATUS: [any];
+//     DISCOUNT: [any];
+//     CUSTOMERDETAIL: [any];
+//     ADDRESS: [any];
+//     PDPA: [any];
+//     CONTRACT: [any];
+//     IMAGE: [any];
+//     CHECKERCOMMENT: [any];
+//     barCode?: string; // เพิ่ม property barCode
+//     item?: {
+//         REFNO: string; // เพิ่ม item เป็น optional object
+//         barcode: string;
+//     };
+// }
+
+// interface ImagesType {
+//     IMAGECARD: string[];
+//     IMAGEGPS: string[];
+//     IMAGEMAP: string[];
+//     IMAGECUSTOMERHOME: string[];
+//     IMAGEINSTALLATION: string[];
+//     IMAGETDS: string[];
+//     IMAGECUSTOMER: string[];
+//     IMAGETRADEIN: string[];
+// }
+
+// interface OCRResultState {
+//     rawText: string;
+//     error?: string;
+// }
+
+// type FormValues = {
+//     fullName: string
+//     idCard: string
+//     telNo: string
+//     email: string
+// }
+
+// const UpdateSaleCustDetail: React.FC = () => {
+//     const MySwal = withReactContent(Swal);
+//     const navigate = useNavigate()
+//     const location = useLocation();
+
+//     const item = location.state as ItemProps || [];
+
+//     const matchedItem = location.state as ItemProps
+//     const refno = matchedItem.REFNO
+
+//     const customerDetail = matchedItem.CUSTOMERDETAIL[0];
+//     // console.log(`customerDetail`, customerDetail);
+
+//     let customerStatus = matchedItem?.CUSTOMERSTATUS
+//     // console.log(`customerStatus`, customerStatus);
+
+//     const product = matchedItem?.PRODUCT
+
+//     const { auth } = useAuth();
+//     const EmpId = auth?.data?.[0]?.EmpId || '';
+//     const TeamSale = auth?.data?.[0]?.TeamSale || '';
+//     const SaleCode = auth?.data?.[0]?.SaleCode || '';
+//     const SupEmpId = auth?.data?.[0]?.SupEmp || '';
+//     const SecEmpId = auth?.data?.[0]?.SecEmp || '';
+//     const DivisionId = auth?.data?.[0]?.DivisionId || '';
+//     const DepartId = auth?.data?.[0]?.DepartId || '';
+//     const DepartGroup = auth?.data?.[0]?.DepartGroup || '';
+
+//     const { saveCustomerTypes, setSaveCustomerTypes } = useSaveCustomerStore()
+//     // console.log(`saveCustomerTypes`,saveCustomerTypes);
+
+//     const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
+//     const CUSTOMER_TYPE_URL = `${API_SALECONNEXT}/GetCustomertype`;
+//     const API_URL_POST_CONDITIONSCHECKHISTORY = `${API_SALECONNEXT}/ConditionsCheckHistory`;
+
+//     const API_URL_POST_CHECKCUSTOMER = import.meta.env.VITE_APP_API_THIENSURAT;
+//     const CHECKCUSTOMER_URL = `${API_URL_POST_CHECKCUSTOMER}/CheckCustomer`;
+
+//     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
+//     const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
+//     const DRAFT_ALLCONTRACT_URL = `${API_URL_MONGO}/Contract/GetAllContract?status=DRAFT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`
+//     const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage`;
+
+//     const [Model, setModel] = useState<string>('');
+//     const [checktype, setChecktype] = useState<number | null>(null);
+
+//     const [customerTypes, setCustomerTypes] = useState<any[]>([]);
+
+//     const [valueCalendar, setValueCalendar] = useState<Date | null>(null);
+//     const [valueAge, setValueAge] = useState<number | null>(customerDetail.CUSTOMERRAGE ?? null);
+//     // console.log(`valueAge`, valueAge);
+
+//     const [selectedCustomerType, setsSelectedCustomerType] = useState<string>('');
+//     const [selectedCardType, setSelectedCardType] = useState<string>('');
+//     const [selectedPrefixId, setSelectedPrefixId] = useState<number>();
+//     const [selectedSexId, setSelectedSexId] = useState<number>();
+
+//     const [idCard, setIdCard] = useState<string>('');
+//     const [fullName, setFullName] = useState<string>('');
+//     const [lastName, setLastName] = useState<string>('');
+//     const [nameMD, setNameMD] = useState<string>('');
+//     const [age, setAge] = useState<string>('');
+//     const [email, setEmail] = useState<string>('');
+//     const [mobile, setMobile] = useState<string>('');
+//     const [phone, setPhone] = useState<string>('');
+//     const [workPhone, setWorkPhone] = useState<string>('');
+
+//     const selectedCustomer = customerTypes.find((type) => type.CUSTOMERTYPE === selectedCustomerType) || { CARDTYPE: [], PREFIX: [], SEX: [] };
+
+//     const [images, setImages] = useState<ImagesType | null>(null);
+
+//     // เช็ค validate ฟอร์ม
+//     const [formValid, setFormValid] = useState<boolean>(false);
+
+//     {/************ สแกนบัตร ************/ }
+//     const [showScanner, setShowScanner] = useState(false);
+//     // เมื่อ user ถ่ายภาพบัตร เราเก็บ base64 ลง state นี้
+//     const [idCardBase64, setIdCardBase64] = useState<string | null>(null);
+
+//     // state สำหรับเก็บผลลัพธ์ Text จาก OCR.space
+//     const [ocrResult, setOcrResult] = useState<OCRResultState | null>(null);
+
+//     const [isLoadingOCR, setIsLoadingOCR] = useState(false);
+
+//     {/****** matchedItem *******/ }
+//     const [isLoadingDraft, setIsLoadingDraft] = useState<boolean>(false);
+//     const [draft, setDraft] = useState<any[]>([]);
+
+//     useEffect(() => {
+//         const getDataDraft = async () => {
+//             setIsLoadingDraft(true);
+//             try {
+//                 const response = await axios.get(DRAFT_ALLCONTRACT_URL);
+//                 const data = Array.isArray(response.data.data) ? response.data.data : [];
+//                 setDraft(data);
+//             } catch (error) {
+//                 console.error('Error fetching DRAFT_ALLCONTRACT_URL:', error);
+//             } finally {
+//                 setIsLoadingDraft(false);
+//             }
+//         };
+//         getDataDraft();
+//     }, []);
+
+//     {/****** matchedItem *******/ }
+
+//     // เมื่อได้รับ base64 จาก IDCardViewer ให้มา preview ที่หน้า SalesCreateCust
+//     const handleCapturedImage = (base64Image: string) => {
+//         setIdCardBase64(base64Image);
+//         setShowScanner(false);
+//         setOcrResult(null);
+//     };
+
+//     // ฟังก์ชันเรียก OCR.space API (เมื่อมี idCardBase64)
+//     const callOCRSpace = async (base64Image: string) => {
+//         try {
+//             setIsLoadingOCR(true);
+//             const API_OCR = import.meta.env.VITE_APP_API_OCR;
+
+//             // เตรียม payload ในรูปแบบ FormData
+//             const formData = new FormData();
+//             formData.append('apikey', API_OCR);
+//             formData.append('base64Image', base64Image);
+//             formData.append('language', 'tha');            // อ่านภาษาไทย
+//             formData.append('isOverlayRequired', 'false');
+//             formData.append('filetype', 'PNG');            // หรือ 'JPG' ตาม screenshotFormat 
+//             formData.append('detectOrientation', 'true');
+//             formData.append('isCreateSearchablePdf', 'false');
+//             formData.append('scale', 'false');
+//             formData.append('isTable', 'false');
+//             formData.append('OCREngine', '2');             // ใช้ OCR Engine 2
+
+//             const response = await axios.post(
+//                 'https://api.ocr.space/parse/image',
+//                 formData,
+//                 {
+//                     headers: {
+//                         // 'Content-Type' จะถูกเซ็ตเป็น multipart/form-data โดย axios เอง
+//                     },
+//                 }
+//             );
+
+//             const data = response.data;
+//             if (data.OCRExitCode === 1 && data.ParsedResults) {
+//                 const allText = data.ParsedResults
+//                     .map((res: any) => res.ParsedText)
+//                     .join('\n');
+//                 setOcrResult({ rawText: allText });
+//             } else {
+//                 const errMsg = data.ErrorMessage || 'Unknown OCR error';
+//                 setOcrResult({ rawText: '', error: errMsg });
+//             }
+//         } catch (error: any) {
+//             setOcrResult({ rawText: '', error: error.message || 'Request failed' });
+//         } finally {
+//             setIsLoadingOCR(false);
+//         }
+//     };
+
+//     // เมื่อ selected idCardBase64 เปลี่ยน → เรียก OCR.space
+//     useEffect(() => {
+//         if (idCardBase64) {
+//             callOCRSpace(idCardBase64);
+//         }
+//     }, [idCardBase64]);
+
+
+//     {/************ สแกนบัตร ************/ }
+
+//     function formatLocalDate(d: Date): string {
+//         const y = d.getFullYear();
+//         const m = String(d.getMonth() + 1).padStart(2, '0');
+//         const dd = String(d.getDate()).padStart(2, '0');
+//         return `${y}-${m}-${dd}`;
+//     }
+
+//     // เก็บข้อมูลส่วนลดใน state และ store
+//     const SaveCustomertData = useMemo(() => {
+//         const customerTypeData = customerTypes.find((type) => type.CUSTOMERTYPE === selectedCustomerType);
+//         // console.log("customerTypeData:", customerTypeData);
+
+//         return [
+//             {
+//                 CUSTOMERTYPE: selectedCustomerType,
+//                 CUSTOMERTYPENAME: customerTypeData ? customerTypeData.CUSTOMERTYPENAME : '', // ตรวจสอบว่าข้อมูล customerTypeData มีหรือไม่
+//                 CUSTOMERID: idCard,
+//                 CUSTOMERNAME: fullName,
+//                 CUSTOMERLASTNAME: lastName,
+//                 CUSTOMERMD: nameMD,
+//                 CUSTOMERDOB: valueCalendar ? dayjs(valueCalendar).format('YYYY-MM-DD') : '',
+//                 CUSTOMERRAGE: valueAge ? valueAge.toString() : '',
+//                 CUSTOMERMOBILE: mobile,
+//                 CUSTOMERWORKPHONE: workPhone,
+//                 CUSTOMERPHONE: phone,
+//                 CUSTOMEREMAIL: email,
+//                 CARDTYPE: customerTypeData?.CARDTYPE ? customerTypeData.CARDTYPE
+//                     .filter((cardType: any) => {
+//                         // console.log("Selected Card Type:", selectedCardType);
+//                         // console.log("Available Card Type:", cardType.CARDTYPE);
+//                         return String(cardType.CARDTYPE) === String(selectedCardType); // ใช้การเปรียบเทียบแบบ string
+//                     })
+//                     .map((cardType: any) => ({
+//                         CARDTYPE: selectedCardType,
+//                         CARDTYPECODE: cardType.CARDTYPECODE,
+//                         CARDTYPENAME: cardType.CARDTYPENAME,
+//                     })) : [],
+//                 PREFIX: customerTypeData?.PREFIX ? customerTypeData.PREFIX
+//                     .filter((prefix: any) => prefix.PREFIXID === selectedPrefixId) // ใช้เฉพาะค่าที่เลือก
+//                     .map((prefix: any) => ({
+//                         PREFIXID: selectedPrefixId,
+//                         PREFIXCODE: prefix.PREFIXCODE,
+//                         PREFIXNAME: prefix.PREFIXNAME,
+//                     })) : [],
+//                 SEX: customerTypeData?.SEX ? customerTypeData.SEX
+//                     .filter((sex: any) => sex.SEXID === selectedSexId) // ใช้เฉพาะค่าที่เลือก
+//                     .map((sex: any) => ({
+//                         SEXID: selectedSexId,
+//                         SEXCODE: sex.SEXCODE,
+//                         SEXNAME: sex.SEXNAME,
+//                     })) : [],
+//             }
+//         ];
+//     }, [customerTypes,
+//         selectedCustomerType,
+//         idCard,
+//         fullName,
+//         valueCalendar,
+//         valueAge,
+//         selectedCardType,
+//         selectedPrefixId,
+//         selectedSexId,
+//         email,
+//         mobile,
+//         phone,
+//         workPhone
+//     ]);
+
+//     // อัปเดตข้อมูลส่วน customer ลง store
+//     useEffect(() => {
+//         if (JSON.stringify(SaveCustomertData) !== JSON.stringify(saveCustomerTypes)) {
+//             setSaveCustomerTypes(SaveCustomertData); // อัปเดตข้อมูลลง store
+//         }
+//     }, [SaveCustomertData, saveCustomerTypes, setSaveCustomerTypes]);
+
+//     // GET Customertype
+//     useEffect(() => {
+//         const getData = async () => {
+//             try {
+//                 const response = await axios.get(CUSTOMER_TYPE_URL, {
+//                     headers: {
+//                         'Content-Type': 'application/json',
+//                     }
+//                 });
+//                 setCustomerTypes(response.data);
+//             } catch (error) {
+//                 console.error('Error fetching CUSTOMER_TYPE_URL:', error);
+//             }
+//         };
+
+//         getData();
+
+//         const dobString = customerDetail.CUSTOMERDOB;  // สมมติได้ "2023-06-17"
+//         if (dobString) {
+//             // แปลงจาก "YYYY-MM-DD" → Date object
+//             setValueCalendar(new Date(dobString));
+//         } else {
+//             setValueCalendar(null);
+//         }
+
+//         setsSelectedCustomerType(customerDetail.CUSTOMERTYPE)
+//         setSelectedCardType(customerDetail.CARDTYPE?.[0]?.CARDTYPE)
+//         setIdCard(customerDetail.CUSTOMERID)
+//         setFullName(customerDetail.CUSTOMERNAME)
+//         setLastName(customerDetail.CUSTOMERLASTNAME)
+//         setNameMD(customerDetail.CUSTOMERMD)
+//         setSelectedPrefixId(customerDetail.PREFIX?.[0]?.PREFIXID)
+//         setAge(customerDetail.CUSTOMERRAGE)
+//         setSelectedSexId(customerDetail?.SEX?.[0]?.SEXID)
+//         setMobile(customerDetail.CUSTOMERMOBILE)
+//         setPhone(customerDetail.CUSTOMERPHONE)
+//         setWorkPhone(customerDetail.CUSTOMERWORKPHONE)
+//         setEmail(customerDetail.CUSTOMEREMAIL)
+
+//         if (product?.[0]) {
+//             if (product?.[0].Package?.[0]) {
+//                 setModel(product?.[0].Package?.[0].MODEL)
+//             }
+//         }
+
+//         if (customerStatus.length > 0) {
+
+//         } else {
+//             customerValidation()
+//         }
+//     }, []);
+
+//     // fetch collection ContractImage
+//     useEffect(() => {
+//         const fetchImages = async () => {
+//             try {
+//                 const response = await axios.get(GET_IMAGES_API, {
+//                     params: { REFNO: refno },
+//                 });
+
+//                 // ตรวจสอบว่า response.data เป็นไปตามโครงสร้างของ ImagesType
+//                 const data = response.data;
+
+//                 if (
+//                     data &&
+//                     typeof data === 'object' &&
+//                     'IMAGECARD' in data &&
+//                     'IMAGEGPS' in data &&
+//                     'IMAGEMAP' in data &&
+//                     'IMAGECUSTOMERHOME' in data &&
+//                     'IMAGEINSTALLATION' in data &&
+//                     'IMAGETDS' in data &&
+//                     'IMAGETRADEIN' in data
+//                 ) {
+//                     setImages(data as ImagesType);
+//                 } else {
+//                     setImages(null);
+//                 }
+//             } catch (err) {
+//                 console.error('Error fetching images:', err);
+//                 setImages(null); // ตั้งค่าเป็น null หากมีข้อผิดพลาด
+//             }
+//         };
+
+//         fetchImages();
+//     }, [refno]);
+
+//     const customerValidation = async () => {
+//         const conditionCheckResponse = await axios.post(API_URL_POST_CONDITIONSCHECKHISTORY, {
+//             EmpId, DivisionId, DepartId, DepartGroup, TeamSale, Model
+//         }, {
+//             headers: {
+//                 'Content-Type': 'multipart/form-data',
+//             },
+//         });
+
+//         let updateData;
+
+//         // console.log(conditionCheckResponse)
+
+//         setChecktype(conditionCheckResponse.data.checktype);
+//         if (conditionCheckResponse.data.status == 200) {
+//             if (conditionCheckResponse.data.checktype !== 0) {
+//                 MySwal.fire({
+//                     title: 'กรุณาตรวจสอบประวัติลูกค้า',
+//                     html: `
+//                     <input 
+//                         id="idCardInput" 
+//                         type="text" 
+//                         class="form-control" 
+//                         placeholder="กรุณากรอกเลขบัตรประชาชน (13 หลัก)" 
+//                         maxlength="13"
+//                         oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,13);" 
+//                     />
+//                 `,
+//                     showDenyButton: true,
+//                     showCancelButton: true,
+//                     showCloseButton: false,
+//                     confirmButtonText: 'ตรวจสอบ',
+//                     cancelButtonText: 'กลับ',
+//                     denyButtonText: 'ยกลเลิก',
+//                     preConfirm: async () => {
+//                         const input = (document.getElementById('idCardInput') as HTMLInputElement).value;
+//                         if (input.length === 13) {
+//                             return input;
+//                         } else {
+//                             MySwal.showValidationMessage('กรุณากรอกเลขบัตรประชาชนให้ครบ 13 หลัก');
+//                             return null;
+//                         }
+//                     }
+//                 }).then(async (result) => {
+//                     // console.log(result)
+//                     if (result.isDismissed) {
+//                         navigate('/sale/step', { state: item })
+//                     } else if (result.isDenied) {
+//                         customerValidation()
+//                     } else {
+//                         const apiResponse = await axios.post(CHECKCUSTOMER_URL, { Search: result.value }, {
+//                             headers: {
+//                                 'Content-Type': 'multipart/form-data',
+//                             },
+//                         });
+
+//                         const { Customerstatus, message } = apiResponse.data;
+//                         await MySwal.fire({
+//                             text: message,
+//                             icon: Customerstatus ? 'error' : 'success',
+//                             confirmButtonText: 'ตกลง'
+//                         });
+
+//                         // console.log(apiResponse)
+
+//                         if (Customerstatus) {
+//                             navigate('/sale/step', { state: item })
+//                         } else {
+//                             setIdCard(result.value)
+
+//                             updateData = [result.value, conditionCheckResponse.data.checktype, message];
+//                         }
+//                     }
+//                 });
+//             } else {
+//                 updateData = ["", conditionCheckResponse.data.checktype, conditionCheckResponse.data.message];
+//             }
+//         }
+
+//         try {
+//             const updateContract = await axios.post(UPDATECONTACT, {
+//                 REFNO: refno,
+//                 EMPID: EmpId,
+//                 TEAMSALE: TeamSale,
+//                 FIELD: "CUSTOMERSTATUS",
+//                 DATA: updateData,
+//             }, {
+//                 headers: {
+//                     'Content-Type': 'application/json',
+//                 },
+//             });
+
+//             if (conditionCheckResponse.data.checktype !== 0) {
+//                 if (updateContract.status === 200) {
+//                     if (!updateContract.data.data) {
+//                         MySwal.fire('เกิดข้อผิดพลาด', 'ปรับปรุงข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
+//                     } else {
+//                         customerStatus = updateContract.data.data
+//                         MySwal.fire('สำเร็จ', 'ปรับปรุงข้อมูลการตรวจสอบสถานะแล้ว', 'success');
+//                     }
+//                 } else {
+//                     MySwal.fire('เกิดข้อผิดพลาด', updateContract.data.message, 'error');
+//                 }
+//             }
+//         } catch (error) {
+//             console.error('Error updating contract:', error);
+//             MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถอัปเดตข้อมูลได้', 'error');
+//         }
+//     }
+
+//     // Handle Customer Type Change
+//     const handleCustTypeOptionChange = (event: ChangeEvent<HTMLSelectElement>) => {
+//         const value = event.target.value;
+//         setsSelectedCustomerType(value);
+//         setSelectedCardType('');
+//     }
+
+//     const handleDateChange = (date: Date | null) => {
+//         if (date) {
+//             const calculatedAge = dayjs().diff(dayjs(date), 'year');
+//             if (calculatedAge <= 20) {
+//                 MySwal.fire({
+//                     icon: 'warning',
+//                     title: 'อายุไม่ถึงเกณฑ์',
+//                     text: 'อายุต้องมากกว่า 20 ปีขึ้นไปจึงทำรายการได้',
+//                 })
+//                 // เคลียร์ค่าใน DatePicker และอายุ
+//                 setValueCalendar(null);
+//                 setValueAge(null);
+//                 return; // ยกเลิกการ set ค่าอื่น ๆ ต่อ
+//             }
+//             // ถ้าอายุมากกว่า 18 ก็ set ค่าให้ปกติ
+//             setValueCalendar(date);
+//             setValueAge(calculatedAge);
+//         } else {
+//             // กรณีลบวันที่ทิ้ง
+//             setValueCalendar(null);
+//             setValueAge(null);
+//         }
+//     };
+
+//     const onSubmit = async () => {
+//         // ถ้าไม่มีข้อผิดพลาดให้ทำการอัพเดทข้อมูล
+//         try {
+//             const updateContract = await axios.post(UPDATECONTACT, {
+//                 REFNO: refno,
+//                 EMPID: EmpId,
+//                 TEAMSALE: TeamSale,
+//                 SALECODE: SaleCode,
+//                 SUPEMPID: SupEmpId,
+//                 SECEMPID: SecEmpId,
+//                 FIELD: "CUSTOMERDETAIL",
+//                 DATA: SaveCustomertData
+//             }, {
+//                 headers: {
+//                     'Content-Type': 'application/json',
+//                 },
+//             });
+
+//             if (updateContract.status === 200 && updateContract.data.data) {
+//                 Swal.fire({
+//                     icon: 'success',
+//                     title: 'สำเร็จ!',
+//                     text: 'ปรับปรุงข้อมูลลูกค้าแล้ว',
+//                     timer: 2000,
+//                     showConfirmButton: false,
+//                 });
+//                 navigate("/sale/update/updateAddress", {
+//                     state: {
+//                         ...matchedItem,
+//                     }
+//                 })
+//             } else {
+//                 Swal.fire({
+//                     icon: 'error',
+//                     title: 'เกิดข้อผิดพลาด!',
+//                     text: updateContract.data.message || 'ไม่สามารถอัปเดตข้อมูลได้',
+//                 });
+//             }
+//         } catch (error) {
+//             console.error('Error updating data:', error);
+//             Swal.fire({
+//                 icon: 'error',
+//                 title: 'เกิดข้อผิดพลาด!',
+//                 text: 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง',
+//             });
+//         }
+//     };
+
+//     const handleCheckerClick = async () => {
+//         const response = await axios.post(UPDATECONTACT, {
+//             REFNO: matchedItem.REFNO,
+//             EMPID: EmpId,
+//             TEAMSALE: TeamSale,
+//             FIELD: "STATUS",
+//             DATA: "PENDING",
+//         }, {
+//             headers: {
+//                 'Content-Type': 'application/json',
+//             },
+//         });
+
+//         // console.log(response)
+
+//         if (response.status === 200) {
+//             if (!response.data.data) {
+//                 MySwal.fire('เกิดข้อผิดพลาด', 'ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
+//             } else {
+//                 Swal.fire({
+//                     icon: 'success',
+//                     title: 'สำเร็จ!',
+//                     text: 'ส่งข้อมูลตรวจสอบแล้ว',
+//                     timer: 2000, // แสดงผล 3 วินาที
+//                     showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
+//                 })
+//                 navigate("/sale/overview")
+//             }
+//         } else {
+//             MySwal.fire('เกิดข้อผิดพลาด', response.data.message, 'error');
+//         }
+//     }
+
+//     // เช็คว่า data ใน item มีครบทุกขั้นตอน (ไม่เป็น array เปล่า) ใช่ไหม ถ้าเป็นจะ disabled ปุ่มส่งตรวจสอบ
+//     // const isDataComplete = useMemo(() => {
+//     //     // ตรวจสอบว่ามีรูปภาพในฟิลด์ใดฟิลด์หนึ่งใน images อย่างน้อย 1 รูป
+//     //     const hasImages = images && Object.values(images).some(
+//     //         (field) => Array.isArray(field) && field.length > 0
+//     //     );
+
+//     //     return (
+//     //         Array.isArray(matchedItem.ADDRESS) && matchedItem.ADDRESS.length > 0 &&
+//     //         Array.isArray(matchedItem.CUSTOMERDETAIL) && matchedItem.CUSTOMERDETAIL.length > 0 &&
+//     //         Array.isArray(matchedItem.CUSTOMERSTATUS) && matchedItem.CUSTOMERSTATUS.length > 0 &&
+//     //         Array.isArray(matchedItem.DISCOUNT) && matchedItem.DISCOUNT.length > 0 &&
+//     //         Array.isArray(matchedItem.PDPA) && matchedItem.PDPA.length > 0 &&
+//     //         Array.isArray(matchedItem.PRODUCT) && matchedItem.PRODUCT.length > 0 &&
+//     //         hasImages
+//     //     );
+//     // }, [matchedItem, images]);
+
+//     {/*-------------------- Start Validate --------------------*/ }
+
+//     const schema = yup.object({
+//         fullName: yup
+//             .string()
+//             .required("กรุณากรอกชื่อ"),
+//         idCard: yup
+//             .string()
+//             .notRequired()
+//             .test('is-13-digits', 'กรุณากรอกเลขบัตร 13 หลัก', v => !v || /^[0-9]{13}$/.test(v))
+//             .test(
+//                 'valid-thai-id',
+//                 'เลขบัตรประชาชนไม่ถูกต้อง',
+//                 v => {
+//                     if (!v) return true;               // ถ้าไม่กรอก → ผ่านเลย
+//                     if (selectedCardType !== '1') return true; // ถ้าไม่ใช่บัตรประชาชน → ผ่าน
+//                     return isValidThaiId(v);           // ถ้าใช่บัตรประชาชนและมีค่า → ตรวจ checksum
+//                 }
+//             ),
+//         telNo: yup
+//             .string()
+//             .notRequired()
+//             .test('is-9-10-digits', 'เบอร์โทรต้องเป็นตัวเลข 9–10 หลัก', v => !v || /^[0-9]{9,10}$/.test(v)),
+//         email: yup
+//             .string()
+//             .notRequired()
+//             .email('รูปแบบอีเมลไม่ถูกต้อง'),
+//     });
+
+//     // 2) infer type
+//     type FormValues = yup.InferType<typeof schema>;
+
+//     // 3. เรียก useForm พร้อม resolver
+//     const {
+//         control,
+//         handleSubmit,
+//         reset,
+//         setValue,
+//         trigger,
+//         getValues,
+//         formState: { errors },
+//     } = useForm<FormValues>({
+//         resolver: yupResolver(schema),
+//         defaultValues: {
+//             fullName: '',
+//             idCard: '',
+//             telNo: '',
+//             email: '',
+//         },
+//     });
+
+//     useEffect(() => {
+//         if (customerDetail) {
+//             setValue("fullName", customerDetail.CUSTOMERNAME);
+//             setValue("idCard", customerDetail.CUSTOMERID);
+//             setValue("telNo", customerDetail.CUSTOMERMOBILE);
+//             setValue("email", customerDetail.CUSTOMEREMAIL);
+
+//             setsSelectedCustomerType(customerDetail.CUSTOMERTYPE)
+//             setSelectedCardType(customerDetail.CARDTYPE?.[0]?.CARDTYPE)
+//             setIdCard(customerDetail.CUSTOMERID)
+//             setFullName(customerDetail.CUSTOMERNAME)
+//             setLastName(customerDetail.CUSTOMERLASTNAME)
+//             setNameMD(customerDetail.CUSTOMERMD)
+//             setSelectedPrefixId(customerDetail.PREFIX?.[0]?.PREFIXID)
+//             setAge(customerDetail.CUSTOMERRAGE)
+//             setSelectedSexId(customerDetail.SEX?.[0]?.SEXID)
+//             setMobile(customerDetail.CUSTOMERMOBILE)
+//             setPhone(customerDetail.CUSTOMERPHONE)
+//             setWorkPhone(customerDetail.CUSTOMERWORKPHONE)
+//             setEmail(customerDetail.CUSTOMEREMAIL)
+//         }
+//     }, [customerDetail, setValue, reset]);
+
+        
+//     useEffect(() => {
+//         ocrResult && ocrResult.rawText) {
+//         const text = ocrResult.rawText;
+        
+//             ) ดึงเลขบัตรเหมือนเดิม (กรองช่องว่าง/ขีดออก)
+//             t match = text.match(/(\d[\d\s\-]{11,}\d)/);
+//             match && match[1]) {
+//             // 1. ดึงค่าที่จับได้
+//                 const rawId = match[1]; // อาจเป็น "1 103000 078735" หรือ "1103 0000787 35"
+//             // 2. กรองเอาช่องว่างและขีดออกเหลือตัวเลขติดกัน
+//             const cleanedId = rawId.replace(/[\s\-]/g, "");
+            
+//             // 3. เซ็ตลง state และ React Hook Form
+//             setIdCard(cleanedId);
+//                 setValue("idCard", cleanedId);
+//             trigger("idCard");
+//         }
+        
+//         // 2) ดึงชื่อ-นามสกุล (สมมติว่าชื่อและนามสกุลใน OCR เป็นตัวอักษรไทย แยกด้วยเว้นวรรค)
+//             //    เราจะจับกลุ่มอักษรไทยสองกลุ่ม ที่คั่นด้วยเว้นวรรคอย่างน้อยหนึ่งตัว
+//         const nameRegex = /(?:น(?:าย|าง|\.ส\.))\s*([ก-์]+)\s+([ก-์]+)/;
+//             t nameMatch = text.match(nameRegex);
+            
+//             if (nameMatch) {
+//             const firstNameFromOCR = nameMatch[1].trim();
+//             const lastNameFromOCR = nameMatch[2].trim();
+            
+//             // เซ็ตลง state และ React Hook Form
+//                 setFullName(firstNameFromOCR);
+//             setLastName(lastNameFromOCR);
+//         }
+        
+//         // 3) ดึงวันเกิด
+//             t thaiDateRe = /เกิดวันที่\s*([0-9]{1,2})\s*(ม\.ค\.|ก\.พ\.|มี\.ค\.|เม\.ย\.|พ\.ค\.|มิ\.ย\.|ก\.ค\.|ส\.ค\.|ก\.ย\.|ต\.ค\.|พ\.ย\.|ธ\.ค\.)\s*([0-9]{4})/;
+//             t thaiMatch = text.match(thaiDateRe);
+//                 Match) {
+//                 t day = parseInt(thaiMatch[1], 10);
+//                 t thaiMonthMap: Record<string, number> = {
+//                 'ม.ค.': 1, 'ก.พ.': 2, 'มี.ค.': 3, 'เม.ย.': 4,
+//                 'พ.ค.': 5, 'มิ.ย.': 6, 'ก.ค.': 7, 'ส.ค.': 8,
+//                 'ก.ย.': 9, 'ต.ค.': 10, 'พ.ย.': 11, 'ธ.ค.': 12
+//             };
+//             const rawMonth = thaiMatch[2];           // type string
+//                 const month = thaiMonthMap[rawMonth]; // ไม่เตือนแล้ว
+//             let year = parseInt(thaiMatch[3], 10);
+//             if (year > 2400) year -= 543;                  // ถ้าเป็น พ.ศ. ลบ 543
+                
+//                 t parsed = new Date(year, month - 1, day);
+//                 !isNaN(parsed.getTime())) {
+//                 setValueCalendar(parsed);
+//                 handleDateChange(parsed);
+//                     return;  // จบเลย ไม่ต้อง fallback English
+//             }
+//         }
+        
+//         // 2) ถ้าไม่เจอวันที่ไทย จึงค่อย fallback English แบบเดิม (optional)
+//             t engDateRe = /Date of (?:surth|birth)\s*([0-9]{1,2})\s*(Jan\.?|Feb\.?|Mar\.?|Apr\.?|May\.?|Jun\.?|Jul\.?|Aug\.?|Sep\.?|Oct\.?|Nov\.?|Dec\.?)\.?\s*([0-9]{4})/i;
+//             t engMatch = text.match(engDateRe);
+//                 atch) {
+//                 t day = parseInt(engMatch[1], 10);
+//                 t engMonthMap: Record<string, number> = {
+//                 'Jan': 1, 'Jan.': 1, 'Feb': 2, 'Feb.': 2, 'Mar': 3, 'Mar.': 3,
+//                 'Apr': 4, 'Apr.': 4, 'May': 5, 'May.': 5, 'Jun': 6, 'Jun.': 6,
+//                 'Jul': 7, 'Jul.': 7, 'Aug': 8, 'Aug.': 8, 'Sep': 9, 'Sep.': 9,
+//                 'Oct': 10, 'Oct.': 10, 'Nov': 11, 'Nov.': 11, 'Dec': 12, 'Dec.': 12
+//             };
+//             const month = engMonthMap[engMatch[2]];
+//                 t year = parseInt(engMatch[3], 10);
+//                 t parsed = new Date(year, (month || 1) - 1, day);
+//             if (!isNaN(parsed.getTime())) {
+//                 setValueCalendar(parsed);
+//                 handleDateChange(parsed);
+//             }
+//             }
+//     }
+// }, [ocrResult]);
+    
+//     ำเข้าเลยข้างบนของไฟล์
+//     tion isValidThaiId(id: string): boolean {
+//     if (!/^\d{13}$/.test(id)) return false;
+//         t digits = id.split('').map(d => parseInt(d, 10));
+//     let sum = 0;
+//     for (let i = 0; i < 12; i++) {
+//         sum += digits[i] * (13 - i);
+//     }
+//         const check = (11 - (sum % 11)) % 10;
+//     return check === digits[12];
+    
+        
+        
+            
+//                 l แสดง IDCardViewer เมื่อ showScanner === true */}
+//                 nner && (
+//             <IDCardOCR
+//                 onCapture={handleCapturedImage}
+//                     onClose={() => setShowScanner(false)}
+//             />
+//         )}
+            
+//                 iew ภาพบัตรที่ถ่ายได้ (Base64) */}
+//                 ase64 && (
+//                     le={{ marginTop: 20, textAlign: 'center' }}>
+//                     className={`${styles.fontSize}`}>ภาพที่ถ่ายจากกล้อง:</h4>
+                    
+//                         {idCardBase64}
+//                         "ID Card Preview"
+//                         e={{
+//                         maxWidth: '100%',
+//                         border: '1px solid #ccc',
+//                         borderRadius: 4,
+//                     }}
+//                     />
+//             </div>
+//         )}
+            
+//                 สถานะการเรียก OCR.space */}
+//                     4 && (
+//                  style={{ textAlign: 'center', marginTop: 12 }}>
+//                     oadingOCR ? (
+//                         lassName={`${styles.fontSize}`}>กำลังอ่านข้อมูลจากบัตร (OCR)...</p>
+//                             t ? (
+                                
+//                                 lt.error ? (
+//                             <div style={{ color: 'red' }}>
+//                                 <h5>เกิดข้อผิดพลาดจาก OCR:</h5>
+//                                 <p>{ocrResult.error}</p>
+//                                 v>
+                                
+//                             <div style={{ textAlign: 'left', whiteSpace: 'pre-wrap', backgroundColor: '#f5f5f5', padding: 12, borderRadius: 4 }}>
+//                                 <h5 className={`${styles.fontSize}`}>ผลลัพธ์:</h5>
+//                                 <pre className={`${styles.fontSize}`}>{ocrResult.rawText}</pre>
+//                             </div>
+//                         )}
+//                     </>
+//                 ) : null}
+//                 </div>
+//         )}
+//             สแกนบัตร */}
+                
+                    
+//                     ssName='d-flex justify-content-between align-items-center my-5'>
+//                      id="kt_page_title" data-kt-swapper="true" data-kt-swapper-mode="prepend"
+//                         -kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
+//                     className="page-title d-flex flex-wrap me-3 flex-column justify-content-ceดnter">
+//                     <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
+//                         <li className={`breadcrumb-item ${styles.titlePage}`}>แก้ไขข้อมูลลูกค้า</li>
+//                     </ul>
+//                     </div>
+//             </div>
+//             <span className={`${styles.fontSize}`}>เลขที่ขาย: </span><span className={`${styles.titlePage}`}>{refno}</span>
+                
+//                      Body */}
+//                     Submit={handleSubmit(onSubmit)}>
+//                         ssName='accordion mb-10' id='kt_accordion_1'>
+//                             t accordion ข้อมูลลูกค้า*/}
+//                                 me='accordion-item mb-10'>
+//                                 sName='accordion-header' id='kt_accordion_1_header_1'>
+                                
+//                                 className='accordion-button fs-4 fw-bold collapsed border-0 h-50px pt-5 rounded-top px-lg-15 px-7'
+//                                 data-bs-toggle='collapse'
+//                                 data-bs-target='#kt_accordion_1_body_1'
+//                                 aria-expanded='true'
+//                                 aria-controls='kt_accordion_1_body_1'
+//                                 style={{ color: 'white', cursor: 'pointer', backgroundColor: '#3777bc' }}
+//                             >
+//                                 ข้อมูลลูกค้า
+//                             </h3>
+//                             >
+                            
+//                             id='kt_accordion_1_body_1'
+//                             className='accordion-collapse collapse show'
+//                             aria-labelledby='kt_accordion_1_header_1'
+//                                 -bs-parent='#kt_accordion_1'
+                                
+//                                     ssName='accordion-body'>
+//                                         t form */}
+//                                             me='form'>
+//                                                 me='card-body px-lg-9 px-1'>
+//                                                     tomerType !== "1" && (
+                                                        
+//                                                             me="">
+//                                                             ssName='row mb-6'>
+//                                                                 ssName='col-lg-6 mb-3'>
+//                                                                 el className={`form-label ${styles.label}`}>ประเภทลูกค้า</label>
+//                                                                 ect
+//                                                                 // disabled={customerDetail?.length > 0 ? true : false}
+//                                                                 className={`form-select ${styles.label}`}
+//                                                                 onChange={handleCustTypeOptionChange}
+//                                                                     e={selectedCustomerType} >
+//                                                                         value=''>เลือกประเภทลูกค้า...</option>
+//                                                                     tomerTypes.map((item: any) => (
+//                                                                     <option key={item.CUSTOMERTYPE} value={item.CUSTOMERTYPE}>
+//                                                                         {item.CUSTOMERTYPENAME}
+//                                                                     </option>
+//                                                                     ))}
+//                                                             </select>
+//                                                             v>
+                                                            
+//                                                                 ssName='col-lg-6 mb-3'>
+//                                                                 el className={`form-label ${styles.label}`}>ประเภทบัตร</label>
+//                                                                 ect
+//                                                                 className={`form-select ${styles.label}`}
+//                                                                 value={selectedCardType}
+//                                                                 // disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.CARDTYPE.length > 0 ? true : false : false}
+//                                                                 onChange={(e) => setSelectedCardType(e.target.value)}
+                                                                    
+//                                                                         value=''>เลือกประเภทบัตร...</option>
+//                                                                     ectedCustomer.CARDTYPE.map((cardType: any) => (
+//                                                                     <option key={cardType.CARDTYPE} value={cardType.CARDTYPE}>
+//                                                                         {cardType.CARDTYPENAME}
+//                                                                     </option>
+//                                                                 ))}
+//                                                             </select>
+//                                                             </div>
+//                                                     </div>
+//                                                     v>
+                                                        
+//                                                     <div className="">
+//                                                         <div className='row mb-6'>
+//                                                             {/* <div className='col-lg-6'>
+//                                                                 <label className={`form-label ${styles.label}`}>เลขบัตร</label>
+//                                                                 <input
+//                                                                     // disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.CUSTOMERID !== "" ? true : false : false}
+//                                                                     value={idCard}
+//                                                                     onChange={handleIdCardChange}
+//                                                                     type='text'
+//                                                                     className={`form-control mb-3 mb-lg-0 ${styles.label}`}
+//                                                                     placeholder='บัตรประชาชน'
+//                                                             />
+//                                                             {errors.idCard && <p className='text-danger'>{errors.idCard}</p>}
+//                                                             v> */}
+//                                                                 ssName='col-lg-6 mb-3'>
+//                                                                 el className={`${styles.label} `}>เลขบัตร</label>
+//                                                                 troller
+//                                                                     ="idCard"
+//                                                                         {control}
+//                                                                             ield }) => (
+//                                                                             ssName={`input-group ${styles.customInputGroup}`}>
+//                                                                             ut
+//                                                                             {...field}
+//                                                                             className={`form-control ${styles.label} ${errors.idCard ? "is-invalid" : ""}`}
+//                                                                                 e={idCard}
+//                                                                             maxLength={13}
+//                                                                             onKeyDown={e => {
+//                                                                                 if (e.key === " " || e.key === "Tab") e.preventDefault();
+                                                                                
+//                                                                                 ste={e => {
+//                                                                                 const cleaned = e.clipboardData.getData("Text").replace(/\s+/g, "");
+//                                                                                 e.preventDefault();
+//                                                                                 field.onChange(cleaned);
+//                                                                                 setIdCard(cleaned);
+//                                                                                 trigger("idCard");
+                                                                                
+//                                                                                 ange={e => {
+//                                                                                 const cleaned = e.target.value.replace(/\s+/g, "");
+//                                                                                 field.onChange(cleaned);
+//                                                                                 setIdCard(cleaned);
+//                                                                                 trigger("idCard");
+//                                                                             }}
+//                                                                             type="text"
+//                                                                             onBlur={field.onBlur}
+//                                                                             ref={field.ref}
+                                                                                
+//                                                                                 dCardType === "1" && (
+//                                                                                 n
+//                                                                                 className="input-group-text"
+//                                                                                 style={{ cursor: 'pointer' }}
+//                                                                                 onClick={() => setShowScanner(true)}
+//                                                                             >
+//                                                                                 <FontAwesomeIcon icon={faBarcode} />
+//                                                                             </span>
+//                                                                         )}
+//                                                                     </div>
+//                                                                 )}
+//                                                                 />
+//                                                             {errors.idCard && <p className={`text-danger ${styles.label}`}>{errors.idCard.message}</p>}
+//                                                             v>
+                                                            
+//                                                                 ssName='col-lg-6 mb-3'>
+//                                                                 el className={`form-label ${styles.label}`}>คำนำหน้าชื่อ</label>
+//                                                                 ect
+//                                                                 value={selectedPrefixId}
+//                                                                 className={`form-select ${styles.label}`}
+//                                                                 onChange={(e) => setSelectedPrefixId(Number(e.target.value))}
+//                                                                 isabled={customerDetail?.length > 0 ? customerDetail?.[0]?.PREFIX.length > 0 ? true : false : false}
+                                                                    
+//                                                                 <option value=''>เลือกคำนำหน้าชื่อ...</option>
+//                                                                 {selectedCustomer.PREFIX.map((prefix: any) => (
+//                                                                     <option key={prefix.PREFIXID} value={prefix.PREFIXID}>{prefix.PREFIXNAME}</option>
+//                                                                 ))}
+//                                                                 </select>
+//                                                             </div>
+//                                                             {/* <div className='col-lg-6'>
+//                                                                 <label className={`form-label ${styles.label}`}>ชื่อ</label>
+//                                                                 <input
+//                                                                     value={fullName}
+//                                                                     onChange={handleFullNameChange}
+//                                                                     type='text'
+//                                                                     className={`form-control mb-3 mb-lg-0 ${styles.label}`}
+//                                                                     placeholder='ชื่อ-สกุล'
+//                                                             />
+//                                                             {errors.fullName && <p className='text-danger'>{errors.fullName}</p>}
+//                                                             v> */}
+//                                                                 ssName='col-lg-6 my-3'>
+//                                                                 el className={`${styles.label} ${styles.required}`}>ชื่อ</label>
+//                                                                 troller
+//                                                                     ="fullName"
+//                                                                         {control}
+//                                                                             ield }) => (
+                                                                            
+//                                                                             ut
+//                                                                             {...field}
+//                                                                                 ="text"
+//                                                                                 sName={`form-control ${styles.label} ${errors.fullName ? "is-invalid" : ""}`}
+//                                                                             onChange={e => {
+//                                                                                 field.onChange(e);
+//                                                                                 setFullName(e.target.value);
+//                                                                             }}
+//                                                                         />
+//                                                                         {errors.fullName && (
+//                                                                             <p className={`text-danger ${styles.label}`}>{errors.fullName.message}</p>
+//                                                                         )}
+//                                                                     </>
+//                                                                     )}
+//                                                             />
+//                                                             v>
+                                                            
+//                                                                 ssName='col-lg-6 my-3'>
+//                                                                 el className={`form-label ${styles.label}`}>นามสกุล</label>
+//                                                                 ut
+//                                                                 type="text"
+//                                                                 className={`form-control mb-3 mb-lg-0 ${styles.label}`}
+//                                                                 value={lastName}
+//                                                                 onChange={e => setLastName(e.target.value)}
+//                                                             />
+//                                                             </div>
+//                                                     </div>
+//                                                     v>
+                                                        
+//                                                             me="">
+//                                                                 me='row mb-6'>
+//                                                                 ssName="col-lg-4 mb-3">
+//                                                                     le={{ display: 'flex', flexDirection: 'column' }}>
+//                                                                     el className={`form-label ${styles.label}`}>วันเดือนปีเกิด</label>
+//                                                                     ut
+//                                                                         ="date"
+//                                                                         e={valueCalendar ? formatLocalDate(valueCalendar) : ''}
+//                                                                         ange={e => {
+//                                                                         // แยกปี เดือน วัน แล้วสร้างเป็น Date ท้องถิ่น
+//                                                                         const [yy, mm, dd] = e.target.value.split('-').map(Number);
+//                                                                         const newDate = new Date(yy, mm - 1, dd);
+//                                                                         setValueCalendar(newDate);
+//                                                                         handleDateChange(newDate);
+//                                                                     }}
+//                                                                     className={`form-control ${styles.label}`}
+//                                                                     />
+//                                                             </div>
+//                                                             v>
+                                                            
+//                                                                 ssName="col-lg-4 mb-3">
+//                                                                 el className={`form-label ${styles.label}`}>อายุ</label>
+//                                                                 ut
+//                                                                 value={valueAge !== null ? valueAge.toString() : ''}
+//                                                                 type="text"
+//                                                                     className={`form-control mb-3 mb-lg-0 ${styles.label}`}
+//                                                                 readOnly
+//                                                             />
+                                                            
+                                                                
+//                                                                 dCustomerType !== "1" && (
+//                                                                     ssName='col-lg-4 mb-3'>
+//                                                                     el className={`form-label ${styles.label}`}>เพศ</label>
+//                                                                     ect
+//                                                                     value={selectedSexId}
+//                                                                     className={`form-select ${styles.label}`}
+//                                                                     onChange={(e) => setSelectedSexId(Number(e.target.value))}
+//                                                                     isabled={customerDetail?.length > 0 ? customerDetail?.[0]?.SEX.length > 0 ? true : false : false}
+                                                                        
+//                                                                     <option value=''>เลือกเพศ...</option>
+//                                                                     {selectedCustomer.SEX.map((sex: any) => (
+//                                                                         <option key={sex.SEXID} value={sex.SEXID}>{sex.SEXNAME}</option>
+//                                                                     ))}
+//                                                                     </select>
+//                                                             </div>
+                                                            
+                                                                
+//                                                             <div className="">
+//                                                                 <div className='row mt-6'>
+//                                                                     {/* <div className='col-lg-6 mb-3'>
+//                                                                         <label className={`form-label ${styles.label}`}>เบอร์ที่ติดต่อได้</label>
+//                                                                         <input
+//                                                                             value={mobile}
+//                                                                             onChange={handleMobileChange}
+//                                                                             type='text'
+//                                                                             className={`form-control mb-3 mb-lg-0 ${styles.label}`}
+//                                                                             maxLength={10}
+//                                                                         />
+//                                                                     {errors.mobile && <p className='text-danger'>{errors.mobile}</p>}
+//                                                                     v> */}
+                                                                    
+//                                                                         ssName='col-lg-6 mb-3'>
+//                                                                         el className={`${styles.label} `}>เบอร์ที่ติดต่อได้</label>
+//                                                                         troller
+//                                                                             ="telNo"
+//                                                                                 {control}
+//                                                                                 ({ field }) => (
+//                                                                                 ut
+//                                                                                 {...field}
+//                                                                                 className={`${styles.label} form-control ${errors.telNo ? "is-invalid" : ""}`}
+//                                                                                     e={mobile}
+//                                                                                     ength={10}
+//                                                                                     ange={(e) => {
+//                                                                                     field.onChange(e.target.value)
+//                                                                                     setMobile(e.target.value)
+//                                                                                     trigger("telNo")
+//                                                                                 }}
+//                                                                                 type='text'
+//                                                                                 inputMode='numeric'
+//                                                                                 pattern='[0-9]*'
+//                                                                                 onBlur={field.onBlur}
+//                                                                                 ref={field.ref}
+//                                                                             />
+//                                                                         )}
+//                                                                         />
+//                                                                     {errors.telNo && <p className={`text-danger ${styles.label}`}>{errors.telNo.message}</p>}
+//                                                                     v>
+                                                                    
+//                                                                         ssName='col-lg-6 mb-3'>
+//                                                                         el className={`form-label ${styles.label}`}>เบอร์บ้าน</label>
+//                                                                         ut
+//                                                                         value={phone}
+//                                                                         onChange={(e) => setPhone(e.target.value)}
+//                                                                         type='text'
+//                                                                         inputMode='numeric'
+//                                                                         pattern='[0-9]*'
+//                                                                         className={`form-control ${styles.label}`}
+//                                                                         maxLength={10}
+//                                                                     />
+//                                                                 </div>
+//                                                                 </div>
+//                                                         </div>
+//                                                         v>
+                                                            
+//                                                                 me="">
+//                                                                 ssName='row mb-6'>
+//                                                                     ssName='col-lg-6 my-3'>
+//                                                                     el className={`form-label ${styles.label}`}>เบอร์ที่ทำงาน</label>
+//                                                                     ut
+//                                                                     value={workPhone}
+//                                                                     onChange={(e) => setWorkPhone(e.target.value)}
+//                                                                     type='text'
+//                                                                     inputMode='numeric'
+//                                                                     pattern='[0-9]*'
+//                                                                     className={`form-control ${styles.label}`}
+//                                                                     maxLength={10}
+//                                                                     />
+//                                                                 </div>
+//                                                                 {/* <div className='col-lg-6 mb-3'>
+//                                                                     <label className={`form-label ${styles.label}`}>อีเมล์</label>
+//                                                                     <input
+//                                                                         value={email}
+//                                                                         onChange={handleEmailChange}
+//                                                                         type='text'
+//                                                                         className={`form-control mb-3 mb-lg-0 ${styles.label}`}
+//                                                                 />
+//                                                                 {errors.email && <p className='text-danger'>{errors.email}</p>}
+//                                                                 v> */}
+//                                                                     ssName='col-lg-6 my-3'>
+//                                                                     el className={`${styles.label}`}>อีเมล์</label>
+//                                                                     troller
+//                                                                         ="email"
+//                                                                             {control}
+//                                                                             ({ field }) => (
+//                                                                             ut
+//                                                                             {...field}
+//                                                                                 sName={`${styles.label} form-control ${errors.email ? "is-invalid" : ""}`}
+//                                                                                 e={email}
+//                                                                                 ange={(e) => {
+//                                                                                 field.onChange(e)
+//                                                                                 setEmail(e.target.value)
+//                                                                                 trigger("email")
+//                                                                             }}
+//                                                                             type='text'
+//                                                                         />
+//                                                                     )}
+//                                                                 />
+//                                                                 {errors.email && <p className={`text-danger ${styles.label}`}>{errors.email.message}</p>}
+//                                                             </div>
+//                                                         </div>
+//                                                     </div>
+//                                                     </div>
+//                                             </>
+//                                         )}
+                                            
+//                                                 t กรณีประเภทลูกค้าเป็น นิติบุคคล */}
+//                                                     tomerType == "1" && (
+                                                        
+//                                                             me="">
+//                                                             ssName='row mb-6'>
+//                                                                 ssName='col-lg-6 mb-3'>
+//                                                                 el className={`form-label ${styles.label}`}>ประเภทลูกค้า</label>
+//                                                                 ect
+//                                                                 className='form-select'
+//                                                                 onChange={handleCustTypeOptionChange}
+//                                                                 value={selectedCustomerType}
+                                                                    
+//                                                                         value=''>เลือกประเภทลูกค้า...</option>
+//                                                                     tomerTypes.map((item: any) => (
+//                                                                     <option key={item.CUSTOMERTYPE} value={item.CUSTOMERTYPE}>
+//                                                                         {item.CUSTOMERTYPENAME}
+//                                                                     </option>
+//                                                                 ))}
+//                                                                 </select>
+//                                                             </div>
+//                                                             {/* <div className='col-lg-6'>
+//                                                                 <label className={`form-label ${styles.label}`}>เลขประจำตัวผู้เสียภาษี</label>
+//                                                                 <input
+//                                                                     value={idCard}
+//                                                                     onChange={handleIdCardChange}
+//                                                                     type='text'
+//                                                                     className={`form-control mb-3 mb-lg-0 ${styles.label}`}
+//                                                                 // disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.CUSTOMERID !== "" ? true : false : false}
+//                                                             />
+//                                                             {errors.idCard && <p className='text-danger'>{errors.idCard}</p>}
+//                                                             v> */}
+//                                                                 ssName='col-lg-4'>
+//                                                                 el className='form-label required fw-bold fs-6'>เลขประจำตัวผู้เสียภาษี</label>
+//                                                                 troller
+//                                                                     ="idCard"
+//                                                                         {control}
+//                                                                         ({ field }) => (
+//                                                                         ut
+//                                                                         {...field}
+//                                                                             sName={`form-control ${errors.idCard ? "is-invalid" : ""}`}
+//                                                                             e={idCard}
+//                                                                             ange={(e) => {
+//                                                                             field.onChange(e)
+//                                                                             setIdCard(e.target.value)
+//                                                                             trigger("idCard");
+//                                                                         }}
+//                                                                         type='text'
+//                                                                     />
+//                                                                 )}
+//                                                             />
+//                                                             {errors.idCard && <p className="text-danger">{errors.idCard.message}</p>}
+//                                                             </div>
+//                                                     </div>
+//                                                     v>
+                                                        
+//                                                             me="">
+//                                                             ssName='row mb-6'>
+//                                                                 ssName='col-lg-4 mb-3'>
+//                                                                 el className={`form-label ${styles.label}`}>คำนำหน้า</label>
+//                                                                 ect
+//                                                                 className='form-select'
+//                                                                 onChange={(e) => setSelectedPrefixId(Number(e.target.value))}
+//                                                                 value={selectedPrefixId}
+//                                                                 isabled={customerDetail?.length > 0 ? customerDetail?.[0]?.PREFIX.length > 0 ? true : false : false}
+                                                                    
+//                                                                 <option value=''>เลือกคำนำหน้า...</option>
+//                                                                 {selectedCustomer.PREFIX.map((prefix: any) => (
+//                                                                     <option key={prefix.PREFIXID} value={prefix.PREFIXID}>{prefix.PREFIXNAME}</option>
+//                                                                 ))}
+//                                                                 </select>
+//                                                             </div>
+//                                                             {/* <div className='col-lg-4'>
+//                                                                 <label className={`form-label ${styles.label}`}>ชื่อบริษัท</label>
+//                                                                 <input
+//                                                                     value={fullName}
+//                                                                     onChange={handleFullNameChange}
+//                                                                     type='text'
+//                                                                     className={`form-control mb-3 mb-lg-0 ${styles.label}`}
+//                                                             />
+//                                                             {errors.fullName && <p className='text-danger'>{errors.fullName}</p>}
+//                                                             v> */}
+//                                                                 ssName='col-lg-6'>
+//                                                                 el className='form-label required fw-bold fs-6'>ชื่อบริษัท</label>
+//                                                                 ut
+//                                                                 type="text"
+//                                                                 className="form-control mb-3 mb-lg-0"
+//                                                                 value={fullName}
+//                                                                 onChange={e => setFullName(e.target.value)}
+//                                                             />
+//                                                             v>
+//                                                                 ssName='col-lg-4 mb-3'>
+//                                                                 el className={`form-label ${styles.label}`}>กรรมการผู้มีอำนาจ</label>
+//                                                                 ut
+//                                                                 value={nameMD}
+//                                                                 onChange={(e) => setNameMD(e.target.value)}
+//                                                                 type='text'
+//                                                                 className={`form-control mb-3 mb-lg-0 ${styles.label}`}
+//                                                             // disabled={customerDetail?.length > 0 ? customerDetail?.[0]?.CUSTOMERMD !== "" ? true : false : false}
+//                                                                 />
+//                                                         </div>
+//                                                         v>
+                                                            
+//                                                         <div className="">
+//                                                             <div className='row mb-6 mt-6'>
+//                                                                 {/* <div className='col-lg-6 mb-3'>
+//                                                                     <label className={`form-label ${styles.label}`}>เบอร์ที่ติดต่อได้</label>
+//                                                                     <input
+//                                                                         value={mobile}
+//                                                                         type='text'
+//                                                                         className={`form-control mb-3 mb-lg-0 ${styles.label}`}
+//                                                                         onChange={handleMobileChange}
+//                                                                         maxLength={10}
+//                                                                 />
+//                                                                 {errors.mobile && <p className='text-danger'>{errors.mobile}</p>}
+//                                                                 v> */}
+//                                                                     ssName='col-lg-6 mb-3'>
+//                                                                     el className='form-label required fw-bold fs-6'>เบอร์ที่ติดต่อได้</label>
+//                                                                     troller
+//                                                                         ="telNo"
+//                                                                             {control}
+//                                                                             ({ field }) => (
+//                                                                             ut
+//                                                                             {...field}
+//                                                                             className={`form-control ${errors.telNo ? "is-invalid" : ""}`}
+//                                                                             value={mobile}
+//                                                                             maxLength={10}
+//                                                                             type='text'
+//                                                                                 tMode='numeric'
+//                                                                                 ern='[0-9]*'
+//                                                                                 ange={(e) => {
+//                                                                                 field.onChange(e)
+//                                                                                 setMobile(e.target.value)
+//                                                                                 trigger("telNo")
+//                                                                             }}
+//                                                                         />
+//                                                                     )}
+//                                                                 />
+//                                                                 {errors.telNo && <p className="text-danger">{errors.telNo.message}</p>}
+//                                                                 v>
+//                                                                     ssName='col-lg-6 mb-3'>
+//                                                                     el className={`form-label ${styles.label}`}>เบอร์บ้าน</label>
+//                                                                     ut
+//                                                                     value={phone}
+//                                                                     type='text'
+//                                                                     inputMode='numeric'
+//                                                                     pattern='[0-9]*'
+//                                                                     className='form-control mb-3 mb-lg-0'
+//                                                                     onChange={(e) => setPhone(e.target.value)}
+//                                                                     maxLength={10}
+//                                                                 />
+//                                                                 </div>
+//                                                         </div>
+//                                                         v>
+                                                            
+//                                                                 me="">
+//                                                                 ssName='row mb-6'>
+//                                                                     ssName='col-lg-6 mb-3'>
+//                                                                     el className={`form-label ${styles.label}`}>เบอร์ที่ทำงาน</label>
+//                                                                     ut
+//                                                                     value={workPhone}
+//                                                                     type='text'
+//                                                                     inputMode='numeric'
+//                                                                     pattern='[0-9]*'
+//                                                                     className={`form-control mb-3 mb-lg-0 ${styles.label}`}
+//                                                                     onChange={(e) => setWorkPhone(e.target.value)}
+//                                                                     maxLength={10}
+//                                                                     />
+//                                                                 </div>
+//                                                                 {/* <div className='col-lg-6 mb-3'>
+//                                                                     <label className={`form-label ${styles.label}`}>อีเมล์</label>
+//                                                                     <input
+//                                                                         value={email}
+//                                                                         onChange={handleEmailChange}
+//                                                                         type='text'
+//                                                                         className={`form-control mb-3 mb-lg-0 ${styles.label}`}
+//                                                                 />
+//                                                                 {errors.email && <p className='text-danger'>{errors.email.message}</p>}
+//                                                                 v> */}
+//                                                                     ssName='col-lg-6 my-3'>
+//                                                                     el className={`${styles.label}`}>อีเมล์</label>
+//                                                                     troller
+//                                                                         ="email"
+//                                                                             {control}
+//                                                                             ({ field }) => (
+//                                                                             ut
+//                                                                             {...field}
+//                                                                                 sName={`${styles.label} form-control ${errors.email ? "is-invalid" : ""}`}
+//                                                                                 e={email}
+//                                                                                 ange={(e) => {
+//                                                                                 field.onChange(e)
+//                                                                                 setEmail(e.target.value)
+//                                                                                 trigger("email")
+//                                                                             }}
+//                                                                             type='text'
+//                                                                         />
+//                                                                     )}
+//                                                                 />
+//                                                                 {errors.email && <p className={`text-danger ${styles.label}`}>{errors.email.message}</p>}
+//                                                             </div>
+//                                                         </div>
+//                                                     </div>
+//                                                 </div>
+//                                             </>
+//                                         )}
+//                                         {/* End กรณีประเภทลูกค้าเป็น นิติบุคคล */}
+//                                     </div>
+//                                 </div>
+//                                 {/* end form */}
+//                             </div>
+//                         </div>
+//                     </div>
+//                         {/* End accordion ข้อมูลลูกค้า*/}
+//                 </div>
+//                     End Card */}
+                        
+//                         ssName='d-none d-xl-flex justify-content-between align-items-center my-5'>
+                            
+//                                 e={`${styles.btnSecondary}`}
+//                             ick={() => navigate('/sale/update/updateSalesEmployee', {
+//                             state: {
+//                                 ...matchedItem,
+//                             }
+//                         })}
+//                     >
+//                         แก้ไขพนักงานขาย
+//                         tton>
+//                     <button
+//                         className={`${styles.btnPrimary}`}
+//                         onClick={handleSubmit(onSubmit)}
+//                     >
+//                             ถัดไป
+//                         </button>
+//                         {/* <button
+//                             className={`btn btn-primary w-100 w-md-auto align-self-center h-50px ${!isDataComplete ? `disabled` : ``}`}
+//                             disabled={!isDataComplete}
+//                             onClick={handleCheckerClick}
+//                     >
+//                             ส่งตรวจสอบ
+//                     </button> */}
+//                 </div>
+                    
+//                     ปุ่มในหน้าจอเล็ก */}
+                        
+//                         sName="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
+//                         e={{
+//                         position: "fixed",
+//                         bottom: 0,
+//                         left: 0,
+//                         right: 0,
+//                         zIndex: 1050,
+                        
+                        
+                            
+//                                 e={`${styles.btnSecondary}`}
+//                             ick={() => navigate('/sale/update/updateSalesEmployee', {
+//                             state: {
+//                                 ...matchedItem,
+//                             }
+//                         })}
+//                     >
+//                         แก้ไขพนักงานขาย
+//                         tton>
+//                     <button
+//                         className={`${styles.btnPrimary}`}
+//                         onClick={handleSubmit(onSubmit)}
+//                     >
+//                             ถัดไป
+//                         </button>
+//                         {/* <button
+//                             className={`btn btn-primary w-auto ${!isDataComplete ? `disabled` : ``}`}
+//                             disabled={!isDataComplete}
+//                             onClick={handleCheckerClick}
+//                     >
+//                             ส่งตรวจสอบ
+//                     </button> */}
+//                 </div>
+    
+//             </form>
+//             </Content >
+//         </>
+//     )
+// }
+
+// export default UpdateSaleCustDetail

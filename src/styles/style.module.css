@@ -7,6 +7,33 @@
   font-size: 1.5rem;
 }
 
+/* style.module.css */
+.customInputGroup {
+  display: flex;
+  overflow: hidden;
+  border-radius: 0.375rem;
+  /* ปรับให้ตรงกับ .form-control ของ Bootstrap */
+}
+
+/* ตัดขอบฝั่งที่ชนกันระหว่าง input กับ icon */
+.customInputGroup input {
+  flex: 1 1 auto;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  margin: 0;
+}
+
+/* สไตล์กล่อง icon */
+.customInputGroup .input-group-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  background-color: #fff;
+  cursor: pointer;
+}
+
 .titlePage {
   font-size: 1.5rem;
   font-weight: 800;

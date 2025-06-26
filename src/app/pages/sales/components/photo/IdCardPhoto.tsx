@@ -244,7 +244,7 @@ const IdCardPhoto: React.FC = () => {
             <input
                 id="camera-input"
                 type="file"
-                accept="image/*"
+                accept="/*"
                 onChange={handleFileChange}
                 style={{ display: "none" }}
             />
@@ -257,7 +257,7 @@ const IdCardPhoto: React.FC = () => {
             <input
                 id="camera-input"
                 type="file"
-                accept="image/*"
+                accept="/*"
                 onChange={handleFileChange}
                 style={{ display: 'none' }}
                 disabled={isLoading}

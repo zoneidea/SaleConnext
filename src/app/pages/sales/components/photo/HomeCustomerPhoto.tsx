@@ -250,7 +250,7 @@ const HomeCustomerPhoto: React.FC = () => {
             <input
                 id="camera-input"
                 type="file"
-                accept="image/*"
+                accept="/*"
                 onChange={handleFileChange}
                 style={{ display: "none" }}
                 disabled={isLoading}
@@ -365,7 +365,7 @@ const HomeCustomerPhoto: React.FC = () => {
                 <input
                     id="camera-input"
                     type="file"
-                    accept="image/*"
+                    accept="/*"
                     onChange={handleFileChange}
                     style={{ display: "none" }}
                     disabled={isLoading}

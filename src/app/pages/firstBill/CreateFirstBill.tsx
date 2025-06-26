@@ -192,35 +192,35 @@ const CreateFirstBill: React.FC = () => {
 
     const getQRPayment = async () => {
         try {
-            setLoadingQR(true)
-            // ถ้า payFullAmount === true → ใช้ paymentAmount
-            // ถ้า payFullAmount === false → ใช้ paySomeAmount
-            const amountToPay = payFullAmount
-                ? paymentAmount
-                : paySomeAmount
+            setLoadingQR(true);
 
-            console.log('amountToPay', amountToPay)
+            // ตรงนี้คำนวนยอดที่จะจ่ายก่อน
+            // ถ้า PACKAGETYPEID !== 1 → เงินผ่อน (installment) → ใช้ amountToPay 
+            // ถ้า PACKAGETYPEID === 1 → เงินสด (cash) → ใช้ netPrice
+            const amountToPay = payFullAmount ? paymentAmount : paySomeAmount;
+            const isInstallment = product[0]?.Package[0]?.PACKAGETYPEID !== 1;
+            const qrAmount = isInstallment ? amountToPay : netPrice;
 
-            const formData = new FormData()
-            formData.append('RefNo', refno)                 // เลขที่ขาย
-            formData.append('Amount', String(amountToPay))  // แปลงเป็น string
+            console.log('qrAmount', qrAmount);
+
+            const formData = new FormData();
+            formData.append('RefNo', refno);
+            formData.append('Amount', qrAmount.toString());
 
             const response = await axios.post(GET_QR_PAYMENT_URL, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            })
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
 
             if (response.status === 200 && response.data) {
-                // สมมติว่า response.data.data.QrCode เป็น URL
-                setQrCodeData(response.data.data.QrCode || '')
+                setQrCodeData(response.data.data.QrCode || '');
             }
         } catch (error) {
-            console.error('Error fetching QR Payment:', error)
+            console.error('Error fetching QR Payment:', error);
         } finally {
-            setLoadingQR(false)
+            setLoadingQR(false);
         }
-    }
+    };
+
 
     const handlePayQuickChange = (isPayQuick: boolean) => {
         setQrCodeData('')

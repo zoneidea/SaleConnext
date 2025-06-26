@@ -33,6 +33,8 @@ export function Login() {
   const API_URL_POST_CATEGORIES = import.meta.env.VITE_APP_API_SALECONNEXT
   const CATEGORIES_URL = `${API_URL_POST_CATEGORIES}/GetProduct/Categories`
 
+  const VERSION = import.meta.env.VITE_APP_VERSION
+
   const {
     EmpId, setEmpId,
     TeamSale, setTeamSale,
@@ -315,6 +317,9 @@ export function Login() {
               </span>
             )}
           </button>
+        </div>
+        <div className='fv-help-block d-flex'>
+          <span role='alert' className={`${styles.fontSize}`}>version {VERSION}</span>
         </div>
       </form>
     </div>

@@ -1545,7 +1545,7 @@
 
 
 // src/pages/SalesDiscount.tsx
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal } from 'react';
 import styles from '@/styles/style.module.css'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
@@ -1644,6 +1644,8 @@ const SalesDiscount: React.FC = () => {
     const sequence = pkg.SEQUENCE ?? 0
     const freeGift = pkg.FREEGIFT ?? []
 
+    const [isDiscountValid, setIsDiscountValid] = useState<boolean>(true);
+
     const [isLoadingDraft, setIsLoadingDraft] = useState<boolean>(false);
     const [draft, setDraft] = useState<any[]>([]);
 
@@ -1714,26 +1716,81 @@ const SalesDiscount: React.FC = () => {
         }
     }, [SaveDiscountData, DISCOUNT, SETDISCOUNT])
 
-    // ตรวจสอบส่วนลดให้ตรงเงื่อนไข
-    const validateDiscount = useCallback((val: number) => {
-        if (val < 0 || val > discountPrice || val % sequence !== 0) {
-            setDiscountValidationMessage({
-                message:
-                    val > discountPrice
-                        ? `ส่วนลดต้องไม่เกิน ${discountPrice} บาท`
-                        : `ต้องปรับเป็นทีละ ${sequence} บาท`,
-                type: 'danger',
-            })
-        } else {
-            setDiscountValidationMessage({ message: 'ใช้งานได้', type: 'success' })
-        }
-    }, [discountPrice, sequence])
+    // ฟังก์ชันจัดการเมื่อมีการเปลี่ยนแปลงในฟิลด์ส่วนลด
+    const handleDiscountChange = (value: string) => {
+        const inputNumber = Number(value.replace(/,/g, "")); // แปลงค่าที่กรอกเป็นตัวเลข
 
-    const handleDiscountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const num = Number(e.target.value.replace(/,/g, ''))
-        setDiscountInput(num)
-        validateDiscount(num)
-    }
+        if (isNaN(inputNumber)) {
+            setDiscountValidationMessage({
+                message: "กรุณากรอกตัวเลขที่ถูกต้อง",
+                type: "danger",
+            });
+            setIsDiscountValid(false); // กรอกค่าผิด
+            return;
+        }
+
+        setDiscountInput(inputNumber); // อัปเดตส่วนลด
+        validateDiscount(inputNumber); // เรียกฟังก์ชัน validateDiscount เพื่อเช็คค่า
+    };
+
+    // ฟังก์ชันตรวจสอบค่าที่กรอก
+    const validateDiscount = (inputNumber: number) => {
+        if (discountPrice === 0) {
+            setDiscountValidationMessage(null);
+            setIsDiscountValid(true); // ไม่มีส่วนลด ไม่ต้องแสดงข้อความ
+            return;
+        }
+
+        if (discountPrice !== undefined && sequence !== undefined) {
+            let validationMessage = "";
+
+            if (inputNumber <= discountPrice) {
+                if (inputNumber % sequence === 0) {
+                    validationMessage = "";
+                    setIsDiscountValid(true); // ส่วนลดถูกต้อง
+                    setDiscountValidationMessage({
+                        message: validationMessage,
+                        type: "success",
+                    });
+                } else {
+                    validationMessage = `กรอกส่วนลดผิด ต้องลดหรือเพิ่มได้ทีละ ${sequence} บาท`;
+                    setIsDiscountValid(false); // ส่วนลดไม่ถูกต้อง
+                    setDiscountValidationMessage({
+                        message: validationMessage,
+                        type: "danger",
+                    });
+                }
+            } else {
+                validationMessage = `ส่วนลดต้องไม่เกิน ${discountPrice} บาท`;
+                setIsDiscountValid(false); // ส่วนลดไม่ถูกต้อง
+                setDiscountValidationMessage({
+                    message: validationMessage,
+                    type: "danger",
+                });
+            }
+        }
+    };
+
+    // Handle option changes
+    const handleTurnOptionChange = (event: any) => {
+        const value = event.target.value;
+        setSelectedTurnId(value);
+    };
+
+    const handleTradeInModelChange = (event: any) => {
+        const value = event.target.value;
+        setTradeInModel(value);
+    };
+
+    const handleTradeInSerialChange = (event: any) => {
+        const value = event.target.value;
+        setTradeInSerial(value);
+    };
+
+    const handleGiftOptionChange = (event: any) => {
+        const value = event.target.value
+        setSelectedGiftId(value);
+    };
 
     // บันทึกข้อมูลทั้งหมดขึ้น API
     const handleNextClick = async () => {
@@ -1748,9 +1805,16 @@ const SalesDiscount: React.FC = () => {
                 FIELD: 'DISCOUNT',
                 DATA: SaveDiscountData,
             })
-            await MySwal.fire('สำเร็จ', 'บันทึกข้อมูลเรียบร้อย', 'success')
+            await MySwal.fire({
+                icon: 'success',
+                title: 'สำเร็จ!',
+                text: 'บันทึกข้อมูลเรียบร้อยแล้ว',
+                timer: 2000, // แสดงผล 3 วินาที
+                showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
+            });
             // นำทางไปหน้าถัดไป
-            const next = pkg.PACKAGETYPEID === 1 ? '/sale/createcust-cash' : '/sale/createcust'
+            // const next = pkg.PACKAGETYPEID === 1 ? '/sale/createcust-cash' : '/sale/createcust'
+            const next = '/sale/salesemployee'
             navigate(next)
         } catch {
             MySwal.fire('Error', 'ไม่สามารถบันทึกข้อมูลได้', 'error')
@@ -1760,161 +1824,260 @@ const SalesDiscount: React.FC = () => {
     const finalPrice = Math.max(0, totalPrice - (discountInput ?? 0))
 
     return (
-        <Content>
-            <h3 className={styles.titlePage}>เครื่องเทิร์น / ส่วนลด / ของแถม</h3>
-            <p>เลขที่ขาย: <strong>{REFNO}</strong></p>
-
-            <div className="accordion mb-4">
-                {/* เครื่องเทิร์น */}
-                {hasTradeIn === 1 && (
-                    <div className="accordion-item">
-                        <h2 className="accordion-header">
-                            <button className="accordion-button">เครื่องเทิร์น</button>
-                        </h2>
-                        <div className="accordion-collapse collapse show">
-                            <div className="accordion-body">
-                                <div className="row">
-                                    <div className="col-md-4">
-                                        <label>แบรนด์</label>
-                                        <select className="form-select" onChange={e => {
-                                            const id = Number(e.target.value)
-                                            setSelectedTurnId(id)
-                                            const b = tradeInBrand.find(x => Number(x.TRADEINBRANDID) === id)
-                                            setSelectedTradeInBrandName(b?.TRADEINBRANDNAME || '')
-                                        }}>
-                                            <option value={0}>-- เลือก --</option>
-                                            {tradeInBrand.map((b, i) => (
-                                                <option key={i} value={b.TRADEINBRANDID}>{b.TRADEINBRANDNAME}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div className="col-md-4">
-                                        <label>รุ่น</label>
-                                        <input className="form-control" value={tradeInModel} onChange={e => setTradeInModel(e.target.value)} />
-                                    </div>
-                                    <div className="col-md-4">
-                                        <label>หมายเลขเครื่อง</label>
-                                        <input className="form-control" value={tradeInSerial} onChange={e => setTradeInSerial(e.target.value)} />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+        <>
+            <Content>
+                <div className='d-flex justify-content-between align-items-center my-5'>
+                    <div id="kt_page_title" data-kt-swapper="true" data-kt-swapper-mode="prepend"
+                        data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
+                        className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
+                        <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
+                            <li className={`${styles.titlePage}`}>เครื่องเทิร์น / ส่วนลด / ของแถม</li>
+                        </ul>
                     </div>
-                )}
+                </div>
+                <span className={`${styles.fontSize}`}>เลขที่ขาย: </span><span className={`${styles.titlePage}`}>{REFNO}</span>
 
-                {/* ส่วนลด */}
-                {discountPrice > 0 && (
-                    <div className="accordion-item">
-                        <h2 className="accordion-header">
-                            <button className="accordion-button">ส่วนลด</button>
-                        </h2>
-                        <div className="accordion-collapse collapse show">
-                            <div className="accordion-body">
-                                <div className="row">
-                                    <div className="col-md-6">
-                                        <label>ราคาสุทธิ</label>
-                                        <p className="form-control">{finalPrice.toLocaleString()}</p>
-                                    </div>
-                                    <div className="col-md-6">
-                                        <label>ส่วนลด</label>
-                                        <input type="text" className="form-control" onChange={handleDiscountChange} />
-                                        {discountValidationMessage && (
-                                            <div className={`mt-1 text-${discountValidationMessage.type}`}>
-                                                {discountValidationMessage.message}
+                <div className='accordion mb-10' id='kt_accordion_1'>
+                    {hasTradeIn === 1 && (
+                        <div className='accordion-item mb-10'>
+                            <h2 className='accordion-header' id='kt_accordion_1_header_1'>
+                                <h3
+                                    className='accordion-button fs-4 fw-bold collapsed border-0 h-50px pt-5 rounded-top px-lg-15 px-7'
+                                    data-bs-toggle='collapse'
+                                    data-bs-target='#kt_accordion_1_body_1'
+                                    aria-expanded='true'
+                                    aria-controls='kt_accordion_1_body_1'
+                                    style={{ color: 'white', cursor: 'pointer', backgroundColor: '#3777bc' }}
+                                >
+                                    เครื่องเทิร์น
+                                </h3>
+                            </h2>
+                            <div
+                                id='kt_accordion_1_body_1'
+                                className='accordion-collapse collapse show'
+                                aria-labelledby='kt_accordion_1_header_1'
+                                data-bs-parent='#kt_accordion_1'
+                            >
+                                <div className='accordion-body'>
+                                    <form noValidate className='form'>
+                                        <div className='card-body px-lg-9 px-1'>
+                                            <div className='row mb-6'>
+                                                <div className='col-lg-4 mb-3'>
+                                                    <label className={`form-label ${styles.fontSize}`}>เครื่องเทิร์น</label>
+                                                    <select
+                                                        className={`form-select ${styles.fontSize}`}
+                                                        onChange={handleTurnOptionChange}
+                                                        value={selectedTurnId}
+                                                    >
+                                                        <option value=''>เลือกเครื่องเทิร์น</option>
+                                                        {tradeInBrand.map((item, index) => (
+                                                            <option key={index} value={item.TRADEINBRANDID}>
+                                                                {item.TRADEINBRANDNAME}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                <div className='col-lg-4 mb-3'>
+                                                    <label className={`form-label ${styles.fontSize}`}>รุ่น</label>
+                                                    <input
+                                                        type='text'
+                                                        className={`form-control mb-3 mb-lg-0 ${styles.fontSize}`}
+                                                        onChange={handleTradeInModelChange}
+                                                        value={tradeInModel}
+                                                    />
+                                                </div>
+                                                <div className='col-lg-4 mb-3'>
+                                                    <label className={`form-label ${styles.fontSize}`}>หมายเลขเครื่อง</label>
+                                                    <input
+                                                        type='text'
+                                                        className={`form-control mb-3 mb-lg-0 ${styles.fontSize}`}
+                                                        onChange={handleTradeInSerialChange}
+                                                        value={tradeInSerial}
+                                                    />
+                                                </div>
                                             </div>
-                                        )}
-                                    </div>
+                                        </div>
+                                    </form>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                {/* ของแถม */}
-                {freeGift.length > 0 && (
-                    <div className="accordion-item">
-                        <h2 className="accordion-header">
-                            <button className="accordion-button">ของแถม</button>
-                        </h2>
-                        <div className="accordion-collapse collapse show">
-                            <div className="accordion-body">
-                                <label>เลือกของแถม</label>
-                                <select className="form-select" onChange={e => setSelectedGiftId(Number(e.target.value))}>
-                                    <option value={0}>-- เลือก --</option>
-                                    {freeGift.map((g, i) => (
-                                        <option key={i} value={g.GIFTID}>{g.GIFTNAME}</option>
-                                    ))}
-                                </select>
+                    {
+                        (
+                            (!Array.isArray(discountPrice) && discountPrice !== 0 && discountPrice !== null) ||
+                            (Array.isArray(discountPrice) && discountPrice.length > 0)
+                        ) && (
+                            <div className='accordion-item mb-10'>
+                                <h2 className='accordion-header' id='kt_accordion_2_header_2'>
+                                    <h3
+                                        className='accordion-button fs-4 fw-bold collapsed border-0 h-50px pt-5 rounded-top px-lg-15 px-7'
+                                        data-bs-toggle='collapse'
+                                        data-bs-target='#kt_accordion_2_body_2'
+                                        aria-expanded='true'
+                                        aria-controls='kt_accordion_2_body_2'
+                                        style={{ color: 'white', cursor: 'pointer', backgroundColor: '#3777bc' }}
+                                    >
+                                        ส่วนลด
+                                    </h3>
+                                </h2>
+                                <div
+                                    id='kt_accordion_2_body_2'
+                                    className='accordion-collapse collapse show'
+                                    aria-labelledby='kt_accordion_2_header_2'
+                                    data-bs-parent='#kt_accordion_2'
+                                >
+                                    <div className='accordion-body'>
+                                        <form noValidate className='form'>
+                                            <div className='card-body px-lg-9 px-1'>
+                                                <div className='row mb-6'>
+                                                    <div className='col-lg-6 mb-3'>
+                                                        <label className={`form-label ${styles.fontSize}`}>ราคา</label>
+                                                        <p className={`form-control mb-3 mb-lg-0 ${styles.fontSize}`}>
+                                                            {(finalPrice).toLocaleString()}
+                                                        </p>
+                                                    </div>
+                                                    <div className='col-lg-6 mb-3'>
+                                                        <label className={`form-label ${styles.fontSize}`}>ส่วนลด</label>
+                                                        <div className='d-flex align-items-center'>
+                                                            <input
+                                                                type="text"
+                                                                inputMode='numeric'
+                                                                pattern='[0-9]*'
+                                                                className={`form-control ${styles.fontSize}`}
+                                                                onChange={(e) => handleDiscountChange(e.target.value)}
+                                                                value={discountInput !== null ? discountInput.toString() : ""}
+                                                            />
+                                                        </div>
+                                                        {discountValidationMessage && (
+                                                            <div
+                                                                className={`${styles.fontSize} mt-2 text-${discountValidationMessage.type}`}
+                                                            >
+                                                                {discountValidationMessage.message}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                    {freeGift.length > 0 && (
+                        <div className='accordion-item mb-10'>
+                            <h2 className='accordion-header' id='kt_accordion_3_header_3'>
+                                <h3
+                                    className={`accordion-button collapsed border-0 h-50px pt-5 rounded-top px-lg-15 px-7 ${styles.fontSize}`}
+                                    data-bs-toggle='collapse'
+                                    data-bs-target='#kt_accordion_3_body_3'
+                                    aria-expanded='true'
+                                    aria-controls='kt_accordion_3_body_3'
+                                    style={{ color: 'white', cursor: 'pointer', backgroundColor: '#3777bc' }}
+                                >
+                                    ของแถม
+                                </h3>
+                            </h2>
+                            <div
+                                id='kt_accordion_3_body_3'
+                                className='accordion-collapse collapse show'
+                                aria-labelledby='kt_accordion_3_header_3'
+                                data-bs-parent='#kt_accordion_3'
+                            >
+                                <div className='accordion-body'>
+                                    <form noValidate className='form'>
+                                        <div className='card-body px-lg-9 px-1'>
+                                            <div className='row mb-6'>
+                                                <div className='col-lg-12 mb-3'>
+                                                    <label className={`form-label ${styles.fontSize}`}>ของแถม</label>
+                                                    <select
+                                                        value={selectedGiftId}
+                                                        className={`form-select ${styles.fontSize}`}
+                                                        onChange={handleGiftOptionChange}
+                                                    >
+                                                        <option value=''>เลือกของแถม</option>
+                                                        {freeGift.map((item: { GIFTID: string | number | readonly string[] | undefined; GIFTNAME: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | null | undefined; }, index: Key | null | undefined) => (
+                                                            <option key={index} value={item.GIFTID}>
+                                                                {item.GIFTNAME}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )}
-            </div>
+                    )}
+                </div>
 
-            {
-                (hasTradeIn !== 1) &&
-                (
-                    Array.isArray(discountPrice)
-                        ? discountPrice.length === 0
-                        : discountPrice === 0
-                ) &&
-                (freeGift.length === 0) && (
-                    <div className='text-center my-20'>
-                        <h5 className={`${styles.fontSize}`}>ไม่มี เครื่องเทิร์น / ส่วนลด / ของแถม</h5>
-                    </div>
-                )
-            }
+                {
+                    (hasTradeIn !== 1) &&
+                    (
+                        Array.isArray(discountPrice)
+                            ? discountPrice.length === 0
+                            : discountPrice === 0
+                    ) &&
+                    (freeGift.length === 0) && (
+                        <div className='text-center my-20'>
+                            <h5 className={`${styles.fontSize}`}>ไม่มี เครื่องเทิร์น / ส่วนลด / ของแถม</h5>
+                        </div>
+                    )
+                }
 
-            <div className='d-none d-xl-flex justify-content-between align-items-center mt-5 mb-10'>
-                <button
-                    className={`${styles.btnSecondary}`}
-                    onClick={() => navigate('/sale/update/updateSalePackage', {
-                        state: {
-                            ...matchedItem,
-                            fromDiscount: true,
-                        }
-                    })}
-                >
-                    แก้ไขแพ็คเกจ
-                </button>
-                <button
-                    className={`${styles.btnPrimary}`}
-                    onClick={handleNextClick}
-                >
-                    บันทึก
-                </button>
-            </div>
+                <div className='d-none d-xl-flex justify-content-between align-items-center mt-5 mb-10'>
+                    <button
+                        className={`${styles.btnSecondary}`}
+                        onClick={() => navigate('/sale/update/updateSalePackage', {
+                            state: {
+                                ...matchedItem,
+                                fromDiscount: true,
+                            }
+                        })}
+                    >
+                        แก้ไขแพ็คเกจ
+                    </button>
+                    <button
+                        className={`${styles.btnPrimary}`}
+                        onClick={handleNextClick}
+                    >
+                        บันทึก
+                    </button>
+                </div>
 
-            <div
-                className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
-                style={{
-                    position: "fixed",
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    zIndex: 1050,
-                }}
-            >
-                <button
-                    className={`${styles.btnSecondary}`}
-                    onClick={() => navigate('/sale/update/updateSalePackage', {
-                        state: {
-                            ...matchedItem,
-                            fromDiscount: true,
-                        }
-                    })}
+                <div
+                    className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
+                    style={{
+                        position: "fixed",
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        zIndex: 1050,
+                    }}
                 >
-                    แก้ไขแพ็คเกจ
-                </button>
-                <button
-                    className={`${styles.btnPrimary}`}
-                    onClick={handleNextClick}
-                >
-                    บันทึก
-                </button>
-            </div>
+                    <button
+                        className={`${styles.btnSecondary}`}
+                        onClick={() => navigate('/sale/update/updateSalePackage', {
+                            state: {
+                                ...matchedItem,
+                                fromDiscount: true,
+                            }
+                        })}
+                    >
+                        แก้ไขแพ็คเกจ
+                    </button>
+                    <button
+                        className={`${styles.btnPrimary}`}
+                        onClick={handleNextClick}
+                    >
+                        บันทึก
+                    </button>
+                </div>
 
-        </Content>
+            </Content>
+        </>
     )
 }
 

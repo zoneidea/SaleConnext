@@ -68,7 +68,6 @@ const PrivateRoutes = () => {
   const SalesBillRecieveMoney = lazy(() => import('../pages/sales/SalesBillRecieveMoney'))
   const SalesCreateCustCash = lazy(() => import('../pages/sales/SalesCreateCustCash'))
   const SalesCreateAddressCash = lazy(() => import('../pages/sales/SalesCreateAddressCash'))
-  const SalesContractCash = lazy(() => import('../pages/sales/SalesContractCash'))
   const SalesEmployee = lazy(() => import('../pages/sales/SalesEmployee'))
 
   //กล้อง + รูป
@@ -211,14 +210,6 @@ const PrivateRoutes = () => {
           element={
             <SuspensedView>
               <SalesContract />
-            </SuspensedView>
-          }
-        />
-        <Route
-          path='sale/contract-cash'
-          element={
-            <SuspensedView>
-              <SalesContractCash />
             </SuspensedView>
           }
         />

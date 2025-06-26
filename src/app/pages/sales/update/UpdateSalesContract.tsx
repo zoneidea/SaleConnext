@@ -637,6 +637,7 @@ const UpdateSalesContract: React.FC = () => {
 
     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
     const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
+    const DRAFT_ALLCONTRACT_URL = `${API_URL_MONGO}/Contract/GetAllContract?status=DRAFT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`
     const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage`;
 
     const currentDate = new Date();
@@ -724,7 +725,13 @@ const UpdateSalesContract: React.FC = () => {
                 text: 'บันทึกสัญญาเรียบร้อยแล้ว',
                 timer: 2000, // แสดงผล 3 วินาที
                 showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
-            })
+            }).then(() => {
+                navigate("/sale/photo", {
+                    state: {
+                        ...matchedItem,
+                    }
+                })
+            });
         } catch (error) {
             console.error('Error fetching CONTRACT:', error);
 
@@ -789,146 +796,155 @@ const UpdateSalesContract: React.FC = () => {
         );
     }, [item, images]);
 
+    {/****** matchedItem *******/ }
+    const [isLoadingDraft, setIsLoadingDraft] = useState<boolean>(false);
+    const [draft, setDraft] = useState<any[]>([]);
+
+    useEffect(() => {
+        const getDataDraft = async () => {
+            setIsLoadingDraft(true);
+            try {
+                const response = await axios.get(DRAFT_ALLCONTRACT_URL);
+                const data = Array.isArray(response.data.data) ? response.data.data : [];
+                setDraft(data);
+            } catch (error) {
+                console.error('Error fetching DRAFT_ALLCONTRACT_URL:', error);
+            } finally {
+                setIsLoadingDraft(false);
+            }
+        };
+        getDataDraft();
+    }, []);
+
+    // state ตัวเก็บ matchedItem
+    const [matchedItem, setMatchedItem] = useState<ItemProps | null>(null);
+
+    useEffect(() => {
+        if (!isLoadingDraft) {
+            const found = draft.find(d => d.REFNO === REFNO) || null;
+            setMatchedItem(found);
+        }
+    }, [draft, isLoadingDraft]);
+
+    {/****** matchedItem *******/ }
+
     return (
         <>
             <Content>
-                <div className='d-flex justify-content-between align-items-center mb-7 mt-7 mt-lg-0'>
+                <div className='d-flex justify-content-between align-items-center my-5'>
                     <div id="kt_page_title" data-kt-swapper="true" data-kt-swapper-mode="prepend"
                         data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
-                        className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
-                        <h1 className="page-heading d-flex text-gray-900 fw-bold fs-3 my-0 flex-column justify-content-center">
-                            {product[0]?.Package[0]?.PACKAGETYPEID == 1 ? (
-                                <span>ใบสัญญา</span>
-                            ) : (
-                                <span>ใบสัญญาเช่าซื้อ</span>
-                            )}
-
-                        </h1>
+                        className="page-title d-flex flex-wrap me-3 flex-column justify-content-ceดnter">
                         <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
-                            <li className="breadcrumb-item text-muted">
-                                <span className="text-muted text-hover-primary">
-                                    ระบบขาย
-                                </span></li>
-                            <li className="breadcrumb-item"><span className="bullet bg-gray-500 w-5px h-2px"></span></li>
                             {product[0]?.Package[0]?.PACKAGETYPEID == 1 ? (
-                                <li className="breadcrumb-item text-gray-900">ใบสัญญา</li>
+                                <li className={`breadcrumb-item ${styles.titlePage}`}>ใบสัญญา</li>
                             ) : (
-                                <li className="breadcrumb-item text-gray-900">ใบสัญญาเช่าซื้อ</li>
+                                <li className={`breadcrumb-item ${styles.titlePage}`}>ใบสัญญาเช่าซื้อ</li>
                             )}
                         </ul>
                     </div>
                 </div>
-                <p>เลขที่ขาย: {refno}</p>
+                <span className={`${styles.fontSize}`}>เลขที่ขาย: </span><span className={`${styles.titlePage}`}>{refno}</span>
 
                 {/* Card Body */}
                 <div className='card mb-10'>
                     <div className='card-body py-5'>
 
-                        {/* begin::Header */}
-                        <div className='d-flex justify-content-between align-items-center mb-7 mt-5'>
-                            {product[0]?.Package[0]?.PACKAGETYPEID == 1 ? (
-                                <h3 className='card-title'>ใบสัญญา</h3>
-                            ) : (
-                                <h3 className='card-title'>ใบสัญญาเช่าซื้อ</h3>
-                            )}
-                            <button
-                                type='button'
-                                className='btn btn-sm btn-icon btn-color-primary btn-active-light-primary'
-                            >
-                                <KTIcon iconName='category' className='fs-2' />
-                            </button>
-                        </div>
-                        {/* end::Header */}
-
-                        <div className='row mb-7'>
-                            <label className='col-lg-4 fw-bold text-muted'>วันที่ทำสัญญา</label>
+                        <div className='row my-7'>
+                            <label className={`col-lg-4 text-muted ${styles.label}`}>วันที่ทำสัญญา</label>
                             <div className='col-lg-8'>
-                                <span className='fw-bolder fs-6 text-gray-900'>{formattedDate}</span>
+                                <span className={`${styles.label}`}>{formattedDate}</span>
                             </div>
                         </div>
 
-                        {newRefNo && (
+                        {/* {newRefNo && (
                             <div className='row mb-7'>
                                 <label className='col-lg-4 fw-bold text-muted'>เลขที่สัญญา</label>
                                 <div className='col-lg-8 fv-row'>
                                     <span className='fw-bold fs-6'>{newRefNo}</span>
                                 </div>
                             </div>
-                        )}
+                        )} */}
 
                         <div className='row mb-7'>
-                            <label className='col-lg-4 fw-bold text-muted'>ชื่อลูกค้า</label>
+                            <label className={`col-lg-4 text-muted ${styles.label}`}>ชื่อลูกค้า</label>
                             <div className='col-lg-8'>
-                                <a href='#' className='fw-bold fs-6 text-gray-900 text-hover-primary'>
+                                <span className={`${styles.label}`}>
                                     {customerDetail[0]?.CUSTOMERNAME}
-                                </a>
+                                </span>
                             </div>
                         </div>
 
                         <div className='row mb-7'>
                             {customerDetail[0]?.CUSTOMERTYPE === "1" ? (
-                                <label className='col-lg-4 fw-bold text-muted'>เลขประจำตัวผู้เสียภาษี</label>
+                                <label className={`col-lg-4 text-muted ${styles.label}`}>เลขประจำตัวผู้เสียภาษี</label>
                             ) : (
-                                <label className='col-lg-4 fw-bold text-muted'>เลขที่บัตรประชาชน</label>
+                                <label className={`col-lg-4 text-muted ${styles.label}`}>เลขที่บัตรประชาชน</label>
                             )}
                             <div className='col-lg-8'>
-                                <span className='fw-bolder fs-6 text-gray-900'>{customerDetail[0]?.CUSTOMERID}</span>
+                                <span className={`${styles.label}`}>{customerDetail[0]?.CUSTOMERID}</span>
                             </div>
                         </div>
 
-                        <div className='row mb-7'>
-                            <label className='col-lg-4 fw-bold text-muted'>ที่อยู่บัตรประชาชน</label>
-                            <div className='col-lg-8'>
-                                <span className='fw-bolder fs-6 text-gray-900'>
-                                    {address[0]?.ADDRESSCARD?.ADDRESSNUMBER && `${address[0]?.ADDRESSCARD?.ADDRESSNUMBER}`}&nbsp;
-                                    {address[0]?.ADDRESSCARD?.ADDRESSMOO && `หมู่ที่ ${address[0]?.ADDRESSCARD?.ADDRESSMOO}`}&nbsp;
-                                    {address[0]?.ADDRESSCARD?.ADDRESSSOI && `ซอย ${address[0]?.ADDRESSCARD?.ADDRESSSOI}`}&nbsp;
-                                    {address[0]?.ADDRESSCARD?.ADDRESSROAD && `ถนน ${address[0]?.ADDRESSCARD?.ADDRESSROAD}`}&nbsp;
-                                    {address[0]?.ADDRESSCARD?.ADDRESSSUBDISTRICTNAME && `ตำบล / แขวง ${address[0]?.ADDRESSCARD?.ADDRESSSUBDISTRICTNAME}`}&nbsp;
-                                    {address[0]?.ADDRESSCARD?.ADDRESSDISTRICTNAME && `อำเภอ ${address[0]?.ADDRESSCARD?.ADDRESSDISTRICTNAME}`}&nbsp;
-                                    {address[0]?.ADDRESSCARD?.ADDRESSPROVINCENAME && `จังหวัด ${address[0]?.ADDRESSCARD?.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
-                                    {address[0]?.ADDRESSCARD?.ADDRESSZIPCODE && `${address[0]?.ADDRESSCARD?.ADDRESSZIPCODE}`}&nbsp;
-                                </span>
+                        {address[0]?.ADDRESSINSTALLATION?.ADDRESSNUMBER && (
+                            <div className='row mb-10'>
+                                <label className={`col-lg-4 text-muted ${styles.label}`}>ที่อยู่ติดตั้ง</label>
+                                <div className='col-lg-8'>
+                                    <span className={`${styles.label}`}>
+                                        {address[0]?.ADDRESSINSTALLATION?.ADDRESSNUMBER && `${address[0]?.ADDRESSINSTALLATION?.ADDRESSNUMBER}`}&nbsp;
+                                        {address[0]?.ADDRESSINSTALLATION?.ADDRESSMOO && `หมู่ที่ ${address[0]?.ADDRESSINSTALLATION?.ADDRESSMOO}`}&nbsp;
+                                        {address[0]?.ADDRESSINSTALLATION?.ADDRESSSOI && `ซอย ${address[0]?.ADDRESSINSTALLATION?.ADDRESSSOI}`}&nbsp;
+                                        {address[0]?.ADDRESSINSTALLATION?.ADDRESSROAD && `ถนน ${address[0]?.ADDRESSINSTALLATION?.ADDRESSROAD}`}&nbsp;
+                                        {address[0]?.ADDRESSINSTALLATION?.ADDRESSSUBDISTRICTNAME && `ตำบล / แขวง ${address[0]?.ADDRESSINSTALLATION?.ADDRESSSUBDISTRICTNAME}`}&nbsp;
+                                        {address[0]?.ADDRESSINSTALLATION?.ADDRESSDISTRICTNAME && `อำเภอ ${address[0]?.ADDRESSINSTALLATION?.ADDRESSDISTRICTNAME}`}&nbsp;
+                                        {address[0]?.ADDRESSINSTALLATION?.ADDRESSPROVINCENAME && `จังหวัด ${address[0]?.ADDRESSINSTALLATION?.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
+                                        {address[0]?.ADDRESSINSTALLATION?.ADDRESSZIPCODE && `${address[0]?.ADDRESSINSTALLATION?.ADDRESSZIPCODE}`}&nbsp;
+                                    </span>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
-                        <div className='row mb-10'>
-                            <label className='col-lg-4 fw-bold text-muted'>ที่อยู่ติดตั้ง</label>
-                            <div className='col-lg-8'>
-                                <span className='fw-bolder fs-6 text-gray-900'>
-                                    {address[0]?.ADDRESSINSTALLATION?.ADDRESSNUMBER && `${address[0]?.ADDRESSINSTALLATION?.ADDRESSNUMBER}`}&nbsp;
-                                    {address[0]?.ADDRESSINSTALLATION?.ADDRESSMOO && `หมู่ที่ ${address[0]?.ADDRESSINSTALLATION?.ADDRESSMOO}`}&nbsp;
-                                    {address[0]?.ADDRESSINSTALLATION?.ADDRESSSOI && `ซอย ${address[0]?.ADDRESSINSTALLATION?.ADDRESSSOI}`}&nbsp;
-                                    {address[0]?.ADDRESSINSTALLATION?.ADDRESSROAD && `ถนน ${address[0]?.ADDRESSINSTALLATION?.ADDRESSROAD}`}&nbsp;
-                                    {address[0]?.ADDRESSINSTALLATION?.ADDRESSSUBDISTRICTNAME && `ตำบล / แขวง ${address[0]?.ADDRESSINSTALLATION?.ADDRESSSUBDISTRICTNAME}`}&nbsp;
-                                    {address[0]?.ADDRESSINSTALLATION?.ADDRESSDISTRICTNAME && `อำเภอ ${address[0]?.ADDRESSINSTALLATION?.ADDRESSDISTRICTNAME}`}&nbsp;
-                                    {address[0]?.ADDRESSINSTALLATION?.ADDRESSPROVINCENAME && `จังหวัด ${address[0]?.ADDRESSINSTALLATION?.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
-                                    {address[0]?.ADDRESSINSTALLATION?.ADDRESSZIPCODE && `${address[0]?.ADDRESSINSTALLATION?.ADDRESSZIPCODE}`}&nbsp;
-                                </span>
+                        {address[0]?.ADDRESSCARD?.ADDRESSNUMBER && (
+                            <div className='row mb-7'>
+                                <label className={`col-lg-4 text-muted ${styles.label}`}>ที่อยู่บัตรประชาชน</label>
+                                <div className='col-lg-8'>
+                                    <span className={`${styles.label}`}>
+                                        {address[0]?.ADDRESSCARD?.ADDRESSNUMBER && `${address[0]?.ADDRESSCARD?.ADDRESSNUMBER}`}&nbsp;
+                                        {address[0]?.ADDRESSCARD?.ADDRESSMOO && `หมู่ที่ ${address[0]?.ADDRESSCARD?.ADDRESSMOO}`}&nbsp;
+                                        {address[0]?.ADDRESSCARD?.ADDRESSSOI && `ซอย ${address[0]?.ADDRESSCARD?.ADDRESSSOI}`}&nbsp;
+                                        {address[0]?.ADDRESSCARD?.ADDRESSROAD && `ถนน ${address[0]?.ADDRESSCARD?.ADDRESSROAD}`}&nbsp;
+                                        {address[0]?.ADDRESSCARD?.ADDRESSSUBDISTRICTNAME && `ตำบล / แขวง ${address[0]?.ADDRESSCARD?.ADDRESSSUBDISTRICTNAME}`}&nbsp;
+                                        {address[0]?.ADDRESSCARD?.ADDRESSDISTRICTNAME && `อำเภอ ${address[0]?.ADDRESSCARD?.ADDRESSDISTRICTNAME}`}&nbsp;
+                                        {address[0]?.ADDRESSCARD?.ADDRESSPROVINCENAME && `จังหวัด ${address[0]?.ADDRESSCARD?.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
+                                        {address[0]?.ADDRESSCARD?.ADDRESSZIPCODE && `${address[0]?.ADDRESSCARD?.ADDRESSZIPCODE}`}&nbsp;
+                                    </span>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
-                        <div className='row mb-10'>
-                            <label className='col-lg-4 fw-bold text-muted'>ที่อยู่เก็บเงิน</label>
-                            <div className='col-lg-8'>
-                                <span className='fw-bolder fs-6 text-gray-900'>
-                                    {address[0]?.ADDRESSPAYMENT?.ADDRESSNUMBER && `${address[0]?.ADDRESSPAYMENT?.ADDRESSNUMBER}`}&nbsp;
-                                    {address[0]?.ADDRESSPAYMENT?.ADDRESSMOO && `หมู่ที่ ${address[0]?.ADDRESSPAYMENT?.ADDRESSMOO}`}&nbsp;
-                                    {address[0]?.ADDRESSPAYMENT?.ADDRESSSOI && `ซอย ${address[0]?.ADDRESSPAYMENT?.ADDRESSSOI}`}&nbsp;
-                                    {address[0]?.ADDRESSPAYMENT?.ADDRESSROAD && `ถนน ${address[0]?.ADDRESSPAYMENT?.ADDRESSROAD}`}&nbsp;
-                                    {address[0]?.ADDRESSPAYMENT?.ADDRESSSUBDISTRICTNAME && `ตำบล / แขวง ${address[0]?.ADDRESSPAYMENT?.ADDRESSSUBDISTRICTNAME}`}&nbsp;
-                                    {address[0]?.ADDRESSPAYMENT?.ADDRESSDISTRICTNAME && `อำเภอ ${address[0]?.ADDRESSPAYMENT?.ADDRESSDISTRICTNAME}`}&nbsp;
-                                    {address[0]?.ADDRESSPAYMENT?.ADDRESSPROVINCENAME && `จังหวัด ${address[0]?.ADDRESSPAYMENT?.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
-                                    {address[0]?.ADDRESSPAYMENT?.ADDRESSZIPCODE && `${address[0]?.ADDRESSPAYMENT?.ADDRESSZIPCODE}`}&nbsp;
-                                </span>
+                        {address[0]?.ADDRESSPAYMENT?.ADDRESSNUMBER && (
+                            <div className='row mb-10'>
+                                <label className={`col-lg-4 text-muted ${styles.label}`}>ที่อยู่เก็บเงิน</label>
+                                <div className='col-lg-8'>
+                                    <span className={`${styles.label}`}>
+                                        {address[0]?.ADDRESSPAYMENT?.ADDRESSNUMBER && `${address[0]?.ADDRESSPAYMENT?.ADDRESSNUMBER}`}&nbsp;
+                                        {address[0]?.ADDRESSPAYMENT?.ADDRESSMOO && `หมู่ที่ ${address[0]?.ADDRESSPAYMENT?.ADDRESSMOO}`}&nbsp;
+                                        {address[0]?.ADDRESSPAYMENT?.ADDRESSSOI && `ซอย ${address[0]?.ADDRESSPAYMENT?.ADDRESSSOI}`}&nbsp;
+                                        {address[0]?.ADDRESSPAYMENT?.ADDRESSROAD && `ถนน ${address[0]?.ADDRESSPAYMENT?.ADDRESSROAD}`}&nbsp;
+                                        {address[0]?.ADDRESSPAYMENT?.ADDRESSSUBDISTRICTNAME && `ตำบล / แขวง ${address[0]?.ADDRESSPAYMENT?.ADDRESSSUBDISTRICTNAME}`}&nbsp;
+                                        {address[0]?.ADDRESSPAYMENT?.ADDRESSDISTRICTNAME && `อำเภอ ${address[0]?.ADDRESSPAYMENT?.ADDRESSDISTRICTNAME}`}&nbsp;
+                                        {address[0]?.ADDRESSPAYMENT?.ADDRESSPROVINCENAME && `จังหวัด ${address[0]?.ADDRESSPAYMENT?.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
+                                        {address[0]?.ADDRESSPAYMENT?.ADDRESSZIPCODE && `${address[0]?.ADDRESSPAYMENT?.ADDRESSZIPCODE}`}&nbsp;
+                                    </span>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {address[0]?.ADDRESSTAX?.ADDRESSPROVINCENAME && (
                             <div className='row mb-10'>
-                                <label className='col-lg-4 fw-bold text-muted'>ที่อยู่เสึยภาษี</label>
+                                <label className={`col-lg-4 text-muted ${styles.label}`}>ที่อยู่เสึยภาษี</label>
                                 <div className='col-lg-8'>
-                                    <span className='fw-bolder fs-6 text-gray-900'>
+                                    <span className={`${styles.label}`}>
                                         {address[0]?.ADDRESSTAX?.ADDRESSNUMBER && `${address[0]?.ADDRESSTAX?.ADDRESSNUMBER}`}&nbsp;
                                         {address[0]?.ADDRESSTAX?.ADDRESSMOO && `หมู่ที่ ${address[0]?.ADDRESSTAX?.ADDRESSMOO}`}&nbsp;
                                         {address[0]?.ADDRESSTAX?.ADDRESSSOI && `ซอย ${address[0]?.ADDRESSTAX?.ADDRESSSOI}`}&nbsp;
@@ -943,10 +959,9 @@ const UpdateSalesContract: React.FC = () => {
                         )}
 
                         < div className='row mb-10'>
-                            <label className='col-lg-4 fw-bold text-muted'>เบอร์โทรติดต่อ</label>
+                            <label className={`col-lg-4 text-muted ${styles.label}`}>เบอร์โทรติดต่อ</label>
                             <div className='col-lg-8'>
-                                <span
-                                    className='fw-bold fs-6'>
+                                <span className={`${styles.label}`}>
                                     {customerDetail[0]?.CUSTOMERMOBILE ?
                                         customerDetail[0]?.CUSTOMERMOBILE :
                                         address[0]?.ADDRESSINSTALLATION?.ADDRESSPHONE}
@@ -955,26 +970,26 @@ const UpdateSalesContract: React.FC = () => {
                         </div>
 
                         <div className='row mb-10'>
-                            <label className='col-lg-4 fw-bold text-muted'>สินค้า</label>
+                            <label className={`col-lg-4 text-muted ${styles.label}`}>สินค้า</label>
                             <div className='col-lg-8'>
-                                <span className='fw-bold fs-6'>{product[0]?.ItemDescription}</span>
+                                <span className={`${styles.label}`}>{product[0]?.ItemDescription}</span>
                             </div>
                         </div>
 
                         {product[0]?.Package[0]?.PACKAGETITLE && (
                             <div className='row mb-10'>
-                                <label className='col-lg-4 fw-bold text-muted'>แพ็คเกจ</label>
+                                <label className={`col-lg-4 text-muted ${styles.label}`}>แพ็คเกจ</label>
                                 <div className='col-lg-8'>
-                                    <span className='fw-bold fs-6'>{product[0]?.Package[0]?.PACKAGETITLE}</span>
+                                    <span className={`${styles.label}`}>{product[0]?.Package[0]?.PACKAGETITLE}</span>
                                 </div>
                             </div>
                         )}
 
                         {item?.DISCOUNT[0]?.GIFT && (
                             <div className='row align-items-center mb-10'>
-                                <label className='col-lg-4 fw-bold text-muted mb-0'>ของแถม</label>
+                                <label className={`col-lg-4 text-muted ${styles.label}`}>ของแถม</label>
                                 <div className='col-lg-8 d-flex justify-content-between'>
-                                    <span className='fw-bold fs-6'>
+                                    <span className={`${styles.label}`}>
                                         {item?.DISCOUNT[0]?.GIFT?.GIFTNAME ? item?.DISCOUNT[0]?.GIFT?.GIFTNAME : "ไม่มี"}
                                     </span>
                                 </div>
@@ -982,9 +997,9 @@ const UpdateSalesContract: React.FC = () => {
                         )}
 
                         <div className='row align-items-center mb-10'>
-                            <label className='col-lg-4 fw-bold text-muted mb-0'>ราคาสินค้า</label>
+                            <label className={`col-lg-4 text-muted ${styles.label}`}>ราคาสินค้า</label>
                             <div className='col-lg-8 d-flex justify-content-between'>
-                                <span className='fw-bold fs-6'>
+                                <span className={`${styles.label}`}>
                                     {product[0]?.Package[0]?.TOTALPRICE !== undefined
                                         ? product[0]?.Package[0]?.TOTALPRICE.toLocaleString()
                                         : '0'}
@@ -995,9 +1010,9 @@ const UpdateSalesContract: React.FC = () => {
 
                         {item?.DISCOUNT[0] && item?.DISCOUNT[0]?.TRADEIN?.HASTRADEIN !== 0 && (
                             <div className='row align-items-center mb-10'>
-                                <label className='col-lg-4 fw-bold text-muted mb-0'>เครื่องเทิร์น</label>
+                                <label className={`col-lg-4 text-muted ${styles.label}`}>เครื่องเทิร์น</label>
                                 <div className='col-lg-8 d-flex justify-content-between'>
-                                    <span className='fw-bold fs-6'>
+                                    <span className={`${styles.label}`}>
                                         {item?.DISCOUNT[0]?.TRADEIN?.TRADEINBRANDNAME ? item?.DISCOUNT[0]?.TRADEIN?.TRADEINBRANDNAME : "ไม่มี"}
                                     </span>
                                 </div>
@@ -1005,9 +1020,9 @@ const UpdateSalesContract: React.FC = () => {
                         )}
 
                         <div className='row align-items-center mb-10'>
-                            <label className='col-lg-4 fw-bold text-muted mb-0'>ส่วนลด</label>
+                            <label className={`col-lg-4 text-muted ${styles.label}`}>ส่วนลด</label>
                             <div className='col-lg-8 d-flex justify-content-between'>
-                                <span className='fw-bold fs-6'>
+                                <span className={`${styles.label}`}>
                                     {typeof item?.DISCOUNT?.[0]?.DISCOUNTAMOUNT === 'number'
                                         ? item?.DISCOUNT?.[0]?.DISCOUNTAMOUNT.toLocaleString()
                                         : "ไม่มี"}
@@ -1017,9 +1032,9 @@ const UpdateSalesContract: React.FC = () => {
                         </div>
 
                         <div className='row align-items-center mb-10'>
-                            <label className='col-lg-4 fw-bold text-muted mb-0'>ราคาสุทธิ</label>
+                            <label className={`col-lg-4 text-muted ${styles.label}`}>ราคาสุทธิ</label>
                             <div className='col-lg-8 d-flex justify-content-between'>
-                                <span className='fw-bold fs-6'>
+                                <span className={`${styles.label}`}>
                                     {netPrice !== undefined ? netPrice.toLocaleString() : '0'}
                                 </span>
                                 <span className='badge badge-light-success'>บาท</span>
@@ -1027,27 +1042,28 @@ const UpdateSalesContract: React.FC = () => {
                         </div>
 
                         {/* ถ้าเป็นเงินสดไม่ต้องแสดง */}
-                        {product[0]?.Package[0]?.PERIODDETAILS?.[0]?.PAYMENTAMOUNT !== undefined && (
-                            <>
-                                <div className='row align-items-center mb-10'>
-                                    <label className='col-lg-4 fw-bold text-muted mb-0'>งวดที่ 1 ที่ต้องชำระ</label>
-                                    <div className='col-lg-8 d-flex justify-content-between'>
-                                        <span className='fw-bold fs-6'>{(product[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTAMOUNT - discountAmount).toLocaleString()}</span>
-                                        <span className='badge badge-light-success'>บาท</span>
-                                    </div>
-                                </div>
-
-                                {product[0]?.Package[0]?.PERIODDETAILS.length > 1 && (
+                        {product[0]?.Package[0]?.PERIODDETAILS?.[0]?.PAYMENTAMOUNT !== undefined &&
+                            product[0]?.Package[0]?.PACKAGETYPEID !== 1 && (
+                                <>
                                     <div className='row align-items-center mb-10'>
-                                        <label className='col-lg-4 fw-bold text-muted mb-0'>งวดที่ 2 ถึง {product[0]?.Package[0]?.PERIODDETAILS.length} ต้องชำระงวดละ</label>
+                                        <label className={`col-lg-4 text-muted ${styles.label}`}>งวดที่ 1 ที่ต้องชำระ</label>
                                         <div className='col-lg-8 d-flex justify-content-between'>
-                                            <span className='fw-bold fs-6'>{(product[0]?.Package[0]?.PERIODDETAILS[1]?.PAYMENTAMOUNT).toLocaleString()}</span>
+                                            <span className={`${styles.label}`}>{(product[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTAMOUNT - discountAmount).toLocaleString()}</span>
                                             <span className='badge badge-light-success'>บาท</span>
                                         </div>
                                     </div>
-                                )}
-                            </>
-                        )}
+
+                                    {product[0]?.Package[0]?.PERIODDETAILS.length > 1 && (
+                                        <div className='row align-items-center mb-10'>
+                                            <label className={`col-lg-4 text-muted ${styles.label}`}>งวดที่ 2 ถึง {product[0]?.Package[0]?.PERIODDETAILS.length} ต้องชำระงวดละ</label>
+                                            <div className='col-lg-8 d-flex justify-content-between'>
+                                                <span className={`${styles.label}`}>{(product[0]?.Package[0]?.PERIODDETAILS[1]?.PAYMENTAMOUNT).toLocaleString()}</span>
+                                                <span className='badge badge-light-success'>บาท</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
+                            )}
 
                     </div>
                 </div>
@@ -1056,8 +1072,18 @@ const UpdateSalesContract: React.FC = () => {
                 <div className='d-none d-xl-flex justify-content-between align-items-center my-5'>
                     <button
                         className={`${styles.btnSecondary}`}
-                        onClick={() => navigate('/sale/step', { state: item })}>
-                        ย้อนกลับ
+                        onClick={() =>
+                            navigate('/sale/overview')
+                        }
+                    >
+                        กลับหน้าแรก
+                    </button>
+                    <button
+                        className={`${styles.btnPrimary}`}
+                        type='button'
+                        onClick={handleNextClick}
+                    >
+                        ถัดไป
                     </button>
                     {/* <button
                         className={`btn btn-primary w-100 w-md-auto align-self-center h-50px ${!isDataComplete ? `disabled` : ``}`}
@@ -1081,9 +1107,18 @@ const UpdateSalesContract: React.FC = () => {
                 >
                     <button
                         className={`${styles.btnSecondary}`}
-                        onClick={() => navigate('/sale/step', { state: item })}
+                        onClick={() =>
+                            navigate('/sale/overview')
+                        }
                     >
-                        ย้อนกลับ
+                        กลับหน้าแรก
+                    </button>
+                    <button
+                        className={`${styles.btnPrimary}`}
+                        type='button'
+                        onClick={handleNextClick}
+                    >
+                        ถัดไป
                     </button>
                     {/* <button
                         className={`btn btn-primary w-auto ${!isDataComplete ? `disabled` : ``}`}

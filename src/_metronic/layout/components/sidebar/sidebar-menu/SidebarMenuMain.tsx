@@ -49,9 +49,9 @@ const SidebarMenuMain = () => {
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 768) {
-        setFontSize('11px'); // ฟอนต์เล็กลงสำหรับหน้าจอเล็ก
+        setFontSize('14px'); // ฟอนต์เล็กลงสำหรับหน้าจอเล็ก
       } else {
-        setFontSize('14px'); // ฟอนต์ปกติสำหรับหน้าจอใหญ่
+        setFontSize('16px'); // ฟอนต์ปกติสำหรับหน้าจอใหญ่
       }
     };
 
@@ -111,6 +111,7 @@ const SidebarMenuMain = () => {
         )
         .map((item) => (
           <SidebarMenuItem
+            fontSize={fontSize}
             key={item.MENU_ID}
             to={item.MENU_OBJECT}
             title={item.MENU_NAME}
@@ -134,6 +135,7 @@ const SidebarMenuMain = () => {
         .filter((item) => item.MENU_NAME === 'รายงานการขายประจำวัน') // แสดงเฉพาะ "รายงานการขายประจำวัน"
         .map((item) => (
           <SidebarMenuItem
+            fontSize={fontSize}
             key={item.MENU_ID}
             to={item.MENU_OBJECT}
             title={item.MENU_NAME}

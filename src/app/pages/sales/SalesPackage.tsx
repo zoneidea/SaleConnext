@@ -2047,7 +2047,6 @@ const SalesPackage: React.FC = () => {
     const state = location.state as { barCode?: any } || {}; // เพิ่ม fallback เป็นอ็อบเจ็กต์ว่าง
     const barCode = state.barCode; // กำหนดค่าเริ่มต้นเป็น "ยังไม่มีข้อมูล"
     // console.log(`barCode`, barCode);
-
     // State สำหรับตรวจสอบสถานะการโหลด
     const [loadingCategories, setLoadingCategories] = useState(true);
     const [loadingProducts, setLoadingProducts] = useState(false)
@@ -2593,7 +2592,10 @@ const SalesPackage: React.FC = () => {
             return;
         }
 
-        navigate("/sale/scanbarcode"); // นำทางไปยังหน้าสแกนบาร์โค้ด
+        // navigate("/sale/scanbarcode"); 
+        navigate('/sale/scanbarcode', {
+            state: { state, REFNO, origin: '/sale/package' }
+        })
     };
 
     // const handleNextClick = async () => {
@@ -2774,7 +2776,7 @@ const SalesPackage: React.FC = () => {
                 await MySwal.fire({
                     icon: 'success',
                     title: 'สำเร็จ!',
-                    text: 'บันทึกข้อมูลสินค้าเรียบร้อยแล้ว',
+                    text: 'บันทึกข้อมูลเรียบร้อยแล้ว',
                     timer: 2000, // แสดงผล 3 วินาที
                     showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
                 });

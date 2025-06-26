@@ -6,6 +6,7 @@ import { useLocation } from 'react-router'
 import { checkIsActive, WithChildren } from '../../../../helpers'
 
 type Props = {
+  fontSize?: string
   to: string
   title: string
   imageSrc?: string // สำหรับไอคอนแบบรูปภาพ
@@ -15,6 +16,7 @@ type Props = {
 }
 
 const SidebarMenuItem: FC<Props & WithChildren> = ({
+  fontSize,
   to,
   title,
   imageSrc,
@@ -38,11 +40,11 @@ const SidebarMenuItem: FC<Props & WithChildren> = ({
           </span>
         )}
         {imageSrc && (
-          <span className='menu-icon px-7'>
-            <img src={imageSrc} alt={title} style={{ width: 25, height: 25 }} />
+          <span className='menu-icon px-2 py-1'>
+            <img src={imageSrc} alt={title} style={{ width: 20, height: 20 }} />
           </span>
         )}
-        <span className={`menu-title ${styles.fontSize}`}>{title}</span>
+        <span className="menu-title" style={{ fontSize }}>{title}</span>
       </Link>
     </div>
   )
