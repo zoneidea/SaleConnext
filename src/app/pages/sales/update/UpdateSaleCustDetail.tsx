@@ -64,15 +64,24 @@ interface OCRResultState {
     error?: string;
 }
 
+type FormValues = {
+    fullName: string;
+    lastName: string;
+    idCard:   string;
+    telNo:    string;
+    email:    string;
+  };
+
 const UpdateSaleCustDetail: React.FC = () => {
     const navigate = useNavigate()
     const MySwal = withReactContent(Swal);
 
     const location = useLocation();
     const item = location.state as ItemProps || [];
+    console.log(`item`, item);
 
     const refno = item?.REFNO
-    const customerDetail = item?.CUSTOMERDETAIL
+    const customerDetail = item?.CUSTOMERDETAIL?.[0] ?? {}
     // console.log(`customerDetail`, customerDetail);
 
     let customerStatus = item?.CUSTOMERSTATUS
@@ -643,6 +652,8 @@ const UpdateSaleCustDetail: React.FC = () => {
         fullName: yup
             .string()
             .required("กรุณากรอกชื่อ"),
+        lastName: yup
+            .string(),
         idCard: yup
             .string()
             .notRequired()
@@ -681,10 +692,11 @@ const UpdateSaleCustDetail: React.FC = () => {
     } = useForm<FormValues>({
         resolver: yupResolver(schema),
         defaultValues: {
-            fullName: '',
-            idCard: '',
-            telNo: '',
-            email: '',
+            fullName: customerDetail.CUSTOMERNAME,
+            lastName: customerDetail.CUSTOMERLASTNAME,
+            idCard: customerDetail.CUSTOMERID,
+            telNo: customerDetail.CUSTOMERMOBILE,
+            email: customerDetail.CUSTOMEREMAIL,
         },
     });
 
@@ -711,6 +723,57 @@ const UpdateSaleCustDetail: React.FC = () => {
             setEmail(cd.CUSTOMEREMAIL)
         }
     }, [customerDetail, setValue]);
+
+  const didInit = useRef(false);
+
+useEffect(() => {
+  if (didInit.current) return;
+  const c = matchedItem?.CUSTOMERSTATUS?.[0]?.Contract;
+  if (!c) return;
+  didInit.current = true;
+
+  // แยกชื่อ–นามสกุล
+  const parts = (c.CustomerName || '').trim().split(/\s+/);
+  const first = parts.shift() || '';
+  const last  = parts.join(' ')  || '';
+
+  // เลือก Address ตัวที่สองก่อน ถ้าไม่มีค่อย fallback ตัวแรก
+  const addrs = Array.isArray(c.Address) ? c.Address : [];
+  const addr  = addrs[1] ?? addrs[0] ?? {};
+
+  // เตรียมค่าที่จะใส่ลงฟอร์ม + local state
+//   const values = {
+//     fullName:  first,
+//     lastName:  last,
+//     idCard:    c.IDCard       || '',
+//     telNo:     (addr.TelMobile  || '').replace(/-/g, ''),
+//     phone:     (addr.TelHome    || '').replace(/-/g, ''),
+//     workPhone: (addr.TelOffice  || '').replace(/-/g, ''),
+//     email:     addr.EMail      || '',
+//   }
+
+//   // 1) รีเซ็ต RHF fields
+//   reset({
+//     fullName: values.fullName,
+//     lastName: values.lastName,
+//     idCard:   values.idCard,
+//     telNo:    values.telNo,
+//     email:    values.email,
+//   });
+
+//   // 2) ซิงก์กลับ local state
+//   setFullName(values.fullName);
+//   setLastName(values.lastName);
+//   setIdCard(values.idCard);
+//   setMobile(values.telNo);
+//   setPhone(values.phone);
+//   setWorkPhone(values.workPhone);
+//   setEmail(values.email);
+
+  // 3) ถ้าต้องการให้ RHF field อัปเดตด้วย
+//   setValue('telNo',  values.telNo);
+//   setValue('email', values.email);
+}, [matchedItem, reset, setValue]);
       
     {/*-------------------- End Validate --------------------*/ }
 

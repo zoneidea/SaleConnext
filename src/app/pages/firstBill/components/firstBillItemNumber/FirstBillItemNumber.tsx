@@ -118,7 +118,14 @@ const FirstBillItemNumber: React.FC<StatusLabelProps> = ({ item }) => {
     }
 
     return (
-        <Link to='/firstBill/CreateFirstBill' state={item}>
+        // <Link to='/firstBill/CreateFirstBill' state={item}>
+        <Link
+            to="/firstBill/CreateFirstBill"
+            state={{
+                item: item,
+                from: location.pathname
+            }}
+        >
             <div className='d-flex align-items-center bg-light-success rounded p-5 mb-3'>
 
                 {/* ฝั่งขวา: แบ่งเป็นสองคอลัมน์ (col-6 กับ col-6) */}

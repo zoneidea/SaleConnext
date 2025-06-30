@@ -623,7 +623,9 @@ const UpdateSalesContract: React.FC = () => {
 
     const { REFNO } = useUUIDStore();
 
-    const item = location.state as ItemProps || [];
+    // const item = location.state as ItemProps || [];
+    const item = (location.state as ItemProps) || ({} as ItemProps);
+
     console.log(`item`, item);
     const refno = item?.REFNO
     // console.log(`refno`, refno);
@@ -699,8 +701,61 @@ const UpdateSalesContract: React.FC = () => {
         fetchImages();
     }, [refno]);
 
+    // const handleNextClick = async () => {
+    //     try {
+    //         const updateContract = await axios.post(UPDATECONTACT, {
+    //             REFNO: refno,
+    //             EMPID: EmpId,
+    //             TEAMSALE: TeamSale,
+    //             SALECODE: SaleCode,
+    //             SUPEMPID: SupEmpId,
+    //             SECEMPID: SecEmpId,
+    //             FIELD: "CONTRACT",
+    //             DATA: { createdAt: formattedDate }
+    //         }, {
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //             },
+    //         });
+
+    //         // console.log(`updateContract CONTRACT: `, updateContract.data);
+
+    //         // แสดง SweetAlert2 หลังจากบันทึกสำเร็จ
+    //         Swal.fire({
+    //             icon: 'success',
+    //             title: 'สำเร็จ!',
+    //             text: 'บันทึกสัญญาเรียบร้อยแล้ว',
+    //             timer: 2000, // แสดงผล 3 วินาที
+    //             showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
+    //         }).then(() => {
+    //             // navigate("/sale/photo", {
+    //             //     state: {
+    //             //         ...matchedItem,
+    //             //     }
+    //             // })
+    //             navigate('/firstBill/CreateFirstBill', {
+    //                 state: {
+    //                     item: matchedItem,
+    //                     from: location.pathname
+    //                 }
+    //             })
+    //         });
+    //     } catch (error) {
+    //         console.error('Error fetching CONTRACT:', error);
+
+    //         // แสดง SweetAlert2 เมื่อเกิดข้อผิดพลาด
+    //         Swal.fire({
+    //             icon: 'error',
+    //             title: 'เกิดข้อผิดพลาด!',
+    //             text: 'ไม่สามารถบันทึกสัญญาได้ กรุณาลองใหม่อีกครั้ง',
+    //             confirmButtonText: 'ตกลง'
+    //         });
+    //     }
+    // };
+
     const handleNextClick = async () => {
         try {
+            // 1) อัพเดตสัญญา (CONTRACT)
             const updateContract = await axios.post(UPDATECONTACT, {
                 REFNO: refno,
                 EMPID: EmpId,
@@ -711,31 +766,54 @@ const UpdateSalesContract: React.FC = () => {
                 FIELD: "CONTRACT",
                 DATA: { createdAt: formattedDate }
             }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
             });
 
-            // console.log(`updateContract CONTRACT: `, updateContract.data);
+            // 2) ถ้าสำเร็จ ก็อัพเดตสถานะเป็น FINISH
+            if (updateContract.status === 200) {
+                const finishResponse = await axios.post(UPDATECONTACT, {
+                    REFNO: refno,
+                    EMPID: EmpId,
+                    TEAMSALE: TeamSale,
+                    SALECODE: SaleCode,
+                    SUPEMPID: SupEmpId,
+                    SECEMPID: SecEmpId,
+                    // FIELD: 'STATUS',
+                    // DATA: 'FINISH',
+                    FIELD: "PAYMENT",
+                    DATA: "DRAFT"
+                }, {
+                    headers: { 'Content-Type': 'application/json' },
+                });
+                console.log(`finishResponse`, finishResponse);
 
-            // แสดง SweetAlert2 หลังจากบันทึกสำเร็จ
-            Swal.fire({
-                icon: 'success',
-                title: 'สำเร็จ!',
-                text: 'บันทึกสัญญาเรียบร้อยแล้ว',
-                timer: 2000, // แสดงผล 3 วินาที
-                showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
-            }).then(() => {
-                navigate("/sale/photo", {
-                    state: {
-                        ...matchedItem,
-                    }
-                })
-            });
+
+                if (finishResponse.status === 200) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'สำเร็จ!',
+                        text: 'บันทึกสัญญาเรียบร้อยแล้ว',
+                        timer: 2000,
+                        showConfirmButton: false,
+                    }).then(() => {
+                        console.log(`matchedItem`, matchedItem);
+                        
+                        navigate('/firstBill/CreateFirstBill', {
+                            state: {
+                                item: item,
+                                from: location.pathname
+                            }
+                        });
+                    });
+                } else {
+                    throw new Error('อัพเดตสถานะไม่สำเร็จ');
+                }
+            } else {
+                throw new Error('อัพเดตสัญญาไม่สำเร็จ');
+            }
+
         } catch (error) {
-            console.error('Error fetching CONTRACT:', error);
-
-            // แสดง SweetAlert2 เมื่อเกิดข้อผิดพลาด
+            console.error('Error updating contract or status:', error);
             Swal.fire({
                 icon: 'error',
                 title: 'เกิดข้อผิดพลาด!',
@@ -870,21 +948,25 @@ const UpdateSalesContract: React.FC = () => {
                             <label className={`col-lg-4 text-muted ${styles.label}`}>ชื่อลูกค้า</label>
                             <div className='col-lg-8'>
                                 <span className={`${styles.label}`}>
-                                    {customerDetail[0]?.CUSTOMERNAME}
+                                    {customerDetail[0]?.CUSTOMERNAME} {customerDetail[0]?.CUSTOMERLASTNAME}
                                 </span>
                             </div>
                         </div>
 
-                        <div className='row mb-7'>
-                            {customerDetail[0]?.CUSTOMERTYPE === "1" ? (
-                                <label className={`col-lg-4 text-muted ${styles.label}`}>เลขประจำตัวผู้เสียภาษี</label>
-                            ) : (
-                                <label className={`col-lg-4 text-muted ${styles.label}`}>เลขที่บัตรประชาชน</label>
-                            )}
-                            <div className='col-lg-8'>
-                                <span className={`${styles.label}`}>{customerDetail[0]?.CUSTOMERID}</span>
+                        {customerDetail[0]?.CUSTOMERID && (
+                            <div className='row mb-7'>
+                                {customerDetail[0].CUSTOMERTYPE === "1" ? (
+                                    <label className={`col-lg-4 text-muted ${styles.label}`}>เลขประจำตัวผู้เสียภาษี</label>
+                                ) : (
+                                    <label className={`col-lg-4 text-muted ${styles.label}`}>เลขที่บัตรประชาชน</label>
+                                )}
+                                <div className='col-lg-8'>
+                                    <span className={`${styles.label}`}>
+                                        {customerDetail[0]?.CUSTOMERID}
+                                    </span>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {address[0]?.ADDRESSINSTALLATION?.ADDRESSNUMBER && (
                             <div className='row mb-10'>
@@ -1073,10 +1155,10 @@ const UpdateSalesContract: React.FC = () => {
                     <button
                         className={`${styles.btnSecondary}`}
                         onClick={() =>
-                            navigate('/sale/overview')
+                            navigate('/sale/step', { state: item })
                         }
                     >
-                        กลับหน้าแรก
+                        ย้อนกลับ
                     </button>
                     <button
                         className={`${styles.btnPrimary}`}
@@ -1108,10 +1190,10 @@ const UpdateSalesContract: React.FC = () => {
                     <button
                         className={`${styles.btnSecondary}`}
                         onClick={() =>
-                            navigate('/sale/overview')
+                            navigate('/sale/step', { state: item })
                         }
                     >
-                        กลับหน้าแรก
+                        ย้อนกลับ
                     </button>
                     <button
                         className={`${styles.btnPrimary}`}

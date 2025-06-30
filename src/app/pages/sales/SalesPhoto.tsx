@@ -931,7 +931,7 @@ const SalesPhoto: React.FC = () => {
                 EMPID: EmpId,
                 TEAMSALE: TeamSale,
                 FIELD: 'STATUS',
-                DATA: 'FINISH', //finish
+                DATA: 'FINISH', 
             },
                 {
                     headers: { 'Content-Type': 'application/json' },
@@ -1262,9 +1262,11 @@ const SalesPhoto: React.FC = () => {
                     <div className='d-none d-xl-flex justify-content-between align-items-center mt-5 mb-10'>
                         <button
                             className={`${styles.btnSecondary}`}
-                            onClick={() => navigate('/sale/overview')}
+                            onClick={() =>
+                                navigate('/sale/step', { state: matchedItem })
+                            }
                         >
-                            กลับหน้าแรก
+                            ย้อนกลับ
                         </button>
                         {isDataComplete && (
                             <button
@@ -1290,9 +1292,11 @@ const SalesPhoto: React.FC = () => {
                     >
                         <button
                             className={`${styles.btnSecondary}`}
-                            onClick={() => navigate('/sale/overview')}
+                            onClick={() =>
+                                navigate('/sale/step', { state: matchedItem })
+                            }
                         >
-                            กลับหน้าแรก
+                            ย้อนกลับ
                         </button>
                         {isDataComplete && (
                             <button

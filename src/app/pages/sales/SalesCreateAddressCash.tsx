@@ -3781,6 +3781,8 @@ const SalesCreateAddress: React.FC = () => {
                                                             }}
                                                             type='text'
                                                             maxLength={10}
+                                                            inputMode='numeric'
+                                                            pattern='[0-9]*'
                                                         />
                                                     </div>
                                                 </div>
@@ -4043,6 +4045,8 @@ const SalesCreateAddress: React.FC = () => {
                                                                     type='text'
                                                                     className={`form-control ${styles.label}`}
                                                                     maxLength={10}
+                                                                    inputMode='numeric'
+                                                                    pattern='[0-9]*'
                                                                 />
                                                             </div>
 

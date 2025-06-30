@@ -3760,6 +3760,15 @@ const Step: React.FC = () => {
                   {/* 2. ตรวจสอบสถานะลูกค้า */}
                   <button
                     onClick={async () => {
+                      if (data[0]?.CUSTOMERSTATUS.length > 0) {
+                        await Swal.fire({
+                          icon: 'info',
+                          title: 'ไม่สามารถแก้ไขได้',
+                          text: 'ไม่สามารถแก้ไขสถานะลูกค้าได้',
+                          confirmButtonText: 'ตกลง',
+                        });
+                        return;
+                      }
                       const ok = await handleClick('updateSalesSatusCust')
                       if (ok) {
                         navigate('/sale/update/updateSalesSatusCust', { state: data[0] })
@@ -3837,6 +3846,10 @@ const Step: React.FC = () => {
                     onClick={() => {
                       if (data[0].CUSTOMERSTATUS.length === 0) {
                         Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'กรุณาตรวจสอบข้อมูลลูกค้าก่อน', confirmButtonText: 'ตกลง' });
+                      } if (data[0].PRODUCT.length === 0) {
+                        Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'กรุณาเลือกแพ็คเกจก่อน', confirmButtonText: 'ตกลง' });
+                      } if (data[0].PRODUCT.length > 0) {
+                        Swal.fire({ icon: 'info', title: 'ไม่สามารถทำรายการจากขั้นตอนนี้ได้', text: 'เปลี่ยน ส่วนลด / เครื่องเทิร์น / ของแถม ได้จากขั้นตอนเลือกแพ็คเกจ', confirmButtonText: 'ตกลง' });
                       } else {
                         handleClick('updateSaleDiscount').then(ok => {
                           if (ok) navigate('/sale/update/updateSaleDiscount', { state: data[0] });
@@ -3962,23 +3975,35 @@ const Step: React.FC = () => {
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className={`${styles.label}`}>4. เลือกพนักงานขาย</div>
-                        {data[0].SALEEMPLOYEE.length !== 0 && (
+                        {data[0].SALEEMPLOYEE.length > 0 && (
                           <>
-                            <span className={`text-gray-700 d-block ${styles.label}`}>
-                              {`พนักงานขาย: ${data[0].SALEEMPLOYEE[0].SALEEMPLOYEE.FName} ${data[0].SALEEMPLOYEE[0].SALEEMPLOYEE.LName}`}
-                            </span>
-                            {data[0].SALEEMPLOYEE[0].ADVISER && (
+                            {/* พนักงานขาย */}
+                            {data[0].SALEEMPLOYEE[0]?.SALEEMPLOYEE?.FName && (
                               <span className={`text-gray-700 d-block ${styles.label}`}>
-                                {`ผู้แนะนำ: ${data[0].SALEEMPLOYEE[0].ADVISER.FName} ${data[0].SALEEMPLOYEE[0].ADVISER.LName}`}
+                                {`พนักงานขาย: ${data[0].SALEEMPLOYEE[0].SALEEMPLOYEE.FName
+                                  } ${data[0].SALEEMPLOYEE[0].SALEEMPLOYEE.LName ?? ''
+                                  }`}
                               </span>
                             )}
-                            {data[0].SALEEMPLOYEE[0].INSTALLER && (
+                            {/* ผู้แนะนำ */}
+                            {data[0].SALEEMPLOYEE[0]?.ADVISER && (
                               <span className={`text-gray-700 d-block ${styles.label}`}>
-                                {`พนักงานติดตั้ง: ${data[0].SALEEMPLOYEE[0].INSTALLER.FName} ${data[0].SALEEMPLOYEE[0].INSTALLER.LName}`}
+                                {`ผู้แนะนำ: ${data[0].SALEEMPLOYEE[0].ADVISER.FName
+                                  } ${data[0].SALEEMPLOYEE[0].ADVISER.LName ?? ''
+                                  }`}
+                              </span>
+                            )}
+                            {/* พนักงานติดตั้ง */}
+                            {data[0].SALEEMPLOYEE[0]?.INSTALLER && (
+                              <span className={`text-gray-700 d-block ${styles.label}`}>
+                                {`พนักงานติดตั้ง: ${data[0].SALEEMPLOYEE[0].INSTALLER.FName
+                                  } ${data[0].SALEEMPLOYEE[0].INSTALLER.LName ?? ''
+                                  }`}
                               </span>
                             )}
                           </>
                         )}
+
                       </div>
                     </div>
                   </button>
@@ -4008,7 +4033,7 @@ const Step: React.FC = () => {
                                 ? `ชื่อบริษัท: ${data[0].CUSTOMERDETAIL[0].CUSTOMERNAME}`
                                 : ''
                               : data[0].CUSTOMERDETAIL[0].CUSTOMERNAME
-                                ? `ชื่อลูกค้า: ${data[0].CUSTOMERDETAIL[0].CUSTOMERNAME} ${data[0].CUSTOMERDETAIL[0].CUSTOMERLASTNAME}`
+                                ? `ชื่อลูกค้า: ${data[0].CUSTOMERDETAIL[0].CUSTOMERNAME} ${data[0].CUSTOMERDETAIL[0].CUSTOMERLASTNAME ? data[0].CUSTOMERDETAIL[0].CUSTOMERLASTNAME : ""}`
                                 : ''
                             }
                           </span>
@@ -4063,10 +4088,16 @@ const Step: React.FC = () => {
                         });
                         return;
                       } if (data[0]?.PDPA.length > 0) {
+                        await Swal.fire({
+                          icon: 'info',
+                          title: 'ไม่สามารถแก้ไขได้',
+                          text: 'ไม่สามารถแก้ไข PDPA ได้',
+                          confirmButtonText: 'ตกลง',
+                        });
+                        return;
+                      } if (data[0]?.PDPA.length > 0) {
                         return;
                       }
-
-                      // ถ้าผ่าน ให้ navigate ไปหน้าที่ต้องการ
                       navigate('/sale/pdpa', { state: data[0] });
                     }}
                     className='w-100 text-start border-0 bg-transparent p-0'
@@ -4115,10 +4146,25 @@ const Step: React.FC = () => {
 
                   {/* 9. การชำระเงิน / นัดชำระ */}
                   <button
-                    onClick={() => {
+                    onClick={async () => {
+                      if (data[0]?.CONTRACT.length === 0) {
+                        await Swal.fire({
+                          icon: 'error',
+                          title: 'เกิดข้อผิดพลาด',
+                          text: 'กรุณาบันทึกรายละเอียดสัญญาก่อน',
+                          confirmButtonText: 'ตกลง',
+                        });
+                        return;
+                      }
                       handleClick('UpdateSalesContract').then(ok => {
                         if (ok) {
-                          navigate('/firstBill/CreateFirstBill', { state: data[0] })
+                          // navigate('/firstBill/CreateFirstBill', { state: data[0] })
+                          navigate('/firstBill/CreateFirstBill', {
+                            state: {
+                              item: data[0],
+                              from: location.pathname
+                            }
+                          })
                         }
                       })
                     }}
@@ -4150,7 +4196,16 @@ const Step: React.FC = () => {
                       cursor: 'pointer',
                       fontSize: 'inherit',
                     }}
-                    onClick={() => {
+                    onClick={async () => {
+                      if (data[0]?.CONTRACT.length === 0) {
+                        await Swal.fire({
+                          icon: 'error',
+                          title: 'เกิดข้อผิดพลาด',
+                          text: 'กรุณาบันทึกรายละเอียดสัญญาก่อน',
+                          confirmButtonText: 'ตกลง',
+                        });
+                        return;
+                      }
                       handleClick('photo').then(ok => {
                         if (ok) {
                           navigate('/sale/photo', { state: { fromStep: true, data: data[0] } })
@@ -4207,7 +4262,7 @@ const Step: React.FC = () => {
             <h5>ไม่พบข้อมูล contract</h5>
           </div>
         )}
-      </Content>
+      </Content >
     </>
   )
 }

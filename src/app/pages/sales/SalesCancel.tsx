@@ -779,9 +779,9 @@ const SalesCancel: React.FC = () => {
                         {/* begin::Header */}
                         <div className='d-flex justify-content-between align-items-center mb-7 mt-5'>
                             {packageProduct[0]?.PACKAGETYPEID === 1 ? (
-                                <h3 className='card-title'>ใบสัญญา</h3>
+                                <h3 className={`card-title ${styles.titlePage}`}>ใบสัญญา</h3>
                             ) : (
-                                <h3 className='card-title'>ใบสัญญาเช่าซื้อ</h3>
+                                <h3 className={`card-title ${styles.titlePage}`}>ใบสัญญาเช่าซื้อ</h3>
                             )}
                             <button
                                 className={`${styles.btnPrimary}`}
@@ -822,64 +822,74 @@ const SalesCancel: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className='row mb-7'>
-                            {customerDetail[0]?.CUSTOMERTYPE === "1" ? (
-                                <label className={`col-lg-4 text-muted ${styles.label}`}>เลขประจำตัวผู้เสียภาษี</label>
-                            ) : (
-                                <label className={`col-lg-4 text-muted ${styles.label}`}>เลขที่บัตร</label>
-                            )}
-                            <div className='col-lg-8'>
-                                <span className={`${styles.label}`}>{customerDetail[0]?.CUSTOMERID}</span>
+                        {customerDetail[0]?.CUSTOMERID && (
+                            <div className='row mb-7'>
+                                {customerDetail[0].CUSTOMERTYPE === "1" ? (
+                                    <label className={`col-lg-4 text-muted ${styles.label}`}>เลขประจำตัวผู้เสียภาษี</label>
+                                ) : (
+                                    <label className={`col-lg-4 text-muted ${styles.label}`}>เลขที่บัตรประชาชน</label>
+                                )}
+                                <div className='col-lg-8'>
+                                    <span className={`${styles.label}`}>
+                                        {customerDetail[0]?.CUSTOMERID}
+                                    </span>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
-                        <div className='row mb-10'>
-                            <label className={`col-lg-4 text-muted ${styles.label}`}>ที่อยู่ติดตั้ง</label>
-                            <div className='col-lg-8'>
-                                <span className={`${styles.label}`}>
-                                    {customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSNUMBER && `${customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSNUMBER}`}&nbsp;
-                                    {customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSMOO && `หมู่ที่ ${customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSMOO}`}&nbsp;
-                                    {customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSSOI && `ซอย ${customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSSOI}`}&nbsp;
-                                    {customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSROAD && `ถนน ${customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSROAD}`}&nbsp;
-                                    {customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSSUBDISTRICTNAME && `ตำบล / แขวง ${customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSSUBDISTRICTNAME}`}&nbsp;
-                                    {customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSDISTRICTNAME && `อำเภอ ${customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSDISTRICTNAME}`}&nbsp;
-                                    {customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSPROVINCENAME && `จังหวัด ${customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
-                                    {customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSZIPCODE && `${customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSZIPCODE}`}&nbsp;
-                                </span>
+                        {customerAddress[0]?.ADDRESSINSTALLATION?.ADDRESSNUMBER && (
+                            <div className='row mb-10'>
+                                <label className={`col-lg-4 text-muted ${styles.label}`}>ที่อยู่ติดตั้ง</label>
+                                <div className='col-lg-8'>
+                                    <span className={`${styles.label}`}>
+                                        {customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSNUMBER && `${customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSNUMBER}`}&nbsp;
+                                        {customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSMOO && `หมู่ที่ ${customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSMOO}`}&nbsp;
+                                        {customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSSOI && `ซอย ${customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSSOI}`}&nbsp;
+                                        {customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSROAD && `ถนน ${customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSROAD}`}&nbsp;
+                                        {customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSSUBDISTRICTNAME && `ตำบล / แขวง ${customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSSUBDISTRICTNAME}`}&nbsp;
+                                        {customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSDISTRICTNAME && `อำเภอ ${customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSDISTRICTNAME}`}&nbsp;
+                                        {customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSPROVINCENAME && `จังหวัด ${customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
+                                        {customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSZIPCODE && `${customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSZIPCODE}`}&nbsp;
+                                    </span>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
-                        <div className='row mb-7'>
-                            <label className={`col-lg-4 text-muted ${styles.label}`}>ที่อยู่บัตรประชาชน</label>
-                            <div className='col-lg-8'>
-                                <span className={`${styles.label}`}>
-                                    {customerAddress[0]?.ADDRESSCARD.ADDRESSNUMBER && `${customerAddress[0]?.ADDRESSCARD.ADDRESSNUMBER}`}&nbsp;
-                                    {customerAddress[0]?.ADDRESSCARD.ADDRESSMOO && `หมู่ที่ ${customerAddress[0]?.ADDRESSCARD.ADDRESSMOO}`}&nbsp;
-                                    {customerAddress[0]?.ADDRESSCARD.ADDRESSSOI && `ซอย ${customerAddress[0]?.ADDRESSCARD.ADDRESSSOI}`}&nbsp;
-                                    {customerAddress[0]?.ADDRESSCARD.ADDRESSROAD && `ถนน ${customerAddress[0]?.ADDRESSCARD.ADDRESSROAD}`}&nbsp;
-                                    {customerAddress[0]?.ADDRESSCARD.ADDRESSSUBDISTRICTNAME && `ตำบล / แขวง ${customerAddress[0]?.ADDRESSCARD.ADDRESSSUBDISTRICTNAME}`}&nbsp;
-                                    {customerAddress[0]?.ADDRESSCARD.ADDRESSDISTRICTNAME && `อำเภอ ${customerAddress[0]?.ADDRESSCARD.ADDRESSDISTRICTNAME}`}&nbsp;
-                                    {customerAddress[0]?.ADDRESSCARD.ADDRESSPROVINCENAME && `จังหวัด ${customerAddress[0]?.ADDRESSCARD.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
-                                    {customerAddress[0]?.ADDRESSCARD.ADDRESSZIPCODE && `${customerAddress[0]?.ADDRESSCARD.ADDRESSZIPCODE}`}&nbsp;
-                                </span>
+                        {customerAddress[0]?.ADDRESSCARD?.ADDRESSNUMBER && (
+                            <div className='row mb-7'>
+                                <label className={`col-lg-4 text-muted ${styles.label}`}>ที่อยู่บัตรประชาชน</label>
+                                <div className='col-lg-8'>
+                                    <span className={`${styles.label}`}>
+                                        {customerAddress[0]?.ADDRESSCARD.ADDRESSNUMBER && `${customerAddress[0]?.ADDRESSCARD.ADDRESSNUMBER}`}&nbsp;
+                                        {customerAddress[0]?.ADDRESSCARD.ADDRESSMOO && `หมู่ที่ ${customerAddress[0]?.ADDRESSCARD.ADDRESSMOO}`}&nbsp;
+                                        {customerAddress[0]?.ADDRESSCARD.ADDRESSSOI && `ซอย ${customerAddress[0]?.ADDRESSCARD.ADDRESSSOI}`}&nbsp;
+                                        {customerAddress[0]?.ADDRESSCARD.ADDRESSROAD && `ถนน ${customerAddress[0]?.ADDRESSCARD.ADDRESSROAD}`}&nbsp;
+                                        {customerAddress[0]?.ADDRESSCARD.ADDRESSSUBDISTRICTNAME && `ตำบล / แขวง ${customerAddress[0]?.ADDRESSCARD.ADDRESSSUBDISTRICTNAME}`}&nbsp;
+                                        {customerAddress[0]?.ADDRESSCARD.ADDRESSDISTRICTNAME && `อำเภอ ${customerAddress[0]?.ADDRESSCARD.ADDRESSDISTRICTNAME}`}&nbsp;
+                                        {customerAddress[0]?.ADDRESSCARD.ADDRESSPROVINCENAME && `จังหวัด ${customerAddress[0]?.ADDRESSCARD.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
+                                        {customerAddress[0]?.ADDRESSCARD.ADDRESSZIPCODE && `${customerAddress[0]?.ADDRESSCARD.ADDRESSZIPCODE}`}&nbsp;
+                                    </span>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
-                        <div className='row mb-10'>
-                            <label className={`col-lg-4 text-muted ${styles.label}`}>ที่อยู่เก็บเงิน</label>
-                            <div className='col-lg-8'>
-                                <span className={`${styles.label}`}>
-                                    {customerAddress[0]?.ADDRESSPAYMENT.ADDRESSNUMBER && `${customerAddress[0]?.ADDRESSPAYMENT.ADDRESSNUMBER}`}&nbsp;
-                                    {customerAddress[0]?.ADDRESSPAYMENT.ADDRESSMOO && `หมู่ที่ ${customerAddress[0]?.ADDRESSPAYMENT.ADDRESSMOO}`}&nbsp;
-                                    {customerAddress[0]?.ADDRESSPAYMENT.ADDRESSSOI && `ซอย ${customerAddress[0]?.ADDRESSPAYMENT.ADDRESSSOI}`}&nbsp;
-                                    {customerAddress[0]?.ADDRESSPAYMENT.ADDRESSROAD && `ถนน ${customerAddress[0]?.ADDRESSPAYMENT.ADDRESSROAD}`}&nbsp;
-                                    {customerAddress[0]?.ADDRESSPAYMENT.ADDRESSSUBDISTRICTNAME && `ตำบล / แขวง ${customerAddress[0]?.ADDRESSPAYMENT.ADDRESSSUBDISTRICTNAME}`}&nbsp;
-                                    {customerAddress[0]?.ADDRESSPAYMENT.ADDRESSDISTRICTNAME && `อำเภอ ${customerAddress[0]?.ADDRESSPAYMENT.ADDRESSDISTRICTNAME}`}&nbsp;
-                                    {customerAddress[0]?.ADDRESSPAYMENT.ADDRESSPROVINCENAME && `จังหวัด ${customerAddress[0]?.ADDRESSPAYMENT.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
-                                    {customerAddress[0]?.ADDRESSPAYMENT.ADDRESSZIPCODE && `${customerAddress[0]?.ADDRESSPAYMENT.ADDRESSZIPCODE}`}&nbsp;
-                                </span>
+                        {customerAddress[0]?.ADDRESSPAYMENT?.ADDRESSNUMBER && (
+                            <div className='row mb-10'>
+                                <label className={`col-lg-4 text-muted ${styles.label}`}>ที่อยู่เก็บเงิน</label>
+                                <div className='col-lg-8'>
+                                    <span className={`${styles.label}`}>
+                                        {customerAddress[0]?.ADDRESSPAYMENT.ADDRESSNUMBER && `${customerAddress[0]?.ADDRESSPAYMENT.ADDRESSNUMBER}`}&nbsp;
+                                        {customerAddress[0]?.ADDRESSPAYMENT.ADDRESSMOO && `หมู่ที่ ${customerAddress[0]?.ADDRESSPAYMENT.ADDRESSMOO}`}&nbsp;
+                                        {customerAddress[0]?.ADDRESSPAYMENT.ADDRESSSOI && `ซอย ${customerAddress[0]?.ADDRESSPAYMENT.ADDRESSSOI}`}&nbsp;
+                                        {customerAddress[0]?.ADDRESSPAYMENT.ADDRESSROAD && `ถนน ${customerAddress[0]?.ADDRESSPAYMENT.ADDRESSROAD}`}&nbsp;
+                                        {customerAddress[0]?.ADDRESSPAYMENT.ADDRESSSUBDISTRICTNAME && `ตำบล / แขวง ${customerAddress[0]?.ADDRESSPAYMENT.ADDRESSSUBDISTRICTNAME}`}&nbsp;
+                                        {customerAddress[0]?.ADDRESSPAYMENT.ADDRESSDISTRICTNAME && `อำเภอ ${customerAddress[0]?.ADDRESSPAYMENT.ADDRESSDISTRICTNAME}`}&nbsp;
+                                        {customerAddress[0]?.ADDRESSPAYMENT.ADDRESSPROVINCENAME && `จังหวัด ${customerAddress[0]?.ADDRESSPAYMENT.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
+                                        {customerAddress[0]?.ADDRESSPAYMENT.ADDRESSZIPCODE && `${customerAddress[0]?.ADDRESSPAYMENT.ADDRESSZIPCODE}`}&nbsp;
+                                    </span>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {customerAddress[0]?.ADDRESSTAX.ADDRESSNUMBER && (
                             <div className='row mb-10'>
@@ -899,10 +909,14 @@ const SalesCancel: React.FC = () => {
                             </div>
                         )}
 
-                        <div className='row mb-10'>
+                        < div className='row mb-10'>
                             <label className={`col-lg-4 text-muted ${styles.label}`}>เบอร์โทรติดต่อ</label>
                             <div className='col-lg-8'>
-                                <span className={`${styles.label}`}>{customerDetail[0]?.CUSTOMERMOBILE}</span>
+                                <span className={`${styles.label}`}>
+                                    {customerDetail[0]?.CUSTOMERMOBILE ?
+                                        customerDetail[0]?.CUSTOMERMOBILE :
+                                        customerAddress[0]?.ADDRESSINSTALLATION?.ADDRESSPHONE}
+                                </span>
                             </div>
                         </div>
 
@@ -1047,7 +1061,7 @@ const SalesCancel: React.FC = () => {
                             <button
                                 className={`${styles.btnPrimary}`}
                                 type='button'
-                                onClick={() => navigate("/sale/billRecieveMoney", { state: item })}
+                                onClick={() => navigate("/sale/editFinishInDay", { state: item })}
                             >
                                 แก้ไขข้อมูล
                             </button>
@@ -1082,7 +1096,7 @@ const SalesCancel: React.FC = () => {
                             </button>
                             <button
                                 className={`${styles.btnPrimary}`}
-                                onClick={() => navigate("/sale/billRecieveMoney", { state: item })}
+                                onClick={() => navigate("/sale/editFinishInDay", { state: item })}
                             >
                                 แก้ไขข้อมูล
                             </button>

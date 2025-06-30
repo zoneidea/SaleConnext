@@ -654,8 +654,8 @@ const SalesContract: React.FC = () => {
   // console.log(`addressInstallation`, addressInstallation)
   // console.log(`addressPayment`, addressPayment)
 
-  const totalPrice = PRODUCT[0]?.Package[0]?.TOTALPRICE || 0;
-  const discountAmount = DISCOUNT[0]?.DISCOUNTAMOUNT || 0;
+  const totalPrice = matchedItem?.PRODUCT[0]?.Package[0]?.TOTALPRICE || 0;
+  const discountAmount = matchedItem?.DISCOUNT[0]?.DISCOUNTAMOUNT || 0;
   const netPrice = totalPrice - discountAmount;
 
   const signaturePadRef = useRef<any>(null);
@@ -676,8 +676,61 @@ const SalesContract: React.FC = () => {
     }
   };
 
+  // const handleNextClick = async () => {
+  //   try {
+  //     const updateContract = await axios.post(UPDATECONTACT, {
+  //       REFNO,
+  //       EMPID: EmpId,
+  //       TEAMSALE: TeamSale,
+  //       SALECODE: SaleCode,
+  //       SUPEMPID: SupEmpId,
+  //       SECEMPID: SecEmpId,
+  //       FIELD: "CONTRACT",
+  //       DATA: {
+  //         createdAt: formattedDate,
+  //         signature: signatureDataURL
+  //       }
+  //     }, {
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //     });
+
+  //     // console.log(`updateContract CONTRACT: `, updateContract.data);
+
+  //     // แสดง SweetAlert2 หลังจากบันทึกสำเร็จ
+  //     Swal.fire({
+  //       icon: 'success',
+  //       title: 'สำเร็จ!',
+  //       text: 'บันทึกสัญญาเรียบร้อยแล้ว',
+  //       timer: 2000, // แสดงผล 3 วินาที
+  //       showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
+  //     }).then(() => {
+  //       // navigate('/sale/photo'); // นำทางไปยังหน้าอื่นถ้าต้องการ
+  //       navigate('/firstBill/CreateFirstBill', {
+  //         state: {
+  //           item: matchedItem,          
+  //           from: location.pathname
+  //         }
+  //       });
+  //     });
+
+  //   } catch (error) {
+  //     console.error('Error fetching CONTRACT:', error);
+
+  //     // แสดง SweetAlert2 เมื่อเกิดข้อผิดพลาด
+  //     Swal.fire({
+  //       icon: 'error',
+  //       title: 'เกิดข้อผิดพลาด!',
+  //       text: 'ไม่สามารถบันทึกสัญญาได้ กรุณาลองใหม่อีกครั้ง',
+  //       confirmButtonText: 'ตกลง'
+  //     });
+  //   }
+  // };
+
   const handleNextClick = async () => {
     try {
+      // 1) อัปเดต FIELD = "CONTRACT"
       const updateContract = await axios.post(UPDATECONTACT, {
         REFNO,
         EMPID: EmpId,
@@ -691,32 +744,57 @@ const SalesContract: React.FC = () => {
           signature: signatureDataURL
         }
       }, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
       });
 
-      // console.log(`updateContract CONTRACT: `, updateContract.data);
+      // 2) ถ้าอัปเดตสัญญาสำเร็จ ให้เรียกอัปเดต STATUS → "FINISH"
+      if (updateContract.status === 200) {
+        const finishResponse = await axios.post(UPDATECONTACT, {
+          REFNO,
+          EMPID: EmpId,
+          TEAMSALE: TeamSale,
+          SALECODE: SaleCode,
+          SUPEMPID: SupEmpId,
+          SECEMPID: SecEmpId,
+          // FIELD: "STATUS",
+          // DATA: "FINISH"
+          FIELD: "PAYMENT",
+          DATA: "DRAFT"
+        }, {
+          headers: { 'Content-Type': 'application/json' },
+        });
+        console.log(`finishResponse`, finishResponse);
 
-      // แสดง SweetAlert2 หลังจากบันทึกสำเร็จ
-      Swal.fire({
-        icon: 'success',
-        title: 'สำเร็จ!',
-        text: 'บันทึกสัญญาเรียบร้อยแล้ว',
-        timer: 2000, // แสดงผล 3 วินาที
-        showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
-      }).then(() => {
-        navigate('/sale/photo'); // นำทางไปยังหน้าอื่นถ้าต้องการ
-      });
+        // 3) ถ้าอัปเดต STATUS สำเร็จ ถึงจะแสดง SweetAlert และ Navigate ต่อ
+        if (finishResponse.status === 200) {
+          Swal.fire({
+            icon: 'success',
+            title: 'สำเร็จ!',
+            text: 'บันทึกสัญญาเรียบร้อยแล้ว',
+            timer: 2000,
+            showConfirmButton: false,
+          }).then(() => {
+            // นำทางไปยัง CreateFirstBill (หรือเปลี่ยนเป็น '/sale/photo' ตามเงื่อนไข)
+            navigate('/firstBill/CreateFirstBill', {
+              state: {
+                item: matchedItem,
+                from: location.pathname
+              }
+            });
+          });
+        } else {
+          throw new Error('ไม่สามารถอัปเดตสถานะให้เป็น FINISH ได้');
+        }
+      } else {
+        throw new Error('ไม่สามารถอัปเดตสัญญาได้');
+      }
 
     } catch (error) {
-      console.error('Error fetching CONTRACT:', error);
-
-      // แสดง SweetAlert2 เมื่อเกิดข้อผิดพลาด
+      console.error('Error updating contract or status:', error);
       Swal.fire({
         icon: 'error',
         title: 'เกิดข้อผิดพลาด!',
-        text: 'ไม่สามารถบันทึกสัญญาได้ กรุณาลองใหม่อีกครั้ง',
+        text: 'ไม่สามารถบันทึกสัญญาหรืออัปเดตสถานะได้ กรุณาลองใหม่อีกครั้ง',
         confirmButtonText: 'ตกลง'
       });
     }
@@ -728,13 +806,17 @@ const SalesContract: React.FC = () => {
         <div className='d-flex justify-content-between align-items-center my-5'>
           <div id="kt_page_title" data-kt-swapper="true" data-kt-swapper-mode="prepend"
             data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
-            className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
-            <div className={`breadcrumb-item ${styles.titlePage}`}>
-              <span>ใบสัญญาเช่าซื้อ</span>
-            </div>
+            className="page-title d-flex flex-wrap me-3 flex-column justify-content-ceดnter">
+            <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
+              {matchedItem?.PRODUCT[0]?.Package[0]?.PACKAGETYPEID == 1 ? (
+                <li className={`breadcrumb-item ${styles.titlePage}`}>ใบสัญญา</li>
+              ) : (
+                <li className={`breadcrumb-item ${styles.titlePage}`}>ใบสัญญาเช่าซื้อ</li>
+              )}
+            </ul>
           </div>
         </div>
-        <p className={`${styles.fontSize}`}>เลขที่ขาย:</p><p className={`${styles.titlePage}`}>{REFNO}</p>
+        <p className={`${styles.fontSize}`}>เลขที่ขาย:</p><p className={`${styles.titlePage}`}>{matchedItem?.REFNO}</p>
 
         {/* Card Body */}
         <div className='card mb-10'>
@@ -757,170 +839,174 @@ const SalesContract: React.FC = () => {
             <div className='row mb-7'>
               <label className={`col-lg-4 fw-bold text-muted ${styles.fontSize}`}>REFNO</label>
               <div className='col-lg-8 fv-row'>
-                <span className={`fw-bolder text-gray-900 ${styles.fontSize}`}>{REFNO}</span>
+                <span className={`fw-bolder text-gray-900 ${styles.fontSize}`}>{matchedItem?.REFNO}</span>
               </div>
             </div>
 
             <div className='row mb-7'>
-              <label className={`col-lg-4 fw-bold text-muted ${styles.fontSize}`}>ชื่อ</label>
+              <label className={`col-lg-4 fw-bold text-muted ${styles.fontSize}`}>ชื่อลูกค้า</label>
               <div className='col-lg-8'>
                 <span className={`fw-bolder text-gray-900 ${styles.fontSize}`}>
-                  {saveCustomerTypes[0]?.PREFIX[0]?.PREFIXNAME} {saveCustomerTypes[0]?.CUSTOMERNAME}
+                  {/* {saveCustomerTypes[0]?.PREFIX[0]?.PREFIXNAME} {saveCustomerTypes[0]?.CUSTOMERNAME} */}
+                  {matchedItem?.CUSTOMERDETAIL[0]?.CUSTOMERNAME} {matchedItem?.CUSTOMERDETAIL[0]?.CUSTOMERLASTNAME}
                 </span>
               </div>
             </div>
 
-            {saveCustomerTypes[0]?.CUSTOMERLASTNAME && (
-              <div className='row mb-7'>
-                <label className={`col-lg-4 fw-bold text-muted ${styles.fontSize}`}>นามสกุล</label>
-                <div className='col-lg-8'>
-                  <span className={`fw-bolder text-gray-900 ${styles.fontSize}`}>
-                    {saveCustomerTypes[0]?.CUSTOMERLASTNAME}
+            {matchedItem?.CUSTOMERDETAIL?.[0]?.CUSTOMERID?.length > 0 && (
+              <div className="row mb-7">
+                <label className={`col-lg-4 text-muted ${styles.label}`}>
+                  {matchedItem.CUSTOMERDETAIL[0].CUSTOMERTYPE === "1"
+                    ? "เลขประจำตัวผู้เสียภาษี"
+                    : "เลขที่บัตรประชาชน"}
+                </label>
+                <div className="col-lg-8">
+                  <span className={styles.label}>
+                    {matchedItem.CUSTOMERDETAIL[0].CUSTOMERID}
                   </span>
                 </div>
               </div>
             )}
 
-            <div className='row mb-7'>
-              {saveCustomerTypes[0]?.CUSTOMERTYPE === "1" ? (
-                <label className={`col-lg-4 fw-bold text-muted ${styles.fontSize}`}>เลขประจำตัวผู้เสียภาษี</label>
-              ) : (
-                <label className={`col-lg-4 fw-bold text-muted ${styles.fontSize}`}>เลขที่บัตรประชาชน</label>
-              )}
-              <div className='col-lg-8'>
-                <span className='fw-bolder fs-6 text-gray-900'>{saveCustomerTypes[0]?.CUSTOMERID}</span>
-              </div>
-            </div>
-
-            <div className='row mb-7'>
-              <label className={`col-lg-4 fw-bold text-muted ${styles.fontSize}`}>ที่อยู่บัตรประชาชน</label>
-              <div className='col-lg-8'>
-                <span className='fw-bolder fs-6 text-gray-900'>
-                  {addressCard.ADDRESSNUMBER && `${addressCard.ADDRESSNUMBER}`}&nbsp;
-                  {addressCard.ADDRESSMOO && `หมู่ที่ ${addressCard.ADDRESSMOO}`}&nbsp;
-                  {addressCard.ADDRESSSOI && `ซอย ${addressCard.ADDRESSSOI}`}&nbsp;
-                  {addressCard.ADDRESSROAD && `ถนน ${addressCard.ADDRESSROAD}`}&nbsp;
-                  {addressCard.ADDRESSSUBDISTRICTNAME && `ตำบล / แขวง ${addressCard.ADDRESSSUBDISTRICTNAME}`}&nbsp;
-                  {addressCard.ADDRESSDISTRICTNAME && `อำเภอ ${addressCard.ADDRESSDISTRICTNAME}`}&nbsp;
-                  {addressCard.ADDRESSPROVINCENAME && `จังหวัด ${addressCard.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
-                  {addressCard.ADDRESSZIPCODE && `${addressCard.ADDRESSZIPCODE}`}&nbsp;
-                </span>
-              </div>
-            </div>
-
-            <div className='row mb-10'>
-              <label className={`col-lg-4 fw-bold text-muted ${styles.fontSize}`}>ที่อยู่ติดตั้ง</label>
-              <div className='col-lg-8'>
-                <span className='fw-bolder fs-6 text-gray-900'>
-                  {addressInstallation.ADDRESSNUMBER}&nbsp;
-                  {addressInstallation.ADDRESSMOO && `หมู่ที่ ${addressInstallation.ADDRESSMOO}`}&nbsp;
-                  {addressInstallation.ADDRESSSOI && `ซอย ${addressInstallation.ADDRESSSOI}`}&nbsp;
-                  {addressInstallation.ADDRESSROAD && `ถนน ${addressInstallation.ADDRESSROAD}`}&nbsp;
-                  {addressInstallation.ADDRESSSUBDISTRICTNAME && `ตำบล / แขวง ${addressInstallation.ADDRESSSUBDISTRICTNAME}`}&nbsp;
-                  {addressInstallation.ADDRESSDISTRICTNAME && `อำเภอ ${addressInstallation.ADDRESSDISTRICTNAME}`}&nbsp;
-                  {addressInstallation.ADDRESSPROVINCENAME && `จังหวัด ${addressInstallation.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
-                  {addressInstallation.ADDRESSZIPCODE && `${addressInstallation.ADDRESSZIPCODE}`}&nbsp;
-                </span>
-              </div>
-            </div>
-
-            <div className='row mb-10'>
-              <label className={`col-lg-4 fw-bold text-muted ${styles.fontSize}`}>ที่อยู่เก็บเงิน</label>
-              <div className='col-lg-8'>
-                <span className='fw-bolder fs-6 text-gray-900'>
-                  {addressPayment.ADDRESSNUMBER}&nbsp;
-                  {addressPayment.ADDRESSMOO && `หมู่ที่ ${addressPayment.ADDRESSMOO}`}&nbsp;
-                  {addressPayment.ADDRESSSOI && `ซอย ${addressPayment.ADDRESSSOI}`}&nbsp;
-                  {addressPayment.ADDRESSROAD && `ถนน ${addressPayment.ADDRESSROAD}`}&nbsp;
-                  {addressPayment.ADDRESSSUBDISTRICTNAME && `ตำบล / แขวง ${addressPayment.ADDRESSSUBDISTRICTNAME}`}&nbsp;
-                  {addressPayment.ADDRESSDISTRICTNAME && `อำเภอ ${addressPayment.ADDRESSDISTRICTNAME}`}&nbsp;
-                  {addressPayment.ADDRESSPROVINCENAME && `จังหวัด ${addressPayment.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
-                  {addressPayment.ADDRESSZIPCODE && `${addressPayment.ADDRESSZIPCODE}`}&nbsp;
-                </span>
-              </div>
-            </div>
-
-            {addressTax.ADDRESSPROVINCENAME && (
+            {matchedItem?.ADDRESS[0]?.ADDRESSINSTALLATION?.ADDRESSNUMBER && (
               <div className='row mb-10'>
-                <label className={`col-lg-4 fw-bold text-muted ${styles.fontSize}`}>ที่อยู่เสึยภาษี</label>
+                <label className={`col-lg-4 text-muted ${styles.label}`}>ที่อยู่ติดตั้ง</label>
                 <div className='col-lg-8'>
-                  <span className='fw-bolder fs-6 text-gray-900'>
-                    {addressTax.ADDRESSNUMBER}&nbsp;
-                    {addressTax.ADDRESSMOO && `หมู่ที่ ${addressTax.ADDRESSMOO}`}&nbsp;
-                    {addressTax.ADDRESSSOI && `ซอย ${addressTax.ADDRESSSOI}`}&nbsp;
-                    {addressTax.ADDRESSROAD && `ถนน ${addressTax.ADDRESSROAD}`}&nbsp;
-                    {addressTax.ADDRESSSUBDISTRICTNAME && `ตำบล / แขวง ${addressTax.ADDRESSSUBDISTRICTNAME}`}&nbsp;
-                    {addressTax.ADDRESSDISTRICTNAME && `อำเภอ ${addressTax.ADDRESSDISTRICTNAME}`}&nbsp;
-                    {addressTax.ADDRESSPROVINCENAME && `จังหวัด ${addressTax.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
-                    {addressTax.ADDRESSZIPCODE && `${addressTax.ADDRESSZIPCODE}`}&nbsp;
+                  <span className={`${styles.label}`}>
+                    {matchedItem?.ADDRESS[0]?.ADDRESSINSTALLATION?.ADDRESSNUMBER && `${matchedItem?.ADDRESS[0]?.ADDRESSINSTALLATION?.ADDRESSNUMBER}`}&nbsp;
+                    {matchedItem?.ADDRESS[0]?.ADDRESSINSTALLATION?.ADDRESSMOO && `หมู่ที่ ${matchedItem?.ADDRESS[0]?.ADDRESSINSTALLATION?.ADDRESSMOO}`}&nbsp;
+                    {matchedItem?.ADDRESS[0]?.ADDRESSINSTALLATION?.ADDRESSSOI && `ซอย ${matchedItem?.ADDRESS[0]?.ADDRESSINSTALLATION?.ADDRESSSOI}`}&nbsp;
+                    {matchedItem?.ADDRESS[0]?.ADDRESSINSTALLATION?.ADDRESSROAD && `ถนน ${matchedItem?.ADDRESS[0]?.ADDRESSINSTALLATION?.ADDRESSROAD}`}&nbsp;
+                    {matchedItem?.ADDRESS[0]?.ADDRESSINSTALLATION?.ADDRESSSUBDISTRICTNAME && `ตำบล / แขวง ${matchedItem?.ADDRESS[0]?.ADDRESSINSTALLATION?.ADDRESSSUBDISTRICTNAME}`}&nbsp;
+                    {matchedItem?.ADDRESS[0]?.ADDRESSINSTALLATION?.ADDRESSDISTRICTNAME && `อำเภอ ${matchedItem?.ADDRESS[0]?.ADDRESSINSTALLATION?.ADDRESSDISTRICTNAME}`}&nbsp;
+                    {matchedItem?.ADDRESS[0]?.ADDRESSINSTALLATION?.ADDRESSPROVINCENAME && `จังหวัด ${matchedItem?.ADDRESS[0]?.ADDRESSINSTALLATION?.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
+                    {matchedItem?.ADDRESS[0]?.ADDRESSINSTALLATION?.ADDRESSZIPCODE && `${matchedItem?.ADDRESS[0]?.ADDRESSINSTALLATION?.ADDRESSZIPCODE}`}&nbsp;
                   </span>
                 </div>
               </div>
             )}
 
-            <div className='row mb-10'>
-              <label className={`col-lg-4 fw-bold text-muted ${styles.fontSize}`}>เบอร์โทรติดต่อ</label>
+            {matchedItem?.ADDRESS[0]?.ADDRESSCARD?.ADDRESSNUMBER && (
+              <div className='row mb-7'>
+                <label className={`col-lg-4 text-muted ${styles.label}`}>ที่อยู่บัตรประชาชน</label>
+                <div className='col-lg-8'>
+                  <span className={`${styles.label}`}>
+                    {matchedItem?.ADDRESS[0]?.ADDRESSCARD?.ADDRESSNUMBER && `${matchedItem?.ADDRESS[0]?.ADDRESSCARD?.ADDRESSNUMBER}`}&nbsp;
+                    {matchedItem?.ADDRESS[0]?.ADDRESSCARD?.ADDRESSMOO && `หมู่ที่ ${matchedItem?.ADDRESS[0]?.ADDRESSCARD?.ADDRESSMOO}`}&nbsp;
+                    {matchedItem?.ADDRESS[0]?.ADDRESSCARD?.ADDRESSSOI && `ซอย ${matchedItem?.ADDRESS[0]?.ADDRESSCARD?.ADDRESSSOI}`}&nbsp;
+                    {matchedItem?.ADDRESS[0]?.ADDRESSCARD?.ADDRESSROAD && `ถนน ${matchedItem?.ADDRESS[0]?.ADDRESSCARD?.ADDRESSROAD}`}&nbsp;
+                    {matchedItem?.ADDRESS[0]?.ADDRESSCARD?.ADDRESSSUBDISTRICTNAME && `ตำบล / แขวง ${matchedItem?.ADDRESS[0]?.ADDRESSCARD?.ADDRESSSUBDISTRICTNAME}`}&nbsp;
+                    {matchedItem?.ADDRESS[0]?.ADDRESSCARD?.ADDRESSDISTRICTNAME && `อำเภอ ${matchedItem?.ADDRESS[0]?.ADDRESSCARD?.ADDRESSDISTRICTNAME}`}&nbsp;
+                    {matchedItem?.ADDRESS[0]?.ADDRESSCARD?.ADDRESSPROVINCENAME && `จังหวัด ${matchedItem?.ADDRESS[0]?.ADDRESSCARD?.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
+                    {matchedItem?.ADDRESS[0]?.ADDRESSCARD?.ADDRESSZIPCODE && `${matchedItem?.ADDRESS[0]?.ADDRESSCARD?.ADDRESSZIPCODE}`}&nbsp;
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {matchedItem?.ADDRESS[0]?.ADDRESSPAYMENT?.ADDRESSNUMBER && (
+              <div className='row mb-10'>
+                <label className={`col-lg-4 text-muted ${styles.label}`}>ที่อยู่เก็บเงิน</label>
+                <div className='col-lg-8'>
+                  <span className={`${styles.label}`}>
+                    {matchedItem?.ADDRESS[0]?.ADDRESSPAYMENT?.ADDRESSNUMBER && `${matchedItem?.ADDRESS[0]?.ADDRESSPAYMENT?.ADDRESSNUMBER}`}&nbsp;
+                    {matchedItem?.ADDRESS[0]?.ADDRESSPAYMENT?.ADDRESSMOO && `หมู่ที่ ${matchedItem?.ADDRESS[0]?.ADDRESSPAYMENT?.ADDRESSMOO}`}&nbsp;
+                    {matchedItem?.ADDRESS[0]?.ADDRESSPAYMENT?.ADDRESSSOI && `ซอย ${matchedItem?.ADDRESS[0]?.ADDRESSPAYMENT?.ADDRESSSOI}`}&nbsp;
+                    {matchedItem?.ADDRESS[0]?.ADDRESSPAYMENT?.ADDRESSROAD && `ถนน ${matchedItem?.ADDRESS[0]?.ADDRESSPAYMENT?.ADDRESSROAD}`}&nbsp;
+                    {matchedItem?.ADDRESS[0]?.ADDRESSPAYMENT?.ADDRESSSUBDISTRICTNAME && `ตำบล / แขวง ${matchedItem?.ADDRESS[0]?.ADDRESSPAYMENT?.ADDRESSSUBDISTRICTNAME}`}&nbsp;
+                    {matchedItem?.ADDRESS[0]?.ADDRESSPAYMENT?.ADDRESSDISTRICTNAME && `อำเภอ ${matchedItem?.ADDRESS[0]?.ADDRESSPAYMENT?.ADDRESSDISTRICTNAME}`}&nbsp;
+                    {matchedItem?.ADDRESS[0]?.ADDRESSPAYMENT?.ADDRESSPROVINCENAME && `จังหวัด ${matchedItem?.ADDRESS[0]?.ADDRESSPAYMENT?.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
+                    {matchedItem?.ADDRESS[0]?.ADDRESSPAYMENT?.ADDRESSZIPCODE && `${matchedItem?.ADDRESS[0]?.ADDRESSPAYMENT?.ADDRESSZIPCODE}`}&nbsp;
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {matchedItem?.ADDRESS[0]?.ADDRESSTAX?.ADDRESSPROVINCENAME && (
+              <div className='row mb-10'>
+                <label className={`col-lg-4 text-muted ${styles.label}`}>ที่อยู่เสึยภาษี</label>
+                <div className='col-lg-8'>
+                  <span className={`${styles.label}`}>
+                    {matchedItem?.ADDRESS[0]?.ADDRESSTAX?.ADDRESSNUMBER && `${matchedItem?.ADDRESS[0]?.ADDRESSTAX?.ADDRESSNUMBER}`}&nbsp;
+                    {matchedItem?.ADDRESS[0]?.ADDRESSTAX?.ADDRESSMOO && `หมู่ที่ ${matchedItem?.ADDRESS[0]?.ADDRESSTAX?.ADDRESSMOO}`}&nbsp;
+                    {matchedItem?.ADDRESS[0]?.ADDRESSTAX?.ADDRESSSOI && `ซอย ${matchedItem?.ADDRESS[0]?.ADDRESSTAX?.ADDRESSSOI}`}&nbsp;
+                    {matchedItem?.ADDRESS[0]?.ADDRESSTAX?.ADDRESSROAD && `ถนน ${matchedItem?.ADDRESS[0]?.ADDRESSTAX?.ADDRESSROAD}`}&nbsp;
+                    {matchedItem?.ADDRESS[0]?.ADDRESSTAX?.ADDRESSSUBDISTRICTNAME && `ตำบล / แขวง ${matchedItem?.ADDRESS[0]?.ADDRESSTAX?.ADDRESSSUBDISTRICTNAME}`}&nbsp;
+                    {matchedItem?.ADDRESS[0]?.ADDRESSTAX?.ADDRESSDISTRICTNAME && `อำเภอ ${matchedItem?.ADDRESS[0]?.ADDRESSTAX?.ADDRESSDISTRICTNAME}`}&nbsp;
+                    {matchedItem?.ADDRESS[0]?.ADDRESSTAX?.ADDRESSPROVINCENAME && `จังหวัด ${matchedItem?.ADDRESS[0]?.ADDRESSTAX?.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
+                    {matchedItem?.ADDRESS[0]?.ADDRESSTAX?.ADDRESSZIPCODE && `${matchedItem?.ADDRESS[0]?.ADDRESSTAX?.ADDRESSZIPCODE}`}&nbsp;
+                  </span>
+                </div>
+              </div>
+            )}
+
+            < div className='row mb-10'>
+              <label className={`col-lg-4 text-muted ${styles.label}`}>เบอร์โทรติดต่อ</label>
               <div className='col-lg-8'>
-                <span className={`fw-bolder text-gray-900 ${styles.fontSize}`}>{saveCustomerTypes[0]?.CUSTOMERMOBILE}</span>
+                <span className={`${styles.label}`}>
+                  {matchedItem?.CUSTOMERDETAIL[0]?.CUSTOMERMOBILE ?
+                    matchedItem?.CUSTOMERDETAIL[0]?.CUSTOMERMOBILE :
+                    matchedItem?.ADDRESS[0]?.ADDRESSINSTALLATION?.ADDRESSPHONE}
+                </span>
               </div>
             </div>
 
             <div className='row mb-10'>
               <label className={`col-lg-4 fw-bold text-muted ${styles.fontSize}`}>สินค้า</label>
               <div className='col-lg-8'>
-                <span className={`fw-bolder text-gray-900 ${styles.fontSize}`}>{PRODUCT[0]?.ItemDescription}</span>
+                <span className={`fw-bolder text-gray-900 ${styles.fontSize}`}>{matchedItem?.PRODUCT[0]?.ItemDescription}</span>
               </div>
             </div>
 
-            {PRODUCT[0]?.Package?.[0]?.PACKAGETITLE && (
+            {matchedItem?.PRODUCT[0]?.Package?.[0]?.PACKAGETITLE && (
               <div className='row mb-10'>
                 <label className={`col-lg-4 fw-bold text-muted ${styles.fontSize}`}>แพ็คเกจ</label>
                 <div className='col-lg-8'>
-                  <span className={`fw-bolder text-gray-900 ${styles.fontSize}`}>{PRODUCT[0]?.Package[0]?.PACKAGETITLE}</span>
+                  <span className={`fw-bolder text-gray-900 ${styles.fontSize}`}>{matchedItem?.PRODUCT[0]?.Package[0]?.PACKAGETITLE}</span>
                 </div>
               </div>
             )}
 
-            {DISCOUNT[0]?.GIFT?.GIFTNAME && (
+            {matchedItem?.DISCOUNT[0]?.GIFT?.GIFTNAME && (
               <div className='row align-items-center mb-10'>
                 <label className={`col-lg-4 fw-bold text-muted ${styles.fontSize}`}>ของแถม</label>
                 <div className='col-lg-8 d-flex justify-content-between'>
                   <span className={`fw-bolder text-gray-900 ${styles.fontSize}`}>
-                    {DISCOUNT[0]?.GIFT?.GIFTNAME ? DISCOUNT[0]?.GIFT?.GIFTNAME : "ไม่มี"}
+                    {matchedItem?.DISCOUNT[0]?.GIFT?.GIFTNAME ? matchedItem?.DISCOUNT[0]?.GIFT?.GIFTNAME : "ไม่มี"}
                   </span>
                 </div>
               </div>
             )}
 
-            {PRODUCT[0]?.Package?.[0]?.TOTALPRICE && (
+            {matchedItem?.PRODUCT[0]?.Package?.[0]?.TOTALPRICE && (
               <div className='row align-items-center mb-10'>
                 <label className={`col-lg-4 fw-bold text-muted ${styles.fontSize}`}>ราคาสินค้า</label>
                 <div className='col-lg-8 d-flex justify-content-between'>
                   <span className={`fw-bolder text-gray-900 ${styles.fontSize}`}>
-                    {(PRODUCT[0]?.Package[0]?.TOTALPRICE).toLocaleString()}
+                    {(matchedItem?.PRODUCT[0]?.Package[0]?.TOTALPRICE).toLocaleString()}
                   </span>
                   <span className='badge badge-light-success'>บาท</span>
                 </div>
               </div>
             )}
 
-            {DISCOUNT[0] && DISCOUNT[0]?.TRADEIN?.TRADEINBRANDNAME && (
+            {matchedItem?.DISCOUNT[0] && matchedItem?.DISCOUNT[0]?.TRADEIN?.TRADEINBRANDNAME && (
               <div className='row align-items-center mb-10'>
                 <label className={`col-lg-4 fw-bold text-muted ${styles.fontSize}`}>เครื่องเทิร์น</label>
                 <div className='col-lg-8 d-flex justify-content-between'>
                   <span className={`fw-bolder text-gray-900 ${styles.fontSize}`}>
-                    {DISCOUNT[0]?.TRADEIN?.TRADEINBRANDNAME ? DISCOUNT[0]?.TRADEIN?.TRADEINBRANDNAME : "ไม่มี"}
+                    {matchedItem?.DISCOUNT[0]?.TRADEIN?.TRADEINBRANDNAME ? matchedItem?.DISCOUNT[0]?.TRADEIN?.TRADEINBRANDNAME : "ไม่มี"}
                   </span>
                 </div>
               </div>
             )}
 
-            {DISCOUNT[0]?.DISCOUNTAMOUNT && (
+            {matchedItem?.DISCOUNT[0]?.DISCOUNTAMOUNT && (
               <div className='row align-items-center mb-10'>
                 <label className={`col-lg-4 fw-bold text-muted ${styles.fontSize}`}>ส่วนลด</label>
                 <div className='col-lg-8 d-flex justify-content-between'>
                   <span className={`fw-bolder text-gray-900 ${styles.fontSize}`}>
-                    {DISCOUNT[0]?.DISCOUNTAMOUNT ? (DISCOUNT[0]?.DISCOUNTAMOUNT).toLocaleString() : "ไม่มี"}
+                    {matchedItem?.DISCOUNT[0]?.DISCOUNTAMOUNT ? (matchedItem?.DISCOUNT[0]?.DISCOUNTAMOUNT).toLocaleString() : "ไม่มี"}
                   </span>
                   <span className='badge badge-light-success'>บาท</span>
                 </div>
@@ -936,26 +1022,26 @@ const SalesContract: React.FC = () => {
             </div>
 
             {/* ถ้าเป็นเงินสดไม่ต้องแสดง */}
-            {PRODUCT[0]?.Package[0]?.PACKAGETYPEID !== 1 && (
+            {matchedItem?.PRODUCT[0]?.Package[0]?.PACKAGETYPEID !== 1 && (
               <>
                 <div className='row align-items-center mb-10'>
                   <label className={`col-lg-4 fw-bold text-muted ${styles.fontSize}`}>งวดที่ 1 ที่ต้องชำระ</label>
                   <div className='col-lg-8 d-flex justify-content-between'>
                     <span className={`fw-bolder text-gray-900 ${styles.fontSize}`}>
-                      {(PRODUCT[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTAMOUNT - discountAmount).toLocaleString()}
+                      {(matchedItem?.PRODUCT[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTAMOUNT - discountAmount).toLocaleString()}
                     </span>
                     <span className='badge badge-light-success'>บาท</span>
                   </div>
                 </div>
 
-                {PRODUCT[0]?.Package[0]?.PERIODDETAILS.length > 1 && (
+                {matchedItem?.PRODUCT[0]?.Package[0]?.PERIODDETAILS.length > 1 && (
                   <div className='row align-items-center mb-10'>
                     <label className={`col-lg-4 fw-bold text-muted ${styles.fontSize}`}>
-                      งวดที่ 2 ถึง {PRODUCT[0]?.Package[0]?.PERIODDETAILS.length} ต้องชำระงวดละ
+                      งวดที่ 2 ถึง {matchedItem?.PRODUCT[0]?.Package[0]?.PERIODDETAILS.length} ต้องชำระงวดละ
                     </label>
                     <div className='col-lg-8 d-flex justify-content-between'>
                       <span className={`fw-bolder text-gray-900 ${styles.fontSize}`}>
-                        {(PRODUCT[0]?.Package[0]?.PERIODDETAILS[1]?.PAYMENTAMOUNT).toLocaleString()}
+                        {(matchedItem?.PRODUCT[0]?.Package[0]?.PERIODDETAILS[1]?.PAYMENTAMOUNT).toLocaleString()}
                       </span>
                       <span className='badge badge-light-success'>บาท</span>
                     </div>
@@ -964,72 +1050,19 @@ const SalesContract: React.FC = () => {
               </>
             )}
 
-            {/* --------------------- ลายเซ็น --------------------- */}
-            <div
-              className="mb-5"
-              style={{ maxWidth: 600, margin: '0 auto' /* จับกลาง และไม่ให้กว้างเกิน 600px */ }}
-            >
-              {/* กล่องใส่ SignaturePad */}
-              <div
-                style={{
-                  border: '1px solid #d7dbde',
-                  borderRadius: 4,
-                  width: '100%',
-                  height: 200,
-                  overflow: 'hidden',
-                }}
-              >
-                <SignaturePad
-                  ref={signaturePadRef}
-                  options={{ minWidth: 1, maxWidth: 3, penColor: 'black' }}
-                  canvasProps={{
-                    style: { width: '100%', height: '100%' },
-                  }}
-                />
-              </div>
-
-              {/* ปุ่มลบ/บันทึกลายเซ็น */}
-              <div className="mt-2">
-                <button
-                  type="button"
-                  className="btn btn-danger me-2"
-                  onClick={clearSignature}
-                >
-                  ลบลายเซ็น
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={saveSignature}
-                >
-                  บันทึกลายเซ็น
-                </button>
-              </div>
-
-              {/* แสดงภาพลายเซ็นที่บันทึกไว้ (จำกัดขนาดด้วย Bootstrap .img-fluid) */}
-              {signatureDataURL && (
-                <div className="mt-3">
-                  <img
-                    src={`data:image/png;base64,${signatureDataURL}`}
-                    alt="signature"
-                    className="img-fluid"
-                  />
-                </div>
-              )}
-            </div>
-            {/* ------------------- จบลายเซ็น --------------------- */}
-
           </div>
         </div>
         {/* End Card Body */}
 
         <div className='d-none d-xl-flex justify-content-between align-items-center mt-5 mb-10'>
-          {/* <button
+          <button
             className={`${styles.btnSecondary}`}
-            onClick={handleNextClick}
+            onClick={() =>
+              navigate('/sale/step', { state: matchedItem })
+            }
           >
             ย้อนกลับ
-          </button> */}
+          </button>
           <button
             className={`${styles.btnPrimary}`}
             type='button'
@@ -1050,12 +1083,14 @@ const SalesContract: React.FC = () => {
             zIndex: 1050,
           }}
         >
-          {/* <button
+          <button
             className={`${styles.btnSecondary}`}
-            onClick={handleNextClick}
+            onClick={() =>
+              navigate('/sale/step', { state: matchedItem })
+            }
           >
             ย้อนกลับ
-          </button> */}
+          </button>
           <button
             className={`${styles.btnPrimary}`}
             onClick={handleNextClick}

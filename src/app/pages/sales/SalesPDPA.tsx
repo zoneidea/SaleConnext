@@ -1296,7 +1296,9 @@ const SalesPDPA: React.FC = () => {
         });
 
         console.log(`res`, response.data);
-        navigate('/sale/update/UpdateSalesContract');
+        navigate('/sale/contract', {
+          state: item
+        });
       }
     } catch (error) {
       console.error('ตรวจสอบ OTP ล้มเหลว:', error);
@@ -1327,7 +1329,7 @@ const SalesPDPA: React.FC = () => {
   // state ตัวเก็บ matchedItem
   const [matchedItem, setMatchedItem] = useState<ItemProps | null>(null);
   console.log(`matchedItem`, matchedItem);
-  
+
   useEffect(() => {
     if (!isLoadingDraft) {
       const found = draft.find(d => d.REFNO === REFNO) || null;

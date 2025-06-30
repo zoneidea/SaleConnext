@@ -13,6 +13,7 @@ import { FirstBillWrapper } from '../pages/firstBill/FirstBillWrapper'
 import { SendMoneyWrapper } from '../pages/sendMoney/SendMoneyWrapper'
 
 import ErrorBoundary from '../pages/sales/components/accessCam/ErrorBoundary'
+import UpdateSalesPackage from '../pages/sales/update/UpdateSalesPackage'
 
 const SuspensedView: FC<WithChildren> = ({ children }) => {
   const [loading, setLoading] = useState(true)
@@ -69,6 +70,13 @@ const PrivateRoutes = () => {
   const SalesCreateCustCash = lazy(() => import('../pages/sales/SalesCreateCustCash'))
   const SalesCreateAddressCash = lazy(() => import('../pages/sales/SalesCreateAddressCash'))
   const SalesEmployee = lazy(() => import('../pages/sales/SalesEmployee'))
+
+  //แก้ไขในวัน
+  const EditFinishInDay = lazy(() => import('../pages/sales/editFinishInDay/EditFinishInDay'))
+  const UpdateSalesPackageFinishDay = lazy(() => import('../pages/sales/editFinishInDay/UpdateSalesPackageFinishDay'))
+  const UpdateSaleDiscountFinishDay = lazy(() => import('../pages/sales/editFinishInDay/UpdateSaleDiscountFinishDay'))
+  const UpdateSalesEmployeeFinishDay = lazy(() => import('../pages/sales/editFinishInDay/UpdateSalesEmployeeFinishDay'))
+  const UpdateSaleCustDetailFinishDay = lazy(() => import('../pages/sales/editFinishInDay/UpdateSaleCustDetailFinishDay'))
 
   //กล้อง + รูป
   const DeviceScanBarcode = lazy(() => import('../pages/sales/components/accessCam/DeviceScanBarcode'))
@@ -440,6 +448,49 @@ const PrivateRoutes = () => {
           element={
             <SuspensedView>
               <SalesBillRecieveMoney />
+            </SuspensedView>
+          }
+        />
+
+        {/*//////////////////////////// แก้ไขในวัน */}
+
+        <Route
+          path='sale/editFinishInDay'
+          element={
+            <SuspensedView>
+              <EditFinishInDay />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path='sale/editFinishInDay/UpdateSalesPackageFinishDay'
+          element={
+            <SuspensedView>
+              <UpdateSalesPackageFinishDay />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path='sale/editFinishInDay/UpdateSaleDiscountFinishDay'
+          element={
+            <SuspensedView>
+              <UpdateSaleDiscountFinishDay />
+            </SuspensedView>
+          }
+        />
+         <Route
+          path='sale/editFinishInDay/UpdateSalesEmployeeFinishDay'
+          element={
+            <SuspensedView>
+              <UpdateSalesEmployeeFinishDay />
+            </SuspensedView>
+          }
+        />
+         <Route
+          path='sale/editFinishInDay/UpdateSaleCustDetailFinishDay'
+          element={
+            <SuspensedView>
+              <UpdateSaleCustDetailFinishDay />
             </SuspensedView>
           }
         />
