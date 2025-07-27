@@ -5,14 +5,27 @@ type Props = {
     ItemDescription: string;
     ItemCode: string;
     SerialNo: string;
+    TransDate: string;
+    ExtDate: string;
     onAccept: () => void;          // <-- เพิ่ม prop นี้
 }
+
+const formatToBE = (isoDate?: string) => {
+    if (!isoDate) return '';
+    const d = new Date(isoDate);
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yyyy = d.getFullYear() + 543;
+    return `${dd}/${mm}/${yyyy}`;
+};
 
 const CardProductStockWithdraw: FC<Props> = ({
     DescriptionTH,
     ItemDescription,
     ItemCode,
     SerialNo,
+    TransDate,
+    ExtDate,
     onAccept,
 }) => {
     return (
@@ -32,7 +45,7 @@ const CardProductStockWithdraw: FC<Props> = ({
             <div className="d-flex align-items-center mb-2">
                 <span className="fw-regular fs-7 d-block">Code: {ItemCode}</span>
             </div>
-            <div className="d-flex align-items-center mb-4">
+            <div className="d-flex align-items-center mb-2">
                 <span className="fw-regular fs-7 d-block">S/N: {SerialNo}</span>
             </div>
 

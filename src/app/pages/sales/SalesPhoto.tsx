@@ -931,7 +931,7 @@ const SalesPhoto: React.FC = () => {
                 EMPID: EmpId,
                 TEAMSALE: TeamSale,
                 FIELD: 'STATUS',
-                DATA: 'FINISH', 
+                DATA: 'FINISH',
             },
                 {
                     headers: { 'Content-Type': 'application/json' },
@@ -1000,6 +1000,10 @@ const SalesPhoto: React.FC = () => {
 
     console.log(`isDataComplete`, isDataComplete);
 
+    const whereRefno = fromStep
+        ? refno
+        : matchedItem?.REFNO ?? ''
+
     return (
         <>
             {isLoading ? (
@@ -1018,10 +1022,10 @@ const SalesPhoto: React.FC = () => {
                         </div>
                     </div>
                     <span className={`${styles.fontSize}`}>
-                        เลขที่ขาย:
+                        เลขที่ขาย: {""}
                     </span>
                     <span className={`${styles.titlePage}`}>
-                        {fromStep === "true" ? refno : matchedItem.REFNO}
+                        {whereRefno ? whereRefno : item?.REFNO}
                     </span>
 
                     <div className="row gx-4 gy-6 mb-20">
@@ -1260,13 +1264,21 @@ const SalesPhoto: React.FC = () => {
 
                     {/* แสดงปุ่มเมื่อมาจาก Step */}
                     <div className='d-none d-xl-flex justify-content-between align-items-center mt-5 mb-10'>
-                        <button
+                        {/* <button
                             className={`${styles.btnSecondary}`}
                             onClick={() =>
                                 navigate('/sale/step', { state: matchedItem })
                             }
                         >
                             ย้อนกลับ
+                        </button> */}
+                        <button
+                            className={`${styles.btnPrimary}`}
+                            onClick={() =>
+                                navigate('/sale/overview', { state: matchedItem })
+                            }
+                        >
+                            จบการทำงาน
                         </button>
                         {isDataComplete && (
                             <button
@@ -1290,13 +1302,21 @@ const SalesPhoto: React.FC = () => {
                             zIndex: 1050,
                         }}
                     >
-                        <button
+                        {/* <button
                             className={`${styles.btnSecondary}`}
                             onClick={() =>
                                 navigate('/sale/step', { state: matchedItem })
                             }
                         >
                             ย้อนกลับ
+                        </button> */}
+                        <button
+                            className={`${styles.btnPrimary}`}
+                            onClick={() =>
+                                navigate('/sale/overview', { state: matchedItem })
+                            }
+                        >
+                            จบการทำงาน
                         </button>
                         {isDataComplete && (
                             <button

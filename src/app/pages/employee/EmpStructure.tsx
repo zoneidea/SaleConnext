@@ -249,6 +249,18 @@ const EmpStructure: React.FC = () => {
         }, 1000); // หน่วงเวลา 1 วินาทีก่อนเรียก API
     }, [auth]);
 
+    // ก่อน return() ให้แยกหัวหน้าทีมกับสมาชิกปกติ
+    const leaders = useMemo(
+        () => adviser.filter(v => v.PosName === 'หัวหน้าทีม'),
+        [adviser]
+    );
+    // console.log(`leaders`, leaders);
+
+    const members = useMemo(
+        () => adviser.filter(v => v.PosName !== 'หัวหน้าทีม'),
+        [adviser]
+    );
+
     return (
         <>
             <Content>
@@ -261,6 +273,29 @@ const EmpStructure: React.FC = () => {
                         </ul>
                     </div>
                 </div>
+
+                {/* **Card แสดงหัวหน้าทีม ถ้ามี** */}
+                {leaders.length > 0 && (
+                    <div className='card mb-5 p-4 border'>
+                        <h5 className={`${styles.label} my-5 text-center`}>หัวหน้าทีม</h5>
+                        {leaders.map((v, i) => (
+                            <div
+                                key={i}
+                                className='d-flex align-items-center justify-content-center mb-3'
+                            >
+                                <div className='symbol symbol-35px mx-5'>
+                                    <img src={toAbsoluteUrl('media/avatars/blank.png')} alt='' />
+                                </div>
+                                <div className='d-flex flex-column'>
+                                    <span className={`${styles.label}`}>{v.FName} {v.LName}</span>
+                                    <span className={`${styles.fontSizenotmain} text-muted`}>
+                                        {v.SaleEmp} ({v.SaleCode})
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
 
                 <div className='accordion' id='kt_accordion_1'>
                     <div className='accordion-item'>
@@ -280,7 +315,7 @@ const EmpStructure: React.FC = () => {
                                             {!isLoading && adviser.length > 0 && (
                                                 <>
                                                     <div className="card-header border-0 pt-5 d-flex justify-content-between align-items-center">
-                                                        {leader && (
+                                                        {/* {leader && (
                                                             <>
                                                                 <div className="justify-content-center align-items-center">
                                                                     <div className='symbol symbol-45px me-5'>
@@ -288,17 +323,17 @@ const EmpStructure: React.FC = () => {
                                                                     </div>
                                                                 </div>
                                                             </>
-                                                        )}
+                                                        )} */}
 
                                                         <div>
                                                             <h3 className="card-title align-items-start flex-column">
-                                                                <span className="card-label fw-bold fs-3 mb-1">พนักงานในทีม</span>
-                                                                <span className="fw-bold fs-3 mx-1">{`${adviser.length} คน`}</span>
+                                                                <span className={`${styles.label}`}>พนักงานในทีม</span>
+                                                                <span className={`mx-1 ${styles.label}`}>{`${adviser.length} คน`}</span>
                                                             </h3>
                                                         </div>
                                                         <div className="text-end">
-                                                            <span className="card-label fw-bold fs-3 mb-1">ทีม</span>
-                                                            <span className="fw-bold fs-3 mx-1">{`${teamSale}`}</span>
+                                                            <span className={`${styles.label} card-label mb-1`}>ทีม</span>
+                                                            <span className={`${styles.label} mx-1`}>{`${teamSale}`}</span>
                                                         </div>
                                                     </div>
 
@@ -306,46 +341,54 @@ const EmpStructure: React.FC = () => {
                                                         <div className='table-responsive'>
                                                             <table className='table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4'>
                                                                 <thead>
-                                                                    <tr className='fw-bold text-muted'>
-                                                                        <th className='min-w-150px'>ชื่อ นามสกุล</th>
+                                                                    <tr className='fw-bold fs-1 text-muted'>
+                                                                        <th className={`min-w-150px`}>ชื่อ นามสกุล</th>
                                                                         <th className='min-w-140px'>ตำแหน่ง</th>
+                                                                        <th className='min-w-140px'>สถานะ</th>
                                                                     </tr>
                                                                 </thead>
                                                                 <tbody>
-                                                                    {
-                                                                        adviser.map((v, i) => {
-                                                                            return (
-                                                                                <tr>
-                                                                                    <td>
-                                                                                        <div className='d-flex align-items-center'>
-                                                                                            <div className='symbol symbol-45px me-5'>
-                                                                                                <img src={toAbsoluteUrl('media/avatars/blank.png')} alt='' />
-                                                                                            </div>
-                                                                                            <div className='d-flex justify-content-start flex-column'>
-                                                                                                <a href='#' className='text-gray-900 fw-bold text-hover-primary fs-6'>
-                                                                                                    {`${v.FName} ${v.LName}`}
-                                                                                                </a>
-                                                                                                <span className='text-gray-700 fw-semibold d-block fs-7'>
-                                                                                                    {v.SaleEmp}
-                                                                                                </span>
-                                                                                                <span className='text-gray-700 fw-semibold d-block fs-7'>
-                                                                                                    {v.SaleCode}
-                                                                                                </span>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    </td>
-                                                                                    <td>
-                                                                                        <a href='#' className='text-gray-900 fw-bold text-hover-primary d-block fs-6'>
-                                                                                            {v.PosName}
+                                                                    {members.map((v, i) => (
+                                                                        <tr key={i}>
+                                                                            <td>
+                                                                                <div className='d-flex align-items-center'>
+                                                                                    <div className='symbol symbol-35px d-none d-md-flex mx-10'>
+                                                                                        <img src={toAbsoluteUrl('media/avatars/blank.png')} alt='' />
+                                                                                    </div>
+                                                                                    <div className='d-flex justify-content-start flex-column'>
+                                                                                        <a href='#' className={`text-gray-900 text-hover-primary ${styles.label}`}>
+                                                                                            {`${v.FName} ${v.LName}`}
                                                                                         </a>
-                                                                                        <span className='text-gray-700 fw-semibold d-block fs-7'>
-                                                                                            {v.PosName2}
+                                                                                        <span className={`text-gray-700 fw-semibold d-block ${styles.fontSizenotmain}`}>
+                                                                                            {v.SaleEmp}
                                                                                         </span>
-                                                                                    </td>
-                                                                                </tr>
-                                                                            )
-                                                                        })
-                                                                    }
+                                                                                        <span className={`text-gray-700 fw-semibold d-block ${styles.fontSizenotmain}`}>
+                                                                                            {v.SaleCode}
+                                                                                        </span>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </td>
+                                                                            <td>
+                                                                                <span className={`text-gray-700 fw-semibold d-block ${styles.fontSizenotmain}`}>
+                                                                                    {v.PosName}
+                                                                                </span>
+                                                                                <span className={`text-gray-700 fw-semibold d-block ${styles.fontSizenotmain}`}>
+                                                                                    {v.PosName2}
+                                                                                </span>
+                                                                            </td>
+                                                                            {/* สวิตช์เปิด/ปิดด้านหลัง */}
+                                                                            <td className="text-center">
+                                                                                <div className="form-check form-switch">
+                                                                                    <input
+                                                                                        className="form-check-input"
+                                                                                        type="checkbox"
+                                                                                        id={`toggle-${i}`}
+                                                                                    // ถ้าต้องการจับ state ให้เพิ่ม checked/onChange เข้าไป
+                                                                                    />
+                                                                                </div>
+                                                                            </td>
+                                                                        </tr>
+                                                                    ))}
                                                                 </tbody>
                                                             </table>
                                                         </div>

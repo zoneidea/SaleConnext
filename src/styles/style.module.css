@@ -44,6 +44,10 @@
   font-size: 1.5rem;
 }
 
+.fontSizenotmain {
+  font-size: 1.3rem;
+}
+
 .label {
   display: inline-block;
   margin-bottom: 0.5rem;
@@ -137,4 +141,12 @@
   text-align: left;
   width: 100%;
   margin-top: 10px;
+}
+
+.swal-scrollable-content {
+  max-height: 60vh;      /* กำหนดความสูงสูงสุด */
+  overflow-y: auto;      /* เปิดให้เลื่อน */
+  text-align: left;      /* จัดข้อความซ้าย */
+  white-space: pre-line; /* รักษาบรรทัดใหม่ */
+  padding-right: 0.5rem; /* เว้นขอบขวาให้ scrollbar ไม่บดข้อความ */
 }

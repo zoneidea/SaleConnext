@@ -34,7 +34,7 @@ const FirstBillOverview: React.FC = () => {
   // console.log(`fetchCategory: `, fetchCategory);
 
   const [finish, setFinish] = useState<any[]>([]); // กำหนดให้ state เป็น array เพื่อรองรับ map()
-  // console.log(`finish`, finish);
+  console.log(`finish`, finish);
 
   const [isLoadingFinish, setIsLoadingFinish] = useState<boolean>(false);
 

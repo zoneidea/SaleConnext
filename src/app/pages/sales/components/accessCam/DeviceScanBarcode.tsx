@@ -153,7 +153,7 @@
 // export default DeviceScanBarcode;
 
 
-
+import Swal from 'sweetalert2';
 import styles from '@/styles/style.module.css'
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -266,7 +266,6 @@ const DeviceScanBarcode: React.FC = () => {
     }, [isIOSorAndroid, isScannerRunning]);
 
     const goBack = () => {
-
         setRefno(refno)
         setBarCode(barCode)
         // ถ้ามี item ส่งกลับไปด้วย ไม่งั้นหน้า SalesPackage ก็ไม่ต้อง

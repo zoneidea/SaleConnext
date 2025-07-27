@@ -79,6 +79,16 @@ const ReportSale: React.FC = () => {
         handleSearch();
     }, []);
 
+    // ด้านบนของ component
+    const formatToBE = (isoDate?: string) => {
+        if (!isoDate) return '';
+        const d = new Date(isoDate);
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const yyyy = d.getFullYear() + 543;
+        return `${dd}/${mm}/${yyyy}`;
+    };
+
     return (
         <>
             <Content>
@@ -178,7 +188,7 @@ const ReportSale: React.FC = () => {
                                                         </td>
                                                         <td>{item.TEAMSALE}</td>
                                                         <td>{item.SALECODE}</td>
-                                                        <td>{item.EFFDATE}</td>
+                                                        <td>{formatToBE(item.EFFDATE)}</td>
                                                         <td>{item.STATUS}</td>
                                                     </tr>
                                                 ))}

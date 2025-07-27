@@ -127,6 +127,7 @@ const UpdateSalesEmployeeFinishDay: React.FC = () => {
                 timer: 2000,
                 showConfirmButton: false,
             })
+            navigate('/sale/editFinishInDay', { state: item })
         } catch {
             MySwal.fire('Error', 'ไม่สามารถบันทึกข้อมูลได้', 'error')
         }

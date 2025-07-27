@@ -343,7 +343,7 @@ const SalesProductStock: React.FC = () => {
                                                 {/* แถวที่สอง: กริดการ์ด กว้างเต็ม */}
                                                 <div className="row g-4">
                                                     {product.map(item => (
-                                                        <div key={item.RecordId} className="col-6 col-md-4 col-lg-4">
+                                                        <div key={item.RecordId} className="col-lg-4">
                                                             <CardProductStockOnlyMe
                                                                 DescriptionTH={item.DescriptionTH}
                                                                 ItemDescription={item.ItemDescription}
@@ -427,12 +427,14 @@ const SalesProductStock: React.FC = () => {
                                                         <div className="row">
                                                             <div className="row">
                                                                 {getStockWithDraw.map((item, index) => (
-                                                                    <div className="col-6 col-md-4 mb-3" key={index}>
+                                                                    <div className="col-lg-4 mb-3" key={index}>
                                                                         <CardProductStockWithdraw
                                                                             DescriptionTH={item.DescriptionTH}
                                                                             ItemDescription={item.ItemDescription}
                                                                             ItemCode={item.ItemCode}
                                                                             SerialNo={item.SerialNo}
+                                                                            TransDate={item.TransDate}
+                                                                            ExtDate={item.ExtDate}
                                                                             onAccept={() => handleAcceptProduct(item)}    // <-- ส่ง handler เข้าไป
                                                                         />
                                                                     </div>

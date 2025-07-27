@@ -194,6 +194,7 @@ const UpdateSalesEmployee: React.FC = () => {
                 showConfirmButton: false,
             })
 
+            // navigate('/sale/update/updateCustDetail', { state: item })
             navigate('/sale/update/updateCustDetail', { state: matchedItem })
         } catch {
             MySwal.fire('Error', 'ไม่สามารถบันทึกข้อมูลได้', 'error')
@@ -306,7 +307,10 @@ const UpdateSalesEmployee: React.FC = () => {
                     <button
                         className={styles.btnSecondary}
                         onClick={() =>
-                            navigate('/sale/update/updateSalePackage', { state: item })
+                            // navigate('/sale/update/updateSalePackage', { state: item })
+                            navigate('/sale/update/updateSalePackage', {
+                                state: matchedItem
+                            })
                         }
                     >
                         แก้ไขแพ็คเกจ
@@ -329,7 +333,10 @@ const UpdateSalesEmployee: React.FC = () => {
                     <button
                         className={styles.btnSecondary}
                         onClick={() =>
-                            navigate('/sale/update/updateSalePackage', { state: item })
+                            // navigate('/sale/update/updateSalePackage', { state: item })
+                            navigate('/sale/update/updateSalePackage', {
+                                state: matchedItem
+                            })
                         }
                     >
                         แก้ไขแพ็คเกจ

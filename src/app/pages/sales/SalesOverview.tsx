@@ -373,6 +373,7 @@ import { useUUIDStore } from '../../modules/stores/stepsStore'
 import { useAuth } from '../../modules/auth/core/Auth'
 import { EntriesDropdown, PaginationTable } from '../../modules/entriesAndPagination/Pagination'
 import { ThreeDot } from 'react-loading-indicators'
+import { log } from 'console'
 
 const SalesOverview: React.FC = () => {
   // Loading states
@@ -490,7 +491,7 @@ const SalesOverview: React.FC = () => {
     (item.PRODUCT?.[0]?.SerialNo || '').toLowerCase().includes(searchLower)
   )
 
-  const filteredFinish = finish.filter((item) =>
+  const filteredFinish = finish.filter((item) =>    
     (item.CUSTOMERDETAIL?.[0]?.CUSTOMERNAME || '').toLowerCase().includes(searchLower) ||
     (item.PRODUCT?.[0]?.Package?.[0]?.PACKAGETITLE || '').toLowerCase().includes(searchLower) ||
     (item.PRODUCT?.[0]?.ItemDescription || '').toLowerCase().includes(searchLower) ||
@@ -509,7 +510,7 @@ const SalesOverview: React.FC = () => {
 
   return (
     <Content>
-      <div className='d-flex justify-content-between align-items-center mb-5'>
+      <div className='d-flex justify-content-between align-items-center my-5'>
         <div id='kt_page_title' className='page-title d-flex flex-wrap me-3 flex-column'>
         </div>
 

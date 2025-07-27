@@ -1,164 +1,305 @@
-import React, { lazy, FC, Suspense, useEffect, useState } from 'react'
-import { Route, Routes, Navigate } from 'react-router-dom'
-import { MasterLayout } from '../../_metronic/layout/MasterLayout'
-import TopBarProgress from 'react-topbar-progress-indicator'
-import { getCSSVariableValue } from '../../_metronic/assets/ts/_utils'
-import { WithChildren } from '../../_metronic/helpers'
-import { Commet } from 'react-loading-indicators'
+import React, { lazy, FC, Suspense, useEffect, useState } from "react";
+import { Route, Routes, Navigate } from "react-router-dom";
+import { MasterLayout } from "../../_metronic/layout/MasterLayout";
+import TopBarProgress from "react-topbar-progress-indicator";
+import { getCSSVariableValue } from "../../_metronic/assets/ts/_utils";
+import { WithChildren } from "../../_metronic/helpers";
+import { Commet } from "react-loading-indicators";
 
-import { DashboardWrapper } from '../pages/dashboard/DashboardWrapper'
-import { SalesWrapper } from '../pages/sales/SalesWrapper'
-import { OrderWrapper } from '../pages/order/OrderWrapper'
-import { FirstBillWrapper } from '../pages/firstBill/FirstBillWrapper'
-import { SendMoneyWrapper } from '../pages/sendMoney/SendMoneyWrapper'
+import { DashboardWrapper } from "../pages/dashboard/DashboardWrapper";
+import { SalesWrapper } from "../pages/sales/SalesWrapper";
+import { OrderWrapper } from "../pages/order/OrderWrapper";
+import { FirstBillWrapper } from "../pages/firstBill/FirstBillWrapper";
+import { SendMoneyWrapper } from "../pages/sendMoney/SendMoneyWrapper";
 
-import ErrorBoundary from '../pages/sales/components/accessCam/ErrorBoundary'
-import UpdateSalesPackage from '../pages/sales/update/UpdateSalesPackage'
+import ErrorBoundary from "../pages/sales/components/accessCam/ErrorBoundary";
+import UpdateSalesPackage from "../pages/sales/update/UpdateSalesPackage";
 
 const SuspensedView: FC<WithChildren> = ({ children }) => {
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1000)
-    return () => clearTimeout(timer)
-  }, [])
+    const timer = setTimeout(() => setLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
-  const baseColor = getCSSVariableValue('--bs-primary')
+  const baseColor = getCSSVariableValue("--bs-primary");
   TopBarProgress.config({
     barColors: {
-      '0': baseColor,
+      "0": baseColor,
     },
     barThickness: 1,
     shadowBlur: 5,
-  })
+  });
 
   if (loading) {
     return (
       <div
         style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '100vh',
-          flexDirection: 'column',
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          flexDirection: "column",
         }}
       >
         <TopBarProgress />
         <Commet color="#32cd32" size="large" />
       </div>
-    )
+    );
   }
 
-  return <Suspense fallback={<TopBarProgress />}>{children}</Suspense>
-}
+  return <Suspense fallback={<TopBarProgress />}>{children}</Suspense>;
+};
 
 const PrivateRoutes = () => {
   //หัวข้อ ระบบขาย
-  const SalesSatusCust = lazy(() => import('../pages/sales/SalesSatusCust'))
-  const SalesProduct = lazy(() => import('../pages/sales/SalesProduct'))
-  const SalesCreateCust = lazy(() => import('../pages/sales/SalesCreateCust'))
-  const SalesWaterMeas = lazy(() => import('../pages/sales/SalesWaterMeas'))
-  const SalesContract = lazy(() => import('../pages/sales/SalesContract'))
-  const SalesReceipt = lazy(() => import('../pages/sales/SalesReceipt'))
-  const SalesAddCustInfo = lazy(() => import('../pages/sales/SalesAddCustInfo'))
-  const Step = lazy(() => import('../pages/sales/components/step/Step'))
-  const SalesDiscount = lazy(() => import('../pages/sales/SalesDiscount'))
-  const SalesPackage = lazy(() => import('../pages/sales/SalesPackage'))
-  const SalesPDPA = lazy(() => import('../pages/sales/SalesPDPA'))
-  const SalesCancel = lazy(() => import('../pages/sales/SalesCancel'))
-  const SalesBillRecieveMoney = lazy(() => import('../pages/sales/SalesBillRecieveMoney'))
-  const SalesCreateCustCash = lazy(() => import('../pages/sales/SalesCreateCustCash'))
-  const SalesCreateAddressCash = lazy(() => import('../pages/sales/SalesCreateAddressCash'))
-  const SalesEmployee = lazy(() => import('../pages/sales/SalesEmployee'))
+  const SalesSatusCust = lazy(() => import("../pages/sales/SalesSatusCust"));
+  const SalesProduct = lazy(() => import("../pages/sales/SalesProduct"));
+  const SalesCreateCust = lazy(() => import("../pages/sales/SalesCreateCust"));
+  const SalesWaterMeas = lazy(() => import("../pages/sales/SalesWaterMeas"));
+  const SalesContract = lazy(() => import("../pages/sales/SalesContract"));
+  const SalesReceipt = lazy(() => import("../pages/sales/SalesReceipt"));
+  const SalesAddCustInfo = lazy(
+    () => import("../pages/sales/SalesAddCustInfo")
+  );
+  const Step = lazy(() => import("../pages/sales/components/step/Step"));
+  const SalesDiscount = lazy(() => import("../pages/sales/SalesDiscount"));
+  const SalesPackage = lazy(() => import("../pages/sales/SalesPackage"));
+  const SalesPDPA = lazy(() => import("../pages/sales/SalesPDPA"));
+  const SalesCancel = lazy(() => import("../pages/sales/SalesCancel"));
+  const SalesBillRecieveMoney = lazy(
+    () => import("../pages/sales/SalesBillRecieveMoney")
+  );
+  const SalesCreateCustCash = lazy(
+    () => import("../pages/sales/SalesCreateCustCash")
+  );
+  const SalesCreateAddressCash = lazy(
+    () => import("../pages/sales/SalesCreateAddressCash")
+  );
+  const SalesEmployee = lazy(() => import("../pages/sales/SalesEmployee"));
 
   //แก้ไขในวัน
-  const EditFinishInDay = lazy(() => import('../pages/sales/editFinishInDay/EditFinishInDay'))
-  const UpdateSalesPackageFinishDay = lazy(() => import('../pages/sales/editFinishInDay/UpdateSalesPackageFinishDay'))
-  const UpdateSaleDiscountFinishDay = lazy(() => import('../pages/sales/editFinishInDay/UpdateSaleDiscountFinishDay'))
-  const UpdateSalesEmployeeFinishDay = lazy(() => import('../pages/sales/editFinishInDay/UpdateSalesEmployeeFinishDay'))
-  const UpdateSaleCustDetailFinishDay = lazy(() => import('../pages/sales/editFinishInDay/UpdateSaleCustDetailFinishDay'))
+  const EditFinishInDay = lazy(
+    () => import("../pages/sales/editFinishInDay/EditFinishInDay")
+  );
+  const UpdateSalesPackageFinishDay = lazy(
+    () => import("../pages/sales/editFinishInDay/UpdateSalesPackageFinishDay")
+  );
+  const UpdateSaleDiscountFinishDay = lazy(
+    () => import("../pages/sales/editFinishInDay/UpdateSaleDiscountFinishDay")
+  );
+  const UpdateSalesEmployeeFinishDay = lazy(
+    () => import("../pages/sales/editFinishInDay/UpdateSalesEmployeeFinishDay")
+  );
+  const UpdateSaleCustDetailFinishDay = lazy(
+    () => import("../pages/sales/editFinishInDay/UpdateSaleCustDetailFinishDay")
+  );
+  const UpdateSaleAddressFinishDay = lazy(
+    () => import("../pages/sales/editFinishInDay/UpdateSaleAddressFinishDay")
+  );
+  const UpdateSalesContractFinishDay = lazy(
+    () => import("../pages/sales/editFinishInDay/UpdateSalesContractFinishDay")
+  );
 
   //กล้อง + รูป
-  const DeviceScanBarcode = lazy(() => import('../pages/sales/components/accessCam/DeviceScanBarcode'))
-  const UpdateDeviceScanBarcode = lazy(() => import('../pages/sales/components/accessCam/updateDeviceScanBarcode'))
-  const SalesPhoto = lazy(() => import('../pages/sales/SalesPhoto'))
-  const IdCardPhoto = lazy(() => import('../pages/sales/components/photo/IdCardPhoto'))
-  const GalleryGoogleMapGPS = lazy(() => import('../pages/sales/components/photo/gps/GalleryGoogleMapGPS'))
-  const GoogleMapGPS = lazy(() => import('../pages/sales/components/photo/gps/GoogleMapGPS'))
-  const DrawingMapPhoto = lazy(() => import('../pages/sales/components/photo/DrawingMapPhoto'))
-  const TurnPhoto = lazy(() => import('../pages/sales/components/photo/TurnPhoto'))
-  const InstallationPhoto = lazy(() => import('../pages/sales/components/photo/InstallationPhoto'))
-  const HomeCustomerPhoto = lazy(() => import('../pages/sales/components/photo/HomeCustomerPhoto'))
-  const CustomerPhoto = lazy(() => import('../pages/sales/components/photo/CustomerPhoto'))
-  const EquipmentPhoto = lazy(() => import('../pages/sales/components/photo/EquipmentPhoto'))
+  const DeviceScanBarcode = lazy(
+    () => import("../pages/sales/components/accessCam/DeviceScanBarcode")
+  );
+  const UpdateDeviceScanBarcode = lazy(
+    () => import("../pages/sales/components/accessCam/updateDeviceScanBarcode")
+  );
+  const DeviceScanBarcodeBundle = lazy(
+    () => import("../pages/sales/components/accessCam/DeviceScanBarcodeBundle")
+  );
 
-  const IdCardPhotoGallery = lazy(() => import('../pages/sales/components/photo/gallery/IdCardPhotoGallery'))
-  const CustomerPhotoGallery = lazy(() => import('../pages/sales/components/photo/gallery/CustomerPhotoGallery'))
-  const DrawingMapPhotoGallery = lazy(() => import('../pages/sales/components/photo/gallery/DrawingMapPhotoGallery'))
-  const EquipmentPhotoGallery = lazy(() => import('../pages/sales/components/photo/gallery/EquipmentPhotoGallery'))
-  const HomeCustomerPhotoGallery = lazy(() => import('../pages/sales/components/photo/gallery/HomeCustomerPhotoGallery'))
-  const InstallationPhotoGallery = lazy(() => import('../pages/sales/components/photo/gallery/InstallationPhotoGallery'))
-  const TurnPhotoGallery = lazy(() => import('../pages/sales/components/photo/gallery/TurnPhotoGallery'))
+  const SalesPhoto = lazy(() => import("../pages/sales/SalesPhoto"));
+  const IdCardPhoto = lazy(
+    () => import("../pages/sales/components/photo/IdCardPhoto")
+  );
+  const GalleryGoogleMapGPS = lazy(
+    () => import("../pages/sales/components/photo/gps/GalleryGoogleMapGPS")
+  );
+  const GoogleMapGPS = lazy(
+    () => import("../pages/sales/components/photo/gps/GoogleMapGPS")
+  );
+  const DrawingMapPhoto = lazy(
+    () => import("../pages/sales/components/photo/DrawingMapPhoto")
+  );
+  const TurnPhoto = lazy(
+    () => import("../pages/sales/components/photo/TurnPhoto")
+  );
+  const InstallationPhoto = lazy(
+    () => import("../pages/sales/components/photo/InstallationPhoto")
+  );
+  const HomeCustomerPhoto = lazy(
+    () => import("../pages/sales/components/photo/HomeCustomerPhoto")
+  );
+  const CustomerPhoto = lazy(
+    () => import("../pages/sales/components/photo/CustomerPhoto")
+  );
+  const EquipmentPhoto = lazy(
+    () => import("../pages/sales/components/photo/EquipmentPhoto")
+  );
 
-  //หัวข้อ ระบบยืม
-  const BorrowProduct = lazy(() => import('../pages/borrowProduct/BorrowProduct'))
-  const BorrowScanBarCode = lazy(() => import('../pages/borrowProduct/BorrowScanBarCode'))
-
-  //หัวข้อ สินค้าในสต๊อก + ระบบยืม
-  const ProductStock = lazy(() => import('../pages/productstock/ProductStock'))
-
-  //หัวข้อ ระบบตรวจสัญญา
-  const ContractChecker = lazy(() => import('../pages/contractChecker/ContractChecker'))
-  const ContractDetailChecker = lazy(() => import('../pages/contractChecker/ContractDetailChecker'))
+  const IdCardPhotoGallery = lazy(
+    () => import("../pages/sales/components/photo/gallery/IdCardPhotoGallery")
+  );
+  const CustomerPhotoGallery = lazy(
+    () => import("../pages/sales/components/photo/gallery/CustomerPhotoGallery")
+  );
+  const DrawingMapPhotoGallery = lazy(
+    () =>
+      import("../pages/sales/components/photo/gallery/DrawingMapPhotoGallery")
+  );
+  const EquipmentPhotoGallery = lazy(
+    () =>
+      import("../pages/sales/components/photo/gallery/EquipmentPhotoGallery")
+  );
+  const HomeCustomerPhotoGallery = lazy(
+    () =>
+      import("../pages/sales/components/photo/gallery/HomeCustomerPhotoGallery")
+  );
+  const InstallationPhotoGallery = lazy(
+    () =>
+      import("../pages/sales/components/photo/gallery/InstallationPhotoGallery")
+  );
+  const TurnPhotoGallery = lazy(
+    () => import("../pages/sales/components/photo/gallery/TurnPhotoGallery")
+  );
 
   // Update contract
-  const UpdateContractPackage = lazy(() => import('../pages/sales/update/UpdateSalesPackage'))
-  const UpdateSalesSatusCust = lazy(() => import('../pages/sales/update/UpdateSalesSatusCust/UpdateSalesSatusCust'))
-  const UpdateContractDiscount = lazy(() => import('../pages/sales/update/UpdateSaleDiscount'))
-  const UpdateContractCustDetail = lazy(() => import('../pages/sales/update/UpdateSaleCustDetail'))
-  const UpdateSaleAddress = lazy(() => import('../pages/sales/update/UpdateSaleAddress'))
-  const UpdateSalesPDPA = lazy(() => import('../pages/sales/update/UpdateSalesPDPA'))
-  const UpdateSalesContract = lazy(() => import('../pages/sales/update/UpdateSalesContract'))
-  const UpdateSalesEmployee = lazy(() => import('../pages/sales/update/UpdateSalesEmployee'))
+  const UpdateContractPackage = lazy(
+    () => import("../pages/sales/update/UpdateSalesPackage")
+  );
+  const UpdateSalesSatusCust = lazy(
+    () =>
+      import("../pages/sales/update/UpdateSalesSatusCust/UpdateSalesSatusCust")
+  );
+  const UpdateContractDiscount = lazy(
+    () => import("../pages/sales/update/UpdateSaleDiscount")
+  );
+  const UpdateSaleCustDetail = lazy(
+    () => import("../pages/sales/update/UpdateSaleCustDetail")
+  );
+  const UpdateSaleAddress = lazy(
+    () => import("../pages/sales/update/UpdateSaleAddress")
+  );
+  const UpdateSalesPDPA = lazy(
+    () => import("../pages/sales/update/UpdateSalesPDPA")
+  );
+  const UpdateSalesContract = lazy(
+    () => import("../pages/sales/update/UpdateSalesContract")
+  );
+  const UpdateSalesEmployee = lazy(
+    () => import("../pages/sales/update/UpdateSalesEmployee")
+  );
+
+  //หัวข้อ ระบบยืม
+  const BorrowProduct = lazy(
+    () => import("../pages/borrowProduct/BorrowProduct")
+  );
+  const BorrowScanBarCode = lazy(
+    () => import("../pages/borrowProduct/BorrowScanBarCode")
+  );
+
+  //หัวข้อ สินค้าในสต๊อก + ระบบยืม
+  const ProductStock = lazy(() => import("../pages/productstock/ProductStock"));
+
+  //หัวข้อ ระบบตรวจสัญญา
+  const ContractChecker = lazy(
+    () => import("../pages/contractChecker/ContractChecker")
+  );
+  const ContractDetailChecker = lazy(
+    () => import("../pages/contractChecker/ContractDetailChecker")
+  );
 
   //หัวข้อ ระบบจอง
-  const OrderCreateBooking = lazy(() => import('../pages/order/OrderCreateBooking'))
+  const OrderCreateBooking = lazy(
+    () => import("../pages/order/OrderCreateBooking")
+  );
 
   //หัวข้อ ระบบตรวจใบจอง Admin
-  const OrderCheckerAdmin = lazy(() => import('../pages/orderChecker/admin/OrderCheckerAdmin'))
-  const OrderDetailCheckerAdmin = lazy(() => import('../pages/orderChecker/admin/OrderDetailCheckerAdmin'))
+  const OrderCheckerAdmin = lazy(
+    () => import("../pages/orderChecker/admin/OrderCheckerAdmin")
+  );
+  const OrderDetailCheckerAdmin = lazy(
+    () => import("../pages/orderChecker/admin/OrderDetailCheckerAdmin")
+  );
 
   //หัวข้อ ระบบตรวจใบจอง CT
-  const OrderCheckerCT = lazy(() => import('../pages/orderChecker/ct/OrderCheckerCT'))
-  const OrderDetailCheckerCT = lazy(() => import('../pages/orderChecker/ct/OrderDetailCheckerCT'))
+  const OrderCheckerCT = lazy(
+    () => import("../pages/orderChecker/ct/OrderCheckerCT")
+  );
+  const OrderDetailCheckerCT = lazy(
+    () => import("../pages/orderChecker/ct/OrderDetailCheckerCT")
+  );
 
   //หัวข้อ ระบบเก็บเงินงวดแรก
-  const CreateFirstBill = lazy(() => import('../pages/firstBill/CreateFirstBill'))
+  const CreateFirstBill = lazy(
+    () => import("../pages/firstBill/CreateFirstBill")
+  );
+  const ReceiptMock = lazy(() => import("../pages/firstBill/ReceiptMock"));
+  const ReceiptFirstBill = lazy(
+    () => import("../pages/firstBill/ReceiptFirstBill")
+  );
 
   //หัวข้อ ระบบส่งเงิน
-  const CreateSendMoney = lazy(() => import('../pages/sendMoney/CreateSendMoney'))
-  const SendMoneySummary = lazy(() => import('../pages/sendMoney/SendMoneySummary'))
+  const CreateSendMoney = lazy(
+    () => import("../pages/sendMoney/CreateSendMoney")
+  );
+  const SendMoneySummary = lazy(
+    () => import("../pages/sendMoney/SendMoneySummary")
+  );
 
   // โครงสร้างพนักงาน
-  const EmpStructure = lazy(() => import('../pages/employee/EmpStructure'))
+  const EmpStructure = lazy(() => import("../pages/employee/EmpStructure"));
 
   // รายงานยอดขายประจำวัน
-  const ReportSale = lazy(() => import('../pages/report/ReportSale'))
+  const ReportSale = lazy(() => import("../pages/report/ReportSale"));
 
   return (
     <Routes>
       <Route element={<MasterLayout />}>
         {/* Redirect to Dashboard after success login/registartion */}
-        <Route path='auth/*' element={<Navigate to='/dashboard' />} />
+        <Route path="auth/*" element={<Navigate to="/dashboard" />} />
         {/* Pages */}
-        <Route path='dashboard' element={<SuspensedView><DashboardWrapper /></SuspensedView>} />
-        <Route path='sale/overview' element={<SuspensedView><SalesWrapper /></SuspensedView>} />
-        <Route path='order/overview' element={<SuspensedView><OrderWrapper /></SuspensedView>} />
-        <Route path='sendMoney' element={<SuspensedView><SendMoneyWrapper /></SuspensedView>} />
+        <Route
+          path="dashboard"
+          element={
+            <SuspensedView>
+              <DashboardWrapper />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path="sale/overview"
+          element={
+            <SuspensedView>
+              <SalesWrapper />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path="order/overview"
+          element={
+            <SuspensedView>
+              <OrderWrapper />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path="sendMoney"
+          element={
+            <SuspensedView>
+              <SendMoneyWrapper />
+            </SuspensedView>
+          }
+        />
 
         {/* Start ระบบขาย */}
         <Route
-          path='sale/statuscust'
+          path="sale/statuscust"
           element={
             <SuspensedView>
               <SalesSatusCust />
@@ -166,7 +307,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/package'
+          path="sale/package"
           element={
             <SuspensedView>
               <SalesPackage />
@@ -174,7 +315,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/product'
+          path="sale/product"
           element={
             <SuspensedView>
               <SalesProduct />
@@ -182,7 +323,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/createcust'
+          path="sale/createcust"
           element={
             <SuspensedView>
               <SalesCreateCust />
@@ -190,7 +331,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/createcust-cash'
+          path="sale/createcust-cash"
           element={
             <SuspensedView>
               <SalesCreateCustCash />
@@ -198,7 +339,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/createaddress-cash'
+          path="sale/createaddress-cash"
           element={
             <SuspensedView>
               <SalesCreateAddressCash />
@@ -206,7 +347,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/watermeas'
+          path="sale/watermeas"
           element={
             <SuspensedView>
               <SalesWaterMeas />
@@ -214,7 +355,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/contract'
+          path="sale/contract"
           element={
             <SuspensedView>
               <SalesContract />
@@ -222,7 +363,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/receipt'
+          path="sale/receipt"
           element={
             <SuspensedView>
               <SalesReceipt />
@@ -230,7 +371,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/addcustinfo'
+          path="sale/addcustinfo"
           element={
             <SuspensedView>
               <SalesAddCustInfo />
@@ -238,7 +379,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/step'
+          path="sale/step"
           element={
             <SuspensedView>
               <Step />
@@ -246,7 +387,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/scanbarcode'
+          path="sale/scanbarcode"
           element={
             <SuspensedView>
               <ErrorBoundary>
@@ -256,7 +397,17 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/update/updateDeviceScanBarcode'
+          path="sale/scanbarcodebundle"
+          element={
+            <SuspensedView>
+              <ErrorBoundary>
+                <DeviceScanBarcodeBundle />
+              </ErrorBoundary>
+            </SuspensedView>
+          }
+        />
+        <Route
+          path="sale/update/updateDeviceScanBarcode"
           element={
             <SuspensedView>
               <ErrorBoundary>
@@ -266,7 +417,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/discount'
+          path="sale/discount"
           element={
             <SuspensedView>
               <SalesDiscount />
@@ -274,7 +425,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/salesemployee'
+          path="sale/salesemployee"
           element={
             <SuspensedView>
               <SalesEmployee />
@@ -282,7 +433,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='productstock'
+          path="productstock"
           element={
             <SuspensedView>
               <ProductStock />
@@ -290,7 +441,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/pdpa'
+          path="sale/pdpa"
           element={
             <SuspensedView>
               <SalesPDPA />
@@ -299,7 +450,7 @@ const PrivateRoutes = () => {
         />
         {/* เริ่ม รูปและแกลอรี่ */}
         <Route
-          path='sale/photo'
+          path="sale/photo"
           element={
             <SuspensedView>
               <SalesPhoto />
@@ -307,7 +458,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/photo/idcard'
+          path="sale/photo/idcard"
           element={
             <SuspensedView>
               <IdCardPhoto />
@@ -315,7 +466,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/photo/gallery-gps'
+          path="sale/photo/gallery-gps"
           element={
             <SuspensedView>
               <GalleryGoogleMapGPS />
@@ -323,7 +474,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/photo/gps'
+          path="sale/photo/gps"
           element={
             <SuspensedView>
               <GoogleMapGPS />
@@ -331,7 +482,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/photo/drawing-map'
+          path="sale/photo/drawing-map"
           element={
             <SuspensedView>
               <DrawingMapPhoto />
@@ -339,7 +490,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/photo/turn'
+          path="sale/photo/turn"
           element={
             <SuspensedView>
               <TurnPhoto />
@@ -347,7 +498,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/photo/installation'
+          path="sale/photo/installation"
           element={
             <SuspensedView>
               <InstallationPhoto />
@@ -355,7 +506,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/photo/home-customer'
+          path="sale/photo/home-customer"
           element={
             <SuspensedView>
               <HomeCustomerPhoto />
@@ -363,7 +514,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/photo/customer'
+          path="sale/photo/customer"
           element={
             <SuspensedView>
               <CustomerPhoto />
@@ -371,7 +522,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/photo/equipment'
+          path="sale/photo/equipment"
           element={
             <SuspensedView>
               <EquipmentPhoto />
@@ -380,7 +531,7 @@ const PrivateRoutes = () => {
         />
 
         <Route
-          path='sale/photo/gallery/idcard'
+          path="sale/photo/gallery/idcard"
           element={
             <SuspensedView>
               <IdCardPhotoGallery />
@@ -388,7 +539,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/photo/gallery/customer'
+          path="sale/photo/gallery/customer"
           element={
             <SuspensedView>
               <CustomerPhotoGallery />
@@ -396,7 +547,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/photo/gallery/customerHome'
+          path="sale/photo/gallery/customerHome"
           element={
             <SuspensedView>
               <HomeCustomerPhotoGallery />
@@ -404,7 +555,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/photo/gallery/drawingMap'
+          path="sale/photo/gallery/drawingMap"
           element={
             <SuspensedView>
               <DrawingMapPhotoGallery />
@@ -412,7 +563,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/photo/gallery/equipment'
+          path="sale/photo/gallery/equipment"
           element={
             <SuspensedView>
               <EquipmentPhotoGallery />
@@ -420,7 +571,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/photo/gallery/installation'
+          path="sale/photo/gallery/installation"
           element={
             <SuspensedView>
               <InstallationPhotoGallery />
@@ -428,7 +579,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/photo/gallery/turn'
+          path="sale/photo/gallery/turn"
           element={
             <SuspensedView>
               <TurnPhotoGallery />
@@ -436,7 +587,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/cancel'
+          path="sale/cancel"
           element={
             <SuspensedView>
               <SalesCancel />
@@ -444,7 +595,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/billRecieveMoney'
+          path="sale/billRecieveMoney"
           element={
             <SuspensedView>
               <SalesBillRecieveMoney />
@@ -455,7 +606,7 @@ const PrivateRoutes = () => {
         {/*//////////////////////////// แก้ไขในวัน */}
 
         <Route
-          path='sale/editFinishInDay'
+          path="sale/editFinishInDay"
           element={
             <SuspensedView>
               <EditFinishInDay />
@@ -463,7 +614,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/editFinishInDay/UpdateSalesPackageFinishDay'
+          path="sale/editFinishInDay/UpdateSalesPackageFinishDay"
           element={
             <SuspensedView>
               <UpdateSalesPackageFinishDay />
@@ -471,26 +622,42 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/editFinishInDay/UpdateSaleDiscountFinishDay'
+          path="sale/editFinishInDay/UpdateSaleDiscountFinishDay"
           element={
             <SuspensedView>
               <UpdateSaleDiscountFinishDay />
             </SuspensedView>
           }
         />
-         <Route
-          path='sale/editFinishInDay/UpdateSalesEmployeeFinishDay'
+        <Route
+          path="sale/editFinishInDay/UpdateSalesEmployeeFinishDay"
           element={
             <SuspensedView>
               <UpdateSalesEmployeeFinishDay />
             </SuspensedView>
           }
         />
-         <Route
-          path='sale/editFinishInDay/UpdateSaleCustDetailFinishDay'
+        <Route
+          path="sale/editFinishInDay/UpdateSaleCustDetailFinishDay"
           element={
             <SuspensedView>
               <UpdateSaleCustDetailFinishDay />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path="sale/editFinishInDay/UpdateSaleAddressFinishDay"
+          element={
+            <SuspensedView>
+              <UpdateSaleAddressFinishDay />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path="sale/editFinishInDay/UpdateSalesContractFinishDay"
+          element={
+            <SuspensedView>
+              <UpdateSalesContractFinishDay />
             </SuspensedView>
           }
         />
@@ -498,7 +665,7 @@ const PrivateRoutes = () => {
 
         {/* Start ระบบตรวจสัญญา */}
         <Route
-          path='contract-checker'
+          path="contract-checker"
           element={
             <SuspensedView>
               <ContractChecker />
@@ -506,7 +673,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='contract-checker/detailChecker'
+          path="contract-checker/detailChecker"
           element={
             <SuspensedView>
               <ContractDetailChecker />
@@ -517,7 +684,7 @@ const PrivateRoutes = () => {
 
         {/* Start อัพเดท ระบบขาย */}
         <Route
-          path='sale/update/updateSalePackage'
+          path="sale/update/updateSalePackage"
           element={
             <SuspensedView>
               <UpdateContractPackage />
@@ -525,7 +692,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/update/UpdateSalesSatusCust'
+          path="sale/update/UpdateSalesSatusCust"
           element={
             <SuspensedView>
               <UpdateSalesSatusCust />
@@ -533,7 +700,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/update/updateSaleDiscount'
+          path="sale/update/updateSaleDiscount"
           element={
             <SuspensedView>
               <UpdateContractDiscount />
@@ -541,7 +708,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/update/updateSalesEmployee'
+          path="sale/update/updateSalesEmployee"
           element={
             <SuspensedView>
               <UpdateSalesEmployee />
@@ -549,15 +716,15 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/update/updateCustDetail'
+          path="sale/update/updateCustDetail"
           element={
             <SuspensedView>
-              <UpdateContractCustDetail />
+              <UpdateSaleCustDetail />
             </SuspensedView>
           }
         />
         <Route
-          path='sale/update/updateAddress'
+          path="sale/update/updateAddress"
           element={
             <SuspensedView>
               <UpdateSaleAddress />
@@ -565,7 +732,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/update/UpdateSalesPDPA'
+          path="sale/update/UpdateSalesPDPA"
           element={
             <SuspensedView>
               <UpdateSalesPDPA />
@@ -573,7 +740,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sale/update/UpdateSalesContract'
+          path="sale/update/UpdateSalesContract"
           element={
             <SuspensedView>
               <UpdateSalesContract />
@@ -584,7 +751,7 @@ const PrivateRoutes = () => {
 
         {/* Start ระบบจอง */}
         <Route
-          path='order/OrderCreateBooking'
+          path="order/OrderCreateBooking"
           element={
             <SuspensedView>
               <OrderCreateBooking />
@@ -595,7 +762,7 @@ const PrivateRoutes = () => {
 
         {/* Start ระบบตรวจใบจอง Admin */}
         <Route
-          path='order-admin'
+          path="order-admin"
           element={
             <SuspensedView>
               <OrderCheckerAdmin />
@@ -603,7 +770,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='order-admin/detailCheckerAdmin'
+          path="order-admin/detailCheckerAdmin"
           element={
             <SuspensedView>
               <OrderDetailCheckerAdmin />
@@ -613,7 +780,7 @@ const PrivateRoutes = () => {
 
         {/* Start ระบบตรวจใบจอง CT */}
         <Route
-          path='order-checker'
+          path="order-checker"
           element={
             <SuspensedView>
               <OrderCheckerCT />
@@ -621,7 +788,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='order-checker/detailCheckerCT'
+          path="order-checker/detailCheckerCT"
           element={
             <SuspensedView>
               <OrderDetailCheckerCT />
@@ -632,7 +799,7 @@ const PrivateRoutes = () => {
 
         {/* Start ระบบเก็บเงินงวดแรก */}
         <Route
-          path='firstBill/overview'
+          path="firstBill/overview"
           element={
             <SuspensedView>
               <FirstBillWrapper />
@@ -640,10 +807,26 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='firstBill/CreateFirstBill'
+          path="firstBill/CreateFirstBill"
           element={
             <SuspensedView>
               <CreateFirstBill />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path="firstBill/receiptmock"
+          element={
+            <SuspensedView>
+              <ReceiptMock />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path="firstBill/receipt"
+          element={
+            <SuspensedView>
+              <ReceiptFirstBill />
             </SuspensedView>
           }
         />
@@ -651,7 +834,7 @@ const PrivateRoutes = () => {
 
         {/* Start ระบบส่งเงิน */}
         <Route
-          path='sendmoney/CreateSendMoney'
+          path="sendmoney/CreateSendMoney"
           element={
             <SuspensedView>
               <CreateSendMoney />
@@ -659,7 +842,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='sendmoney/SendMoneySummary'
+          path="sendmoney/SendMoneySummary"
           element={
             <SuspensedView>
               <SendMoneySummary />
@@ -670,7 +853,7 @@ const PrivateRoutes = () => {
 
         {/* Start โครงสร้างพนักงาน */}
         <Route
-          path='employee/EmpStructure'
+          path="employee/EmpStructure"
           element={
             <SuspensedView>
               <EmpStructure />
@@ -681,7 +864,7 @@ const PrivateRoutes = () => {
 
         {/* Start ระบบยืม */}
         <Route
-          path='borrowproduct'
+          path="borrowproduct"
           element={
             <SuspensedView>
               <BorrowProduct />
@@ -689,7 +872,7 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path='borrowproduct/scanbarcode'
+          path="borrowproduct/scanbarcode"
           element={
             <SuspensedView>
               <BorrowScanBarCode />
@@ -700,7 +883,7 @@ const PrivateRoutes = () => {
 
         {/* Start รายงานระบบขาย */}
         <Route
-          path='report/sale'
+          path="report/sale"
           element={
             <SuspensedView>
               <ReportSale />
@@ -710,10 +893,10 @@ const PrivateRoutes = () => {
         {/* End รายงานระบบขาย */}
 
         {/* Page Not Found */}
-        <Route path='*' element={<Navigate to='/error/404' />} />
+        <Route path="*" element={<Navigate to="/error/404" />} />
       </Route>
     </Routes>
-  )
-}
+  );
+};
 
-export { PrivateRoutes }
+export { PrivateRoutes };

@@ -36,7 +36,7 @@ export const CardStatusCustomer: FC<Props> = ({
                                 <div
                                     className="d-flex justify-content-between flex-column flex-sm-row align-items-center h-auto h-sm-50px px-5 py-4 rounded-top"
                                     style={{
-                                        backgroundColor: isSelected ? '#28a745' : '#3777bc',
+                                        backgroundColor: isSelected ? '#33CC66' : '#E0E0E0',
                                     }}
                                 >
                                     <div className="d-flex align-items-center">
@@ -44,16 +44,16 @@ export const CardStatusCustomer: FC<Props> = ({
                                             iconName="abstract-26"
                                             className="fs-3 me-2 me-sm-5 text-white d-none d-sm-block"
                                         />
-                                        <span className={`fw-bold m-0 text-white ${styles.label}`}>
+                                        <span className={`fw-bold m-0 ${styles.label}`}>
                                             เลขที่สัญญา {cust.CONTNO}
                                         </span>
                                     </div>
                                     <div className="d-flex align-items-center">
                                         <KTIcon
                                             iconName="abstract-26"
-                                            className="fs-3 me-2 me-sm-5 text-white d-none d-sm-block"
+                                            className="fs-3 me-2 me-sm-5 d-none d-sm-block"
                                         />
-                                        <span className={`fw-bold m-0 text-white ${styles.label}`}>
+                                        <span className={`fw-bold m-0 ${styles.label}`}>
                                             {cust.CustomerStatus} ({cust.Contract.AgingCumulativeDetail}){' '}
                                             {cust.Contract.StDate}
                                         </span>

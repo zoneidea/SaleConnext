@@ -83,7 +83,7 @@ const EditFinishInDay: React.FC = () => {
   const [isLoadingFinish, setIsLoadingFinish] = useState<boolean>(false)
   const [images, setImages] = useState<ImagesType | null>(null)
 
-  // สร้าง state สำหรับพนักงานขาย, ผู้แนะนำ, ช่างติดตั้ง
+  // สร้าง state สำหรับพดกงานขาย, ผู้แนะนำ, ช่างติดตั้ง
   const [empInTeam, setEmpInTeam] = useState<any[]>([])
   const [adviserList, setAdviserList] = useState<any[]>([])
   const [installerList, setInstallerList] = useState<any[]>([])
@@ -528,18 +528,14 @@ const EditFinishInDay: React.FC = () => {
   // }
 
   // แปลงวันที่เป็นรูปแบบไทย
-  const formatThaiDate = (dateString: string): string => {
-    if (!dateString) return '-'
-    const monthsThai = [
-      'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
-      'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
-    ]
-    const date = new Date(dateString)
-    const day = date.getDate()
-    const month = monthsThai[date.getMonth()]
-    const year = date.getFullYear() + 543
-    return `${day} ${month} ${year}`
-  }
+  const formatToBE = (isoDate?: string) => {
+    if (!isoDate) return '';
+    const d = new Date(isoDate);
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yyyy = d.getFullYear() + 543;
+    return `${dd}/${mm}/${yyyy}`;
+  };
 
   return (
     <>
@@ -566,34 +562,57 @@ const EditFinishInDay: React.FC = () => {
         ) : data.length > 0 ? (
           <>
             <div className='card mb-10'>
-              {/* หัวกระดาน */}
-              <div className='card-body d-flex align-items-center'>
-                <div className='flex-grow-1'>
-                  <div className={`text-gray-800 text-hover-primary ${styles.label}`}>
-                    {`REFNO: ${item?.REFNO || refnoFromUpdate}`}
-                  </div>
-                  <span className={`${data?.[0]?.STATUS === 'DRAFT' ? 'text-warning' : 'text-danger'} fw-semibold d-block fs-6`}>
-                    {`สถานะ: ${data?.[0]?.STATUS === 'DRAFT' ? 'ยังไม่ได้ตรวจสอบ' : 'แก้ไข'}`}
-                  </span>
-                  {data?.[0]?.CHECKERCOMMENT?.[0]?.COMMENT && (
-                    <span className='text-danger fw-semibold d-block fs-6'>
-                      {`คอมเมนต์: ${data[0].CHECKERCOMMENT[0].COMMENT}`}
-                    </span>
-                  )}
-                </div>
-              </div>
 
               {/* เนื้อหาแต่ละขั้นตอน */}
-              <div className='card-body d-flex align-items-center py-5 pt-6'>
+              <div className='card-body d-flex align-items-center py-5 pt-10'>
                 <div className='col-12'>
+
+                  {/* 1. ตรวจสอบสถานะลูกค้า */}
+                  <button
+                    onClick={async () => {
+                      await Swal.fire({
+                        icon: 'info',
+                        title: 'ไม่สามารถแก้ไขได้',
+                        confirmButtonText: 'ตกลง',
+                      });
+                      return;
+                    }}
+                    className='w-100 text-start border-0 bg-transparent p-0'
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div className='d-flex align-items-center pb-8'>
+                      <span className={`bullet bullet-vertical h-40px ${data[0].CUSTOMERSTATUS.length === 0 ? 'bg-danger' : 'bg-success'}`}></span>
+                      <div className='form-check form-check-custom form-check-solid mx-5'></div>
+                      <div className='flex-grow-1'>
+                        <div className={`${styles.label}`}>1. ตรวจสอบสถานะลูกค้า</div>
+                        {data[0].CUSTOMERSTATUS.length !== 0 && (
+                          <span className={`text-gray-700 d-block ${styles.label}`}>
+                            {`ค้นหาจาก: ${data[0].CUSTOMERSTATUS[0].Searchtext || ''}`}
+                            <br />
+                            {data[0]?.CUSTOMERSTATUS?.[0]?.CustomerName && (
+                              <p>ชื่อลูกค้า: {data[0].CUSTOMERSTATUS[0].CustomerName}</p>
+                            )}
+                            {data[0]?.CUSTOMERSTATUS?.[0]?.Message && (
+                              <p>{data[0].CUSTOMERSTATUS[0].Message}</p>
+                            )}
+                            {data[0]?.CUSTOMERSTATUS?.[0]?.message && (
+                              <p>{data[0].CUSTOMERSTATUS[0].message}</p>
+                            )}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </button>
 
                   {/* 2. ตรวจสอบสถานะลูกค้า */}
                   <button
                     onClick={async () => {
-                      const ok = await handleClick('updateSalesSatusCust')
-                      if (ok) {
-                        navigate('/sale/update/updateSalesSatusCust', { state: data[0] })
-                      }
+                      await Swal.fire({
+                        icon: 'info',
+                        title: 'ไม่สามารถแก้ไขได้',
+                        confirmButtonText: 'ตกลง',
+                      });
+                      return;
                     }}
                     className='w-100 text-start border-0 bg-transparent p-0'
                     style={{ cursor: 'pointer' }}
@@ -625,36 +644,29 @@ const EditFinishInDay: React.FC = () => {
                   {/* 3. เลือกแพ็คเกจ */}
                   <button
                     onClick={async () => {
-                      // ตรวจสอบว่า PDPA กับ CUSTOMERSTATUS ผ่านหรือยัง
-                      if (data[0]?.CUSTOMERSTATUS.length === 0) {
-                        await Swal.fire({
-                          icon: 'error',
-                          title: 'เกิดข้อผิดพลาด',
-                          text: 'กรุณาตรวจสอบสถานะลูกค้าก่อน',
-                          confirmButtonText: 'ตกลง',
-                        });
-                        return;
-                      }
-
-                      // ถ้าผ่าน ให้ navigate ไปหน้าที่ต้องการ
                       navigate('/sale/editFinishInDay/UpdateSalesPackageFinishDay', { state: data[0] });
                     }}
                     className="w-100 text-start border-0 bg-transparent p-0"
                     style={{ cursor: 'pointer' }}
                   >
                     <div className='d-flex align-items-center pb-8'>
-                      <span className={`bullet bullet-vertical h-40px ${data[0].PRODUCT.length === 0 ? 'bg-danger' : 'bg-success'}`}></span>
+                      <span className={`bullet bullet-vertical h-40px ${data[0]?.PRODUCT.length === 0 ? 'bg-danger' : 'bg-success'}`}></span>
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className={`${styles.label}`}>2. เลือกแพ็คเกจ</div>
-                        {data[0].PRODUCT.length !== 0 && (
+                        {data[0]?.PRODUCT.length !== 0 && (
                           <span className={`text-gray-700 d-block ${styles.label}`}>
-                            {`${data[0].PRODUCT[0].ItemDescription}`}
+                            {`${data[0]?.PRODUCT[0]?.ItemDescription}`}
                           </span>
                         )}
-                        {data[0].PRODUCT.length > 0 && data[0].PRODUCT[0].Package.length > 0 && (
+                        {data[0]?.PRODUCT.length !== 0 && data[0]?.PRODUCT[1]?.ItemDescription && (
                           <span className={`text-gray-700 d-block ${styles.label}`}>
-                            {`${data[0].PRODUCT[0].Package[0].PACKAGETITLE || 'ไม่มีแพ็คเกจ'}`}
+                            {`สินค้าบันเดิล: ${data[0]?.PRODUCT[1]?.ItemDescription}`}
+                          </span>
+                        )}
+                        {data[0]?.PRODUCT.length > 0 && data[0]?.PRODUCT[0]?.Package.length > 0 && (
+                          <span className={`text-gray-700 d-block ${styles.label}`}>
+                            {`${data[0]?.PRODUCT[0]?.Package[0]?.PACKAGETITLE || 'ไม่มีแพ็คเกจ'}`}
                           </span>
                         )}
                       </div>
@@ -664,14 +676,13 @@ const EditFinishInDay: React.FC = () => {
                   {/* 4. ส่วนลด / เครื่องเทิร์น / ของแถม */}
                   <a
                     style={{ cursor: 'pointer', textDecoration: 'none' }}
-                    onClick={() => {
-                      if (data[0].CUSTOMERSTATUS.length === 0) {
-                        Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'กรุณาตรวจสอบข้อมูลลูกค้าก่อน', confirmButtonText: 'ตกลง' });
-                      } else {
-                        handleClick('updateSaleDiscount').then(ok => {
-                          if (ok) navigate('/sale/update/updateSaleDiscount', { state: data[0] });
-                        });
-                      }
+                    onClick={async () => {
+                      await Swal.fire({
+                        icon: 'info',
+                        title: 'แก้ไขได้จากขั้นตอน เลือกแพ็คเกจ เท่านั้น',
+                        confirmButtonText: 'ตกลง',
+                      });
+                      return;
                     }}
                   >
                     <div className='d-flex align-items-center pb-8'>
@@ -717,57 +728,6 @@ const EditFinishInDay: React.FC = () => {
                       </div>
                     </div>
                   </a>
-
-                  {/* 5. เลือกพนักงานขาย */}
-                  {/* <a
-                    style={{ cursor: 'pointer' }}
-                    onClick={() => {
-                      if (data[0].CUSTOMERSTATUS.length === 0) {
-                        Swal.fire({
-                          icon: 'error',
-                          title: 'เกิดข้อผิดพลาด',
-                          text: 'กรุณาตรวจสอบข้อมูลลูกค้าก่อน',
-                          confirmButtonText: 'ตกลง'
-                        })
-                        return
-                      }
-                      if (data[0].DISCOUNT.length === 0) {
-                        Swal.fire({
-                          icon: 'error',
-                          title: 'เกิดข้อผิดพลาด',
-                          text: 'กรุณาทำขั้นตอนก่อนหน้าให้เสร็จก่อน',
-                          confirmButtonText: 'ตกลง'
-                        })
-                        return
-                      }
-                      handleCheckEmpSale()
-                    }}
-                  >
-                    <div className='d-flex align-items-center pb-8'>
-                      <span className={`bullet bullet-vertical h-40px ${data[0].SALEEMPLOYEE.length === 0 ? 'bg-danger' : 'bg-success'}`}></span>
-                      <div className='form-check form-check-custom form-check-solid mx-5'></div>
-                      <div className='flex-grow-1'>
-                        <div className={`${styles.label}`}>5. เลือกพนักงานขาย</div>
-                        {data[0].SALEEMPLOYEE.length !== 0 && (
-                          <>
-                            <span className={`text-gray-700 d-block ${styles.label}`}>
-                              {`พนักงานขาย: ${data[0].SALEEMPLOYEE[0].SALEEMPLOYEE.FName} ${data[0].SALEEMPLOYEE[0].SALEEMPLOYEE.LName}`}
-                            </span>
-                            {data[0].SALEEMPLOYEE[0].ADVISER && (
-                              <span className={`text-gray-700 d-block ${styles.label}`}>
-                                {`ผู้แนะนำ: ${data[0].SALEEMPLOYEE[0].ADVISER.FName} ${data[0].SALEEMPLOYEE[0].ADVISER.LName}`}
-                              </span>
-                            )}
-                            {data[0].SALEEMPLOYEE[0].INSTALLER && (
-                              <span className={`text-gray-700 d-block ${styles.label}`}>
-                                {`ช่างติดตั้ง: ${data[0].SALEEMPLOYEE[0].INSTALLER.FName} ${data[0].SALEEMPLOYEE[0].INSTALLER.LName}`}
-                              </span>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </a> */}
 
                   <button
                     onClick={async () => {
@@ -864,7 +824,7 @@ const EditFinishInDay: React.FC = () => {
                     onClick={() => {
                       handleClick('updateAddress').then(ok => {
                         if (ok) {
-                          navigate('/sale/update/updateAddress', { state: data[0] })
+                          navigate('/sale/editFinishInDay/UpdateSaleAddressFinishDay', { state: { ...data[0] } });
                         }
                       })
                     }}
@@ -896,20 +856,12 @@ const EditFinishInDay: React.FC = () => {
                   {/* PDPA */}
                   <button
                     onClick={async () => {
-                      if (data[0]?.ADDRESS.length === 0) {
-                        await Swal.fire({
-                          icon: 'error',
-                          title: 'เกิดข้อผิดพลาด',
-                          text: 'กรุณาบันทึกข้อมูลให้ครบทุกส่วน',
-                          confirmButtonText: 'ตกลง',
-                        });
-                        return;
-                      } if (data[0]?.PDPA.length > 0) {
-                        return;
-                      }
-
-                      // ถ้าผ่าน ให้ navigate ไปหน้าที่ต้องการ
-                      navigate('/sale/pdpa', { state: data[0] });
+                      await Swal.fire({
+                        icon: 'info',
+                        title: 'ไม่สามารถแก้ไขได้',
+                        confirmButtonText: 'ตกลง',
+                      });
+                      return;
                     }}
                     className='w-100 text-start border-0 bg-transparent p-0'
                     style={{ cursor: 'pointer' }}
@@ -933,7 +885,7 @@ const EditFinishInDay: React.FC = () => {
                     onClick={() => {
                       handleClick('UpdateSalesContract').then(ok => {
                         if (ok) {
-                          navigate('/sale/update/UpdateSalesContract', { state: data[0] })
+                          navigate('/sale/editFinishInDay/UpdateSalesContractFinishDay', { state: data[0] })
                         }
                       })
                     }}
@@ -948,7 +900,7 @@ const EditFinishInDay: React.FC = () => {
                         {data[0].CONTRACT.length !== 0 && (
                           <span className={`text-gray-700 d-block ${styles.label}`}>
                             {/* {`วันที่ทำสัญญา: ${data[0].CONTRACT[0].createdAt && formatThaiDate(data[0].CONTRACT[0].createdAt)}`} */}
-                            {`วันที่ทำสัญญา: ${data[0].CONTRACT[0].createdAt && (data[0].CONTRACT[0].createdAt)}`}
+                            {`วันที่ทำสัญญา: ${formatToBE(data[0].CONTRACT[0].createdAt && (data[0].CONTRACT[0].createdAt))}`}
                           </span>
                         )}
                       </div>
@@ -958,6 +910,15 @@ const EditFinishInDay: React.FC = () => {
                   {/* 9. การชำระเงิน / นัดชำระ */}
                   <button
                     onClick={() => {
+                      if (data[0]?.NEWREFNO.length > 0) {
+                        Swal.fire({
+                          icon: 'info',
+                          title: 'ไม่สามารถแก้ไขได้',
+                          confirmButtonText: 'ตกลง',
+                        });
+                        return;
+                      }
+
                       handleClick('UpdateSalesContract').then(ok => {
                         if (ok) {
                           // navigate('/firstBill/CreateFirstBill', { state: data[0] })
@@ -1025,7 +986,8 @@ const EditFinishInDay: React.FC = () => {
             {/* ปุ่มย้อนกลับ (Desktop) */}
             <div className='d-none d-xl-flex justify-content-between align-items-center mt-5 mb-10'>
               <Link
-                to='/sale/overview'
+                to='/sale/cancel'
+                state={data[0]}
                 className={`${styles.btnSecondary}`}
               >
                 ย้อนกลับ
@@ -1043,7 +1005,8 @@ const EditFinishInDay: React.FC = () => {
                 zIndex: 1050,
               }}
             >
-              <Link to='/sale/overview'
+              <Link to='/sale/cancel'
+                state={data[0]}
                 className={`${styles.btnSecondary}`}
               >
                 ย้อนกลับ

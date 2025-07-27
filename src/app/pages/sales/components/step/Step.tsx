@@ -3698,18 +3698,14 @@ const Step: React.FC = () => {
   // }
 
   // แปลงวันที่เป็นรูปแบบไทย
-  const formatThaiDate = (dateString: string): string => {
-    if (!dateString) return '-'
-    const monthsThai = [
-      'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
-      'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
-    ]
-    const date = new Date(dateString)
-    const day = date.getDate()
-    const month = monthsThai[date.getMonth()]
-    const year = date.getFullYear() + 543
-    return `${day} ${month} ${year}`
-  }
+  const formatToBE = (isoDate?: string) => {
+    if (!isoDate) return '';
+    const d = new Date(isoDate);
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yyyy = d.getFullYear() + 543;
+    return `${dd}/${mm}/${yyyy}`;
+  };
 
   return (
     <>
@@ -3764,7 +3760,6 @@ const Step: React.FC = () => {
                         await Swal.fire({
                           icon: 'info',
                           title: 'ไม่สามารถแก้ไขได้',
-                          text: 'ไม่สามารถแก้ไขสถานะลูกค้าได้',
                           confirmButtonText: 'ตกลง',
                         });
                         return;
@@ -3804,12 +3799,10 @@ const Step: React.FC = () => {
                   {/* 3. เลือกแพ็คเกจ */}
                   <button
                     onClick={async () => {
-                      // ตรวจสอบว่า PDPA กับ CUSTOMERSTATUS ผ่านหรือยัง
-                      if (data[0]?.CUSTOMERSTATUS.length === 0) {
+                      if (data[0]?.NEWREFNO && data[0].NEWREFNO.length > 0) {
                         await Swal.fire({
-                          icon: 'error',
-                          title: 'เกิดข้อผิดพลาด',
-                          text: 'กรุณาตรวจสอบสถานะลูกค้าก่อน',
+                          icon: 'info',
+                          title: 'ไม่สามารถแก้ไขได้',
                           confirmButtonText: 'ตกลง',
                         });
                         return;
@@ -3822,18 +3815,23 @@ const Step: React.FC = () => {
                     style={{ cursor: 'pointer' }}
                   >
                     <div className='d-flex align-items-center pb-8'>
-                      <span className={`bullet bullet-vertical h-40px ${data[0].PRODUCT.length === 0 ? 'bg-danger' : 'bg-success'}`}></span>
+                      <span className={`bullet bullet-vertical h-40px ${data[0]?.PRODUCT.length === 0 ? 'bg-danger' : 'bg-success'}`}></span>
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className={`${styles.label}`}>2. เลือกแพ็คเกจ</div>
-                        {data[0].PRODUCT.length !== 0 && (
+                        {data[0]?.PRODUCT.length !== 0 && (
                           <span className={`text-gray-700 d-block ${styles.label}`}>
-                            {`${data[0].PRODUCT[0].ItemDescription}`}
+                            {`สินค้าหลัก: ${data[0]?.PRODUCT[0]?.ItemDescription}`}
                           </span>
                         )}
-                        {data[0].PRODUCT.length > 0 && data[0].PRODUCT[0].Package.length > 0 && (
+                        {data[0].PRODUCT.length !== 0 && data[0]?.PRODUCT[1]?.ItemDescription && (
                           <span className={`text-gray-700 d-block ${styles.label}`}>
-                            {`${data[0].PRODUCT[0].Package[0].PACKAGETITLE || 'ไม่มีแพ็คเกจ'}`}
+                            {`สินค้าบันเดิล: ${data[0]?.PRODUCT[1]?.ItemDescription}`}
+                          </span>
+                        )}
+                        {data[0]?.PRODUCT.length > 0 && data[0]?.PRODUCT[0]?.Package.length > 0 && (
+                          <span className={`text-gray-700 d-block ${styles.label}`}>
+                            {`แพ็คเกจ: ${data[0]?.PRODUCT[0]?.Package[0]?.PACKAGETITLE || 'ไม่มีแพ็คเกจ'}`}
                           </span>
                         )}
                       </div>
@@ -3849,7 +3847,9 @@ const Step: React.FC = () => {
                       } if (data[0].PRODUCT.length === 0) {
                         Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'กรุณาเลือกแพ็คเกจก่อน', confirmButtonText: 'ตกลง' });
                       } if (data[0].PRODUCT.length > 0) {
-                        Swal.fire({ icon: 'info', title: 'ไม่สามารถทำรายการจากขั้นตอนนี้ได้', text: 'เปลี่ยน ส่วนลด / เครื่องเทิร์น / ของแถม ได้จากขั้นตอนเลือกแพ็คเกจ', confirmButtonText: 'ตกลง' });
+                        Swal.fire({ icon: 'info', title: 'แก้ไขได้จากขั้นตอน เลือกแพ็คเกจ เท่านั้น', confirmButtonText: 'ตกลง' });
+                      } if (data[0]?.NEWREFNO.length > 0) {
+                        Swal.fire({ icon: 'info', title: 'ไม่สามารถแก้ไขได้', confirmButtonText: 'ตกลง' });
                       } else {
                         handleClick('updateSaleDiscount').then(ok => {
                           if (ok) navigate('/sale/update/updateSaleDiscount', { state: data[0] });
@@ -3962,6 +3962,13 @@ const Step: React.FC = () => {
                           confirmButtonText: 'ตกลง',
                         });
                         return;
+                      } if (data[0]?.NEWREFNO && data[0].NEWREFNO.length > 0) {
+                        await Swal.fire({
+                          icon: 'info',
+                          title: 'ไม่สามารถแก้ไขได้',
+                          confirmButtonText: 'ตกลง',
+                        });
+                        return;
                       }
 
                       // ถ้าผ่าน ให้ navigate ไปหน้าที่ต้องการ
@@ -4012,11 +4019,21 @@ const Step: React.FC = () => {
                   {/* 6. บันทึกข้อมูลลูกค้า */}
                   <button
                     onClick={() => {
+                      if (data[0]?.NEWREFNO && data[0].NEWREFNO.length > 0) {
+                        Swal.fire({
+                          icon: 'info',
+                          title: 'ไม่สามารถแก้ไขได้',
+                          confirmButtonText: 'ตกลง',
+                        });
+                        return; // ออกจาก function
+                      }
+
+                      // ถ้าผ่านเงื่อนไข NEWREFNO แล้ว ค่อย handleClick และ navigate
                       handleClick('updateCustDetail').then(ok => {
                         if (ok) {
-                          navigate('/sale/update/updateCustDetail', { state: data[0] })
+                          navigate('/sale/update/updateCustDetail', { state: data[0] });
                         }
-                      })
+                      });
                     }}
                     className='w-100 text-start border-0 bg-transparent p-0'
                     style={{ cursor: 'pointer' }}
@@ -4045,6 +4062,14 @@ const Step: React.FC = () => {
                   {/* 7. บันทึกที่อยู่ลูกค้า */}
                   <button
                     onClick={() => {
+                      if (data[0]?.NEWREFNO && data[0].NEWREFNO.length > 0) {
+                        Swal.fire({
+                          icon: 'info',
+                          title: 'ไม่สามารถแก้ไขได้',
+                          confirmButtonText: 'ตกลง',
+                        });
+                        return; // ออกจาก function
+                      }
                       handleClick('updateAddress').then(ok => {
                         if (ok) {
                           navigate('/sale/update/updateAddress', { state: data[0] })
@@ -4091,11 +4116,17 @@ const Step: React.FC = () => {
                         await Swal.fire({
                           icon: 'info',
                           title: 'ไม่สามารถแก้ไขได้',
-                          text: 'ไม่สามารถแก้ไข PDPA ได้',
                           confirmButtonText: 'ตกลง',
                         });
                         return;
                       } if (data[0]?.PDPA.length > 0) {
+                        return;
+                      } if (data[0]?.NEWREFNO && data[0].NEWREFNO.length > 0) {
+                        await Swal.fire({
+                          icon: 'info',
+                          title: 'ไม่สามารถแก้ไขได้',
+                          confirmButtonText: 'ตกลง',
+                        });
                         return;
                       }
                       navigate('/sale/pdpa', { state: data[0] });
@@ -4122,7 +4153,8 @@ const Step: React.FC = () => {
                     onClick={() => {
                       handleClick('UpdateSalesContract').then(ok => {
                         if (ok) {
-                          navigate('/sale/update/UpdateSalesContract', { state: data[0] })
+                          // navigate('/sale/update/UpdateSalesContract', { state: data[0] })
+                          navigate('/sale/contract', { state: data[0] })
                         }
                       })
                     }}
@@ -4137,7 +4169,7 @@ const Step: React.FC = () => {
                         {data[0].CONTRACT.length !== 0 && (
                           <span className={`text-gray-700 d-block ${styles.label}`}>
                             {/* {`วันที่ทำสัญญา: ${data[0].CONTRACT[0].createdAt && formatThaiDate(data[0].CONTRACT[0].createdAt)}`} */}
-                            {`วันที่ทำสัญญา: ${data[0].CONTRACT[0].createdAt && (data[0].CONTRACT[0].createdAt)}`}
+                            {`วันที่ทำสัญญา: ${formatToBE(data[0].CONTRACT[0].createdAt && (data[0].CONTRACT[0].createdAt))}`}
                           </span>
                         )}
                       </div>

@@ -15,7 +15,7 @@ type Props = {
 
 // กำหนดตัวแปร URL ของแต่ละ API ไว้ก่อน (สมมติชื่อ)
 const API_URL_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT
-const VOID_RECEIPT_URL = `${API_URL_SALECONNEXT}/UpdatePayment/VoidReciept`
+const VOID_RECEIPT_URL = `${API_URL_SALECONNEXT}/UpdatePayment/VoidReceipt`
 const UPDATE_CONTACT_URL = `${API_URL_SALECONNEXT}/UpdateContact/VoidContract`
 // หรือถ้าชื่อจริงๆ เป็นอะไร ก็เปลี่ยนตามจริง
 
@@ -131,7 +131,7 @@ const CardBillRecieveMoney: FC<Props> = ({ payments, isLoading }) => {
 
               {/* Card body */}
               <div className='mb-3'>
-                <strong>ลูกค้า:</strong> {pay.CUSTOMERNAME ?? '-'}
+                <strong>ลูกค้า:</strong> {pay.CUSTOMERNAME ?? '-'} {pay.CUSTOMERLASTNAME}
               </div>
               <div className='mb-3'>
                 <strong>เลขบัตร:</strong> {pay.IDCARD ?? '-'}

@@ -797,7 +797,7 @@ const UpdateSalesContract: React.FC = () => {
                         showConfirmButton: false,
                     }).then(() => {
                         console.log(`matchedItem`, matchedItem);
-                        
+
                         navigate('/firstBill/CreateFirstBill', {
                             state: {
                                 item: item,
@@ -906,6 +906,16 @@ const UpdateSalesContract: React.FC = () => {
 
     {/****** matchedItem *******/ }
 
+    // ด้านบนของ component
+    const formatToBE = (isoDate?: string) => {
+        if (!isoDate) return '';
+        const d = new Date(isoDate);
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const yyyy = d.getFullYear() + 543;
+        return `${dd}/${mm}/${yyyy}`;
+    };
+
     return (
         <>
             <Content>
@@ -931,7 +941,7 @@ const UpdateSalesContract: React.FC = () => {
                         <div className='row my-7'>
                             <label className={`col-lg-4 text-muted ${styles.label}`}>วันที่ทำสัญญา</label>
                             <div className='col-lg-8'>
-                                <span className={`${styles.label}`}>{formattedDate}</span>
+                                <span className={`${styles.label}`}>{formatToBE(formattedDate)}</span>
                             </div>
                         </div>
 
@@ -1165,7 +1175,7 @@ const UpdateSalesContract: React.FC = () => {
                         type='button'
                         onClick={handleNextClick}
                     >
-                        ถัดไป
+                        บันทึกสัญญา
                     </button>
                     {/* <button
                         className={`btn btn-primary w-100 w-md-auto align-self-center h-50px ${!isDataComplete ? `disabled` : ``}`}
@@ -1200,7 +1210,7 @@ const UpdateSalesContract: React.FC = () => {
                         type='button'
                         onClick={handleNextClick}
                     >
-                        ถัดไป
+                        บันทึกสัญญา
                     </button>
                     {/* <button
                         className={`btn btn-primary w-auto ${!isDataComplete ? `disabled` : ``}`}

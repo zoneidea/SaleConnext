@@ -74,7 +74,7 @@
 
 import styles from '@/styles/style.module.css'
 import { KTIcon } from '../../../../../_metronic/helpers'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 
 interface StatusLabelProps {
     item: any
@@ -86,20 +86,20 @@ const FirstBillItemNumber: React.FC<StatusLabelProps> = ({ item }) => {
     let newRefNo, customer, telNo, product, productPackage, serialNumber, createdAt, statusTxt, dueDate;
 
     if (item.CUSTOMERDETAIL.length > 0) {
-        if (item.CUSTOMERDETAIL[0].CUSTOMERTYPE == 1) {
-            customer = <span className='text-gray-700 fw-semibold d-block'>{`${item.CUSTOMERDETAIL[0].CUSTOMERNAME}`}</span>
-            telNo = <span className='text-gray-700 fw-semibold d-block'>{`${item.CUSTOMERDETAIL[0].CUSTOMERMOBILE}`}</span>
+        if (item.CUSTOMERDETAIL[0]?.CUSTOMERTYPE == 1) {
+            customer = <span className='text-gray-700 fw-semibold d-block'>{`${item.CUSTOMERDETAIL[0]?.CUSTOMERNAME}`} {`${item.CUSTOMERDETAIL[0]?.CUSTOMELASTRNAME && item.CUSTOMERDETAIL[0]?.CUSTOMELASTRNAME}`}</span>
+            telNo = <span className='text-gray-700 fw-semibold d-block'>{`${item.CUSTOMERDETAIL[0]?.CUSTOMERMOBILE}`}</span>
         } else {
-            customer = <span className='text-gray-700 fw-semibold d-block'>{`${item.CUSTOMERDETAIL[0].CUSTOMERNAME}`}</span>
-            telNo = <span className='text-gray-700 fw-semibold d-block'>{`${item.CUSTOMERDETAIL[0].CUSTOMERMOBILE}`}</span>
+            customer = <span className='text-gray-700 fw-semibold d-block'>{`${item.CUSTOMERDETAIL[0]?.CUSTOMERNAME}`}</span>
+            telNo = <span className='text-gray-700 fw-semibold d-block'>{`${item.CUSTOMERDETAIL[0]?.CUSTOMERMOBILE}`}</span>
         }
     }
 
     if (item.PRODUCT.length > 0) {
-        product = <span className='text-gray-700 fw-semibold d-block'>{`${item.PRODUCT[0].ItemDescription}`}</span>
-        serialNumber = <span className='text-gray-700 fw-semibold d-block'>{`${item.PRODUCT[0].SerialNo}`}</span>
-        if (item.PRODUCT[0].Package.length > 0) {
-            productPackage = <span className='text-gray-700 fw-semibold d-block'>{`${item.PRODUCT[0].Package[0].PACKAGETITLE}`}</span>
+        product = <span className='text-gray-700 fw-semibold d-block'>{`${item.PRODUCT[0]?.ItemDescription}`}</span>
+        serialNumber = <span className='text-gray-700 fw-semibold d-block'>{`${item.PRODUCT[0]?.SerialNo}`}</span>
+        if (item.PRODUCT[0]?.Package.length > 0) {
+            productPackage = <span className='text-gray-700 fw-semibold d-block'>{`${item.PRODUCT[0]?.Package[0]?.PACKAGETITLE}`}</span>
         }
     }
 
@@ -117,6 +117,15 @@ const FirstBillItemNumber: React.FC<StatusLabelProps> = ({ item }) => {
         statusTxt = <span className='text-danger fw-semibold d-block'>{`รอตรวจสอบ`}</span>
     }
 
+    const formatToBE = (isoDate?: string) => {
+        if (!isoDate) return '';
+        const d = new Date(isoDate);
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const yyyy = d.getFullYear() + 543;
+        return `${dd}/${mm}/${yyyy}`;
+    };
+
     return (
         // <Link to='/firstBill/CreateFirstBill' state={item}>
         <Link
@@ -132,7 +141,7 @@ const FirstBillItemNumber: React.FC<StatusLabelProps> = ({ item }) => {
                 <div className='flex-grow-1'>
                     <div className='row'>
                         {/* คอลัมน์ซ้าย: Label */}
-                        <div className='col-5'>
+                        <div className='col-6'>
                             <div className={`fw-bold text-gray-700 d-block mb-2 ${styles.fontSize}`}>
                                 เลขที่สัญญา:
                             </div>
@@ -142,37 +151,31 @@ const FirstBillItemNumber: React.FC<StatusLabelProps> = ({ item }) => {
                             <div className={`fw-bold text-gray-700 d-block mb-2 ${styles.fontSize}`}>
                                 S/N:
                             </div>
-                            {/* <div className={`fw-bold text-gray-700 d-block mb-2 ${styles.fontSize}`}>
-                                สินค้า:
-                            </div> */}
-                            <div className={`fw-bold text-gray-700 d-block ${styles.fontSize}`}>
-                                วันทำสัญญา:
+                            <div className={`fw-bold text-gray-700 d-block mb-2 ${styles.fontSize}`}>
+                                วันที่ทำสัญญา:
                             </div>
-                            {/* <div className={`fw-bold text-gray-700 d-block ${styles.fontSize}`}>
-                                วันนัด:
-                            </div> */}
+                            <div className={`fw-bold text-gray-700 d-block mb-2 ${styles.fontSize}`}>
+                                วันที่นัดชำระ:
+                            </div>
                         </div>
 
                         {/* คอลัมน์ขวา: Value */}
                         <div className='col-6'>
                             <div className={`text-gray-800 d-block mb-2 ${styles.fontSize}`}>
-                                {'-'}
+                                {item.CONTNO || "-"}
                             </div>
                             <div className={`text-gray-800 d-block mb-2 ${styles.fontSize}`}>
-                                {customer || '-'}
+                                {customer || "-"}
                             </div>
                             <div className={`text-gray-800 d-block mb-2 ${styles.fontSize}`}>
-                                {serialNumber || '-'}
+                                {serialNumber || "-"}
                             </div>
-                            {/* <div className={`text-gray-800 d-block mb-2 ${styles.fontSize}`}>
-                                {product || '-'}
-                            </div> */}
-                            <div className={`text-gray-800 d-block ${styles.fontSize}`}>
-                                {createdAt || '-'}
+                            <div className={`text-gray-800 d-block mb-2 ${styles.fontSize}`}>
+                                {formatToBE(item.CREATEDATE)}
                             </div>
-                            {/* <div className={`text-gray-800 d-block mb-2 ${styles.fontSize}`}>
-                                {'-'}
-                            </div> */}
+                            <div className={`text-gray-800 d-block mb-2 ${styles.fontSize}`}>
+                                {formatToBE(item.SCHEDULE?.[0]?.DUEDATE ?? item.firstDueDate)}
+                            </div>
                         </div>
                     </div>
                 </div>

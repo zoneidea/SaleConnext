@@ -18,6 +18,9 @@ const SummaryStockOnlyMe: React.FC<Props> = ({ initialProduct }) => {
 
     const productList = Object.values(groupedProducts);
 
+    // คำนวณยอดรวมทั้งหมด
+    const totalCount = productList.reduce((sum, p) => sum + p.count, 0);
+
     return (
         <div className="card">
             <div className="card-header border-0 pt-5">
@@ -35,19 +38,28 @@ const SummaryStockOnlyMe: React.FC<Props> = ({ initialProduct }) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {productList.map((item, index) => (
-                                <tr key={index}>
-                                    <td className="text-gray-900 fw-bold">
-                                        {item.description}
-                                    </td>
-                                    <td className="fw-semibold fs-6">
-                                        {item.count}
-                                    </td>
-                                </tr>
-                            ))}
-                            {productList.length === 0 && (
+                            {productList.length > 0 ? (
+                                productList.map((item, index) => (
+                                    <tr key={index}>
+                                        <td className="text-gray-900 fw-bold">
+                                            {item.description}
+                                        </td>
+                                        <td className="fw-semibold fs-6">
+                                            {item.count}
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
                                 <tr>
                                     <td colSpan={2} className="text-center text-muted">ไม่มีสินค้าในคลัง</td>
+                                </tr>
+                            )}
+
+                            {/* แถวรวมยอดทั้งหมด */}
+                            {productList.length > 0 && (
+                                <tr className="border-top">
+                                    <td className="fw-bold text-muted">รวม</td>
+                                    <td className="fw-bold">{totalCount}</td>
                                 </tr>
                             )}
                         </tbody>

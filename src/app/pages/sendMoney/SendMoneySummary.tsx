@@ -6,6 +6,7 @@ import Swal from 'sweetalert2'
 import withReactContent from 'sweetalert2-react-content'
 import Barcode from 'react-barcode'
 import dayjs from 'dayjs'
+import styles from '@/styles/style.module.css'
 
 interface LocationState {
     responseData?: any
@@ -66,13 +67,14 @@ const SendMoneySummary: React.FC = () => {
     const channelName = itemData.CHANNELNAME || ''
     const channelItemName = itemData.CHANNELITEMNAME || ''
     const sendDate = itemData.SENDDATE || ''
+    const barcode = itemData.BARCODE || ''
+    const barcodeText = itemData.BARCODETEXT || ''
     const ref1 = itemData.REFERENCE1 || ''
     const ref2 = itemData.REFERENCE2 || ''
     const amount = itemData.AMOUNT || 0
 
     const formattedSendDate = dayjs(sendDate).format('DD/MM/YYYY')
     const formattedAmount = amount.toLocaleString('en-US')
-    const barcodeValue = ref2
 
     return (
         <div className='d-flex justify-content-center'>
@@ -82,7 +84,10 @@ const SendMoneySummary: React.FC = () => {
                 </div>
 
                 <div className='d-flex justify-content-center align-items-center mb-10'>
-                    <Barcode value={barcodeValue} format='CODE128' />
+                    <Barcode
+                        value={barcodeText}
+                        format='CODE128'
+                    />
                 </div>
 
                 <div className='p-4 fs-5 flex justify-content-center align-items-center'>
@@ -154,7 +159,10 @@ const SendMoneySummary: React.FC = () => {
                     zIndex: 1050,
                 }}
             >
-                <button className='btn btn-primary w-auto' onClick={() => navigate('/sendmoney')}>
+                <button
+                    className={`${styles.btnPrimary}`}
+                    onClick={() => navigate('/sendmoney')}
+                >
                     จบการทำงาน
                 </button>
             </div>
