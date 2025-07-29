@@ -254,7 +254,7 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({
   item,
   onDelete,
 }) => {
-  console.log(`item`, item);
+  // console.log(`item`, item);
 
   const API_URL_GET_ALLCONTRACT = import.meta.env.VITE_APP_API_MONGO;
   const DEL_CONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/DelContract`;
@@ -338,7 +338,7 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({
       if (result.isConfirmed) {
         try {
           const response = await axios.post(DEL_CONTRACT_URL, { REFNO: refno });
-          console.log("ลบข้อมูลสำเร็จ:", response.data);
+          // console.log("ลบข้อมูลสำเร็จ:", response.data);
           Swal.fire({
             text: "ข้อมูลถูกลบเรียบร้อยแล้ว",
             icon: "success",

@@ -881,12 +881,12 @@ const UpdateSaleDiscountFinishDay: React.FC = () => {
 
     const { item, SaveProductData, REFNO } = location.state as UpdatePackageState;
 
-    console.log(`item`, item);
+    // console.log(`item`, item);
 
     // ให้ item อ้างอิง matchedItem เพื่อไม่ต้องแก้ส่วนอื่นเยอะ
     const refno = REFNO;
     const productContract = item.PRODUCT;
-    console.log(`productContract`, productContract);
+    // console.log(`productContract`, productContract);
 
     // useEffect(() => {
     //     if (!matchedItem?.DISCOUNT?.length) return;
@@ -1049,7 +1049,7 @@ const UpdateSaleDiscountFinishDay: React.FC = () => {
             // console.log("Found TradeIn Brand Name:", selectedTradeInBrand.TRADEINBRANDNAME);
         } else {
             setSelectedTradeInBrandName(""); // รีเซ็ตค่าเมื่อไม่มีการเลือก
-            console.log("No TradeIn Brand Name Found");
+            // console.log("No TradeIn Brand Name Found");
         }
     }, [selectedTurnId, tradeInBrand]);
 

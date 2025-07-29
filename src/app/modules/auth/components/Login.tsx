@@ -278,6 +278,10 @@ export function Login() {
     },
   });
 
+  const hasFieldErrors = Boolean(
+    formik.errors.username || formik.errors.password
+  );
+
   return (
     <div className="d-flex justify-content-center">
       <form
@@ -360,13 +364,13 @@ export function Login() {
             className="btn btn-primary d-flex justify-content-center align-items-center"
             disabled={formik.isSubmitting || !formik.isValid || loading}
           >
-            {loading ? (
+            {loading && !hasFieldErrors ? (
               <>
                 <span
                   className="spinner-border spinner-border-sm"
                   role="status"
                   aria-hidden="true"
-                ></span>
+                />
                 <span className={`ms-2 ${styles.fontSize}`}>กำลังโหลด...</span>
               </>
             ) : (

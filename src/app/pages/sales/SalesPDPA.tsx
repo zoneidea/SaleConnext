@@ -1143,7 +1143,7 @@ const SalesPDPA: React.FC = () => {
 
   const location = useLocation();
   const item = (location.state as ItemProps) || [];
-  console.log(`item`, item);
+  // console.log(`item`, item);
 
   const { auth } = useAuth();
   const EmpId = auth?.data?.[0]?.EmpId || "";
@@ -1178,7 +1178,7 @@ const SalesPDPA: React.FC = () => {
 
   // state ตัวเก็บ matchedItem
   const [matchedItem, setMatchedItem] = useState<ItemProps | null>(null);
-  console.log(`matchedItem`, matchedItem);
+  // console.log(`matchedItem`, matchedItem);
 
   const { REFNO } = useUUIDStore();
   const API_URL_PDPA_LETTER = import.meta.env.VITE_APP_API_PDPA_LETTER;
@@ -1253,7 +1253,7 @@ const SalesPDPA: React.FC = () => {
         }
       );
 
-      console.log(`response SEND_SMS_API`, response.data);
+      // console.log(`response SEND_SMS_API`, response.data);
 
       // ตรวจสอบว่ามี OTP คืนมาจริง ๆ หรือไม่
       if (response.data.OTP) {
@@ -1301,10 +1301,10 @@ const SalesPDPA: React.FC = () => {
       if (response.data.status === 400) {
         Swal.fire({ icon: "error", title: "OTP ไม่ถูกต้อง" });
       } else if (response.data.status === 200) {
-        console.log(`consentGiven`, consentGiven);
-        console.log(`telCustomer`, telCustomer);
-        console.log(`inputOTP`, inputOTP);
-        console.log(`contNo`, contNo);
+        // console.log(`consentGiven`, consentGiven);
+        // console.log(`telCustomer`, telCustomer);
+        // console.log(`inputOTP`, inputOTP);
+        // console.log(`contNo`, contNo);
 
         await axios.post(UPDATECONTACT, {
           REFNO,
@@ -1330,7 +1330,7 @@ const SalesPDPA: React.FC = () => {
           showConfirmButton: false,
         });
 
-        console.log(`res`, response.data);
+        // console.log(`res`, response.data);
         navigate("/sale/contract", { state: matchedItem });
       }
     } catch (error) {

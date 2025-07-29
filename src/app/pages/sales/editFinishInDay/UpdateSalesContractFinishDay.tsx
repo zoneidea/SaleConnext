@@ -76,7 +76,7 @@ const UpdateSalesContractFinishDay: React.FC = () => {
     // const item = location.state as ItemProps || [];
     const item = (location.state as ItemProps) || ({} as ItemProps);
 
-    console.log(`item`, item);
+    // console.log(`item`, item);
     const refno = item?.REFNO
     // console.log(`refno`, refno);
 
@@ -235,7 +235,7 @@ const UpdateSalesContractFinishDay: React.FC = () => {
                 }, {
                     headers: { 'Content-Type': 'application/json' },
                 });
-                console.log(`finishResponse`, finishResponse);
+                // console.log(`finishResponse`, finishResponse);
 
 
                 if (finishResponse.status === 200) {
@@ -246,7 +246,7 @@ const UpdateSalesContractFinishDay: React.FC = () => {
                         timer: 2000,
                         showConfirmButton: false,
                     }).then(() => {
-                        console.log(`matchedItem`, matchedItem);
+                        // console.log(`matchedItem`, matchedItem);
 
                         navigate('/firstBill/CreateFirstBill', {
                             state: {

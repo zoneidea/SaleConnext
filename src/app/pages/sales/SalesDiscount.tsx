@@ -1680,7 +1680,7 @@ const SalesDiscount: React.FC = () => {
 
   // เลือก item ที่ REFNO ตรงกัน (find สำหรับ 1 item หรือ filter สำหรับหลาย item)
   const matchedItem = draft.find((item) => item.REFNO === REFNO);
-  console.log(`matchedItem`, matchedItem);
+  // console.log(`matchedItem`, matchedItem);
 
   // โหลดรายชื่อแบรนด์เครื่องเทิร์น
   const loadTradeInBrands = useCallback(async () => {

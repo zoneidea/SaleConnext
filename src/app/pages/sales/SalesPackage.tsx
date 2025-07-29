@@ -3276,10 +3276,10 @@ const SalesPackage: React.FC = () => {
   // console.log(`fetchCategory: `, fetchCategory);
 
   const [categories, setCategories] = useState<any[]>([]);
-  console.log(`categories`, categories);
+  // console.log(`categories`, categories);
 
   const [promotion, setPromotion] = useState<any[]>([]);
-  console.log(`promotion`, promotion);
+  // console.log(`promotion`, promotion);
 
   const [packageType, setPackageType] = useState<any[]>([]);
   // console.log(`packageType: `, packageType);
@@ -3295,7 +3295,7 @@ const SalesPackage: React.FC = () => {
   // console.log(`selectedProductIndex: `, selectedProductIndex);
 
   const [selectedItemCode, setSelectedItemCode] = useState<string | null>(null);
-  console.log(`selectedItemCode: `, selectedItemCode);
+  // console.log(`selectedItemCode: `, selectedItemCode);
 
   const [selectedItemDescription, setSelectedItemDescription] = useState<
     string | null
@@ -3348,9 +3348,9 @@ const SalesPackage: React.FC = () => {
   } = (location.state as any) || {};
 
   const [bundleOk, setBundleOk] = useState(false);
-  console.log(`bundleOk: `, bundleOk);
+  // console.log(`bundleOk: `, bundleOk);
   const [useBundle, setUseBundle] = useState<"normal" | "bundle" | null>(null);
-  console.log(`useBundle: `, useBundle);
+  // console.log(`useBundle: `, useBundle);
   const [scannedBundleProduct, setScannedBundleProduct] = useState<any | null>(
     null
   );
@@ -3406,7 +3406,7 @@ const SalesPackage: React.FC = () => {
     DepartGroup,
     setDepartGroup,
   } = useCategoryStore();
-  console.log(`DepartGroup`, DepartGroup);
+  // console.log(`DepartGroup`, DepartGroup);
   // console.log(`EmpId`, EmpId);
 
   // const getCategoryLocal = localStorage.getItem("fetchCategory");
@@ -4086,7 +4086,7 @@ const SalesPackage: React.FC = () => {
   ]);
 
   useEffect(() => {
-    console.log("SaveProductData:", SaveProductData);
+    // console.log("SaveProductData:", SaveProductData);
     if (JSON.stringify(SaveProductData) !== JSON.stringify(PRODUCT)) {
       // console.log("Updating product in store...");
       SETPRODUCT(SaveProductData);
@@ -4383,7 +4383,7 @@ const SalesPackage: React.FC = () => {
   // };
 
   const handleNextClick = async () => {
-    console.log("SaveProductData ก่อนส่ง:", SaveProductData);
+    // console.log("SaveProductData ก่อนส่ง:", SaveProductData);
 
     // ก่อน navigate เรายังเก็บล่าสุดอีกรอบก็ได้
     localStorage.setItem("saveProductData", JSON.stringify(SaveProductData));
@@ -4406,7 +4406,7 @@ const SalesPackage: React.FC = () => {
         }
       );
       const result = response.data;
-      console.log(`result`, result);
+      // console.log(`result`, result);
 
       // เรียก API UPDATECONTACT หลังจากเสร็จสิ้นเงื่อนไขทั้งหมด
       try {

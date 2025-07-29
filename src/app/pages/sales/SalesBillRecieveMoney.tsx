@@ -113,7 +113,7 @@ const SalesBillRecieveMoney: React.FC = () => {
 
     // state ตัวเก็บ matchedItem
     const [matchedItem, setMatchedItem] = useState<ItemProps | null>(null);
-    console.log(`matchedItem`, matchedItem);
+    // console.log(`matchedItem`, matchedItem);
 
     useEffect(() => {
         if (!isLoadingDraft) {

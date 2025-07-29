@@ -728,9 +728,9 @@ const SalesPhoto: React.FC = () => {
 
     const location = useLocation() as any;
     const fromStep = location.state?.fromStep || false;
-    console.log(`fromStep`, fromStep);
+    // console.log(`fromStep`, fromStep);
     const item = location.state?.data as ItemProps || [];
-    console.log(`item`, item);
+    // console.log(`item`, item);
 
     // กำหนด REFNO
     const refno = fromStep ? item.REFNO : REFNO;
@@ -768,7 +768,7 @@ const SalesPhoto: React.FC = () => {
 
     // เลือก item ที่ REFNO ตรงกัน (find สำหรับ 1 item หรือ filter สำหรับหลาย item)
     const matchedItem = draft.find(item => item.REFNO === item.REFNO);
-    console.log(`matchedItem`, matchedItem);
+    // console.log(`matchedItem`, matchedItem);
 
     // fetch collection ContractImage
     useEffect(() => {
@@ -982,7 +982,7 @@ const SalesPhoto: React.FC = () => {
         const source = fromStep
             ? item           // ถ้ามาจาก step เริ่มแรก
             : matchedItem;  // ถ้าเป็น draft
-        console.log(`source`, source);
+        // console.log(`source`, source);
 
         if (!source) return false;
 
@@ -998,7 +998,7 @@ const SalesPhoto: React.FC = () => {
         );
     }, [fromStep, item, matchedItem]);
 
-    console.log(`isDataComplete`, isDataComplete);
+    // console.log(`isDataComplete`, isDataComplete);
 
     const whereRefno = fromStep
         ? refno

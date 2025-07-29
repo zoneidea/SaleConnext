@@ -1153,7 +1153,7 @@ const CreateFirstBill: React.FC = () => {
 
   const state = (location.state ?? {}) as LocationState;
   const item = state.item;
-  console.log(`item`, item);
+  // console.log(`item`, item);
   const from = state.from ?? "";
 
   const refno = item?.REFNO ?? "";
@@ -1162,7 +1162,7 @@ const CreateFirstBill: React.FC = () => {
   const customerDetail = item?.CUSTOMERDETAIL ?? [];
   const discountAmount = item?.DISCOUNT[0]?.DISCOUNTAMOUNT || 0;
   const transaction = item?.TRANSACTION ?? [];
-  console.log(`transaction`, transaction);
+  // console.log(`transaction`, transaction);
 
   const addressArray = item?.ADDRESS;
   const firstAddress = addressArray?.[0];
@@ -1221,7 +1221,7 @@ const CreateFirstBill: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string>("");
 
   const [qrCodeData, setQrCodeData] = useState<string>("");
-  console.log(`qrCodeData`, qrCodeData);
+  // console.log(`qrCodeData`, qrCodeData);
 
   const [loadingQR, setLoadingQR] = useState<boolean>(false);
 
@@ -1258,13 +1258,13 @@ const CreateFirstBill: React.FC = () => {
       formData.append("Amount", qrAmount.toString());
 
       //   console.log("refno", refno);
-      console.log("สแกน", qrAmount.toString());
+      // console.log("สแกน", qrAmount.toString());
 
       const response = await axios.post(GET_QR_PAYMENT_URL, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      console.log(`response`, response);
+      // console.log(`response`, response);
 
       if (response.status === 200 && response.data) {
         setQrCodeData(response.data.data.QrCode || "");
@@ -1408,7 +1408,7 @@ const CreateFirstBill: React.FC = () => {
     PERIODAMOUNT: periodAmount - discountAmount,
     DISCOUNT: discountAmount,
   };
-  console.log(`allData`, allData);
+  // console.log(`allData`, allData);
 
   const onSubmit = async (data: any) => {
     // ตรวจสอบการมี qrCodeData เมื่อเลือกช่องทาง QR CODE

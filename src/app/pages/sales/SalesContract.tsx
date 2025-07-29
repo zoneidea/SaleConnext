@@ -1172,7 +1172,7 @@ const SalesContract: React.FC = () => {
 
   // รับ object ที่เราส่งมาจาก Step
   const stepItem = location.state as ItemProps | undefined;
-  console.log(`stepItem`, stepItem);
+  // console.log(`stepItem`, stepItem);
 
   const { auth } = useAuth();
   const EmpId = auth?.data?.[0]?.EmpId || "";
@@ -1218,7 +1218,7 @@ const SalesContract: React.FC = () => {
 
   // ===== (5) หารายการที่มี REFNO ตรงกับ store =====
   const matchedItem = draft.find((item) => item.REFNO === REFNO);
-  console.log("matchedItem =>", matchedItem);
+  // console.log("matchedItem =>", matchedItem);
 
   // ถ้ามี stepItem เอา stepItem ก่อน ถ้าไม่มีเอา matchedItem
   const data = stepItem || matchedItem || ({} as ItemProps);
@@ -1231,10 +1231,10 @@ const SalesContract: React.FC = () => {
     }-${currentDate.getDate()}`;
 
   const { PRODUCT } = useSaveProductStore();
-  console.log(`PRODUCT`, PRODUCT[0]?.Package[0]?.PACKAGETYPEID);
+  // console.log(`PRODUCT`, PRODUCT[0]?.Package[0]?.PACKAGETYPEID);
 
   const { DISCOUNT } = useSaveDiscountStore();
-  console.log(`DISCOUNT`, DISCOUNT);
+  // console.log(`DISCOUNT`, DISCOUNT);
 
   const { saveCustomerTypes } = useSaveCustomerStore();
   // console.log(`saveCustomerTypes`, saveCustomerTypes);
@@ -1321,7 +1321,7 @@ const SalesContract: React.FC = () => {
             headers: { "Content-Type": "application/json" },
           }
         );
-        console.log(`finishResponse`, finishResponse);
+        // console.log(`finishResponse`, finishResponse);
 
         //3) ถ้าอัปเดต STATUS สำเร็จ ถึงจะแสดง SweetAlert และ Navigate ต่อ
         if (finishResponse.status === 200) {

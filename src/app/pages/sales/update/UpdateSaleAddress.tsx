@@ -7177,7 +7177,7 @@ const UpdateSaleAddress: React.FC = () => {
   const location = useLocation();
 
   const item = (location.state as ItemProps) || [];
-  console.log(`item`, item);
+  // console.log(`item`, item);
 
   const refno = item?.REFNO;
   const custAddr = item?.ADDRESS;
@@ -7377,6 +7377,8 @@ const UpdateSaleAddress: React.FC = () => {
     };
     getDataDraft();
   }, []);
+
+   const matchedItem = draft.find((item) => item.REFNO === refno);
 
   {
     /****** matchedItem *******/
@@ -10136,7 +10138,7 @@ const UpdateSaleAddress: React.FC = () => {
               onClick={() =>
                 navigate("/sale/update/updateCustDetail", {
                   state: {
-                    ...item,
+                    ...matchedItem,
                   },
                 })
               }
@@ -10175,7 +10177,7 @@ const UpdateSaleAddress: React.FC = () => {
               onClick={() =>
                 navigate("/sale/update/updateCustDetail", {
                   state: {
-                    ...item,
+                    ...matchedItem,
                   },
                 })
               }

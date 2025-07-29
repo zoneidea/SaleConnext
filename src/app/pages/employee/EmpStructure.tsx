@@ -200,11 +200,11 @@ const EmpStructure: React.FC = () => {
     const navigate = useNavigate(); // ใช้ useNavigate สำหรับการเปลี่ยนเส้นทาง
 
     const { auth } = useAuth();
-    console.log(`auth`, auth);
+    // console.log(`auth`, auth);
     const teamSale = auth.data[0].TeamSale;
 
     const [adviser, setAdviser] = useState<any[]>([]);
-    console.log(`adviser`, adviser);
+    // console.log(`adviser`, adviser);
 
     const {
         EmpId, setEmpId,
@@ -232,6 +232,7 @@ const EmpStructure: React.FC = () => {
                 const response = await axios.post(EMPLOYEE_URL,
                     {
                         EmpId: auth.data[0].EmpId,
+                        TeamSale: auth.data[0].TeamSale,
                     }, {
                     headers: {
                         'Content-Type': 'multipart/form-data',

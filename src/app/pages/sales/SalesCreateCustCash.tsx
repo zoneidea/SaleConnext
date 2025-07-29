@@ -1524,7 +1524,7 @@ const SalesCreateCustCash: React.FC = () => {
 
   // เลือก item ที่ REFNO ตรงกัน (find สำหรับ 1 item หรือ filter สำหรับหลาย item)
   const matchedItem = draft.find((item) => item.REFNO === REFNO);
-  console.log(`matchedItem`, matchedItem);
+  // console.log(`matchedItem`, matchedItem);
 
   const [customerTypes, setCustomerTypes] = useState<any[]>([]);
 
@@ -1963,7 +1963,7 @@ const SalesCreateCustCash: React.FC = () => {
             headers: { "Content-Type": "application/json" },
           }
         );
-        console.log("อัปเดต CUSTOMERDETAIL สำเร็จ");
+        // console.log("อัปเดต CUSTOMERDETAIL สำเร็จ");
       } catch (err) {
         console.error("Error auto-saving CUSTOMERDETAIL:", err);
       }

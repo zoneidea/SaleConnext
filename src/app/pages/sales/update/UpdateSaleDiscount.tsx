@@ -1786,7 +1786,7 @@ const UpdateSalesDiscount: React.FC = () => {
       // console.log("Found TradeIn Brand Name:", selectedTradeInBrand.TRADEINBRANDNAME);
     } else {
       setSelectedTradeInBrandName(""); // รีเซ็ตค่าเมื่อไม่มีการเลือก
-      console.log("No TradeIn Brand Name Found");
+      // console.log("No TradeIn Brand Name Found");
     }
   }, [selectedTurnId, tradeInBrand]);
 
@@ -2097,7 +2097,7 @@ const UpdateSalesDiscount: React.FC = () => {
 
   // เลือก item ที่ REFNO ตรงกัน (find สำหรับ 1 item หรือ filter สำหรับหลาย item)
   const matchedItem = draft.find((match) => match.REFNO === REFNO);
-  console.log(`matchedItem`, matchedItem);
+  // console.log(`matchedItem`, matchedItem);
 
   return (
     <>

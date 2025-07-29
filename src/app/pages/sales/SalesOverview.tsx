@@ -373,7 +373,6 @@ import { useUUIDStore } from '../../modules/stores/stepsStore'
 import { useAuth } from '../../modules/auth/core/Auth'
 import { EntriesDropdown, PaginationTable } from '../../modules/entriesAndPagination/Pagination'
 import { ThreeDot } from 'react-loading-indicators'
-import { log } from 'console'
 
 const SalesOverview: React.FC = () => {
   // Loading states

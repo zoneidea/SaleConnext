@@ -1603,11 +1603,11 @@ const UpdateSaleCustDetail: React.FC = () => {
 
   const location = useLocation();
   const item = (location.state as ItemProps) || [];
-  console.log(`item`, item);
+  // console.log(`item`, item);
 
   const refno = item?.REFNO;
   const customerDetail = item?.CUSTOMERDETAIL?.[0] ?? {};
-  console.log(`customerDetail`, customerDetail);
+  // console.log(`customerDetail`, customerDetail);
 
   let customerStatus = item?.CUSTOMERSTATUS;
   // console.log(`customerStatus`, customerStatus);
@@ -1750,7 +1750,7 @@ const UpdateSaleCustDetail: React.FC = () => {
 
   // เลือก item ที่ REFNO ตรงกัน (find สำหรับ 1 item หรือ filter สำหรับหลาย item)
   const matchedItem = draft.find((item) => item.REFNO === refno);
-  console.log(`matchedItem`, matchedItem);
+  // console.log(`matchedItem`, matchedItem);
 
   {
     /****** matchedItem *******/
@@ -2300,7 +2300,7 @@ const UpdateSaleCustDetail: React.FC = () => {
   useEffect(() => {
     if (!isLoadingDraft && matchedItem) {
       const cd = matchedItem.CUSTOMERDETAIL[0] || {};
-      console.log(`cd`, cd);
+      // console.log(`cd`, cd);
 
       setValue("fullName", cd.CUSTOMERNAME);
       setValue("idCard", cd.CUSTOMERID);
@@ -2470,7 +2470,7 @@ const UpdateSaleCustDetail: React.FC = () => {
 
     // ดึงข้อมูล CUSTOMERDETAIL ที่มีมาจาก props/location
     const cd = customerDetail || {};
-    console.log(`มาจาก SalesCreateAddressCash`, cd);
+    // console.log(`มาจาก SalesCreateAddressCash`, cd);
 
     // 1) อัปเดตค่าใน RHF form
     setValue("selectedCustomerType", cd.CUSTOMERTYPE || "");

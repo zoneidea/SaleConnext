@@ -603,7 +603,7 @@ const SalesCancel: React.FC = () => {
   const { REFNO } = useUUIDStore();
 
   const item = location.state as ItemProps;
-  console.log(`item`, item);
+  // console.log(`item`, item);
 
   const createdDate = item.CONTRACT[0]?.createdAt;
   const contno = item.CONTNO;
@@ -700,7 +700,7 @@ const SalesCancel: React.FC = () => {
             RefNo: item.REFNO,
             EmpId: EmpId,
           });
-          console.log("Remove contract response:", removeResponse.data);
+          // console.log("Remove contract response:", removeResponse.data);
 
           // 2) เรียก API อัปเดตสถานะ (STATUS = REMOVE)
           const updateResponse = await axios.post(UPDATECONTACT, {
@@ -710,7 +710,7 @@ const SalesCancel: React.FC = () => {
             FIELD: "STATUS",
             DATA: "REMOVE",
           });
-          console.log("Update contract response:", updateResponse.data);
+          // console.log("Update contract response:", updateResponse.data);
 
           Swal.fire({
             icon: "success",
@@ -759,7 +759,7 @@ const SalesCancel: React.FC = () => {
 
   // เลือก item ที่ REFNO ตรงกัน (find สำหรับ 1 item หรือ filter สำหรับหลาย item)
   const matchedItem = draft.find((item) => item.REFNO === REFNO);
-  console.log(`matchedItem`, matchedItem);
+  // console.log(`matchedItem`, matchedItem);
 
     const formatToBE = (isoDate?: string) => {
     if (!isoDate) return "";

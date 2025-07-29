@@ -93,7 +93,7 @@ const ReceiptFirstBill: FC = () => {
   const location = useLocation();
 
   const item = location.state as ItemProps;
-  console.log(`item`, item);
+  // console.log(`item`, item);
 
   const REFNO = item?.REFNO;
 

@@ -1278,11 +1278,11 @@ const UpdateSalesPackageFinishDay: React.FC = () => {
     // ถ้ามี itemFromDevice ให้ใช้ ถ้าไม่มีก็คือเข้ามาจาก step => state เองก็คือ ItemProps
     const item: ItemProps =
         "itemFromDevice" in state ? state.itemFromDevice : (state as StepState);
-    console.log(`item`, item);
+    // console.log(`item`, item);
 
     // refno: ถ้ามาจาก scan ก็อ่าน state.refno อ่านไม่เจอ fallback เป็น item.REFNO
     const refno = "refno" in state ? state.refno : item.REFNO;
-    console.log(`refno`, refno);
+    // console.log(`refno`, refno);
 
     // barcode ถ้ามีให้เก็บไว้ (อาจ undefined เมื่อเข้าจาก step)
     const barCode = "barCode" in state ? state.barCode : undefined;
@@ -1297,7 +1297,7 @@ const UpdateSalesPackageFinishDay: React.FC = () => {
     // }));
 
     const productContract = item?.PRODUCT || [];
-    console.log(`productContract`, productContract);
+    // console.log(`productContract`, productContract);
 
     const [loadingCategories, setLoadingCategories] = useState(true); // เพิ่ม state สำหรับการโหลดหมวดหมู่
     const [loadingProducts, setLoadingProducts] = useState(false); // เพิ่ม state สำหรับการโหลดสินค้า
@@ -1371,9 +1371,9 @@ const UpdateSalesPackageFinishDay: React.FC = () => {
     } = (location.state as any) || {};
 
     const [bundleOk, setBundleOk] = useState(false);
-    console.log(`bundleOk: `, bundleOk);
+    // console.log(`bundleOk: `, bundleOk);
     const [useBundle, setUseBundle] = useState<"normal" | "bundle" | null>(null);
-    console.log(`useBundle: `, useBundle);
+    // console.log(`useBundle: `, useBundle);
     const [scannedBundleProduct, setScannedBundleProduct] = useState<any | null>(
         null
     );
@@ -1835,9 +1835,9 @@ const UpdateSalesPackageFinishDay: React.FC = () => {
 
         // 1. แยกข้อมูล main กับ bundle ออกจาก productContract
         const main = productContract.find((p) => p.MainItem === "Y")!;
-        console.log(`main`, main);
+        // console.log(`main`, main);
         const bundle = productContract.find((p) => p.MainItem === "N");
-        console.log(`bundle`, bundle);
+        // console.log(`bundle`, bundle);
 
         // 2. แสดงเฉพาะ main item ในรายการสินค้า
         setProduct([
@@ -2716,7 +2716,7 @@ const UpdateSalesPackageFinishDay: React.FC = () => {
             }
         );
 
-        console.log(response);
+        // console.log(response);
 
         if (response.status === 200) {
             if (!response.data.data) {
@@ -3067,10 +3067,10 @@ const UpdateSalesPackageFinishDay: React.FC = () => {
                                                                             cursor: "pointer",
                                                                         }}
                                                                         onClick={() => {
-                                                                            console.log(
-                                                                                "Clicked PackageTypeId:",
-                                                                                item.PACKAGETYPEID
-                                                                            );
+                                                                            // console.log(
+                                                                            //     "Clicked PackageTypeId:",
+                                                                            //     item.PACKAGETYPEID
+                                                                            // );
                                                                             handlePackageTypeClick(
                                                                                 item.PACKAGETYPEID
                                                                             );

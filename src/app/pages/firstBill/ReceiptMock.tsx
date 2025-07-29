@@ -60,10 +60,10 @@ const ReceiptMock: FC = () => {
   // ดึง state ที่ส่งมาจาก navigate()
   const location = useLocation();
   const item = location.state as ItemProps;
-  console.log(`item`, item);
+  // console.log(`item`, item);
 
   const [finish, setFinish] = useState<any[]>([]);
-  console.log(`finish`, finish);
+  // console.log(`finish`, finish);
   const [isLoadingFinish, setIsLoadingFinish] = useState<boolean>(false);
 
   const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;

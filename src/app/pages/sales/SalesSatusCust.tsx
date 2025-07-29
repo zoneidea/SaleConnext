@@ -2163,7 +2163,7 @@ const SalesSatusCust: React.FC = () => {
   const [error, setError] = useState<string>("");
 
   const [customerStatus, setCustomerStatus] = useState<any[]>([]);
-  console.log(`customerStatus`, customerStatus);
+  // console.log(`customerStatus`, customerStatus);
 
   const [getProvince, setGetProvince] = useState<any[]>([]);
   // console.log(`getProvince`, getProvince);
@@ -2211,7 +2211,7 @@ const SalesSatusCust: React.FC = () => {
     () => matchedCustomers.slice(0, visibleCount),
     [matchedCustomers, visibleCount]
   );
-  console.log(`visibleMatched`, visibleMatched);
+  // console.log(`visibleMatched`, visibleMatched);
 
   const searchData = {
     RefNo: REFNO,
@@ -2221,7 +2221,7 @@ const SalesSatusCust: React.FC = () => {
 
   // สเตทเก็บการ์ดที่เลือก
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
-  console.log(`selectedIdx`, selectedIdx);
+  // console.log(`selectedIdx`, selectedIdx);
 
   const [noHistoryData, setNoHistoryData] = useState<NoHistoryData | null>(
     null
@@ -2435,7 +2435,7 @@ const SalesSatusCust: React.FC = () => {
   };
 
   const handleCheckStatusCustomer = (customer: any) => {
-    console.log(`customer`, customer);
+    // console.log(`customer`, customer);
 
     Swal.fire({
       icon: "info",

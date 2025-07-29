@@ -59,7 +59,7 @@ const EditFinishInDay: React.FC = () => {
   const refno = item.REFNO ? item.REFNO : refnoFromUpdate
 
   const [data, setData] = useState<any[]>([])
-  console.log(`data`, data);
+  // console.log(`data`, data);
 
   // ตรงบนสุดของ component (ก่อน return) ให้ดึง pkg กับ discount ออกมา
   const pkg = data[0]?.PRODUCT?.[0]?.Package?.[0] || {};
