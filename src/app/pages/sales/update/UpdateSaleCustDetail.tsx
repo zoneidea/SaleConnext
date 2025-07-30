@@ -1854,34 +1854,34 @@ const UpdateSaleCustDetail: React.FC = () => {
         CUSTOMEREMAIL: email,
         CARDTYPE: customerTypeData?.CARDTYPE
           ? customerTypeData.CARDTYPE.filter((cardType: any) => {
-            // console.log("Selected Card Type:", selectedCardType);
-            // console.log("Available Card Type:", cardType.CARDTYPE);
-            return String(cardType.CARDTYPE) === String(selectedCardType); // ใช้การเปรียบเทียบแบบ string
-          }).map((cardType: any) => ({
-            CARDTYPE: selectedCardType,
-            CARDTYPECODE: cardType.CARDTYPECODE,
-            CARDTYPENAME: cardType.CARDTYPENAME,
-          }))
+              // console.log("Selected Card Type:", selectedCardType);
+              // console.log("Available Card Type:", cardType.CARDTYPE);
+              return String(cardType.CARDTYPE) === String(selectedCardType); // ใช้การเปรียบเทียบแบบ string
+            }).map((cardType: any) => ({
+              CARDTYPE: selectedCardType,
+              CARDTYPECODE: cardType.CARDTYPECODE,
+              CARDTYPENAME: cardType.CARDTYPENAME,
+            }))
           : [],
         PREFIX: customerTypeData?.PREFIX
           ? customerTypeData.PREFIX.filter(
-            (prefix: any) => prefix.PREFIXID === selectedPrefixId
-          ) // ใช้เฉพาะค่าที่เลือก
-            .map((prefix: any) => ({
-              PREFIXID: selectedPrefixId,
-              PREFIXCODE: prefix.PREFIXCODE,
-              PREFIXNAME: prefix.PREFIXNAME,
-            }))
+              (prefix: any) => prefix.PREFIXID === selectedPrefixId
+            ) // ใช้เฉพาะค่าที่เลือก
+              .map((prefix: any) => ({
+                PREFIXID: selectedPrefixId,
+                PREFIXCODE: prefix.PREFIXCODE,
+                PREFIXNAME: prefix.PREFIXNAME,
+              }))
           : [],
         SEX: customerTypeData?.SEX
           ? customerTypeData.SEX.filter(
-            (sex: any) => sex.SEXID === selectedSexId
-          ) // ใช้เฉพาะค่าที่เลือก
-            .map((sex: any) => ({
-              SEXID: selectedSexId,
-              SEXCODE: sex.SEXCODE,
-              SEXNAME: sex.SEXNAME,
-            }))
+              (sex: any) => sex.SEXID === selectedSexId
+            ) // ใช้เฉพาะค่าที่เลือก
+              .map((sex: any) => ({
+                SEXID: selectedSexId,
+                SEXCODE: sex.SEXCODE,
+                SEXNAME: sex.SEXNAME,
+              }))
           : [],
       },
     ];
@@ -2193,7 +2193,7 @@ const UpdateSaleCustDetail: React.FC = () => {
 
     // 3) เลขบัตร
     idCard: yup.string().when("selectedCustomerType", {
-      is: (v: any) => v === "0" || v === "1" || v === "2",
+      is: (v: any) => v === "0" || v === "1",
       then: (s) =>
         s
           .required("กรุณากรอก")
@@ -2207,14 +2207,18 @@ const UpdateSaleCustDetail: React.FC = () => {
     // 4) คำนำหน้าชื่อ
     selectedPrefixId: yup
       .number()
-      .when(["selectedCustomerType"] as const, ([custType], schema) =>
-        custType === "0" ||
-          custType === "1" ||
-          custType === "2" ||
-          custType === "3"
-          ? schema.required("กรุณาเลือกคำนำหน้าชื่อ")
-          : schema
-      ),
+      // 1) แปลง originalValue === "" → undefined ก่อน cast
+      .transform((value, originalValue) =>
+        String(originalValue).trim() === "" ? undefined : value
+      )
+      // 2) อนุญาตให้เป็น null / undefined ได้ (ถือว่า empty)
+      .typeError("กรุณาเลือกคำนำหน้าชื่อ")
+      // 4) บังคับ required เมื่อเป็นประเภทลูกค้า 0,1,2,3
+      .when("selectedCustomerType", {
+        is: (v: any) => ["0", "1", "2", "3"].includes(v),
+        then: (schema) => schema.required("กรุณาเลือกคำนำหน้าชื่อ"),
+        otherwise: (schema) => schema,
+      }),
 
     // 5) ชื่อ บังคับกรอกเสมอ
     fullName: yup.string().required("กรุณากรอกชื่อ"),
@@ -2245,23 +2249,27 @@ const UpdateSaleCustDetail: React.FC = () => {
     // 9) เพศ
     selectedSexId: yup
       .number()
-      .when(["selectedCustomerType"] as const, ([custType], schema) =>
-        custType === "0" || custType === "2"
-          ? schema.required("กรุณาเลือกเพศ")
-          : schema
-      ),
+      .transform((value, originalValue) =>
+        String(originalValue).trim() === "" ? undefined : value
+      )
+      .typeError("กรุณาเลือกเพศ")
+      .when("selectedCustomerType", {
+        is: (v: any) => ["0", "2"].includes(v),
+        then: (schema) => schema.required("กรุณาเลือกเพศ"),
+        otherwise: (schema) => schema,
+      }),
 
     // 10) เบอร์ที่ติดต่อได้ 1
     telNo: yup
       .string()
       .when(["selectedCustomerType"] as const, ([custType], schema) =>
         custType === "0" ||
-          custType === "1" ||
-          custType === "2" ||
-          custType === "3"
+        custType === "1" ||
+        custType === "2" ||
+        custType === "3"
           ? schema
-            .required("กรุณากรอกเบอร์ที่ติดต่อได้ 1")
-            .matches(/^[0-9]{10}$/, "เบอร์โทรต้องเป็นตัวเลข 10 หลัก")
+              .required("กรุณากรอกเบอร์ที่ติดต่อได้ 1")
+              .matches(/^[0-9]{10}$/, "เบอร์โทรต้องเป็นตัวเลข 10 หลัก")
           : schema.notRequired()
       ),
 
@@ -2526,7 +2534,7 @@ const UpdateSaleCustDetail: React.FC = () => {
     if (product?.[0]?.Package?.[0]) {
       setModel(product?.[0]?.Package?.[0]?.MODEL);
     }
-  }, [customerDetail, product, setValue]);
+  }, []);
 
   return (
     <>
@@ -2657,11 +2665,13 @@ const UpdateSaleCustDetail: React.FC = () => {
                                       </label>
                                       <select
                                         {...field}
-                                        className={`form-select ${styles.label
-                                          } ${errors.selectedCustomerType
+                                        className={`form-select ${
+                                          styles.label
+                                        } ${
+                                          errors.selectedCustomerType
                                             ? "is-invalid"
                                             : ""
-                                          }`}
+                                        }`}
                                         onChange={(e) => {
                                           field.onChange(e); // อัปเดต RHF
                                           setSelectedCustomerType(
@@ -2699,16 +2709,20 @@ const UpdateSaleCustDetail: React.FC = () => {
                                   control={control}
                                   render={({ field }) => (
                                     <div className="mb-3">
-                                      <label className={`${styles.label}`}>
+                                      <label
+                                        className={`${styles.label} ${styles.required}`}
+                                      >
                                         ประเภทบัตร
                                       </label>
                                       <select
                                         {...field}
-                                        className={`form-select ${styles.label
-                                          } ${errors.selectedCardType
+                                        className={`form-select ${
+                                          styles.label
+                                        } ${
+                                          errors.selectedCardType
                                             ? "is-invalid"
                                             : ""
-                                          }`}
+                                        }`}
                                         onChange={(e) => {
                                           field.onChange(e); // อัปเดต RHF
                                           setSelectedCardType(e.target.value); // ถ้าคุณยังใช้ state แยกอยู่
@@ -2744,7 +2758,9 @@ const UpdateSaleCustDetail: React.FC = () => {
 
                           <div className="row mb-6 mt-6">
                             <div className="col-lg-6 my-3">
-                              <label className={`${styles.label} `}>
+                              <label
+                                className={`${styles.label} ${styles.required}`}
+                              >
                                 เลขบัตร
                               </label>
                               <Controller
@@ -2756,8 +2772,9 @@ const UpdateSaleCustDetail: React.FC = () => {
                                   >
                                     <input
                                       {...field}
-                                      className={`form-control ${styles.label
-                                        } ${errors.idCard ? "is-invalid" : ""}`}
+                                      className={`form-control ${
+                                        styles.label
+                                      } ${errors.idCard ? "is-invalid" : ""}`}
                                       value={idCard}
                                       maxLength={13}
                                       onKeyDown={(e) => {
@@ -2811,20 +2828,28 @@ const UpdateSaleCustDetail: React.FC = () => {
                                 control={control}
                                 render={({ field }) => (
                                   <div className="mb-3">
-                                    <label className={`${styles.label}`}>
+                                    <label
+                                      className={`${styles.label} ${styles.required}`}
+                                    >
                                       คำนำหน้าชื่อ
                                     </label>
                                     <select
                                       {...field}
-                                      className={`form-select ${styles.label} ${errors.selectedPrefixId
+                                      value={field.value ?? ""}
+                                      className={`form-select ${styles.label} ${
+                                        errors.selectedPrefixId
                                           ? "is-invalid"
                                           : ""
-                                        }`}
+                                      }`}
                                       onChange={(e) => {
-                                        field.onChange(e); // อัปเดต RHF
-                                        setSelectedPrefixId(
-                                          Number(e.target.value)
-                                        ); // ถ้าคุณยังใช้ state แยกอยู่
+                                        const raw = e.target.value;
+                                        // ถ้าผู้ใช้เลือก placeholder (""), ให้เป็น undefined
+                                        const num =
+                                          raw === "" ? undefined : Number(raw);
+                                        // ส่งเลขหรือ undefined เข้า RHF โดยตรง
+                                        field.onChange(num);
+                                        // อัปเดต state ภายใน component ด้วย
+                                        setSelectedPrefixId(num);
                                       }}
                                     >
                                       <option value="">
@@ -2867,8 +2892,9 @@ const UpdateSaleCustDetail: React.FC = () => {
                                     <input
                                       {...field}
                                       type="text"
-                                      className={`form-control ${styles.label
-                                        } ${errors.fullName ? "is-invalid" : ""}`}
+                                      className={`form-control ${
+                                        styles.label
+                                      } ${errors.fullName ? "is-invalid" : ""}`}
                                       onChange={(e) => {
                                         field.onChange(e);
                                         setFullName(e.target.value);
@@ -2887,7 +2913,9 @@ const UpdateSaleCustDetail: React.FC = () => {
                             </div>
 
                             <div className="col-lg-6 my-3">
-                              <label className={`${styles.label} `}>
+                              <label
+                                className={`${styles.label} ${styles.required}`}
+                              >
                                 นามสกุล
                               </label>
                               <input
@@ -2901,7 +2929,9 @@ const UpdateSaleCustDetail: React.FC = () => {
 
                           <div className="row mb-6">
                             <div className="col-lg-4 my-3">
-                              <label className={`${styles.label}`}>
+                              <label
+                                className={`${styles.label} ${styles.required}`}
+                              >
                                 วันเดือนปีเกิด
                               </label>
                               <div className="d-flex gap-2">
@@ -2913,8 +2943,9 @@ const UpdateSaleCustDetail: React.FC = () => {
                                     <select
                                       {...field}
                                       value={field.value ?? ""}
-                                      className={`form-select ${styles.label} ${errors.selectedDay ? "is-invalid" : ""
-                                        }`}
+                                      className={`form-select ${styles.label} ${
+                                        errors.selectedDay ? "is-invalid" : ""
+                                      }`}
                                       onChange={(e) => {
                                         const v = Number(e.target.value) || "";
                                         field.onChange(v);
@@ -2942,8 +2973,9 @@ const UpdateSaleCustDetail: React.FC = () => {
                                     <select
                                       {...field}
                                       value={field.value ?? ""}
-                                      className={`form-select ${styles.label} ${errors.selectedMonth ? "is-invalid" : ""
-                                        }`}
+                                      className={`form-select ${styles.label} ${
+                                        errors.selectedMonth ? "is-invalid" : ""
+                                      }`}
                                       onChange={(e) => {
                                         const v = Number(e.target.value) || "";
                                         field.onChange(v);
@@ -2968,10 +3000,11 @@ const UpdateSaleCustDetail: React.FC = () => {
                                     <select
                                       {...field}
                                       value={field.value ?? ""}
-                                      className={`form-select ${styles.label} ${errors.selectedYearBE
+                                      className={`form-select ${styles.label} ${
+                                        errors.selectedYearBE
                                           ? "is-invalid"
                                           : ""
-                                        }`}
+                                      }`}
                                       onChange={(e) => {
                                         const v = Number(e.target.value) || "";
                                         field.onChange(v);
@@ -2998,7 +3031,11 @@ const UpdateSaleCustDetail: React.FC = () => {
                             </div>
 
                             <div className="col-lg-4 my-3">
-                              <label className={`${styles.label} `}>อายุ</label>
+                              <label
+                                className={`${styles.label} ${styles.required}`}
+                              >
+                                อายุ
+                              </label>
                               <input
                                 value={
                                   valueAge !== null ? valueAge.toString() : ""
@@ -3015,16 +3052,20 @@ const UpdateSaleCustDetail: React.FC = () => {
                                   control={control}
                                   render={({ field }) => (
                                     <div className="mb-3">
-                                      <label className={`${styles.label}`}>
+                                      <label
+                                        className={`${styles.label} ${styles.required}`}
+                                      >
                                         เพศ
                                       </label>
                                       <select
                                         {...field}
-                                        className={`form-select ${styles.label
-                                          } ${errors.selectedSexId
+                                        className={`form-select ${
+                                          styles.label
+                                        } ${
+                                          errors.selectedSexId
                                             ? "is-invalid"
                                             : ""
-                                          }`}
+                                        }`}
                                         onChange={(e) => {
                                           field.onChange(e); // อัปเดต RHF
                                           setSelectedSexId(
@@ -3060,7 +3101,9 @@ const UpdateSaleCustDetail: React.FC = () => {
 
                           <div className="row mb-6 mt-6">
                             <div className="col-lg-6 my-3">
-                              <label className={`${styles.label} `}>
+                              <label
+                                className={`${styles.label} ${styles.required}`}
+                              >
                                 เบอร์ที่ติดต่อได้ 1
                               </label>
                               <Controller
@@ -3069,9 +3112,9 @@ const UpdateSaleCustDetail: React.FC = () => {
                                 render={({ field }) => (
                                   <input
                                     {...field}
-                                    className={`${styles.label
-                                      } form-control ${errors.telNo ? "is-invalid" : ""
-                                      }`}
+                                    className={`${styles.label} form-control ${
+                                      errors.telNo ? "is-invalid" : ""
+                                    }`}
                                     value={(mobile || "").replace(/-/g, "")}
                                     maxLength={10}
                                     onChange={(e) => {
@@ -3135,8 +3178,9 @@ const UpdateSaleCustDetail: React.FC = () => {
                                 render={({ field }) => (
                                   <input
                                     {...field}
-                                    className={`${styles.label} form-control ${errors.email ? "is-invalid" : ""
-                                      }`}
+                                    className={`${styles.label} form-control ${
+                                      errors.email ? "is-invalid" : ""
+                                    }`}
                                     value={email}
                                     onChange={(e) => {
                                       field.onChange(e);
@@ -3175,11 +3219,13 @@ const UpdateSaleCustDetail: React.FC = () => {
                                       </label>
                                       <select
                                         {...field}
-                                        className={`form-select ${styles.label
-                                          } ${errors.selectedCustomerType
+                                        className={`form-select ${
+                                          styles.label
+                                        } ${
+                                          errors.selectedCustomerType
                                             ? "is-invalid"
                                             : ""
-                                          }`}
+                                        }`}
                                         onChange={(e) => {
                                           field.onChange(e); // อัปเดต RHF
                                           setSelectedCustomerType(
@@ -3226,9 +3272,11 @@ const UpdateSaleCustDetail: React.FC = () => {
                                       <input
                                         {...field}
                                         type="text"
-                                        className={`form-control ${styles.label
-                                          } ${errors.fullName ? "is-invalid" : ""
-                                          }`}
+                                        className={`form-control ${
+                                          styles.label
+                                        } ${
+                                          errors.fullName ? "is-invalid" : ""
+                                        }`}
                                         onChange={(e) => {
                                           field.onChange(e);
                                           setFullName(e.target.value);
@@ -3265,8 +3313,9 @@ const UpdateSaleCustDetail: React.FC = () => {
                                     >
                                       <input
                                         {...field}
-                                        className={`form-control ${styles.label
-                                          } ${errors.idCard ? "is-invalid" : ""}`}
+                                        className={`form-control ${
+                                          styles.label
+                                        } ${errors.idCard ? "is-invalid" : ""}`}
                                         value={idCard}
                                         maxLength={13}
                                         onKeyDown={(e) => {
@@ -3324,11 +3373,13 @@ const UpdateSaleCustDetail: React.FC = () => {
                                       </label>
                                       <select
                                         {...field}
-                                        className={`form-select ${styles.label
-                                          } ${errors.selectedPrefixId
+                                        className={`form-select ${
+                                          styles.label
+                                        } ${
+                                          errors.selectedPrefixId
                                             ? "is-invalid"
                                             : ""
-                                          }`}
+                                        }`}
                                         onChange={(e) => {
                                           field.onChange(e); // อัปเดต RHF
                                           setSelectedPrefixId(
@@ -3388,9 +3439,11 @@ const UpdateSaleCustDetail: React.FC = () => {
                                     render={({ field }) => (
                                       <input
                                         {...field}
-                                        className={`${styles.label
-                                          } form-control ${errors.telNo ? "is-invalid" : ""
-                                          }`}
+                                        className={`${
+                                          styles.label
+                                        } form-control ${
+                                          errors.telNo ? "is-invalid" : ""
+                                        }`}
                                         value={(mobile || "").replace(/-/g, "")}
                                         maxLength={10}
                                         onChange={(e) => {

@@ -1031,6 +1031,11 @@ const SalesPhoto: React.FC = () => {
                     <div className="row gx-4 gy-6 mb-20">
                         {/* Card Body */}
                         <div className='card col-lg-3 col-6'>
+                            {images?.IMAGEGPS.length! > 0 && (
+                                <span className="badge bg-success position-absolute top-0 end-0 m-2 fs-6">
+                                    ถ่ายแล้ว
+                                </span>
+                            )}
                             <button
                                 style={{
                                     background: 'none',
@@ -1060,6 +1065,11 @@ const SalesPhoto: React.FC = () => {
 
                         {/* Card Body */}
                         <div className='card col-lg-3 col-6'>
+                            {images?.IMAGECARD.length! > 0 && (
+                                <span className="badge bg-success position-absolute top-0 end-0 m-2 fs-6">
+                                    ถ่ายแล้ว
+                                </span>
+                            )}
                             <button
                                 style={{
                                     background: 'none',
@@ -1089,6 +1099,11 @@ const SalesPhoto: React.FC = () => {
 
                         {/* Card Body */}
                         <div className='card col-lg-3 col-6'>
+                            {images?.IMAGETDS.length! > 0 && (
+                                <span className="badge bg-success position-absolute top-0 end-0 m-2 fs-6">
+                                    ถ่ายแล้ว
+                                </span>
+                            )}
                             <button
                                 style={{
                                     background: 'none',
@@ -1118,6 +1133,11 @@ const SalesPhoto: React.FC = () => {
 
                         {/* Card Body */}
                         <div className='card col-lg-3 col-6'>
+                            {images?.IMAGEMAP.length! > 0 && (
+                                <span className="badge bg-success position-absolute top-0 end-0 m-2 fs-6">
+                                    ถ่ายแล้ว
+                                </span>
+                            )}
                             <button
                                 style={{
                                     background: 'none',
@@ -1147,6 +1167,11 @@ const SalesPhoto: React.FC = () => {
 
                         {/* Card Body */}
                         <div className='card col-lg-3 col-6'>
+                            {images?.IMAGECUSTOMERHOME.length! > 0 && (
+                                <span className="badge bg-success position-absolute top-0 end-0 m-2 fs-6">
+                                    ถ่ายแล้ว
+                                </span>
+                            )}
                             <button
                                 style={{
                                     background: 'none',
@@ -1176,6 +1201,11 @@ const SalesPhoto: React.FC = () => {
 
                         {/* Card Body */}
                         <div className='card col-lg-3 col-6'>
+                            {images?.IMAGEINSTALLATION.length! > 0 && (
+                                <span className="badge bg-success position-absolute top-0 end-0 m-2 fs-6">
+                                    ถ่ายแล้ว
+                                </span>
+                            )}
                             <button
                                 style={{
                                     background: 'none',
@@ -1205,6 +1235,11 @@ const SalesPhoto: React.FC = () => {
 
                         {/* Card Body */}
                         <div className='card col-lg-3 col-6'>
+                            {images?.IMAGETRADEIN.length! > 0 && (
+                                <span className="badge bg-success position-absolute top-0 end-0 m-2 fs-6">
+                                    ถ่ายแล้ว
+                                </span>
+                            )}
                             <button
                                 style={{
                                     background: 'none',
@@ -1234,6 +1269,11 @@ const SalesPhoto: React.FC = () => {
 
                         {/* Card Body */}
                         <div className='card col-lg-3 col-6'>
+                            {images?.IMAGECUSTOMER.length! > 0 && (
+                                <span className="badge bg-success position-absolute top-0 end-0 m-2 fs-6">
+                                    ถ่ายแล้ว
+                                </span>
+                            )}
                             <button
                                 style={{
                                     background: 'none',

@@ -1164,6 +1164,7 @@ interface ItemProps {
   CONTRACT: any[];
   IMAGE: any[];
   CHECKERCOMMENT: any[];
+  SALEEMPLOYEE: any[];
 }
 
 const SalesContract: React.FC = () => {
@@ -1218,10 +1219,10 @@ const SalesContract: React.FC = () => {
 
   // ===== (5) หารายการที่มี REFNO ตรงกับ store =====
   const matchedItem = draft.find((item) => item.REFNO === REFNO);
-  // console.log("matchedItem =>", matchedItem);
 
   // ถ้ามี stepItem เอา stepItem ก่อน ถ้าไม่มีเอา matchedItem
   const data = stepItem || matchedItem || ({} as ItemProps);
+  console.log("data =>", data);
 
   const contNoNew = matchedItem?.CUSTOMERSTATUS?.[0]?.CONTNO;
   // console.log('contNoNew', contNoNew);
@@ -1439,6 +1440,21 @@ const SalesContract: React.FC = () => {
                     className={`fw-bolder text-gray-900 ${styles.label}`}
                   >
                     {data?.REFNO}
+                  </span>
+                </div>
+              </div>
+
+              <div className="row align-items-center mb-10">
+                <label
+                  className={`col-lg-4 fw-bold text-muted ${styles.fontSize}`}
+                >
+                  พนักงานขาย
+                </label>
+                <div className="col-lg-8 d-flex justify-content-between">
+                  <span
+                    className={`fw-bolder text-gray-900 ${styles.fontSize}`}
+                  >
+                    {data?.SALEEMPLOYEE[0]?.SALEEMPLOYEE.FName} {data?.SALEEMPLOYEE[0]?.SALEEMPLOYEE.LName} - {data?.SALEEMPLOYEE[0]?.SALEEMPLOYEE.SaleEmp}
                   </span>
                 </div>
               </div>
@@ -1882,7 +1898,7 @@ const SalesContract: React.FC = () => {
                 {/* ✅ ถ้าลงชื่อแล้วให้แสดงภาพ */}
                 {hasSigned ? (
                   <div className="text-center">
-                    <p className={`${styles.label} mb-3`}>ลายเซ็น</p>
+                    <p className={`${styles.label} mb-3`}>ลายเซ็นลูกค้า</p>
                     <img
                       src={`data:image/png;base64,${data.CONTRACT[0].signature}`}
                       alt="signature"

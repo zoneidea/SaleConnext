@@ -1766,7 +1766,7 @@ const SalesCreateCustCash: React.FC = () => {
 
     // 3) เลขบัตร
     idCard: yup.string().when("selectedCustomerType", {
-      is: (v: any) => v === "0" || v === "1" || v === "2",
+      is: (v: any) => v === "0" || v === "1",
       then: (s) =>
         s
           .required("กรุณากรอก")
@@ -2359,7 +2359,9 @@ const SalesCreateCustCash: React.FC = () => {
                                       control={control}
                                       render={({ field }) => (
                                         <div className="mb-3">
-                                          <label className={`${styles.label}`}>
+                                          <label
+                                            className={`${styles.label} ${styles.required}`}
+                                          >
                                             ประเภทบัตร
                                           </label>
                                           <select
@@ -2408,7 +2410,9 @@ const SalesCreateCustCash: React.FC = () => {
 
                               <div className="row mb-6 mt-6">
                                 <div className="col-lg-6 my-3">
-                                  <label className={`${styles.label} `}>
+                                  <label
+                                    className={`${styles.label} ${styles.required}`}
+                                  >
                                     เลขบัตร
                                   </label>
                                   <Controller
@@ -2495,11 +2499,14 @@ const SalesCreateCustCash: React.FC = () => {
                                     control={control}
                                     render={({ field }) => (
                                       <div className="mb-3">
-                                        <label className={`${styles.label}`}>
+                                        <label
+                                          className={`${styles.label} ${styles.required}`}
+                                        >
                                           คำนำหน้าชื่อ
                                         </label>
                                         <select
                                           {...field}
+                                          value={field.value ?? ""}
                                           className={`form-select ${
                                             styles.label
                                           } ${
@@ -2508,10 +2515,16 @@ const SalesCreateCustCash: React.FC = () => {
                                               : ""
                                           }`}
                                           onChange={(e) => {
-                                            field.onChange(e); // อัปเดต RHF
-                                            setSelectedPrefixId(
-                                              Number(e.target.value)
-                                            ); // ถ้าคุณยังใช้ state แยกอยู่
+                                            const raw = e.target.value;
+                                            // ถ้าผู้ใช้เลือก placeholder (""), ให้เป็น undefined
+                                            const num =
+                                              raw === ""
+                                                ? undefined
+                                                : Number(raw);
+                                            // ส่งเลขหรือ undefined เข้า RHF โดยตรง
+                                            field.onChange(num);
+                                            // อัปเดต state ภายใน component ด้วย
+                                            setSelectedPrefixId(num);
                                           }}
                                         >
                                           <option value="">
@@ -2577,7 +2590,9 @@ const SalesCreateCustCash: React.FC = () => {
                                 </div>
 
                                 <div className="col-lg-6 my-3">
-                                  <label className={`${styles.label} `}>
+                                  <label
+                                    className={`${styles.label} ${styles.required}`}
+                                  >
                                     นามสกุล
                                   </label>
                                   <input
@@ -2650,7 +2665,9 @@ const SalesCreateCustCash: React.FC = () => {
                                                         </div> */}
 
                                 <div className="col-lg-4 my-3">
-                                  <label className={`${styles.label}`}>
+                                  <label
+                                    className={`${styles.label} ${styles.required}`}
+                                  >
                                     วันเดือนปีเกิด
                                   </label>
                                   <div className="d-flex gap-2">
@@ -2768,7 +2785,9 @@ const SalesCreateCustCash: React.FC = () => {
                                 </div>
 
                                 <div className="col-lg-4 my-3">
-                                  <label className={`${styles.label} `}>
+                                  <label
+                                    className={`${styles.label} ${styles.required}`}
+                                  >
                                     อายุ
                                   </label>
                                   <input
@@ -2800,7 +2819,9 @@ const SalesCreateCustCash: React.FC = () => {
                                       control={control}
                                       render={({ field }) => (
                                         <div className="mb-3">
-                                          <label className={`${styles.label}`}>
+                                          <label
+                                            className={`${styles.label} ${styles.required}`}
+                                          >
                                             เพศ
                                           </label>
                                           <select
@@ -2847,7 +2868,9 @@ const SalesCreateCustCash: React.FC = () => {
 
                               <div className="row mb-6 mt-6">
                                 <div className="col-lg-6 my-3">
-                                  <label className={`${styles.label} `}>
+                                  <label
+                                    className={`${styles.label} ${styles.required}`}
+                                  >
                                     เบอร์ที่ติดต่อได้ 1
                                   </label>
                                   <Controller
@@ -3440,7 +3463,6 @@ const SalesCreateCustCash: React.FC = () => {
           </Content>
         </>
       )}
-
     </>
   );
 };

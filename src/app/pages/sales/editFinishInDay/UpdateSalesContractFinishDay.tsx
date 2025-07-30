@@ -42,7 +42,8 @@ interface ItemProps {
     CONTRACT: any[],
     IMAGE: any[],
     CHECKERCOMMENT: any[],
-    NEWREFNO: String
+    NEWREFNO: String,
+    SALEEMPLOYEE: any[],
 }
 
 interface ImagesType {
@@ -402,6 +403,21 @@ const UpdateSalesContractFinishDay: React.FC = () => {
                                 </div>
                             </div>
                         )}
+
+                        <div className="row align-items-center mb-10">
+                            <label
+                                className={`col-lg-4 fw-bold text-muted ${styles.fontSize}`}
+                            >
+                                พนักงานขาย
+                            </label>
+                            <div className="col-lg-8 d-flex justify-content-between">
+                                <span
+                                    className={`fw-bolder text-gray-900 ${styles.fontSize}`}
+                                >
+                                    {item?.SALEEMPLOYEE[0]?.SALEEMPLOYEE.FName} {item?.SALEEMPLOYEE[0]?.SALEEMPLOYEE.LName} - {item?.SALEEMPLOYEE[0]?.SALEEMPLOYEE.SaleEmp}
+                                </span>
+                            </div>
+                        </div>
 
                         <div className='row mb-7'>
                             <label className={`col-lg-4 text-muted ${styles.label}`}>ชื่อลูกค้า</label>

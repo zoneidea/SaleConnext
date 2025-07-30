@@ -580,6 +580,7 @@ interface ItemProps {
   CONTRACT: any[];
   IMAGE: any[];
   CHECKERCOMMENT: any[];
+  SALEEMPLOYEE: any[];
   item?: {
     REFNO: string; // เพิ่ม item เป็น optional object
   };
@@ -621,13 +622,13 @@ const SalesCancel: React.FC = () => {
   const SupEmpId = auth?.data?.[0]?.SupEmp || "";
   const SecEmpId = auth?.data?.[0]?.SecEmp || "";
 
-//   const setItem = useItemStore((state) => state.setItem);
+  //   const setItem = useItemStore((state) => state.setItem);
 
-//   useEffect(() => {
-//     if (item) {
-//       setItem(item);
-//     }
-//   }, [item]);
+  //   useEffect(() => {
+  //     if (item) {
+  //       setItem(item);
+  //     }
+  //   }, [item]);
 
   const formatThaiDate = (dateString?: string) => {
     if (!dateString) return "-";
@@ -761,7 +762,7 @@ const SalesCancel: React.FC = () => {
   const matchedItem = draft.find((item) => item.REFNO === REFNO);
   // console.log(`matchedItem`, matchedItem);
 
-    const formatToBE = (isoDate?: string) => {
+  const formatToBE = (isoDate?: string) => {
     if (!isoDate) return "";
     const d = new Date(isoDate);
     const dd = String(d.getDate()).padStart(2, "0");
@@ -843,6 +844,21 @@ const SalesCancel: React.FC = () => {
               </div>
             </div>
 
+            <div className="row align-items-center mb-10">
+              <label
+                className={`col-lg-4 fw-bold text-muted ${styles.fontSize}`}
+              >
+                พนักงานขาย
+              </label>
+              <div className="col-lg-8 d-flex justify-content-between">
+                <span
+                  className={`fw-bolder text-gray-900 ${styles.fontSize}`}
+                >
+                  {item?.SALEEMPLOYEE[0]?.SALEEMPLOYEE.FName} {item?.SALEEMPLOYEE[0]?.SALEEMPLOYEE.LName} - {item?.SALEEMPLOYEE[0]?.SALEEMPLOYEE.SaleEmp}
+                </span>
+              </div>
+            </div>
+
             <div className="row mb-7">
               <label className={`col-lg-4 text-muted ${styles.label}`}>
                 ชื่อลูกค้า
@@ -856,22 +872,22 @@ const SalesCancel: React.FC = () => {
               </div>
             </div>
 
-             <div className="row mb-7">
-                <label
-                  className={`col-lg-4 fw-bold text-muted ${styles.label}`}
+            <div className="row mb-7">
+              <label
+                className={`col-lg-4 fw-bold text-muted ${styles.label}`}
+              >
+                สถานะลูกค้า
+              </label>
+              <div className="col-lg-8">
+                <span
+                  className={`fw-bolder text-gray-900 ${styles.label}`}
                 >
-                  สถานะลูกค้า
-                </label>
-                <div className="col-lg-8">
-                  <span
-                    className={`fw-bolder text-gray-900 ${styles.label}`}
-                  >
-                    {item?.CUSTOMERSTATUS[0]?.Message
-                      ? item?.CUSTOMERSTATUS[0]?.Message
-                      : item?.CUSTOMERSTATUS[0]?.message}
-                  </span>
-                </div>
+                  {item?.CUSTOMERSTATUS[0]?.Message
+                    ? item?.CUSTOMERSTATUS[0]?.Message
+                    : item?.CUSTOMERSTATUS[0]?.message}
+                </span>
               </div>
+            </div>
 
             {customerDetail[0]?.CUSTOMERID && (
               <div className="row mb-7">
@@ -1077,22 +1093,22 @@ const SalesCancel: React.FC = () => {
               </div>
             </div>
 
-              {product[1]?.ItemDescription && (
-                <div className="row mb-10">
-                  <label
-                    className={`col-lg-4 fw-bold text-muted ${styles.fontSize}`}
+            {product[1]?.ItemDescription && (
+              <div className="row mb-10">
+                <label
+                  className={`col-lg-4 fw-bold text-muted ${styles.fontSize}`}
+                >
+                  สินค้าบันเดิล
+                </label>
+                <div className="col-lg-8">
+                  <span
+                    className={`fw-bolder text-gray-900 ${styles.fontSize}`}
                   >
-                    สินค้าบันเดิล
-                  </label>
-                  <div className="col-lg-8">
-                    <span
-                      className={`fw-bolder text-gray-900 ${styles.fontSize}`}
-                    >
-                      {product[1]?.ItemDescription}
-                    </span>
-                  </div>
+                    {product[1]?.ItemDescription}
+                  </span>
                 </div>
-              )}
+              </div>
+            )}
 
             {packageProduct[0]?.PACKAGETITLE && (
               <div className="row mb-10">
