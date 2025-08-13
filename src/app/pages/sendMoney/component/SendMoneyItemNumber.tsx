@@ -14,7 +14,7 @@ interface StatusLabelProps {
 }
 
 const SendMoneyItemNumber: React.FC<StatusLabelProps> = ({ status, item, onDelete }) => {
-  console.log(`item`, item)
+  // console.log(`item`, item)
 
   const { auth } = useAuth();
   const EmpId = auth?.data?.[0]?.EmpId || '';
@@ -101,8 +101,8 @@ const SendMoneyItemNumber: React.FC<StatusLabelProps> = ({ status, item, onDelet
         try {
           // สร้าง FormData และใส่ key ให้ตรงกับฝั่ง Server
           const formData = new FormData()
-          console.log(`EmpId`, EmpId);
-          console.log(`SendmoneyId`, item.SENDMONEYID);
+          // console.log(`EmpId`, EmpId);
+          // console.log(`SendmoneyId`, item.SENDMONEYID);
           
           formData.append('EmpId', EmpId) // สะกด Empid ให้ตรงกับ Postman
           formData.append('SendmoneyId', item.SENDMONEYID)
@@ -113,7 +113,7 @@ const SendMoneyItemNumber: React.FC<StatusLabelProps> = ({ status, item, onDelet
             },
           })
 
-          console.log('ลบข้อมูลสำเร็จ:', response.data)
+          // console.log('ลบข้อมูลสำเร็จ:', response.data)
           Swal.fire({
             text: 'ข้อมูลถูกลบเรียบร้อยแล้ว',
             icon: 'success',

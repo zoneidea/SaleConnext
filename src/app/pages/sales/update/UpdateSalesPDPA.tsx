@@ -1548,7 +1548,7 @@ const UpdateSalesPDPA: React.FC = () => {
 
             setIsSignatureSaved(true);
         } else {
-            console.log("Signature pad is empty or not ready.");
+            // console.log("Signature pad is empty or not ready.");
         }
     };
 

@@ -200,10 +200,10 @@ const updateDeviceScanBarcode: React.FC = () => {
 
     // ใช้ type assertion เพื่อระบุประเภทของ state
     const state = location.state as LocationState | undefined;
-    console.log(`Received state:`, state);
+    // console.log(`Received state:`, state);
 
     const item = state?.item as ItemProps; // ใช้ type assertion กับ item
-    console.log(`Received item:`, item);
+    // console.log(`Received item:`, item);
 
     const { setRefno, setBarCode } = useRefnoBarcodeStore((state) => ({
         setRefno: state.setRefno,
@@ -253,8 +253,8 @@ const updateDeviceScanBarcode: React.FC = () => {
                 if (isScannerRunning && html5QrcodeScannerRef.current) {
                     html5QrcodeScannerRef.current
                         .stop()
-                        .then(() => console.log("Scanner stopped successfully"))
-                        .catch((err) => console.error("Error stopping scanner:", err));
+                        // .then(() => console.log("Scanner stopped successfully"))
+                        // .catch((err) => console.error("Error stopping scanner:", err));
                 }
             };
         }

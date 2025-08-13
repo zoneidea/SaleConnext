@@ -4700,11 +4700,11 @@ const UpdateSaleCustDetail: React.FC = () => {
 
   const hasSearchtext =
     !!matchedItem?.CUSTOMERSTATUS?.[0]?.Searchtext;
-  console.log(`hasSearchtext`, hasSearchtext);
+  // console.log(`hasSearchtext`, hasSearchtext);
 
   const searchText =
     matchedItem?.CUSTOMERSTATUS?.[0]?.Searchtext ?? '';
-  console.log(`searchText`, searchText);
+  // console.log(`searchText`, searchText);
 
   const is13Digits = /^\d{13}$/.test(searchText);
 

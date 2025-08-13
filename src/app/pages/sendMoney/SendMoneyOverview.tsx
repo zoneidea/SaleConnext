@@ -14,9 +14,9 @@ const SendMoneyOverview: React.FC = () => {
   const [isLoadingFinish, setIsLoadingFinish] = useState<boolean>(false);
 
   const [dataSendMoney, setDataSendMoney] = useState<any[]>([]);
-  console.log(`dataSendMoney`, dataSendMoney);
+  // console.log(`dataSendMoney`, dataSendMoney);
   const [dataCreatedSendMoney, setDataCreatedSendMoney] = useState<any[]>([]);
-  console.log(`dataCreatedSendMoney`, dataCreatedSendMoney);
+  // console.log(`dataCreatedSendMoney`, dataCreatedSendMoney);
 
   const [search, setSearch] = useState<string>(''); // State สำหรับค้นหา
 

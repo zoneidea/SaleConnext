@@ -2890,9 +2890,9 @@ const SalesContract: React.FC = () => {
   // ถ้ามีใน draft (อัปเดตสุด) ใช้ draft ก่อน, ถ้ายังไม่เจอใช้ state
   const data: ItemProps = (recordFromDraft || state || ({} as ItemProps)) as ItemProps;
 
-  console.log("refNoToUse:", refNoToUse);
-  console.log("recordFromDraft:", recordFromDraft);
-  console.log("data:", data);
+  // console.log("refNoToUse:", refNoToUse);
+  // console.log("recordFromDraft:", recordFromDraft);
+  // console.log("data:", data);
 
   const currentDate = new Date();
   const formattedDate = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate()}`;

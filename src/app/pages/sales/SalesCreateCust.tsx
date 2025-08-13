@@ -11728,7 +11728,7 @@ const SalesCreateCust: React.FC = () => {
 
     // เลือก item ที่ REFNO ตรงกัน (find สำหรับ 1 item หรือ filter สำหรับหลาย item)
     const matchedItem = draft.find(item => item.REFNO === REFNO);
-    console.log(`matchedItem`, matchedItem);
+    // console.log(`matchedItem`, matchedItem);
 
     const {
         addressCard, setAddressCard,
@@ -12515,9 +12515,9 @@ const SalesCreateCust: React.FC = () => {
                             'Content-Type': 'application/json',
                         },
                     });
-                    console.log("updateContract ADDRESS: ", response.data);
+                    // console.log("updateContract ADDRESS: ", response.data);
                 } catch (error) {
-                    console.error('Error updating contact:', error);
+                    // console.error('Error updating contact:', error);
                 }
             };
             updateContactData();
@@ -12935,7 +12935,7 @@ const SalesCreateCust: React.FC = () => {
         },
     });
 
-    console.log("Errors:", errors)
+    // console.log("Errors:", errors)
 
     {/*-------------------- End Validate --------------------*/ }
 

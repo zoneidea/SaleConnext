@@ -108,7 +108,7 @@ export function Login() {
 
   // set permission GPS
   const [locationAccess, setLocationAccess] = useState<boolean>(false);
-  console.log(`locationAccess`, locationAccess);
+  // console.log(`locationAccess`, locationAccess);
 
   function success(pos: any) {
     const crd = pos.coords;
@@ -130,7 +130,7 @@ export function Login() {
       const locationPermission = navigator.permissions.query({
         name: "geolocation",
       });
-      console.log(`locationPermission`, locationPermission);
+      // console.log(`locationPermission`, locationPermission);
       requestPermissions();
       navigate("chrome://settings/content/location");
     });

@@ -37,8 +37,8 @@ export default defineConfig({
     //   key: fs.readFileSync('./certs/localhost-key.pem'),  // ใส่คีย์สำหรับ HTTPS
     //   cert: fs.readFileSync('./certs/localhost.pem'),     // ใส่ใบรับรองสำหรับ HTTPS
     // },
-    https: false
-    // host: true,      // เพิ่มบรรทัดนี้เพื่อฟังทุกอินเทอร์เฟซ (0.0.0.0)
+    https: false,
+    host: true,      // เพิ่มบรรทัดนี้เพื่อฟังทุกอินเทอร์เฟซ (0.0.0.0)
     // port: 5173,      // ถ้าต้องการล็อกพอร์ต (optional)
   }
 });

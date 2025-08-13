@@ -37,22 +37,22 @@ const BorrowScanBarCode: React.FC = () => {
                         setBarCodeState(decodedText); // บันทึกค่า Barcode ที่สแกนได้
                     },
                     (errorMessage) => {
-                        console.warn(`Error scanning: ${errorMessage}`);
+                        // console.warn(`Error scanning: ${errorMessage}`);
                     }
                 )
                 .then(() => {
                     setIsScannerRunning(true);
                 })
                 .catch((err) => {
-                    console.error(`Unable to start scanning: ${err}`);
+                    // console.error(`Unable to start scanning: ${err}`);
                 });
 
             return () => {
                 if (isScannerRunning && html5QrcodeScannerRef.current) {
                     html5QrcodeScannerRef.current
                         .stop()
-                        .then(() => console.log("Scanner stopped successfully"))
-                        .catch((err) => console.error("Error stopping scanner:", err));
+                        // .then(() => console.log("Scanner stopped successfully"))
+                        // .catch((err) => console.error("Error stopping scanner:", err));
                 }
             };
         }

@@ -3226,7 +3226,7 @@ const Step: React.FC = () => {
 
   // ถ้าได้ REFNO มาจาก location.state ก็ใช้ ถ้าไม่มีก็ fallback ไปดึงจาก store
   const refnoFromUpdate = useRefnoBarcodeStore((state: any) => state.refno || item?.REFNO || "")
-  console.log(`refnoFromUpdate`, refnoFromUpdate);
+  // console.log(`refnoFromUpdate`, refnoFromUpdate);
   const refno = item.REFNO ? item.REFNO : refnoFromUpdate
 
   const [data, setData] = useState<any[]>([])
@@ -3442,7 +3442,7 @@ const Step: React.FC = () => {
 
   //////////เช็คว่ามีการชำระเงินรึยัง
   const [finish, setFinish] = useState<any[]>([]);
-  console.log(`finish`, finish);
+  // console.log(`finish`, finish);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
@@ -3470,7 +3470,7 @@ const Step: React.FC = () => {
 
   // state ตัวเก็บ matchedItem
   const [matchedItem, setMatchedItem] = useState<ItemProps | null>(null);
-  console.log(`matchedItem`, matchedItem);
+  // console.log(`matchedItem`, matchedItem);
 
   useEffect(() => {
     if (!isLoading) {

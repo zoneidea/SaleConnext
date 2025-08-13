@@ -81,7 +81,7 @@ interface StatusLabelProps {
 }
 
 const FirstBillItemNumber: React.FC<StatusLabelProps> = ({ item }) => {
-    console.log(`item: `, item);
+    // console.log(`item: `, item);
 
     let newRefNo, customer, telNo, product, productPackage, serialNumber, createdAt, statusTxt, dueDate;
 

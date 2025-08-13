@@ -461,7 +461,7 @@ const CreateSendMoney: React.FC = () => {
     const EmpName = auth?.data?.[0]?.EmpName || '';
 
     const item = location.state as ItemProps || [];
-    console.log(`item`, item);
+    // console.log(`item`, item);
     const amount = item.AMOUNT
     const organizationCode = item.ORGANIZATIONCODE
     const organizationDesc = item.ORGANIZATIONDESCRIPTION
@@ -476,15 +476,15 @@ const CreateSendMoney: React.FC = () => {
     }, []);
 
     const [valueCalendarPayment, setValueCalendarPayment] = useState<string>('');
-    console.log(`valueCalendarPayment`, valueCalendarPayment);
+    // console.log(`valueCalendarPayment`, valueCalendarPayment);
     const [channelSendMoney, setChannelSendMoney] = useState<any[]>([]);
-    console.log(`channelSendMoney`, channelSendMoney);
+    // console.log(`channelSendMoney`, channelSendMoney);
     const [subChannelSendMoney, setSubChannelSendMoney] = useState<any[]>([]);
-    console.log(`subChannelSendMoney`, subChannelSendMoney);
+    // console.log(`subChannelSendMoney`, subChannelSendMoney);
     const [selectedChannel, setSelectedChannel] = useState<string>('');
-    console.log(`selectedChannel`, selectedChannel);
+    // console.log(`selectedChannel`, selectedChannel);
     const [selectedSubChannel, setSelectedSubChannel] = useState<string>('');
-    console.log(`selectedSubChannel`, selectedSubChannel);
+    // console.log(`selectedSubChannel`, selectedSubChannel);
     const [PayeeName, setPayeeName] = useState<string>('');
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -534,7 +534,7 @@ const CreateSendMoney: React.FC = () => {
                             'Content-Type': 'multipart/form-data',
                         }
                     });
-                    console.log('GET_CHANNEL_ITEM response:', response);
+                    // console.log('GET_CHANNEL_ITEM response:', response);
                     const data = Array.isArray(response.data.data) ? response.data.data : [];
                     setSubChannelSendMoney(data); // เซ็ตข้อมูลที่ได้รับ
                 } catch (error) {

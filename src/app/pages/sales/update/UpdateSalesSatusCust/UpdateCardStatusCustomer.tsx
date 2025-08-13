@@ -7,7 +7,7 @@ type Props = {
 }
 
 const UpdateCardStatusCustomer: FC<Props> = ({ customerStatus, handleCheckStatusCustomer }) => {  // เพิ่ม handleNextClick ที่นี่
-    console.log(`customerStatus`, customerStatus);
+    // console.log(`customerStatus`, customerStatus);
 
     return (
         <>

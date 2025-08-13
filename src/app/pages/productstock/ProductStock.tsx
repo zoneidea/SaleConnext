@@ -38,7 +38,7 @@ const SalesProductStock: React.FC = () => {
     // console.log(`categories`, categories);
 
     const { product, setProduct } = useProductStore();
-    console.log(`product`, product);
+    // console.log(`product`, product);
 
     // เมื่อเริ่มต้นค่า selectedCategoryId เป็นค่าว่าง หมายถึง “ทุกหมวดหมู่”
     const [selectedCategoryId, setSelectedCategoryId] = useState<any>('');
@@ -70,16 +70,17 @@ const SalesProductStock: React.FC = () => {
     const getProductUrl = () =>
         `${API_URL_MONGO}/Product/GetStock?empid=${EmpId}&teamSale=${TeamSale}&categoryId=${selectedCategoryId}`;
 
+    const API_TSR = import.meta.env.VITE_APP_API_THIENSURAT;
     const API_TSR_UAT = import.meta.env.VITE_APP_API_THIENSURAT_UAT;
     const PRODUCT_STOCK_ALL_COMPANY_URL = `${API_TSR_UAT}/ProductStock`;
 
     // const GET_BORROW_URL = (empid: string, teamSale: string, sn: string) =>
     //     `${API_TSR_UAT}/Product/GetBorrow?empid=${empid}&teamSale=${teamSale}&sn=${sn}`
 
-    const MOVE_PRODUCT_STOCK_URL = `${API_TSR_UAT}/MoveProductInStock`;
+    const MOVE_PRODUCT_STOCK_URL = `${API_TSR}/MoveProductInStock`;
     const GET_STOCK_URL = `${API_URL_MONGO}/Product/GetStock`;
-    const GET_STOCK_WITHDRAW = `${API_TSR_UAT}/ProductStock/GetStock`
-    const ACCEPT_PRODUCT_URL = `${API_TSR_UAT}/ProductStock/AcceptProduct`;
+    const GET_STOCK_WITHDRAW = `${API_TSR}/ProductStock/GetStock`
+    const ACCEPT_PRODUCT_URL = `${API_TSR}/ProductStock/AcceptProduct`;
 
     const UPDATE_STOCK_URL = `${API_URL_MONGO}/Product/UpdateStock`;
 
@@ -171,7 +172,7 @@ const SalesProductStock: React.FC = () => {
     {/**************** สินค้าเบิกใหม่ **********************/ }
 
     const [getStockWithDraw, setGetStockWithDraw] = useState<any[]>([]);
-    console.log(`getStockWithDraw`, getStockWithDraw);
+    // console.log(`getStockWithDraw`, getStockWithDraw);
 
     const [loadingStockWithDraw, setLoadingStockWithDraw] = useState(false);
 

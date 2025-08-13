@@ -104,7 +104,7 @@ const UpdateSalesSatusCust: React.FC = () => {
   const [error, setError] = useState<string>('');
 
   const [customerStatus, setCustomerStatus] = useState<any>(null);
-  console.log(`customerStatus`, customerStatus);
+  // console.log(`customerStatus`, customerStatus);
 
   // เก็บข้อมูล customerStatus ของการ์ดที่ถูกเลือก
   const [selectedCard, setSelectedCard] = useState<any>(null);
@@ -118,7 +118,7 @@ const UpdateSalesSatusCust: React.FC = () => {
   const [selectedSubDistrict, setSelectedSubDistrict] = useState<number>();
 
   const [statusCustomerContract, setStatusCustomerContract] = useState<any>(null);
-  console.log(`statusCustomerContract`, statusCustomerContract);
+  // console.log(`statusCustomerContract`, statusCustomerContract);
   // เช็คว่า user กดปุ่มค้นหาแล้วรึยัง
   const [isSearchDone, setIsSearchDone] = useState(false);
 
@@ -367,7 +367,7 @@ const UpdateSalesSatusCust: React.FC = () => {
     }
 
     const statusSale = customerStatus?.[0]?.StatusSale;
-    console.log(`statusSale`, statusSale);
+    // console.log(`statusSale`, statusSale);
 
     if (statusSale === "0") {
       // กรณีไม่ผ่านการตรวจสอบ
@@ -491,7 +491,7 @@ const UpdateSalesSatusCust: React.FC = () => {
         }
       );
 
-      console.log('API Update Response:', response.data);
+      // console.log('API Update Response:', response.data);
 
       Swal.fire({
         icon: 'success',

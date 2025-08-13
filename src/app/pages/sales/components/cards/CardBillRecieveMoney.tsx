@@ -23,7 +23,7 @@ const UPDATE_CONTACT_URL = `${API_URL_SALECONNEXT}/UpdateContact/VoidContract`
 const CardBillRecieveMoney: FC<Props> = ({ payments, isLoading }) => {
   const navigate = useNavigate();
 
-  console.log(`payments`, payments);
+  // console.log(`payments`, payments);
 
   const MySwal = withReactContent(Swal)
   const { auth } = useAuth()
@@ -60,7 +60,7 @@ const CardBillRecieveMoney: FC<Props> = ({ payments, isLoading }) => {
               Accept: 'multipart/form-data',
             },
           })
-          console.log('Void success:', responseVoid.data)
+          // console.log('Void success:', responseVoid.data)
 
           // -----------------------------
           // 2) เรียก API UpdateContact ต่อ

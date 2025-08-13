@@ -1519,7 +1519,7 @@ const UpdateSalesContract: React.FC = () => {
   const { REFNO } = useUUIDStore();
 
   const item = (location.state as ItemProps) || ({} as ItemProps);
-  console.log(`item`, item);
+  // console.log(`item`, item);
 
   const refno = item?.REFNO || "";
 

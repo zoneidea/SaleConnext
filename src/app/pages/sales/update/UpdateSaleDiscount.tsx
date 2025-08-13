@@ -2576,7 +2576,7 @@ const UpdateSalesDiscount: React.FC = () => {
   const location = useLocation();
 
   const { item, SaveProductData, REFNO } = location.state as UpdatePackageState;
-  console.log(`item`, item);
+  // console.log(`item`, item);
 
   // ให้ item อ้างอิง matchedItem เพื่อไม่ต้องแก้ส่วนอื่นเยอะ
   const refno = REFNO;
@@ -2654,7 +2654,7 @@ const UpdateSalesDiscount: React.FC = () => {
   // ตรวจสอบว่ามีข้อมูล PRODUCT หรือไม่ก่อนที่จะดึงข้อมูลจากมัน
   const hasTradeIn = SaveProductData?.[0]?.Package?.[0]?.HASTRADEIN ?? null;
   const totalPrice = SaveProductData?.[0]?.Package?.[0]?.TOTALPRICE ?? 0;
-  console.log(`totalPrice`, totalPrice);
+  // console.log(`totalPrice`, totalPrice);
   
   const discountPrice = SaveProductData?.[0]?.Package?.[0]?.DISCOUNTPRICE ?? 0;
   const sequence = SaveProductData?.[0]?.Package?.[0]?.SEQUENCE ?? 0;
@@ -3056,7 +3056,7 @@ const UpdateSalesDiscount: React.FC = () => {
 
   // เลือก item ที่ REFNO ตรงกัน (find สำหรับ 1 item หรือ filter สำหรับหลาย item)
   const matchedFromDraft = draft.find((match) => match.REFNO === REFNO);
-  console.log(`matchedFromDraft`, matchedFromDraft);
+  // console.log(`matchedFromDraft`, matchedFromDraft);
 
   // console.log(`เทส`, productContract[0].Package[0].TOTALPRICE);
   

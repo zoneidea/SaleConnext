@@ -6,7 +6,7 @@ interface StatusLabelProps {
 }
 
 const OrderItemNumber: React.FC<StatusLabelProps> = ({ item }) => {
-  console.log(`item`, item);
+  // console.log(`item`, item);
 
   const formatDate = (dateString: any) => {
     const date = new Date(dateString);

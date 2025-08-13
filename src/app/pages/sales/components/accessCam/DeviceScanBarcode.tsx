@@ -258,8 +258,8 @@ const DeviceScanBarcode: React.FC = () => {
                 if (isScannerRunning && html5QrcodeScannerRef.current) {
                     html5QrcodeScannerRef.current
                         .stop()
-                        .then(() => console.log("Scanner stopped successfully"))
-                        .catch((err) => console.error("Error stopping scanner:", err));
+                        // .then(() => console.log("Scanner stopped successfully"))
+                        // .catch((err) => console.error("Error stopping scanner:", err));
                 }
             };
         }

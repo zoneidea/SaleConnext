@@ -3,6 +3,7 @@ import axios from "axios";
 import { Content } from "../../../_metronic/layout/components/content";
 import { useAuth } from "../../modules/auth/core/Auth";
 import dayjs from "dayjs";
+import { log } from "console";
 
 const ReportSale: React.FC = () => {
   const { auth } = useAuth();
@@ -16,6 +17,7 @@ const ReportSale: React.FC = () => {
   const [valueCalendarStart, setValueCalendarStart] = useState<string>(today);
   const [valueCalendarEnd, setValueCalendarEnd] = useState<string>(today);
   const [tableData, setTableData] = useState<any[]>([]);
+  console.log(`tableData`, tableData);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [hasSearched, setHasSearched] = useState<boolean>(false);
 
@@ -146,21 +148,32 @@ const ReportSale: React.FC = () => {
                       {tableData.map((item, index) => (
                         <tr key={index}>
                           <td>{item.CONTNO}</td>
-                          <td>
+                          <td style={{ whiteSpace: 'normal', wordBreak: 'break-word', maxWidth: '150px' }}>
                             {item.PRODUCT[0]?.ItemDescription || "-"}
                           </td>
-                          <td>
+                          <td style={{ whiteSpace: 'normal', wordBreak: 'break-word', maxWidth: '250px' }}>
                             {item.PRODUCT[0]?.Package[0]?.PACKAGETITLE || "-"}
                           </td>
                           <td>
                             {item.CUSTOMERDETAIL[0]?.PREFIX[0]?.PREFIXNAME ||
                               ""}{" "}
-                            {item.CUSTOMERDETAIL[0]?.CUSTOMERNAME || ""}
+                            {item.CUSTOMERDETAIL[0]?.CUSTOMERNAME || ""} {item.CUSTOMERDETAIL[0]?.CUSTOMERLASTNAME || ""}
                           </td>
                           <td>{item.TEAMSALE}</td>
-                          <td>{item.SALECODE}</td>
+                          <td style={{ whiteSpace: 'normal', wordBreak: 'break-word', maxWidth: '150px' }}>
+                            {item.SALEEMPLOYEE[0].SALEEMPLOYEE.SaleCode}-<br/>{item.SALEEMPLOYEE[0].SALEEMPLOYEE.FName} {item.SALEEMPLOYEE[0].SALEEMPLOYEE.LName}
+                          </td>
                           <td>{formatToBE(item.EFFDATE)}</td>
-                          <td>{item.STATUS}</td>
+                          <td>
+                            {(() => {
+                              const statusMap: Record<string, string> = {
+                                PENDING: "รอตรวจสอบ",
+                                EDIT: "แจ้งแก้ไข",
+                                FINISH: "อนุมัติผ่าน",
+                              };
+                              return statusMap[item.CHECKKERSTATUS];
+                            })()}
+                          </td>
                         </tr>
                       ))}
                     </tbody>

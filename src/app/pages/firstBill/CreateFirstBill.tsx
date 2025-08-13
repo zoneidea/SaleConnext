@@ -5265,7 +5265,7 @@ const CreateFirstBill: React.FC = () => {
 
   const state = (location.state ?? {}) as LocationState;
   const item = state.item;
-  console.log(`item`, item);
+  // console.log(`item`, item);
   const from = state.from ?? "";
 
   const refno = item?.REFNO ?? "";
@@ -5273,7 +5273,7 @@ const CreateFirstBill: React.FC = () => {
   const contNo = item?.CONTNO ?? "";
   const customerDetail = item?.CUSTOMERDETAIL ?? [];
   const discountAmount = item?.DISCOUNT[0]?.DISCOUNTAMOUNT || 0;
-  console.log(`discountAmount`, discountAmount);
+  // console.log(`discountAmount`, discountAmount);
   const transaction = item?.TRANSACTION ?? [];
   // console.log(`transaction`, transaction);
 
@@ -5306,7 +5306,7 @@ const CreateFirstBill: React.FC = () => {
     (from === "/firstBill/overview"
       ? item?.PERIODDETAILS?.[0]?.PAYMENTAMOUNT
       : product?.[0]?.Package?.[0]?.PERIODDETAILS?.[0]?.PAYMENTAMOUNT - discountAmount) ?? 0;
-  console.log(`paymentAmount`, paymentAmount);
+  // console.log(`paymentAmount`, paymentAmount);
 
   const totalPrice = Number(product?.[0]?.Package?.[0]?.TOTALPRICE ?? 0);
   const netPrice = totalPrice - discountAmount;
@@ -5318,7 +5318,7 @@ const CreateFirstBill: React.FC = () => {
   // ชำระเต็ม หรือ ชำระบางส่วน / เกินจำนวน
   const [payFullAmount, setPayFullAmount] = useState<boolean>(true);
   const [paySomeAmount, setPaySomeAmount] = useState<number>(0);
-  console.log(`จำนวนเงินแบ่งชำระ`, paySomeAmount);
+  // console.log(`จำนวนเงินแบ่งชำระ`, paySomeAmount);
   const [paymentChoice, setPaymentChoice] = useState<string>("FULL");
 
   const [priceOption, setPriceOption] = useState<string>("CASH");
@@ -5356,7 +5356,7 @@ const CreateFirstBill: React.FC = () => {
   const [loadingQR, setLoadingQR] = useState<boolean>(false);
 
   const paymentId = uuidv4();
-  console.log(`paymentId`, paymentId);
+  // console.log(`paymentId`, paymentId);
 
   ///////// บังคับกรอกปฏิทิน
   const [dateError, setDateError] = useState<string>("");
@@ -5397,7 +5397,7 @@ const CreateFirstBill: React.FC = () => {
       formData.append("Amount", qrAmount.toString());
 
       //   console.log("refno", refno);
-      console.log("สแกน", qrAmount.toString());
+      // console.log("สแกน", qrAmount.toString());
 
       const response = await axios.post(GET_QR_PAYMENT_URL, formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -5592,7 +5592,7 @@ const CreateFirstBill: React.FC = () => {
     DISCOUNT: discountAmount,
     PAYMENTID: paymentId,
   };
-  console.log(`allData`, allData);
+  // console.log(`allData`, allData);
 
   const onSubmit = async () => {
     // บังคับเลือกวันที่ในเคสที่ต้องมีวัน
@@ -5772,7 +5772,7 @@ const CreateFirstBill: React.FC = () => {
   const GET_PAYMENT_URL = `${API_URL_MONGO}/Payment/GetPaymentPeriod`;
 
   const [finish, setFinish] = useState<any[]>([]); // กำหนดให้ state เป็น array เพื่อรองรับ map()
-  console.log(`finish`, finish);
+  // console.log(`finish`, finish);
 
   const [isLoadingFinish, setIsLoadingFinish] = useState<boolean>(false);
 

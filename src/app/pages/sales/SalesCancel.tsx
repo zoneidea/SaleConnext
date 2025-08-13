@@ -604,7 +604,7 @@ const SalesCancel: React.FC = () => {
   const { REFNO } = useUUIDStore();
 
   const item = location.state as ItemProps;
-  console.log(`item`, item);
+  // console.log(`item`, item);
 
   const createdDate = item.CONTRACT[0]?.createdAt;
   const contno = item.CONTNO;

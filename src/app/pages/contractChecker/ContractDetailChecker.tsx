@@ -164,7 +164,7 @@ const SalesPackage: React.FC = () => {
                     confirmButtonText: 'ตกลง'
                 }).then(() => {
                     navigate('/contract-checker');
-                    console.log('บันทึก checker สำเร็จ');
+                    // console.log('บันทึก checker สำเร็จ');
                 });
             } else {
                 await MySwal.fire({

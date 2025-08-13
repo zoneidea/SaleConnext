@@ -726,7 +726,7 @@ const SalesPhoto: React.FC = () => {
 
     const location = useLocation() as any;
     const fromStep = location.state?.fromStep || false;
-    console.log(`fromStep`, fromStep);
+    // console.log(`fromStep`, fromStep);
     const fromPath = location.state?.from || '';
     const item = (location.state?.data as ItemProps) || [];
     // console.log(`item`, item);
@@ -741,7 +741,7 @@ const SalesPhoto: React.FC = () => {
         '/sale/photo/gallery/turn' ||
         '/sale/photo/gallery-gps'
 
-    console.log(`hideFinish`, hideFinish);
+    // console.log(`hideFinish`, hideFinish);
 
     // กำหนด REFNO
     const refno = fromStep ? item.REFNO : REFNO;
@@ -839,7 +839,7 @@ const SalesPhoto: React.FC = () => {
         });
 
         const finishRefno = refno ? refno : matchedItem.REFNO;
-        console.log(`finishRefno`, finishRefno);
+        // console.log(`finishRefno`, finishRefno);
 
         try {
             const response = await axios.post(
@@ -1030,13 +1030,13 @@ const SalesPhoto: React.FC = () => {
         );
     }, [fromStep, item, matchedItem]);
 
-    console.log(`isDataComplete`, isDataComplete);
+    // console.log(`isDataComplete`, isDataComplete);
 
     const whereRefno = fromStep ? refno : matchedItem?.REFNO ?? "";
 
-    console.log(`refno`, refno);
+    // console.log(`refno`, refno);
     // console.log(`matchedItem.REFNO`, matchedItem.REFNO);
-    console.log(`item.REFNO`, item.REFNO);
+    // console.log(`item.REFNO`, item.REFNO);
 
     return (
         <>

@@ -64,7 +64,7 @@ const SalesBillRecieveMoney: React.FC = () => {
     // console.log(`item`, item);
 
     const itemPropFromSalesCancel = location.state as ItemProps | null;
-    console.log(`itemPropFromSalesCancel`, itemPropFromSalesCancel);
+    // console.log(`itemPropFromSalesCancel`, itemPropFromSalesCancel);
     
     useEffect(() => {
         getPayment()
@@ -72,8 +72,8 @@ const SalesBillRecieveMoney: React.FC = () => {
 
     const getPayment = async () => {
         setIsLoading(true)
-        console.log(`test RefNo`, itemPropFromSalesCancel?.REFNO);
-        console.log(`test EmpId`, EmpId);
+        // console.log(`test RefNo`, itemPropFromSalesCancel?.REFNO);
+        // console.log(`test EmpId`, EmpId);
         
         try {
             const response = await axios.post(
@@ -120,7 +120,7 @@ const SalesBillRecieveMoney: React.FC = () => {
 
     // state ตัวเก็บ matchedItem
     const [matchedItem, setMatchedItem] = useState<ItemProps | null>(null);
-    console.log(`matchedItem`, matchedItem);
+    // console.log(`matchedItem`, matchedItem);
 
     useEffect(() => {
         if (!isLoadingDraft) {

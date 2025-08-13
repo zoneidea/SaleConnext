@@ -1,9 +1,8 @@
 import styles from '@/styles/style.module.css'
 import { FC } from 'react'
 import clsx from 'clsx'
-import { Link } from 'react-router-dom'
-import { useLocation } from 'react-router'
-import { checkIsActive, WithChildren } from '../../../../helpers'
+import { Link, useLocation } from 'react-router-dom'
+import { WithChildren } from '../../../../helpers'
 
 type Props = {
   fontSize?: string
@@ -25,22 +24,24 @@ const SidebarMenuItem: FC<Props & WithChildren> = ({
   onMouseLeave
 }) => {
   const { pathname } = useLocation()
-  const isActive = checkIsActive(pathname, to)
-  // console.log(`imageSrc`, imageSrc);
+
+  // ใช้ exact match แทน checkIsActive เดิม
+  const isActive = pathname === to
 
   return (
-    <div className='menu-item'
+    <div
+      className="menu-item"
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
       <Link className={clsx('menu-link without-sub', { active: isActive })} to={to}>
         {hasBullet && (
-          <span className='menu-bullet'>
-            <span className='bullet bullet-dot'></span>
+          <span className="menu-bullet">
+            <span className="bullet bullet-dot"></span>
           </span>
         )}
         {imageSrc && (
-          <span className='menu-icon px-2 py-1'>
+          <span className="menu-icon px-2 py-1">
             <img src={imageSrc} alt={title} style={{ width: 20, height: 20 }} />
           </span>
         )}

@@ -1524,7 +1524,7 @@ const SalesCreateCustCash: React.FC = () => {
 
   // เลือก item ที่ REFNO ตรงกัน (find สำหรับ 1 item หรือ filter สำหรับหลาย item)
   const matchedItem = draft.find((item) => item.REFNO === REFNO);
-  console.log(`matchedItem`, matchedItem);
+  // console.log(`matchedItem`, matchedItem);
 
   const [customerTypes, setCustomerTypes] = useState<any[]>([]);
 
@@ -1532,9 +1532,9 @@ const SalesCreateCustCash: React.FC = () => {
   const [valueAge, setValueAge] = useState<number | null>(null);
 
   const [selectedCustomerType, setsSelectedCustomerType] = useState<string>("");
-  console.log(`selectedCustomerType`, selectedCustomerType);
+  // console.log(`selectedCustomerType`, selectedCustomerType);
   const [selectedCardType, setSelectedCardType] = useState<string>("");
-  console.log(`selectedCardType`, selectedCardType);
+  // console.log(`selectedCardType`, selectedCardType);
   const [selectedPrefixId, setSelectedPrefixId] = useState<number>();
   const [selectedSexId, setSelectedSexId] = useState<number>();
 
@@ -2015,11 +2015,11 @@ const SalesCreateCustCash: React.FC = () => {
 
   const hasSearchtext =
     !!matchedItem?.CUSTOMERSTATUS?.[0]?.Searchtext;
-  console.log(`hasSearchtext`, hasSearchtext);
+  // console.log(`hasSearchtext`, hasSearchtext);
 
   const searchText =
     matchedItem?.CUSTOMERSTATUS?.[0]?.Searchtext ?? '';
-  console.log(`searchText`, searchText);
+  // console.log(`searchText`, searchText);
 
   const is13Digits = /^\d{13}$/.test(searchText);
 

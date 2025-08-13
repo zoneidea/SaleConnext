@@ -49,7 +49,7 @@ const ToolbarClassic = () => {
         </a>
       )} */}
 
-      {config.app?.toolbar?.primaryButton && (
+      {/* {config.app?.toolbar?.primaryButton && (
         <a
           href='#'
           onClick={() => setShowCreateAppModal(true)}
@@ -58,7 +58,7 @@ const ToolbarClassic = () => {
           Create
         </a>
       )}
-      <CreateAppModal show={showCreateAppModal} handleClose={() => setShowCreateAppModal(false)} />
+      <CreateAppModal show={showCreateAppModal} handleClose={() => setShowCreateAppModal(false)} /> */}
     </div>
   )
 }

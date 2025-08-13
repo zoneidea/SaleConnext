@@ -37,10 +37,10 @@ const BorrowProduct: React.FC = () => {
     const { fetchCategory } = useFetchCategoryStore();
 
     const [categories, setCategories] = useState<any[]>([]);
-    console.log(`categories`, categories);
+    // console.log(`categories`, categories);
 
     const { product, setProduct } = useProductStore();
-    console.log(`product`, product);
+    // console.log(`product`, product);
 
     // เมื่อเริ่มต้นค่า selectedCategoryId เป็นค่าว่าง หมายถึง “ทุกหมวดหมู่”
     const [selectedCategoryId, setSelectedCategoryId] = useState<any>('');
@@ -90,7 +90,7 @@ const BorrowProduct: React.FC = () => {
 
     // เลือกโปรดักจากการคลิกที่การ์ด
     const [selectedProductForBorrow, setSelectedProductForBorrow] = useState<any | null>(null)
-    console.log(`selectedProductForBorrow`, selectedProductForBorrow);
+    // console.log(`selectedProductForBorrow`, selectedProductForBorrow);
 
     // สร้าง state สำหรับบอกว่ากำลังค้นหา Barcode อยู่หรือไม่
     const [isSearchingBarcode, setIsSearchingBarcode] = useState(false)
@@ -100,20 +100,21 @@ const BorrowProduct: React.FC = () => {
     // เมื่อมาจากหน้า สแกนบารโค้ด ให้เข้าแท็บ ระบบยืมสินค้า ออโต้
     const [activeTab, setActiveTab] = useState<"borrowing" | "waiting" | "history">("borrowing");
 
+    const API_TSR = import.meta.env.VITE_APP_API_THIENSURAT;
     const API_TSR_UAT = import.meta.env.VITE_APP_API_THIENSURAT_UAT;
-    const PRODUCT_STOCK_ALL_COMPANY_URL = `${API_TSR_UAT}/ProductStock`;
+    const PRODUCT_STOCK_ALL_COMPANY_URL = `${API_TSR}/ProductStock`;
 
     // const GET_BORROW_URL = (empid: string, teamSale: string, sn: string) =>
     //     `${API_TSR_UAT}/Product/GetBorrow?empid=${empid}&teamSale=${teamSale}&sn=${sn}`
 
-    const MOVE_PRODUCT_STOCK_URL = `${API_TSR_UAT}/MoveProductInStock`;
+    const MOVE_PRODUCT_STOCK_URL = `${API_TSR}/MoveProductInStock`;
     const UPDATE_STOCK_URL = `${API_URL_MONGO}/Product/UpdateStock`;
     const REQUEST_BORROW = `${API_URL_MONGO}/Product/RequestBorrow`;
     const GET_BORROW_LIST = `${API_URL_MONGO}/Product/GetBorrowList`;
 
     // โชว์การ์ดรายการสินค้าที่ยืม (คนยืมเห็น)
     const [watingProductAprroveBorrower, setWatingProductAprroveBorrower] = useState<any[]>([]);
-    console.log(`watingProductAprroveBorrower`, watingProductAprroveBorrower);
+    // console.log(`watingProductAprroveBorrower`, watingProductAprroveBorrower);
 
     const [loadingWatingProductAprroveBorrower, setLoadingWatingProductAprroveBorrower] = useState(false)
 
@@ -358,7 +359,7 @@ const BorrowProduct: React.FC = () => {
     const UPDATE_BORROW_STATUS = `${API_URL_MONGO}/Product/UpdateBorrowStatus`;
 
     const [watingProductAprrove, setWatingProductAprrove] = useState<any[]>([]);
-    console.log(`watingProductAprrove`, watingProductAprrove);
+    // console.log(`watingProductAprrove`, watingProductAprrove);
 
     const [loadingWatingProductAprrove, setLoadingWatingProductAprrove] = useState(false)
 

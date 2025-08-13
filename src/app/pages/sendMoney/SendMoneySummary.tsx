@@ -61,7 +61,7 @@ const SendMoneySummary: React.FC = () => {
         )
     }
 
-    console.log(`itemData`, itemData);
+    // console.log(`itemData`, itemData);
 
     // 4) ดึงค่าไปใช้งาน
     const channelName = itemData.CHANNELNAME || ''
