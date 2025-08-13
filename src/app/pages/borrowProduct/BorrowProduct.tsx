@@ -464,20 +464,6 @@ const BorrowProduct: React.FC = () => {
                         <h1 className="page-heading d-flex text-gray-900 fw-bold fs-3 my-0 flex-column justify-content-center">
                             ระบบยืมสินค้า
                         </h1>
-                        <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
-                            <li className="breadcrumb-item text-muted">
-                                <a
-                                    className="text-muted text-hover-primary"
-                                    href="/metronic8/react/demo1/sales/overview"
-                                >
-                                    ระบบยืมสินค้า
-                                </a>
-                            </li>
-                            <li className="breadcrumb-item">
-                                <span className="bullet bg-gray-500 w-5px h-2px"></span>
-                            </li>
-                            <li className="breadcrumb-item text-gray-900">ระบบยืมสินค้า</li>
-                        </ul>
                     </div>
                 </div>
 

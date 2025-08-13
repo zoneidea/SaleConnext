@@ -61,18 +61,25 @@ const SalesBillRecieveMoney: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false)
 
     const item = useItemStore((state) => state.item)
+    // console.log(`item`, item);
 
+    const itemPropFromSalesCancel = location.state as ItemProps | null;
+    console.log(`itemPropFromSalesCancel`, itemPropFromSalesCancel);
+    
     useEffect(() => {
         getPayment()
     }, [])
 
     const getPayment = async () => {
         setIsLoading(true)
+        console.log(`test RefNo`, itemPropFromSalesCancel?.REFNO);
+        console.log(`test EmpId`, EmpId);
+        
         try {
             const response = await axios.post(
                 GET_PAYMENT,
                 {
-                    RefNo: item?.REFNO,
+                    RefNo: itemPropFromSalesCancel?.REFNO,
                     EmpId: EmpId,
                 },
                 {
@@ -113,7 +120,7 @@ const SalesBillRecieveMoney: React.FC = () => {
 
     // state ตัวเก็บ matchedItem
     const [matchedItem, setMatchedItem] = useState<ItemProps | null>(null);
-    // console.log(`matchedItem`, matchedItem);
+    console.log(`matchedItem`, matchedItem);
 
     useEffect(() => {
         if (!isLoadingDraft) {
@@ -143,7 +150,7 @@ const SalesBillRecieveMoney: React.FC = () => {
             <div className='d-none d-xl-flex align-items-end my-5 justify-content-start mx-10'>
                 <button
                     className={`${styles.btnSecondary}`}
-                    onClick={() => navigate('/sale/cancel', { state: matchedItem })}
+                    onClick={() => navigate('/sale/cancel', { state: itemPropFromSalesCancel })}
                 >
                     ย้อนกลับ
                 </button>
@@ -161,7 +168,7 @@ const SalesBillRecieveMoney: React.FC = () => {
             >
                 <button
                     className={`${styles.btnSecondary}`}
-                    onClick={() => navigate('/sale/cancel', { state: matchedItem })}
+                    onClick={() => navigate('/sale/cancel', { state: itemPropFromSalesCancel })}
                 >
                     ย้อนกลับ
                 </button>

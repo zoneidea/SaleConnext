@@ -3171,7 +3171,7 @@
 import styles from '@/styles/style.module.css'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import axios from 'axios'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useAuth } from '../../../../modules/auth/core/Auth'
 import { Content } from '../../../../../_metronic/layout/components/content'
 import useRefnoBarcodeStore from "../accessCam/refnoBarcodeStore"
@@ -3226,6 +3226,7 @@ const Step: React.FC = () => {
 
   // ถ้าได้ REFNO มาจาก location.state ก็ใช้ ถ้าไม่มีก็ fallback ไปดึงจาก store
   const refnoFromUpdate = useRefnoBarcodeStore((state: any) => state.refno || item?.REFNO || "")
+  console.log(`refnoFromUpdate`, refnoFromUpdate);
   const refno = item.REFNO ? item.REFNO : refnoFromUpdate
 
   const [data, setData] = useState<any[]>([])
@@ -3261,6 +3262,7 @@ const Step: React.FC = () => {
   const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO || ""
   const GET_CONTRACT_URL = `${API_URL_MONGO}/Contract/GetContractSummary`
   const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`
+  const GET_PAYMENT_URL = `${API_URL_MONGO}/Payment/GetPaymentPeriod`;
 
   const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT || ""
   const API_URL_POST_CONDITIONSCHECKHISTORY = `${API_SALECONNEXT}/ConditionsCheckHistory`
@@ -3437,6 +3439,49 @@ const Step: React.FC = () => {
       getInstallerData()
     }
   }, [EmpId, data])
+
+  //////////เช็คว่ามีการชำระเงินรึยัง
+  const [finish, setFinish] = useState<any[]>([]);
+  console.log(`finish`, finish);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!EmpId || !TeamSale) return;
+    getDataFinish();
+  }, [EmpId, TeamSale]);
+
+  const getDataFinish = async () => {
+    setIsLoading(true);
+    try {
+      const response = await axios.get(GET_PAYMENT_URL, {
+        params: {
+          EMPID: EmpId,
+          TEAMSALE: TeamSale
+        }
+      });
+      const data = Array.isArray(response.data.data) ? response.data.data : [];
+      setFinish(data);
+    } catch (error) {
+      console.error('Error fetching GET_PAYMENT_URL:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // state ตัวเก็บ matchedItem
+  const [matchedItem, setMatchedItem] = useState<ItemProps | null>(null);
+  console.log(`matchedItem`, matchedItem);
+
+  useEffect(() => {
+    if (!isLoading) {
+      const found = finish.find((d) => d.REFNO === item?.REFNO || refnoFromUpdate);
+      setMatchedItem(found);
+    }
+  }, [finish, isLoading]);
+
+  const hasPaymentPeriod = !!matchedItem  // true = มีงวดชำระ/นัดชำระแล้ว
+
+  //////////เช็คว่ามีการชำระเงินรึยัง
 
   // ฟังก์ชันสำหรับขั้นตอนต่าง ๆ (ปุ่มคลิกแล้วตรวจเงื่อนไข)
   const handleClick = async (routeName: string) => {
@@ -3706,6 +3751,10 @@ const Step: React.FC = () => {
     const yyyy = d.getFullYear() + 543;
     return `${dd}/${mm}/${yyyy}`;
   };
+
+  const paidFromLocal = useMemo(() => {
+    return localStorage.getItem(`paymentDone:${refnoFromUpdate}`) === '1';
+  }, [refnoFromUpdate]);
 
   return (
     <>
@@ -4129,7 +4178,7 @@ const Step: React.FC = () => {
                         });
                         return;
                       }
-                      navigate('/sale/pdpa', { state: data[0] });
+                      navigate('/sale/pdpa', { state: { ...data[0], from: '/sale/step' } });
                     }}
                     className='w-100 text-start border-0 bg-transparent p-0'
                     style={{ cursor: 'pointer' }}
@@ -4188,6 +4237,22 @@ const Step: React.FC = () => {
                         });
                         return;
                       }
+                      if (hasPaymentPeriod) {
+                        await Swal.fire({
+                          icon: 'info',
+                          title: 'ไม่สามารถแก้ไขได้',
+                          confirmButtonText: 'ตกลง',
+                        });
+                        return;
+                      }
+                      // if (paidFromLocal) {
+                      //   await Swal.fire({
+                      //     icon: 'info',
+                      //     title: 'ไม่สามารถแก้ไขได้',
+                      //     confirmButtonText: 'ตกลง',
+                      //   });
+                      //   return;
+                      // }
                       handleClick('UpdateSalesContract').then(ok => {
                         if (ok) {
                           // navigate('/firstBill/CreateFirstBill', { state: data[0] })

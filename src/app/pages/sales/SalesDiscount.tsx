@@ -2144,8 +2144,8 @@ const SalesDiscount: React.FC = () => {
 
         {isDiscountValid && (
           <>
-            <div className="d-none d-xl-flex justify-content-between align-items-center mt-5 mb-10">
-              <button
+            <div className="d-none d-xl-flex justify-content-end align-items-center mt-5 mb-10">
+              {/* <button
                 className={`${styles.btnSecondary}`}
                 onClick={() =>
                   navigate("/sale/update/updateSalePackage", {
@@ -2157,7 +2157,7 @@ const SalesDiscount: React.FC = () => {
                 }
               >
                 แก้ไขแพ็คเกจ
-              </button>
+              </button> */}
               <button
                 className={`${styles.btnPrimary}`}
                 onClick={handleNextClick}
@@ -2167,7 +2167,7 @@ const SalesDiscount: React.FC = () => {
             </div>
 
             <div
-              className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
+              className="d-flex d-xl-none justify-content-end align-items-center bg-light p-3 border-top"
               style={{
                 position: "fixed",
                 bottom: 0,
@@ -2176,7 +2176,7 @@ const SalesDiscount: React.FC = () => {
                 zIndex: 1050,
               }}
             >
-              <button
+              {/* <button
                 className={`${styles.btnSecondary}`}
                 onClick={() =>
                   navigate("/sale/update/updateSalePackage", {
@@ -2188,7 +2188,7 @@ const SalesDiscount: React.FC = () => {
                 }
               >
                 แก้ไขแพ็คเกจ
-              </button>
+              </button> */}
               <button
                 className={`${styles.btnPrimary}`}
                 onClick={handleNextClick}

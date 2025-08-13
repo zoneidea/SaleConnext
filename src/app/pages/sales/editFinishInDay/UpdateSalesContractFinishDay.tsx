@@ -366,6 +366,8 @@ const UpdateSalesContractFinishDay: React.FC = () => {
         return `${dd}/${mm}/${yyyy}`;
     };
 
+    const hasSignature = Boolean(item?.CONTRACT?.[0]?.signature?.trim());
+
     return (
         <>
             <Content>
@@ -430,23 +432,6 @@ const UpdateSalesContractFinishDay: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="row mb-7">
-                            <label
-                                className={`col-lg-4 fw-bold text-muted ${styles.label}`}
-                            >
-                                สถานะลูกค้า
-                            </label>
-                            <div className="col-lg-8">
-                                <span
-                                    className={`fw-bolder text-gray-900 ${styles.label}`}
-                                >
-                                    {item?.CUSTOMERSTATUS[0]?.Message
-                                        ? item?.CUSTOMERSTATUS[0]?.Message
-                                        : item?.CUSTOMERSTATUS[0]?.message}
-                                </span>
-                            </div>
-                        </div>
-
                         {customerDetail[0]?.CUSTOMERID && (
                             <div className='row mb-7'>
                                 {customerDetail[0].CUSTOMERTYPE === "1" ? (
@@ -469,11 +454,21 @@ const UpdateSalesContractFinishDay: React.FC = () => {
                                     <span className={`${styles.label}`}>
                                         {address[0]?.ADDRESSCARD?.ADDRESSNUMBER && `${address[0]?.ADDRESSCARD?.ADDRESSNUMBER}`}&nbsp;
                                         {address[0]?.ADDRESSCARD?.ADDRESSMOO && `หมู่ที่ ${address[0]?.ADDRESSCARD?.ADDRESSMOO}`}&nbsp;
-                                        {address[0]?.ADDRESSCARD?.ADDRESSSOI && `ซอย ${address[0]?.ADDRESSCARD?.ADDRESSSOI}`}&nbsp;
-                                        {address[0]?.ADDRESSCARD?.ADDRESSROAD && `ถนน ${address[0]?.ADDRESSCARD?.ADDRESSROAD}`}&nbsp;
-                                        {address[0]?.ADDRESSCARD?.ADDRESSSUBDISTRICTNAME && `ตำบล / แขวง ${address[0]?.ADDRESSCARD?.ADDRESSSUBDISTRICTNAME}`}&nbsp;
-                                        {address[0]?.ADDRESSCARD?.ADDRESSDISTRICTNAME && `อำเภอ ${address[0]?.ADDRESSCARD?.ADDRESSDISTRICTNAME}`}&nbsp;
-                                        {address[0]?.ADDRESSCARD?.ADDRESSPROVINCENAME && `จังหวัด ${address[0]?.ADDRESSCARD?.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
+                                        {address[0]?.ADDRESSCARD?.ADDRESSSOI && `ซอย${address[0]?.ADDRESSCARD?.ADDRESSSOI}`}&nbsp;
+                                        {address[0]?.ADDRESSCARD?.ADDRESSROAD && `ถนน${address[0]?.ADDRESSCARD?.ADDRESSROAD}`}&nbsp;
+                                        {address?.[0]?.ADDRESSCARD?.ADDRESSSUBDISTRICTNAME && (
+                                            <>
+                                                {address?.[0]?.ADDRESSCARD?.ADDRESSPROVINCENAME === "กรุงเทพมหานคร" ? "แขวง" : "ตำบล"}
+                                                {address[0].ADDRESSCARD.ADDRESSSUBDISTRICTNAME}
+                                            </>
+                                        )}{" "}
+                                        {address?.[0]?.ADDRESSCARD?.ADDRESSDISTRICTNAME && (
+                                            <>
+                                                {address?.[0]?.ADDRESSCARD?.ADDRESSPROVINCENAME === "กรุงเทพมหานคร" ? "เขต" : "อำเภอ"}
+                                                {address[0].ADDRESSCARD.ADDRESSDISTRICTNAME}
+                                            </>
+                                        )}{" "}
+                                        {address[0]?.ADDRESSCARD?.ADDRESSPROVINCENAME && `จังหวัด${address[0]?.ADDRESSCARD?.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
                                         {address[0]?.ADDRESSCARD?.ADDRESSZIPCODE && `${address[0]?.ADDRESSCARD?.ADDRESSZIPCODE}`}&nbsp;
                                     </span>
                                 </div>
@@ -487,11 +482,21 @@ const UpdateSalesContractFinishDay: React.FC = () => {
                                     <span className={`${styles.label}`}>
                                         {address[0]?.ADDRESSINSTALLATION?.ADDRESSNUMBER && `${address[0]?.ADDRESSINSTALLATION?.ADDRESSNUMBER}`}&nbsp;
                                         {address[0]?.ADDRESSINSTALLATION?.ADDRESSMOO && `หมู่ที่ ${address[0]?.ADDRESSINSTALLATION?.ADDRESSMOO}`}&nbsp;
-                                        {address[0]?.ADDRESSINSTALLATION?.ADDRESSSOI && `ซอย ${address[0]?.ADDRESSINSTALLATION?.ADDRESSSOI}`}&nbsp;
-                                        {address[0]?.ADDRESSINSTALLATION?.ADDRESSROAD && `ถนน ${address[0]?.ADDRESSINSTALLATION?.ADDRESSROAD}`}&nbsp;
-                                        {address[0]?.ADDRESSINSTALLATION?.ADDRESSSUBDISTRICTNAME && `ตำบล / แขวง ${address[0]?.ADDRESSINSTALLATION?.ADDRESSSUBDISTRICTNAME}`}&nbsp;
-                                        {address[0]?.ADDRESSINSTALLATION?.ADDRESSDISTRICTNAME && `อำเภอ ${address[0]?.ADDRESSINSTALLATION?.ADDRESSDISTRICTNAME}`}&nbsp;
-                                        {address[0]?.ADDRESSINSTALLATION?.ADDRESSPROVINCENAME && `จังหวัด ${address[0]?.ADDRESSINSTALLATION?.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
+                                        {address[0]?.ADDRESSINSTALLATION?.ADDRESSSOI && `ซอย${address[0]?.ADDRESSINSTALLATION?.ADDRESSSOI}`}&nbsp;
+                                        {address[0]?.ADDRESSINSTALLATION?.ADDRESSROAD && `ถนน${address[0]?.ADDRESSINSTALLATION?.ADDRESSROAD}`}&nbsp;
+                                        {address?.[0]?.ADDRESSINSTALLATION?.ADDRESSSUBDISTRICTNAME && (
+                                            <>
+                                                {address?.[0]?.ADDRESSINSTALLATION?.ADDRESSPROVINCENAME === "กรุงเทพมหานคร" ? "แขวง" : "ตำบล"}
+                                                {address[0].ADDRESSINSTALLATION.ADDRESSSUBDISTRICTNAME}
+                                            </>
+                                        )}{" "}
+                                        {address?.[0]?.ADDRESSINSTALLATION?.ADDRESSDISTRICTNAME && (
+                                            <>
+                                                {address?.[0]?.ADDRESSINSTALLATION?.ADDRESSPROVINCENAME === "กรุงเทพมหานคร" ? "เขต" : "อำเภอ"}
+                                                {address[0].ADDRESSINSTALLATION.ADDRESSDISTRICTNAME}
+                                            </>
+                                        )}{" "}
+                                        {address[0]?.ADDRESSINSTALLATION?.ADDRESSPROVINCENAME && `จังหวัด${address[0]?.ADDRESSINSTALLATION?.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
                                         {address[0]?.ADDRESSINSTALLATION?.ADDRESSZIPCODE && `${address[0]?.ADDRESSINSTALLATION?.ADDRESSZIPCODE}`}&nbsp;
                                     </span>
                                 </div>
@@ -505,11 +510,21 @@ const UpdateSalesContractFinishDay: React.FC = () => {
                                     <span className={`${styles.label}`}>
                                         {address[0]?.ADDRESSPAYMENT?.ADDRESSNUMBER && `${address[0]?.ADDRESSPAYMENT?.ADDRESSNUMBER}`}&nbsp;
                                         {address[0]?.ADDRESSPAYMENT?.ADDRESSMOO && `หมู่ที่ ${address[0]?.ADDRESSPAYMENT?.ADDRESSMOO}`}&nbsp;
-                                        {address[0]?.ADDRESSPAYMENT?.ADDRESSSOI && `ซอย ${address[0]?.ADDRESSPAYMENT?.ADDRESSSOI}`}&nbsp;
-                                        {address[0]?.ADDRESSPAYMENT?.ADDRESSROAD && `ถนน ${address[0]?.ADDRESSPAYMENT?.ADDRESSROAD}`}&nbsp;
-                                        {address[0]?.ADDRESSPAYMENT?.ADDRESSSUBDISTRICTNAME && `ตำบล / แขวง ${address[0]?.ADDRESSPAYMENT?.ADDRESSSUBDISTRICTNAME}`}&nbsp;
-                                        {address[0]?.ADDRESSPAYMENT?.ADDRESSDISTRICTNAME && `อำเภอ ${address[0]?.ADDRESSPAYMENT?.ADDRESSDISTRICTNAME}`}&nbsp;
-                                        {address[0]?.ADDRESSPAYMENT?.ADDRESSPROVINCENAME && `จังหวัด ${address[0]?.ADDRESSPAYMENT?.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
+                                        {address[0]?.ADDRESSPAYMENT?.ADDRESSSOI && `ซอย${address[0]?.ADDRESSPAYMENT?.ADDRESSSOI}`}&nbsp;
+                                        {address[0]?.ADDRESSPAYMENT?.ADDRESSROAD && `ถนน${address[0]?.ADDRESSPAYMENT?.ADDRESSROAD}`}&nbsp;
+                                        {address?.[0]?.ADDRESSPAYMENT?.ADDRESSSUBDISTRICTNAME && (
+                                            <>
+                                                {address?.[0]?.ADDRESSPAYMENT?.ADDRESSPROVINCENAME === "กรุงเทพมหานคร" ? "แขวง" : "ตำบล"}
+                                                {address[0].ADDRESSPAYMENT.ADDRESSSUBDISTRICTNAME}
+                                            </>
+                                        )}{" "}
+                                        {address?.[0]?.ADDRESSPAYMENT?.ADDRESSDISTRICTNAME && (
+                                            <>
+                                                {address?.[0]?.ADDRESSPAYMENT?.ADDRESSPROVINCENAME === "กรุงเทพมหานคร" ? "เขต" : "อำเภอ"}
+                                                {address[0].ADDRESSPAYMENT.ADDRESSDISTRICTNAME}
+                                            </>
+                                        )}{" "}
+                                        {address[0]?.ADDRESSPAYMENT?.ADDRESSPROVINCENAME && `จังหวัด${address[0]?.ADDRESSPAYMENT?.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
                                         {address[0]?.ADDRESSPAYMENT?.ADDRESSZIPCODE && `${address[0]?.ADDRESSPAYMENT?.ADDRESSZIPCODE}`}&nbsp;
                                     </span>
                                 </div>
@@ -523,11 +538,21 @@ const UpdateSalesContractFinishDay: React.FC = () => {
                                     <span className={`${styles.label}`}>
                                         {address[0]?.ADDRESSTAX?.ADDRESSNUMBER && `${address[0]?.ADDRESSTAX?.ADDRESSNUMBER}`}&nbsp;
                                         {address[0]?.ADDRESSTAX?.ADDRESSMOO && `หมู่ที่ ${address[0]?.ADDRESSTAX?.ADDRESSMOO}`}&nbsp;
-                                        {address[0]?.ADDRESSTAX?.ADDRESSSOI && `ซอย ${address[0]?.ADDRESSTAX?.ADDRESSSOI}`}&nbsp;
-                                        {address[0]?.ADDRESSTAX?.ADDRESSROAD && `ถนน ${address[0]?.ADDRESSTAX?.ADDRESSROAD}`}&nbsp;
-                                        {address[0]?.ADDRESSTAX?.ADDRESSSUBDISTRICTNAME && `ตำบล / แขวง ${address[0]?.ADDRESSTAX?.ADDRESSSUBDISTRICTNAME}`}&nbsp;
-                                        {address[0]?.ADDRESSTAX?.ADDRESSDISTRICTNAME && `อำเภอ ${address[0]?.ADDRESSTAX?.ADDRESSDISTRICTNAME}`}&nbsp;
-                                        {address[0]?.ADDRESSTAX?.ADDRESSPROVINCENAME && `จังหวัด ${address[0]?.ADDRESSTAX?.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
+                                        {address[0]?.ADDRESSTAX?.ADDRESSSOI && `ซอย${address[0]?.ADDRESSTAX?.ADDRESSSOI}`}&nbsp;
+                                        {address[0]?.ADDRESSTAX?.ADDRESSROAD && `ถนน${address[0]?.ADDRESSTAX?.ADDRESSROAD}`}&nbsp;
+                                        {address?.[0]?.ADDRESSTAX?.ADDRESSSUBDISTRICTNAME && (
+                                            <>
+                                                {address?.[0]?.ADDRESSTAX?.ADDRESSPROVINCENAME === "กรุงเทพมหานคร" ? "แขวง" : "ตำบล"}
+                                                {address[0].ADDRESSTAX.ADDRESSSUBDISTRICTNAME}
+                                            </>
+                                        )}{" "}
+                                        {address?.[0]?.ADDRESSTAX?.ADDRESSDISTRICTNAME && (
+                                            <>
+                                                {address?.[0]?.ADDRESSTAX?.ADDRESSPROVINCENAME === "กรุงเทพมหานคร" ? "เขต" : "อำเภอ"}
+                                                {address[0].ADDRESSTAX.ADDRESSDISTRICTNAME}
+                                            </>
+                                        )}{" "}
+                                        {address[0]?.ADDRESSTAX?.ADDRESSPROVINCENAME && `จังหวัด${address[0]?.ADDRESSTAX?.ADDRESSPROVINCENAME}`}&nbsp;&nbsp;
                                         {address[0]?.ADDRESSTAX?.ADDRESSZIPCODE && `${address[0]?.ADDRESSTAX?.ADDRESSZIPCODE}`}&nbsp;
                                     </span>
                                 </div>
@@ -535,7 +560,7 @@ const UpdateSalesContractFinishDay: React.FC = () => {
                         )}
 
                         < div className='row mb-10'>
-                            <label className={`col-lg-4 text-muted ${styles.label}`}>เบอร์โทรติดต่อ</label>
+                            <label className={`col-lg-4 text-muted ${styles.label}`}>เบอร์ที่ติดต่อได้</label>
                             <div className='col-lg-8'>
                                 <span className={`${styles.label}`}>
                                     {customerDetail[0]?.CUSTOMERMOBILE ?
@@ -544,6 +569,23 @@ const UpdateSalesContractFinishDay: React.FC = () => {
                                 </span>
                             </div>
                         </div>
+
+                        {customerDetail[0]?.CUSTOMERPHONE && (
+                            <div className="row mb-10">
+                                <label
+                                    className={`col-lg-4 fw-bold text-muted ${styles.fontSize}`}
+                                >
+                                    เบอร์ที่ติดต่อได้ 2
+                                </label>
+                                <div className="col-lg-8">
+                                    <span
+                                        className={`fw-bolder text-gray-900 ${styles.fontSize}`}
+                                    >
+                                        {customerDetail[0]?.CUSTOMERPHONE}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
 
                         <div className='row mb-10'>
                             <label className={`col-lg-4 text-muted ${styles.label}`}>สินค้า</label>
@@ -657,6 +699,23 @@ const UpdateSalesContractFinishDay: React.FC = () => {
                                     )}
                                 </>
                             )}
+
+                        {/* ลายเซ็นลูกค้า (โชว์เมื่อมีใน item.CONTRACT[0].signature) */}
+                        {hasSignature && (
+                            <div className="mb-10">
+                                <div className="row mb-7">
+                                    <label className={`col-lg-4 text-muted ${styles.label}`}>ลายเซ็นลูกค้า</label>
+                                    <div className="col-lg-8">
+                                        <img
+                                            src={`data:image/png;base64,${item.CONTRACT[0].signature}`}
+                                            alt="signature"
+                                            className="img-fluid"
+                                            style={{ border: "1px solid #ccc", borderRadius: 4 }}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                     </div>
                 </div>

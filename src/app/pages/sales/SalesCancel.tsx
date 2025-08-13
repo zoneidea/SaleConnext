@@ -604,7 +604,7 @@ const SalesCancel: React.FC = () => {
   const { REFNO } = useUUIDStore();
 
   const item = location.state as ItemProps;
-  // console.log(`item`, item);
+  console.log(`item`, item);
 
   const createdDate = item.CONTRACT[0]?.createdAt;
   const contno = item.CONTNO;
@@ -760,7 +760,7 @@ const SalesCancel: React.FC = () => {
 
   // เลือก item ที่ REFNO ตรงกัน (find สำหรับ 1 item หรือ filter สำหรับหลาย item)
   const matchedItem = draft.find((item) => item.REFNO === REFNO);
-  // console.log(`matchedItem`, matchedItem);
+  console.log(`matchedItem`, matchedItem);
 
   const formatToBE = (isoDate?: string) => {
     if (!isoDate) return "";
@@ -809,7 +809,8 @@ const SalesCancel: React.FC = () => {
               <button
                 className={`${styles.btnPrimary}`}
                 onClick={() =>
-                  navigate("/sale/billRecieveMoney", { state: matchedItem })
+                  // navigate("/sale/billRecieveMoney", { state: matchedItem })
+                  navigate("/sale/billRecieveMoney", { state: item })
                 }
               >
                 ใบเสร็จรับเงิน
@@ -832,15 +833,6 @@ const SalesCancel: React.FC = () => {
               </label>
               <div className="col-lg-8 fv-row">
                 <span className={`${styles.label}`}>{contno}</span>
-              </div>
-            </div>
-
-            <div className="row mb-7">
-              <label className={`col-lg-4 text-muted ${styles.label}`}>
-                REFNO
-              </label>
-              <div className="col-lg-8 fv-row">
-                <span className={`${styles.label}`}>{item?.REFNO}</span>
               </div>
             </div>
 
@@ -868,23 +860,6 @@ const SalesCancel: React.FC = () => {
                   {customerDetail[0]?.PREFIX[0]?.PREFIXNAME && customerDetail[0]?.PREFIX[0]?.PREFIXNAME}{" "}
                   {customerDetail[0]?.CUSTOMERNAME}{" "}
                   {customerDetail[0]?.CUSTOMERLASTNAME && customerDetail[0]?.CUSTOMERLASTNAME}
-                </span>
-              </div>
-            </div>
-
-            <div className="row mb-7">
-              <label
-                className={`col-lg-4 fw-bold text-muted ${styles.label}`}
-              >
-                สถานะลูกค้า
-              </label>
-              <div className="col-lg-8">
-                <span
-                  className={`fw-bolder text-gray-900 ${styles.label}`}
-                >
-                  {item?.CUSTOMERSTATUS[0]?.Message
-                    ? item?.CUSTOMERSTATUS[0]?.Message
-                    : item?.CUSTOMERSTATUS[0]?.message}
                 </span>
               </div>
             </div>
@@ -922,19 +897,29 @@ const SalesCancel: React.FC = () => {
                       `หมู่ที่ ${customerAddress[0]?.ADDRESSCARD.ADDRESSMOO}`}
                     &nbsp;
                     {customerAddress[0]?.ADDRESSCARD.ADDRESSSOI &&
-                      `ซอย ${customerAddress[0]?.ADDRESSCARD.ADDRESSSOI}`}
+                      `ซอย${customerAddress[0]?.ADDRESSCARD.ADDRESSSOI}`}
                     &nbsp;
                     {customerAddress[0]?.ADDRESSCARD.ADDRESSROAD &&
-                      `ถนน ${customerAddress[0]?.ADDRESSCARD.ADDRESSROAD}`}
+                      `ถนน${customerAddress[0]?.ADDRESSCARD.ADDRESSROAD}`}
                     &nbsp;
-                    {customerAddress[0]?.ADDRESSCARD.ADDRESSSUBDISTRICTNAME &&
-                      `ตำบล / แขวง ${customerAddress[0]?.ADDRESSCARD.ADDRESSSUBDISTRICTNAME}`}
-                    &nbsp;
-                    {customerAddress[0]?.ADDRESSCARD.ADDRESSDISTRICTNAME &&
-                      `อำเภอ ${customerAddress[0]?.ADDRESSCARD.ADDRESSDISTRICTNAME}`}
-                    &nbsp;
+                    {customerAddress[0]?.ADDRESSCARD.ADDRESSSUBDISTRICTNAME && (
+                      <>
+                        {customerAddress[0]?.ADDRESSCARD.ADDRESSPROVINCENAME === "กรุงเทพมหานคร"
+                          ? "แขวง"
+                          : "ตำบล"}
+                        {customerAddress[0]?.ADDRESSCARD.ADDRESSSUBDISTRICTNAME}
+                      </>
+                    )}&nbsp;
+                    {customerAddress[0]?.ADDRESSCARD.ADDRESSDISTRICTNAME && (
+                      <>
+                        {customerAddress[0]?.ADDRESSCARD.ADDRESSPROVINCENAME === "กรุงเทพมหานคร"
+                          ? "เขต"
+                          : "อำเภอ"}
+                        {customerAddress[0]?.ADDRESSCARD.ADDRESSDISTRICTNAME}
+                      </>
+                    )}&nbsp;
                     {customerAddress[0]?.ADDRESSCARD.ADDRESSPROVINCENAME &&
-                      `จังหวัด ${customerAddress[0]?.ADDRESSCARD.ADDRESSPROVINCENAME}`}
+                      `จังหวัด${customerAddress[0]?.ADDRESSCARD.ADDRESSPROVINCENAME}`}
                     &nbsp;&nbsp;
                     {customerAddress[0]?.ADDRESSCARD.ADDRESSZIPCODE &&
                       `${customerAddress[0]?.ADDRESSCARD.ADDRESSZIPCODE}`}
@@ -958,22 +943,30 @@ const SalesCancel: React.FC = () => {
                       `หมู่ที่ ${customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSMOO}`}
                     &nbsp;
                     {customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSSOI &&
-                      `ซอย ${customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSSOI}`}
+                      `ซอย${customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSSOI}`}
                     &nbsp;
                     {customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSROAD &&
-                      `ถนน ${customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSROAD}`}
+                      `ถนน${customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSROAD}`}
                     &nbsp;
-                    {customerAddress[0]?.ADDRESSINSTALLATION
-                      .ADDRESSSUBDISTRICTNAME &&
-                      `ตำบล / แขวง ${customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSSUBDISTRICTNAME}`}
-                    &nbsp;
-                    {customerAddress[0]?.ADDRESSINSTALLATION
-                      .ADDRESSDISTRICTNAME &&
-                      `อำเภอ ${customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSDISTRICTNAME}`}
-                    &nbsp;
+                    {customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSSUBDISTRICTNAME && (
+                      <>
+                        {customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSPROVINCENAME === "กรุงเทพมหานคร"
+                          ? "แขวง"
+                          : "ตำบล"}
+                        {customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSSUBDISTRICTNAME}
+                      </>
+                    )}&nbsp;
+                    {customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSDISTRICTNAME && (
+                      <>
+                        {customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSPROVINCENAME === "กรุงเทพมหานคร"
+                          ? "เขต"
+                          : "อำเภอ"}
+                        {customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSDISTRICTNAME}
+                      </>
+                    )}&nbsp;
                     {customerAddress[0]?.ADDRESSINSTALLATION
                       .ADDRESSPROVINCENAME &&
-                      `จังหวัด ${customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSPROVINCENAME}`}
+                      `จังหวัด${customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSPROVINCENAME}`}
                     &nbsp;&nbsp;
                     {customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSZIPCODE &&
                       `${customerAddress[0]?.ADDRESSINSTALLATION.ADDRESSZIPCODE}`}
@@ -997,20 +990,29 @@ const SalesCancel: React.FC = () => {
                       `หมู่ที่ ${customerAddress[0]?.ADDRESSPAYMENT.ADDRESSMOO}`}
                     &nbsp;
                     {customerAddress[0]?.ADDRESSPAYMENT.ADDRESSSOI &&
-                      `ซอย ${customerAddress[0]?.ADDRESSPAYMENT.ADDRESSSOI}`}
+                      `ซอย${customerAddress[0]?.ADDRESSPAYMENT.ADDRESSSOI}`}
                     &nbsp;
                     {customerAddress[0]?.ADDRESSPAYMENT.ADDRESSROAD &&
-                      `ถนน ${customerAddress[0]?.ADDRESSPAYMENT.ADDRESSROAD}`}
+                      `ถนน${customerAddress[0]?.ADDRESSPAYMENT.ADDRESSROAD}`}
                     &nbsp;
-                    {customerAddress[0]?.ADDRESSPAYMENT
-                      .ADDRESSSUBDISTRICTNAME &&
-                      `ตำบล / แขวง ${customerAddress[0]?.ADDRESSPAYMENT.ADDRESSSUBDISTRICTNAME}`}
-                    &nbsp;
-                    {customerAddress[0]?.ADDRESSPAYMENT.ADDRESSDISTRICTNAME &&
-                      `อำเภอ ${customerAddress[0]?.ADDRESSPAYMENT.ADDRESSDISTRICTNAME}`}
-                    &nbsp;
+                    {customerAddress[0]?.ADDRESSPAYMENT.ADDRESSSUBDISTRICTNAME && (
+                      <>
+                        {customerAddress[0]?.ADDRESSPAYMENT.ADDRESSPROVINCENAME === "กรุงเทพมหานคร"
+                          ? "แขวง"
+                          : "ตำบล"}
+                        {customerAddress[0]?.ADDRESSPAYMENT.ADDRESSSUBDISTRICTNAME}
+                      </>
+                    )}&nbsp;
+                    {customerAddress[0]?.ADDRESSPAYMENT.ADDRESSDISTRICTNAME && (
+                      <>
+                        {customerAddress[0]?.ADDRESSPAYMENT.ADDRESSPROVINCENAME === "กรุงเทพมหานคร"
+                          ? "เขต"
+                          : "อำเภอ"}
+                        {customerAddress[0]?.ADDRESSPAYMENT.ADDRESSDISTRICTNAME}
+                      </>
+                    )}&nbsp;
                     {customerAddress[0]?.ADDRESSPAYMENT.ADDRESSPROVINCENAME &&
-                      `จังหวัด ${customerAddress[0]?.ADDRESSPAYMENT.ADDRESSPROVINCENAME}`}
+                      `จังหวัด${customerAddress[0]?.ADDRESSPAYMENT.ADDRESSPROVINCENAME}`}
                     &nbsp;&nbsp;
                     {customerAddress[0]?.ADDRESSPAYMENT.ADDRESSZIPCODE &&
                       `${customerAddress[0]?.ADDRESSPAYMENT.ADDRESSZIPCODE}`}
@@ -1034,19 +1036,29 @@ const SalesCancel: React.FC = () => {
                       `หมู่ที่ ${customerAddress[0]?.ADDRESSTAX.ADDRESSMOO}`}
                     &nbsp;
                     {customerAddress[0]?.ADDRESSTAX.ADDRESSSOI &&
-                      `ซอย ${customerAddress[0]?.ADDRESSTAX.ADDRESSSOI}`}
+                      `ซอย${customerAddress[0]?.ADDRESSTAX.ADDRESSSOI}`}
                     &nbsp;
                     {customerAddress[0]?.ADDRESSTAX.ADDRESSROAD &&
-                      `ถนน ${customerAddress[0]?.ADDRESSTAX.ADDRESSROAD}`}
+                      `ถนน${customerAddress[0]?.ADDRESSTAX.ADDRESSROAD}`}
                     &nbsp;
-                    {customerAddress[0]?.ADDRESSTAX.ADDRESSSUBDISTRICTNAME &&
-                      `ตำบล / แขวง ${customerAddress[0]?.ADDRESSTAX.ADDRESSSUBDISTRICTNAME}`}
-                    &nbsp;
-                    {customerAddress[0]?.ADDRESSTAX.ADDRESSDISTRICTNAME &&
-                      `อำเภอ ${customerAddress[0]?.ADDRESSTAX.ADDRESSDISTRICTNAME}`}
-                    &nbsp;
+                    {customerAddress[0]?.ADDRESSTAX.ADDRESSSUBDISTRICTNAME && (
+                      <>
+                        {customerAddress[0]?.ADDRESSTAX.ADDRESSPROVINCENAME === "กรุงเทพมหานคร"
+                          ? "แขวง"
+                          : "ตำบล"}
+                        {customerAddress[0]?.ADDRESSTAX.ADDRESSSUBDISTRICTNAME}
+                      </>
+                    )}&nbsp;
+                     {customerAddress[0]?.ADDRESSTAX.ADDRESSDISTRICTNAME && (
+                      <>
+                        {customerAddress[0]?.ADDRESSTAX.ADDRESSPROVINCENAME === "กรุงเทพมหานคร"
+                          ? "เขต"
+                          : "อำเภอ"}
+                        {customerAddress[0]?.ADDRESSTAX.ADDRESSDISTRICTNAME}
+                      </>
+                    )}&nbsp;
                     {customerAddress[0]?.ADDRESSTAX.ADDRESSPROVINCENAME &&
-                      `จังหวัด ${customerAddress[0]?.ADDRESSTAX.ADDRESSPROVINCENAME}`}
+                      `จังหวัด${customerAddress[0]?.ADDRESSTAX.ADDRESSPROVINCENAME}`}
                     &nbsp;&nbsp;
                     {customerAddress[0]?.ADDRESSTAX.ADDRESSZIPCODE &&
                       `${customerAddress[0]?.ADDRESSTAX.ADDRESSZIPCODE}`}
@@ -1058,7 +1070,7 @@ const SalesCancel: React.FC = () => {
 
             <div className="row mb-10">
               <label className={`col-lg-4 text-muted ${styles.label}`}>
-                เบอร์โทรติดต่อ
+                เบอร์ที่ติดต่อได้
               </label>
               <div className="col-lg-8">
                 <span className={`${styles.label}`}>
@@ -1069,18 +1081,22 @@ const SalesCancel: React.FC = () => {
               </div>
             </div>
 
-            <div className="row mb-10">
-              <label className={`col-lg-4 text-muted ${styles.label}`}>
-                PDPA
-              </label>
-              <div className="col-lg-8">
-                <span className={`${styles.label}`}>
-                  {item?.PDPA[0]?.CONSENTGIVEN === true
-                    ? "ให้ความยินยอม"
-                    : "ไม่ให้ความยินยอม"}
-                </span>
+            {customerDetail[0]?.CUSTOMERPHONE && (
+              <div className="row mb-10">
+                <label
+                  className={`col-lg-4 fw-bold text-muted ${styles.fontSize}`}
+                >
+                  เบอร์ที่ติดต่อได้ 2
+                </label>
+                <div className="col-lg-8">
+                  <span
+                    className={`fw-bolder text-gray-900 ${styles.fontSize}`}
+                  >
+                    {customerDetail[0]?.CUSTOMERPHONE}
+                  </span>
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="row mb-10">
               <label className={`col-lg-4 text-muted ${styles.label}`}>

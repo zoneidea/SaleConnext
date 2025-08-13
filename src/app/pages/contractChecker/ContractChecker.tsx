@@ -31,7 +31,8 @@ const ContractChecker: React.FC = () => {
     const SecEmpId = auth?.data?.[0]?.SecEmp || '';
 
     const API_URL_GET_ALLCONTRACT = import.meta.env.VITE_APP_API_MONGO;
-    const PENDING_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetContractForCheck?supemp=${SupEmpId}&secemp=${SecEmpId}`;
+    // const PENDING_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetContractForCheck?supemp=${SupEmpId}&secemp=${SecEmpId}`;
+    const PENDING_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetContractForCheck?empid=${EmpId}`;
 
     const [pending, setPending] = useState<any[]>([]); // กำหนดให้ state เป็น array เพื่อรองรับ map()
     const [isLoadingPending, setIsLoadingPending] = useState<boolean>(false);

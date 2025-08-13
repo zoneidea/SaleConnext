@@ -27,7 +27,7 @@ const SidebarMenu = () => {
           </div>
         </div>
         <div style={{ color: '#9A9CAE' }} className="mt-auto text-center">
-          version {APP_VERSION}
+          v {APP_VERSION}
         </div>
       </div>
     </div>

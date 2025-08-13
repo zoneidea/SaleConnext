@@ -250,22 +250,8 @@ const SalesProductStock: React.FC = () => {
                         className="page-title d-flex flex-wrap me-3 flex-column justify-content-center"
                     >
                         <h1 className="page-heading d-flex text-gray-900 fw-bold fs-3 my-0 flex-column justify-content-center">
-                            คลังสินค้า
+                            สินค้าในสต๊อก
                         </h1>
-                        <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
-                            <li className="breadcrumb-item text-muted">
-                                <a
-                                    className="text-muted text-hover-primary"
-                                    href="/metronic8/react/demo1/sales/overview"
-                                >
-                                    สินค้าในสต๊อก
-                                </a>
-                            </li>
-                            <li className="breadcrumb-item">
-                                <span className="bullet bg-gray-500 w-5px h-2px"></span>
-                            </li>
-                            <li className="breadcrumb-item text-gray-900">คลังสินค้า</li>
-                        </ul>
                     </div>
                 </div>
 

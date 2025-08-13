@@ -87,10 +87,16 @@ const FirstBillItemNumber: React.FC<StatusLabelProps> = ({ item }) => {
 
     if (item.CUSTOMERDETAIL.length > 0) {
         if (item.CUSTOMERDETAIL[0]?.CUSTOMERTYPE == 1) {
-            customer = <span className='text-gray-700 fw-semibold d-block'>{`${item.CUSTOMERDETAIL[0]?.CUSTOMERNAME}`} {`${item.CUSTOMERDETAIL[0]?.CUSTOMELASTRNAME && item.CUSTOMERDETAIL[0]?.CUSTOMELASTRNAME}`}</span>
+            customer = <span className='text-gray-700 fw-semibold d-block'>
+                {`${item.CUSTOMERDETAIL[0]?.CUSTOMERNAME} 
+                ${item.CUSTOMERDETAIL[0]?.CUSTOMERLASTNAME && item.CUSTOMERDETAIL[0]?.CUSTOMERLASTNAME}`}
+            </span>
             telNo = <span className='text-gray-700 fw-semibold d-block'>{`${item.CUSTOMERDETAIL[0]?.CUSTOMERMOBILE}`}</span>
         } else {
-            customer = <span className='text-gray-700 fw-semibold d-block'>{`${item.CUSTOMERDETAIL[0]?.CUSTOMERNAME}`}</span>
+            customer = <span className='text-gray-700 fw-semibold d-block'>
+                {`${item.CUSTOMERDETAIL[0]?.CUSTOMERNAME} 
+                ${item.CUSTOMERDETAIL[0]?.CUSTOMERLASTNAME && item.CUSTOMERDETAIL[0]?.CUSTOMERLASTNAME}`}
+            </span>
             telNo = <span className='text-gray-700 fw-semibold d-block'>{`${item.CUSTOMERDETAIL[0]?.CUSTOMERMOBILE}`}</span>
         }
     }

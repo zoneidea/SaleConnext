@@ -13,6 +13,7 @@
     "deploy": "gh-pages -d build"
   },
   "dependencies": {
+    "'": "file:awesome.me/kit-KIT_CODE@latest'",
     "@emotion/styled": "^11.13.0",
     "@formatjs/intl-pluralrules": "5.2.4",
     "@formatjs/intl-relativetimeformat": "11.2.4",

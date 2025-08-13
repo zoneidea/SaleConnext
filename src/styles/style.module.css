@@ -1,3 +1,9 @@
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 :global(.form-control)::placeholder {
   font-size: 1.5rem;
   opacity: 0.7;
@@ -149,4 +155,11 @@
   text-align: left;      /* จัดข้อความซ้าย */
   white-space: pre-line; /* รักษาบรรทัดใหม่ */
   padding-right: 0.5rem; /* เว้นขอบขวาให้ scrollbar ไม่บดข้อความ */
+}
+
+.statusBadgeBig {
+  font-size: 1.5rem;   /* ~16–17px ปรับได้ */
+  line-height: 1.25;
+  padding: 0.4rem 0.65rem;
+  border-radius: 0.5rem;
 }

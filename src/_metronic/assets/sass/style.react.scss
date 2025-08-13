@@ -23,6 +23,12 @@
 @import "./core/vendors/plugins/plugins";
 @import "vendors/react-select.scss";
 
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 #root {
   display: contents;
 }

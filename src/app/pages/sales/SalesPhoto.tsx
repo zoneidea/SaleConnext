@@ -308,7 +308,6 @@
 
 //     console.log(`isDataComplete`, isDataComplete);
 
-
 //     return (
 //         <>
 //             {isLoading ? (
@@ -664,42 +663,41 @@
 
 // export default SalesPhoto
 
+import styles from "@/styles/style.module.css";
+import { useState, useMemo, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { KTIcon, toAbsoluteUrl } from "../../../_metronic/helpers";
+import { Content } from "../../../_metronic/layout/components/content";
+import axios from "axios";
+import { useAuth } from "../../modules/auth/core/Auth";
+import { useUUIDStore } from "../../modules/stores/stepsStore";
 
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
 
-
-import styles from '@/styles/style.module.css'
-import { useState, useMemo, useEffect } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { KTIcon, toAbsoluteUrl } from '../../../_metronic/helpers'
-import { Content } from '../../../_metronic/layout/components/content'
-import axios from 'axios';
-import { useAuth } from '../../modules/auth/core/Auth';
-import { useUUIDStore } from '../../modules/stores/stepsStore';
-
-import Swal from 'sweetalert2';
-import withReactContent from 'sweetalert2-react-content';
-
-import { ThreeDot } from 'react-loading-indicators';
+import { ThreeDot } from "react-loading-indicators";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { log } from "node:console";
 
 // อัพเดท
 interface ItemProps {
-    REFNO: string,
-    CONTNO: string,
-    EMPID: string,
-    TEAMSALE: string,
-    SALECODE: string,
-    SUPEMPID: string,
-    SECEMPID: string,
-    STATUS: string,
-    PRODUCT: [any],
-    CUSTOMERSTATUS: [any],
-    DISCOUNT: [any],
-    CUSTOMERDETAIL: [any],
-    ADDRESS: [any],
-    PDPA: [any],
-    CONTRACT: [any],
-    IMAGE: [any],
-    CHECKERCOMMENT: [any]
+    REFNO: string;
+    CONTNO: string;
+    EMPID: string;
+    TEAMSALE: string;
+    SALECODE: string;
+    SUPEMPID: string;
+    SECEMPID: string;
+    STATUS: string;
+    PRODUCT: [any];
+    CUSTOMERSTATUS: [any];
+    DISCOUNT: [any];
+    CUSTOMERDETAIL: [any];
+    ADDRESS: [any];
+    PDPA: [any];
+    CONTRACT: [any];
+    IMAGE: [any];
+    CHECKERCOMMENT: [any];
 }
 
 interface ImagesType {
@@ -714,23 +712,36 @@ interface ImagesType {
 }
 
 const SalesPhoto: React.FC = () => {
-    const navigate = useNavigate()
+    const navigate = useNavigate();
     const MySwal = withReactContent(Swal);
 
     // สร้างใหม่
     const { REFNO } = useUUIDStore();
     const { auth } = useAuth();
-    const EmpId = auth?.data?.[0]?.EmpId || '';
-    const TeamSale = auth?.data?.[0]?.TeamSale || '';
-    const SaleCode = auth?.data?.[0]?.SaleCode || '';
-    const SupEmpId = auth?.data?.[0]?.SupEmp || '';
-    const SecEmpId = auth?.data?.[0]?.SecEmp || '';
+    const EmpId = auth?.data?.[0]?.EmpId || "";
+    const TeamSale = auth?.data?.[0]?.TeamSale || "";
+    const SaleCode = auth?.data?.[0]?.SaleCode || "";
+    const SupEmpId = auth?.data?.[0]?.SupEmp || "";
+    const SecEmpId = auth?.data?.[0]?.SecEmp || "";
 
     const location = useLocation() as any;
     const fromStep = location.state?.fromStep || false;
-    // console.log(`fromStep`, fromStep);
-    const item = location.state?.data as ItemProps || [];
+    console.log(`fromStep`, fromStep);
+    const fromPath = location.state?.from || '';
+    const item = (location.state?.data as ItemProps) || [];
     // console.log(`item`, item);
+
+    const hideFinish = fromPath === '/sale/editFinishInDay' ||
+        '/sale/photo/gallery/drawingMap' ||
+        '/sale/photo/gallery/idcard' ||
+        '/sale/photo/gallery/customer' ||
+        '/sale/photo/gallery/customerHome' ||
+        '/sale/photo/gallery/equipment' ||
+        '/sale/photo/gallery/installation' ||
+        '/sale/photo/gallery/turn' ||
+        '/sale/photo/gallery-gps'
+
+    console.log(`hideFinish`, hideFinish);
 
     // กำหนด REFNO
     const refno = fromStep ? item.REFNO : REFNO;
@@ -743,10 +754,11 @@ const SalesPhoto: React.FC = () => {
 
     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
     const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
-    const DRAFT_ALLCONTRACT_URL = `${API_URL_MONGO}/Contract/GetAllContract?status=DRAFT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`
+    const DRAFT_ALLCONTRACT_URL = `${API_URL_MONGO}/Contract/GetAllContract?status=DRAFT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`;
     const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage?REFNO=${refno}`;
-
-    {/****** matchedItem *******/ }
+    {
+        /****** matchedItem *******/
+    }
     const [isLoadingDraft, setIsLoadingDraft] = useState<boolean>(false);
     const [draft, setDraft] = useState<any[]>([]);
 
@@ -755,10 +767,12 @@ const SalesPhoto: React.FC = () => {
             setIsLoadingDraft(true);
             try {
                 const response = await axios.get(DRAFT_ALLCONTRACT_URL);
-                const data = Array.isArray(response.data.data) ? response.data.data : [];
+                const data = Array.isArray(response.data.data)
+                    ? response.data.data
+                    : [];
                 setDraft(data);
             } catch (error) {
-                console.error('Error fetching DRAFT_ALLCONTRACT_URL:', error);
+                console.error("Error fetching DRAFT_ALLCONTRACT_URL:", error);
             } finally {
                 setIsLoadingDraft(false);
             }
@@ -767,7 +781,7 @@ const SalesPhoto: React.FC = () => {
     }, []);
 
     // เลือก item ที่ REFNO ตรงกัน (find สำหรับ 1 item หรือ filter สำหรับหลาย item)
-    const matchedItem = draft.find(item => item.REFNO === item.REFNO);
+    const matchedItem = draft.find((item) => item.REFNO === item.REFNO);
     // console.log(`matchedItem`, matchedItem);
 
     // fetch collection ContractImage
@@ -781,21 +795,21 @@ const SalesPhoto: React.FC = () => {
 
                 if (
                     data &&
-                    typeof data === 'object' &&
-                    'IMAGECARD' in data &&
-                    'IMAGEGPS' in data &&
-                    'IMAGEMAP' in data &&
-                    'IMAGECUSTOMERHOME' in data &&
-                    'IMAGEINSTALLATION' in data &&
-                    'IMAGETDS' in data &&
-                    'IMAGETRADEIN' in data
+                    typeof data === "object" &&
+                    "IMAGECARD" in data &&
+                    "IMAGEGPS" in data &&
+                    "IMAGEMAP" in data &&
+                    "IMAGECUSTOMERHOME" in data &&
+                    "IMAGEINSTALLATION" in data &&
+                    "IMAGETDS" in data &&
+                    "IMAGETRADEIN" in data
                 ) {
                     setImages(data as ImagesType);
                 } else {
                     setImages(null);
                 }
             } catch (err) {
-                console.error('Error fetching images:', err);
+                console.error("Error fetching images:", err);
                 setImages(null); // ตั้งค่าเป็น null หากมีข้อผิดพลาด
             }
         };
@@ -816,39 +830,43 @@ const SalesPhoto: React.FC = () => {
     const handleCheckerClick = async () => {
         // เรียก SweetAlert2 loading
         MySwal.fire({
-            title: 'โปรดรอสักครู่...',
-            text: 'กำลังส่งข้อมูล',
+            title: "โปรดรอสักครู่...",
+            text: "กำลังส่งข้อมูล",
             allowOutsideClick: false,
             didOpen: () => {
-                Swal.showLoading()
+                Swal.showLoading();
             },
-        })
+        });
 
-        const finishRefno = fromStep === "true" ? refno : matchedItem.REFNO
+        const finishRefno = refno ? refno : matchedItem.REFNO;
+        console.log(`finishRefno`, finishRefno);
 
         try {
-            const response = await axios.post(UPDATECONTACT, {
-                REFNO: finishRefno,
-                EMPID: EmpId,
-                TEAMSALE: TeamSale,
-                SALECODE: SaleCode,
-                SUPEMPID: SupEmpId,
-                SECEMPID: SecEmpId,
-                FIELD: 'STATUS',
-                DATA: 'FINISH',  //finish
-            },
+            const response = await axios.post(
+                UPDATECONTACT,
                 {
-                    headers: { 'Content-Type': 'application/json' },
-                })
+                    REFNO: finishRefno,
+                    EMPID: EmpId,
+                    TEAMSALE: TeamSale,
+                    SALECODE: SaleCode,
+                    SUPEMPID: SupEmpId,
+                    SECEMPID: SecEmpId,
+                    FIELD: "STATUS",
+                    DATA: "FINISH",
+                },
+                {
+                    headers: { "Content-Type": "application/json" },
+                }
+            );
 
             const payload = response.data.data;
             const jsonString = JSON.stringify(payload, null, 2);
 
             MySwal.fire({
-                icon: 'error',
-                title: 'เกิดข้อผิดพลาด',
+                icon: "error",
+                title: "เกิดข้อผิดพลาด",
                 html: `<pre style="text-align:left;white-space:pre-wrap;">${jsonString}</pre>`,
-            })
+            });
 
             // เมื่อสำเร็จ ปิด Loading ก่อน
             // Swal.close()
@@ -856,113 +874,127 @@ const SalesPhoto: React.FC = () => {
             // ตรวจสอบ status
             if (response.status === 200) {
                 if (!response.data.data) {
-                    MySwal.fire('เกิดข้อผิดพลาด', 'ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error')
+                    MySwal.fire(
+                        "เกิดข้อผิดพลาด",
+                        "ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา",
+                        "error"
+                    );
                 } else {
-                    MySwal.fire('สำเร็จ', 'ทำสัญญาเรียบร้อยแล้ว', 'success')
-                    navigate('/sale/overview')
+                    MySwal.fire("สำเร็จ", "ทำสัญญาเรียบร้อยแล้ว", "success");
+                    navigate("/sale/overview");
                 }
             } else {
-                MySwal.fire('เกิดข้อผิดพลาด', response.data.message, 'error')
+                MySwal.fire("เกิดข้อผิดพลาด", response.data.message, "error");
             }
 
             if (response.status === 200) {
                 if (!response.data.data) {
                     MySwal.fire({
-                        icon: 'error',
-                        title: 'เกิดข้อผิดพลาด',
+                        icon: "error",
+                        title: "เกิดข้อผิดพลาด",
                         html: `
                           <b>HTTP status:</b> ${response.status}<br/>
                           <b>response.data:</b><br/>
-                          <pre style="text-align:left;white-space:pre-wrap;">${JSON.stringify(response.data, null, 2)}</pre>
-                        `
-                    })
+                          <pre style="text-align:left;white-space:pre-wrap;">${JSON.stringify(
+                            response.data,
+                            null,
+                            2
+                        )}</pre>
+                        `,
+                    });
                 } else {
                     MySwal.fire({
-                        icon: 'success',
-                        title: 'สำเร็จ!',
-                        text: 'บันทึกสัญญาเรียบร้อยแล้ว',
+                        icon: "success",
+                        title: "สำเร็จ!",
+                        text: "บันทึกสัญญาเรียบร้อยแล้ว",
                         timer: 2000,
                         showConfirmButton: false,
                     }).then(() => {
-                        navigate('/sale/overview')
-                    })
+                        navigate("/sale/overview");
+                    });
                 }
             } else {
                 MySwal.fire({
-                    icon: 'error',
-                    title: 'เกิดข้อผิดพลาด',
+                    icon: "error",
+                    title: "เกิดข้อผิดพลาด",
                     html: `
                         <b>HTTP status:</b> ${response.status}<br/>
                         <b>response.data.message:</b><br/>
                         <pre style="text-align:left;white-space:pre-wrap;">${response.data.message}</pre>
-                      `
-                })
+                      `,
+                });
             }
-
         } catch (error) {
             // กรณีเกิด Error ให้ปิด Loading ก่อน แล้วแจ้ง
-            Swal.close()
+            Swal.close();
             // MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถส่งข้อมูลได้', 'error')
             MySwal.fire({
-                icon: 'error',
-                title: 'เกิดข้อผิดพลาด',
+                icon: "error",
+                title: "เกิดข้อผิดพลาด",
                 html: `
                   ${error}
-                `
-            })
+                `,
+            });
         }
-    }
+    };
 
     // ฟังก์ชัน ส่งตรวจสอบ (กรณีมาจาก step)
     const handleUpdateCheckerClick = async () => {
         // เรียก SweetAlert2 loading
         MySwal.fire({
-            title: 'โปรดรอสักครู่...',
-            text: 'กำลังส่งข้อมูล',
+            title: "โปรดรอสักครู่...",
+            text: "กำลังส่งข้อมูล",
             allowOutsideClick: false,
             didOpen: () => {
-                Swal.showLoading()
+                Swal.showLoading();
             },
-        })
+        });
 
         try {
-            const response = await axios.post(UPDATECONTACT, {
-                REFNO: refno,
-                EMPID: EmpId,
-                TEAMSALE: TeamSale,
-                FIELD: 'STATUS',
-                DATA: 'FINISH',
-            },
+            const response = await axios.post(
+                UPDATECONTACT,
                 {
-                    headers: { 'Content-Type': 'application/json' },
-                })
+                    REFNO: refno,
+                    EMPID: EmpId,
+                    TEAMSALE: TeamSale,
+                    FIELD: "STATUS",
+                    DATA: "FINISH",
+                },
+                {
+                    headers: { "Content-Type": "application/json" },
+                }
+            );
 
             const payload = response.data.data;
             const jsonString = JSON.stringify(payload, null, 2);
 
             MySwal.fire({
-                icon: 'error',
-                title: 'เกิดข้อผิดพลาด',
+                icon: "error",
+                title: "เกิดข้อผิดพลาด",
                 html: `<pre style="text-align:left;white-space:pre-wrap;">${jsonString}</pre>`,
-            })
+            });
 
             // เมื่อสำเร็จ ปิด Loading ก่อน
-            Swal.close()
+            Swal.close();
 
             if (response.status === 200) {
                 if (!response.data.data) {
-                    MySwal.fire('เกิดข้อผิดพลาด', 'ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error')
+                    MySwal.fire(
+                        "เกิดข้อผิดพลาด",
+                        "ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา",
+                        "error"
+                    );
                 } else {
-                    MySwal.fire('สำเร็จ', 'ส่งข้อมูลตรวจสอบแล้ว', 'success')
-                    navigate('/sale/overview')
+                    MySwal.fire("สำเร็จ", "ส่งข้อมูลตรวจสอบแล้ว", "success");
+                    navigate("/sale/overview");
                 }
             } else {
-                MySwal.fire('เกิดข้อผิดพลาด', response.data.message, 'error')
+                MySwal.fire("เกิดข้อผิดพลาด", response.data.message, "error");
             }
         } catch (error) {
             // กรณีเกิด Error ให้ปิด Loading ก่อน แล้วแจ้ง
-            Swal.close()
-            MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถส่งข้อมูลได้', 'error')
+            Swal.close();
+            MySwal.fire("เกิดข้อผิดพลาด", "ไม่สามารถส่งข้อมูลได้", "error");
 
             // MySwal.fire({
             //     icon: 'error',
@@ -972,7 +1004,7 @@ const SalesPhoto: React.FC = () => {
             //             `
             // })
         }
-    }
+    };
 
     const isDataComplete = useMemo(() => {
         const isNotEmptyArray = (arr: any): boolean =>
@@ -980,8 +1012,8 @@ const SalesPhoto: React.FC = () => {
 
         // เลือกแหล่งข้อมูลตาม fromStep
         const source = fromStep
-            ? item           // ถ้ามาจาก step เริ่มแรก
-            : matchedItem;  // ถ้าเป็น draft
+            ? item // ถ้ามาจาก step เริ่มแรก
+            : matchedItem; // ถ้าเป็น draft
         // console.log(`source`, source);
 
         if (!source) return false;
@@ -998,11 +1030,13 @@ const SalesPhoto: React.FC = () => {
         );
     }, [fromStep, item, matchedItem]);
 
-    // console.log(`isDataComplete`, isDataComplete);
+    console.log(`isDataComplete`, isDataComplete);
 
-    const whereRefno = fromStep
-        ? refno
-        : matchedItem?.REFNO ?? ''
+    const whereRefno = fromStep ? refno : matchedItem?.REFNO ?? "";
+
+    console.log(`refno`, refno);
+    // console.log(`matchedItem.REFNO`, matchedItem.REFNO);
+    console.log(`item.REFNO`, item.REFNO);
 
     return (
         <>
@@ -1012,290 +1046,390 @@ const SalesPhoto: React.FC = () => {
                 </div>
             ) : (
                 <Content>
-                    <div className='d-flex justify-content-between align-items-center my-5'>
-                        <div id="kt_page_title" data-kt-swapper="true" data-kt-swapper-mode="prepend"
+                    <div className="d-flex justify-content-between align-items-center my-5">
+                        <div
+                            id="kt_page_title"
+                            data-kt-swapper="true"
+                            data-kt-swapper-mode="prepend"
                             data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
-                            className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
+                            className="page-title d-flex flex-wrap me-3 flex-column justify-content-center"
+                        >
                             <div className={`breadcrumb-item ${styles.titlePage}`}>
                                 <span>ถ่ายรูป</span>
                             </div>
                         </div>
                     </div>
-                    <span className={`${styles.fontSize}`}>
-                        เลขที่ขาย: {""}
-                    </span>
+                    <span className={`${styles.fontSize}`}>เลขที่ขาย: {""}</span>
                     <span className={`${styles.titlePage}`}>
                         {whereRefno ? whereRefno : item?.REFNO}
                     </span>
 
                     <div className="row gx-4 gy-6 mb-20">
                         {/* Card Body */}
-                        <div className='card col-lg-3 col-6'>
+                        <div className="card col-lg-3 col-6">
                             {images?.IMAGEGPS.length! > 0 && (
-                                <span className="badge bg-success position-absolute top-0 end-0 m-2 fs-6">
-                                    ถ่ายแล้ว
+                                <span className="position-absolute bottom-0 end-0 m-2 fs-6">
+                                    <img
+                                        className="mx-auto h-40px theme-light-show"
+                                        src={toAbsoluteUrl(
+                                            "media/take-a-pic/circle-check-solid-full.svg"
+                                        )}
+                                    />
                                 </span>
                             )}
                             <button
                                 style={{
-                                    background: 'none',
-                                    border: 'none',
+                                    background: "none",
+                                    border: "none",
                                     padding: 0,
-                                    color: 'inherit',
-                                    cursor: 'pointer',
-                                    fontSize: 'inherit',
+                                    color: "inherit",
+                                    cursor: "pointer",
+                                    fontSize: "inherit",
                                 }}
-                                onClick={() => navigate('/sale/photo/gallery-gps', { state: { fromStep, data: item } })}
+                                onClick={() =>
+                                    navigate("/sale/photo/gallery-gps", {
+                                        state: { fromStep, data: item },
+                                    })
+                                }
                             >
-                                <div className='mb-10 mt-7'>
-                                    <div className='text-gray-800 text-center'>
-                                        <span className={`position-relative d-inline-block text-dangeropacity-75-hover ${styles.fontSize}`}>
+                                <div className="mb-10 mt-7">
+                                    <div className="text-gray-800 text-center">
+                                        <span
+                                            className={`position-relative d-inline-block text-dangeropacity-75-hover ${styles.fontSize}`}
+                                        >
                                             รูปแผนที่ GPS
                                         </span>
                                     </div>
                                 </div>
                                 <img
-                                    className='mx-auto h-100px h-lg-150px theme-light-show'
-                                    src={toAbsoluteUrl('media/take-a-pic/map-gps-svgrepo-com.svg')}
-                                    alt=''
+                                    className="mx-auto h-100px h-lg-150px theme-light-show"
+                                    src={toAbsoluteUrl(
+                                        "media/take-a-pic/map-gps-svgrepo-com.svg"
+                                    )}
+                                    alt=""
                                 />
                             </button>
                         </div>
                         {/* End Card Body */}
 
                         {/* Card Body */}
-                        <div className='card col-lg-3 col-6'>
+                        <div className="card col-lg-3 col-6">
                             {images?.IMAGECARD.length! > 0 && (
-                                <span className="badge bg-success position-absolute top-0 end-0 m-2 fs-6">
-                                    ถ่ายแล้ว
+                                <span className="position-absolute bottom-0 end-0 m-2 fs-6">
+                                    <img
+                                        className="mx-auto h-40px theme-light-show"
+                                        src={toAbsoluteUrl(
+                                            "media/take-a-pic/circle-check-solid-full.svg"
+                                        )}
+                                    />
                                 </span>
                             )}
                             <button
                                 style={{
-                                    background: 'none',
-                                    border: 'none',
+                                    background: "none",
+                                    border: "none",
                                     padding: 0,
-                                    color: 'inherit',
-                                    cursor: 'pointer',
-                                    fontSize: 'inherit',
+                                    color: "inherit",
+                                    cursor: "pointer",
+                                    fontSize: "inherit",
                                 }}
-                                onClick={() => navigate('/sale/photo/gallery/idcard', { state: { fromStep, data: item } })}
+                                onClick={() =>
+                                    navigate("/sale/photo/gallery/idcard", {
+                                        state: { fromStep, data: item },
+                                    })
+                                }
                             >
-                                <div className='mb-10 mt-7'>
-                                    <div className='text-gray-800 text-center'>
-                                        <span className={`position-relative d-inline-block text-dangeropacity-75-hover ${styles.fontSize}`}>
+                                <div className="mb-10 mt-7">
+                                    <div className="text-gray-800 text-center">
+                                        <span
+                                            className={`position-relative d-inline-block text-dangeropacity-75-hover ${styles.fontSize}`}
+                                        >
                                             รูปบัตรประชาชน
                                         </span>
                                     </div>
                                 </div>
                                 <img
-                                    className='mx-auto h-100px h-lg-150px theme-light-show'
-                                    src={toAbsoluteUrl('media/take-a-pic/id-card-pass.svg')}
-                                    alt=''
+                                    className="mx-auto h-100px h-lg-150px theme-light-show"
+                                    src={toAbsoluteUrl("media/take-a-pic/id-card-pass.svg")}
+                                    alt=""
                                 />
                             </button>
                         </div>
                         {/* End Card Body */}
 
                         {/* Card Body */}
-                        <div className='card col-lg-3 col-6'>
+                        <div className="card col-lg-3 col-6">
                             {images?.IMAGETDS.length! > 0 && (
-                                <span className="badge bg-success position-absolute top-0 end-0 m-2 fs-6">
-                                    ถ่ายแล้ว
+                                <span className="position-absolute bottom-0 end-0 m-2 fs-6">
+                                    <img
+                                        className="mx-auto h-40px theme-light-show"
+                                        src={toAbsoluteUrl(
+                                            "media/take-a-pic/circle-check-solid-full.svg"
+                                        )}
+                                    />
                                 </span>
                             )}
                             <button
                                 style={{
-                                    background: 'none',
-                                    border: 'none',
+                                    background: "none",
+                                    border: "none",
                                     padding: 0,
-                                    color: 'inherit',
-                                    cursor: 'pointer',
-                                    fontSize: 'inherit',
+                                    color: "inherit",
+                                    cursor: "pointer",
+                                    fontSize: "inherit",
                                 }}
-                                onClick={() => navigate('/sale/photo/gallery/equipment', { state: { fromStep, data: item } })}
+                                onClick={() =>
+                                    navigate("/sale/photo/gallery/equipment", {
+                                        state: { fromStep, data: item },
+                                    })
+                                }
                             >
-                                <div className='mb-10 mt-7'>
-                                    <div className='text-gray-800 text-center'>
-                                        <span className={`position-relative d-inline-block text-dangeropacity-75-hover ${styles.fontSize}`}>
+                                <div className="mb-10 mt-7">
+                                    <div className="text-gray-800 text-center">
+                                        <span
+                                            className={`position-relative d-inline-block text-dangeropacity-75-hover ${styles.fontSize}`}
+                                        >
                                             รูปอุปกรณ์วัดค่าน้ำ
                                         </span>
                                     </div>
                                 </div>
                                 <img
-                                    className='mx-auto h-100px h-lg-150px theme-light-show'
-                                    src={toAbsoluteUrl('media/take-a-pic/water-water-svgrepo-com.svg')}
-                                    alt=''
+                                    className="mx-auto h-100px h-lg-150px theme-light-show"
+                                    src={toAbsoluteUrl(
+                                        "media/take-a-pic/water-water-svgrepo-com.svg"
+                                    )}
+                                    alt=""
                                 />
                             </button>
                         </div>
                         {/* End Card Body */}
 
                         {/* Card Body */}
-                        <div className='card col-lg-3 col-6'>
+                        <div className="card col-lg-3 col-6">
                             {images?.IMAGEMAP.length! > 0 && (
-                                <span className="badge bg-success position-absolute top-0 end-0 m-2 fs-6">
-                                    ถ่ายแล้ว
+                                <span className="position-absolute bottom-0 end-0 m-2 fs-6">
+                                    <img
+                                        className="mx-auto h-40px theme-light-show"
+                                        src={toAbsoluteUrl(
+                                            "media/take-a-pic/circle-check-solid-full.svg"
+                                        )}
+                                    />
                                 </span>
                             )}
                             <button
                                 style={{
-                                    background: 'none',
-                                    border: 'none',
+                                    background: "none",
+                                    border: "none",
                                     padding: 0,
-                                    color: 'inherit',
-                                    cursor: 'pointer',
-                                    fontSize: 'inherit',
+                                    color: "inherit",
+                                    cursor: "pointer",
+                                    fontSize: "inherit",
                                 }}
-                                onClick={() => navigate('/sale/photo/gallery/drawingMap', { state: { fromStep, data: item } })}
+                                onClick={() =>
+                                    navigate("/sale/photo/gallery/drawingMap", {
+                                        state: { fromStep, data: item },
+                                    })
+                                }
                             >
-                                <div className='mb-10 mt-7'>
-                                    <div className='text-gray-800 text-center'>
-                                        <span className={`position-relative d-inline-block text-dangeropacity-75-hover ${styles.fontSize}`}>
+                                <div className="mb-10 mt-7">
+                                    <div className="text-gray-800 text-center">
+                                        <span
+                                            className={`position-relative d-inline-block text-dangeropacity-75-hover ${styles.fontSize}`}
+                                        >
                                             รูปวาดแผนที่
                                         </span>
                                     </div>
                                 </div>
                                 <img
-                                    className='mx-auto h-100px h-lg-150px theme-light-show'
-                                    src={toAbsoluteUrl('media/take-a-pic/map-svgrepo-com.svg')}
-                                    alt=''
+                                    className="mx-auto h-100px h-lg-150px theme-light-show"
+                                    src={toAbsoluteUrl("media/take-a-pic/map-svgrepo-com.svg")}
+                                    alt=""
                                 />
                             </button>
                         </div>
                         {/* End Card Body */}
 
                         {/* Card Body */}
-                        <div className='card col-lg-3 col-6'>
+                        <div className="card col-lg-3 col-6">
                             {images?.IMAGECUSTOMERHOME.length! > 0 && (
-                                <span className="badge bg-success position-absolute top-0 end-0 m-2 fs-6">
-                                    ถ่ายแล้ว
+                                <span className="position-absolute bottom-0 end-0 m-2 fs-6">
+                                    <img
+                                        className="mx-auto h-40px theme-light-show"
+                                        src={toAbsoluteUrl(
+                                            "media/take-a-pic/circle-check-solid-full.svg"
+                                        )}
+                                    />
                                 </span>
                             )}
                             <button
                                 style={{
-                                    background: 'none',
-                                    border: 'none',
+                                    background: "none",
+                                    border: "none",
                                     padding: 0,
-                                    color: 'inherit',
-                                    cursor: 'pointer',
-                                    fontSize: 'inherit',
+                                    color: "inherit",
+                                    cursor: "pointer",
+                                    fontSize: "inherit",
                                 }}
-                                onClick={() => navigate('/sale/photo/gallery/customerHome', { state: { fromStep, data: item } })}
+                                onClick={() =>
+                                    navigate("/sale/photo/gallery/customerHome", {
+                                        state: { fromStep, data: item },
+                                    })
+                                }
                             >
-                                <div className='mb-10 mt-7'>
-                                    <div className='text-gray-800 text-center'>
-                                        <span className={`position-relative d-inline-block text-dangeropacity-75-hover ${styles.fontSize}`}>
+                                <div className="mb-10 mt-7">
+                                    <div className="text-gray-800 text-center">
+                                        <span
+                                            className={`position-relative d-inline-block text-dangeropacity-75-hover ${styles.fontSize}`}
+                                        >
                                             รูปบ้านลูกค้า
                                         </span>
                                     </div>
                                 </div>
                                 <img
-                                    className='mx-auto h-100px h-lg-150px theme-light-show'
-                                    src={toAbsoluteUrl('media/take-a-pic/home-house-svgrepo-com.svg')}
-                                    alt=''
+                                    className="mx-auto h-100px h-lg-150px theme-light-show"
+                                    src={toAbsoluteUrl(
+                                        "media/take-a-pic/home-house-svgrepo-com.svg"
+                                    )}
+                                    alt=""
                                 />
                             </button>
                         </div>
                         {/* End Card Body */}
 
                         {/* Card Body */}
-                        <div className='card col-lg-3 col-6'>
+                        <div className="card col-lg-3 col-6">
                             {images?.IMAGEINSTALLATION.length! > 0 && (
-                                <span className="badge bg-success position-absolute top-0 end-0 m-2 fs-6">
-                                    ถ่ายแล้ว
+                                <span className="position-absolute bottom-0 end-0 m-2 fs-6">
+                                    <img
+                                        className="mx-auto h-40px theme-light-show"
+                                        src={toAbsoluteUrl(
+                                            "media/take-a-pic/circle-check-solid-full.svg"
+                                        )}
+                                    />
                                 </span>
                             )}
                             <button
                                 style={{
-                                    background: 'none',
-                                    border: 'none',
+                                    background: "none",
+                                    border: "none",
                                     padding: 0,
-                                    color: 'inherit',
-                                    cursor: 'pointer',
-                                    fontSize: 'inherit',
+                                    color: "inherit",
+                                    cursor: "pointer",
+                                    fontSize: "inherit",
                                 }}
-                                onClick={() => navigate('/sale/photo/gallery/installation', { state: { fromStep, data: item } })}
+                                onClick={() =>
+                                    navigate("/sale/photo/gallery/installation", {
+                                        state: { fromStep, data: item },
+                                    })
+                                }
                             >
-                                <div className='mb-10 mt-7'>
-                                    <div className='text-gray-800 text-center'>
-                                        <span className={`position-relative d-inline-block text-dangeropacity-75-hover ${styles.fontSize}`}>
+                                <div className="mb-10 mt-7">
+                                    <div className="text-gray-800 text-center">
+                                        <span
+                                            className={`position-relative d-inline-block text-dangeropacity-75-hover ${styles.fontSize}`}
+                                        >
                                             รูปติดตั้งเครื่อง/ลูกค้า
                                         </span>
                                     </div>
                                 </div>
                                 <img
-                                    className='mx-auto h-100px h-lg-150px theme-light-show'
-                                    src={toAbsoluteUrl('media/take-a-pic/setting-configuration-gear-svgrepo-com.svg')}
-                                    alt=''
+                                    className="mx-auto h-100px h-lg-150px theme-light-show"
+                                    src={toAbsoluteUrl(
+                                        "media/take-a-pic/setting-configuration-gear-svgrepo-com.svg"
+                                    )}
+                                    alt=""
                                 />
                             </button>
                         </div>
                         {/* End Card Body */}
 
                         {/* Card Body */}
-                        <div className='card col-lg-3 col-6'>
+                        <div className="card col-lg-3 col-6">
                             {images?.IMAGETRADEIN.length! > 0 && (
-                                <span className="badge bg-success position-absolute top-0 end-0 m-2 fs-6">
-                                    ถ่ายแล้ว
+                                <span className="position-absolute bottom-0 end-0 m-2 fs-6">
+                                    <img
+                                        className="mx-auto h-40px theme-light-show"
+                                        src={toAbsoluteUrl(
+                                            "media/take-a-pic/circle-check-solid-full.svg"
+                                        )}
+                                    />
                                 </span>
                             )}
                             <button
                                 style={{
-                                    background: 'none',
-                                    border: 'none',
+                                    background: "none",
+                                    border: "none",
                                     padding: 0,
-                                    color: 'inherit',
-                                    cursor: 'pointer',
-                                    fontSize: 'inherit',
+                                    color: "inherit",
+                                    cursor: "pointer",
+                                    fontSize: "inherit",
                                 }}
-                                onClick={() => navigate('/sale/photo/gallery/turn', { state: { fromStep, data: item } })}
+                                onClick={() =>
+                                    navigate("/sale/photo/gallery/turn", {
+                                        state: { fromStep, data: item },
+                                    })
+                                }
                             >
-                                <div className='mb-10 mt-7'>
-                                    <div className='text-gray-800 text-center'>
-                                        <span className={`position-relative d-inline-block text-dangeropacity-75-hover ${styles.fontSize}`}>
+                                <div className="mb-10 mt-7">
+                                    <div className="text-gray-800 text-center">
+                                        <span
+                                            className={`position-relative d-inline-block text-dangeropacity-75-hover ${styles.fontSize}`}
+                                        >
                                             รูปเครื่องเทิร์นหรือโปรโมชั่น
                                         </span>
                                     </div>
                                 </div>
                                 <img
-                                    className='mx-auto h-100px h-lg-150px theme-light-show'
-                                    src={toAbsoluteUrl('media/take-a-pic/water-svgrepo-com.svg')}
-                                    alt=''
+                                    className="mx-auto h-100px h-lg-150px theme-light-show"
+                                    src={toAbsoluteUrl("media/take-a-pic/water-svgrepo-com.svg")}
+                                    alt=""
                                 />
                             </button>
                         </div>
                         {/* End Card Body */}
 
                         {/* Card Body */}
-                        <div className='card col-lg-3 col-6'>
+                        <div className="card col-lg-3 col-6">
                             {images?.IMAGECUSTOMER.length! > 0 && (
-                                <span className="badge bg-success position-absolute top-0 end-0 m-2 fs-6">
-                                    ถ่ายแล้ว
+                                <span className="position-absolute bottom-0 end-0 m-2 fs-6">
+                                    <img
+                                        className="mx-auto h-40px theme-light-show"
+                                        src={toAbsoluteUrl(
+                                            "media/take-a-pic/circle-check-solid-full.svg"
+                                        )}
+                                    />
                                 </span>
                             )}
                             <button
                                 style={{
-                                    background: 'none',
-                                    border: 'none',
+                                    background: "none",
+                                    border: "none",
                                     padding: 0,
-                                    color: 'inherit',
-                                    cursor: 'pointer',
-                                    fontSize: 'inherit',
+                                    color: "inherit",
+                                    cursor: "pointer",
+                                    fontSize: "inherit",
                                 }}
-                                onClick={() => navigate('/sale/photo/gallery/customer', { state: { fromStep, data: item } })}
+                                onClick={() =>
+                                    navigate("/sale/photo/gallery/customer", {
+                                        state: { fromStep, data: item },
+                                    })
+                                }
                             >
-                                <div className='mb-10 mt-7'>
-                                    <div className='text-gray-800 text-center'>
-                                        <span className={`position-relative d-inline-block text-dangeropacity-75-hover ${styles.fontSize}`}>
+                                <div className="mb-10 mt-7">
+                                    <div className="text-gray-800 text-center">
+                                        <span
+                                            className={`position-relative d-inline-block text-dangeropacity-75-hover ${styles.fontSize}`}
+                                        >
                                             สลิปโอนเงิน (ถ้ามี)
                                         </span>
                                     </div>
                                 </div>
                                 <img
-                                    className='mx-auto h-100px h-lg-150px theme-light-show'
-                                    src={toAbsoluteUrl('media/take-a-pic/person-boy-svgrepo-com.svg')}
-                                    alt=''
+                                    className="mx-auto h-100px h-lg-150px theme-light-show"
+                                    src={toAbsoluteUrl(
+                                        "media/take-a-pic/person-boy-svgrepo-com.svg"
+                                    )}
+                                    alt=""
                                 />
                             </button>
                         </div>
@@ -1303,37 +1437,51 @@ const SalesPhoto: React.FC = () => {
                     {/* End Card Body */}
 
                     {/* แสดงปุ่มเมื่อมาจาก Step */}
-                    <div className='d-none d-xl-flex justify-content-between align-items-center mt-5 mb-10'>
+                    <div className="d-none d-xl-flex justify-content-start align-items-center mt-5 mb-10">
+                        {/* {hideFinish && (
+                            <button
+                                className={`${styles.btnSecondary}`}
+                                onClick={() =>
+                                    navigate('/sale/editFinishInDay', { state: item })
+                                }
+                            >
+                                ย้อนกลับ
+                            </button>
+                        )} */}
                         {/* <button
-                            className={`${styles.btnSecondary}`}
-                            onClick={() =>
-                                navigate('/sale/step', { state: matchedItem })
-                            }
-                        >
-                            ย้อนกลับ
-                        </button> */}
-                        <button
                             className={`${styles.btnPrimary}`}
                             onClick={() =>
                                 navigate('/sale/overview', { state: matchedItem })
                             }
                         >
                             จบการทำงาน
-                        </button>
-                        {isDataComplete && (
-                            <button
-                                className={`${styles.btnPrimary}`}
-                                onClick={handleCheckerClick}
-                            >
-                                บันทึกสัญญา
-                            </button>
-                        )}
+                        </button> */}
+                        <div
+                            className="ms-auto"
+                        >
+                            {/* {!hideFinish && isDataComplete && (
+                                <button
+                                    className={`${styles.btnPrimary}`}
+                                    onClick={handleCheckerClick}
+                                >
+                                    จบการทำงาน
+                                </button>
+                            )} */}
+                            {/* {isDataComplete && ( */}
+                                <button
+                                    className={`${styles.btnPrimary}`}
+                                    onClick={handleCheckerClick}
+                                >
+                                    จบการทำงาน
+                                </button>
+                            {/* )} */}
+                        </div>
                     </div>
 
                     {/* ปุ่มในหน้าจอเล็ก */}
                     {/* แสดงปุ่มเมื่อมาจาก Step */}
                     <div
-                        className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
+                        className="d-flex d-xl-none justify-content-start align-items-center bg-light p-3 border-top"
                         style={{
                             position: "fixed",
                             bottom: 0,
@@ -1342,35 +1490,49 @@ const SalesPhoto: React.FC = () => {
                             zIndex: 1050,
                         }}
                     >
+                        {/* {hideFinish && (
+                            <button
+                                className={`${styles.btnSecondary}`}
+                                onClick={() =>
+                                    navigate('/sale/editFinishInDay', { state: item })
+                                }
+                            >
+                                ย้อนกลับ
+                            </button>
+                        )} */}
                         {/* <button
-                            className={`${styles.btnSecondary}`}
-                            onClick={() =>
-                                navigate('/sale/step', { state: matchedItem })
-                            }
-                        >
-                            ย้อนกลับ
-                        </button> */}
-                        <button
                             className={`${styles.btnPrimary}`}
                             onClick={() =>
                                 navigate('/sale/overview', { state: matchedItem })
                             }
                         >
                             จบการทำงาน
-                        </button>
-                        {isDataComplete && (
-                            <button
-                                className={`${styles.btnPrimary}`}
-                                onClick={handleCheckerClick}
-                            >
-                                บันทึกสัญญา
-                            </button>
-                        )}
+                        </button> */}
+                        <div
+                            className="ms-auto"
+                        >
+                            {/* {!hideFinish && isDataComplete && (
+                                <button
+                                    className={`${styles.btnPrimary}`}
+                                    onClick={handleCheckerClick}
+                                >
+                                    จบการทำงาน
+                                </button>
+                            )} */}
+                            {/* {isDataComplete && ( */}
+                                <button
+                                    className={`${styles.btnPrimary}`}
+                                    onClick={handleCheckerClick}
+                                >
+                                    จบการทำงาน
+                                </button>
+                            {/* )} */}
+                        </div>
                     </div>
-                </Content >
+                </Content>
             )}
         </>
-    )
-}
+    );
+};
 
-export default SalesPhoto
+export default SalesPhoto;

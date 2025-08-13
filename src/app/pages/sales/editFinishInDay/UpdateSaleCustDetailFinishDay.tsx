@@ -1866,6 +1866,7 @@ const UpdateSaleCustDetailFinishDay: React.FC = () => {
     selectedCustomerType,
     idCard,
     fullName,
+    lastName,
     valueCalendar,
     valueAge,
     selectedCardType,
@@ -2204,6 +2205,7 @@ const UpdateSaleCustDetailFinishDay: React.FC = () => {
 
     // 5) ชื่อ บังคับกรอกเสมอ
     fullName: yup.string().required("กรุณากรอกชื่อ"),
+    lastName: yup.string(),
 
     // 6–8) วัน / เดือน / ปีเกิด (พ.ศ.) แยกสามฟิลด์
     selectedDay: yup
@@ -2285,6 +2287,7 @@ const UpdateSaleCustDetailFinishDay: React.FC = () => {
       idCard: "",
       selectedPrefixId: undefined,
       fullName: "",
+      lastName: "",
       selectedDay: undefined,
       selectedMonth: undefined,
       selectedYearBE: undefined,

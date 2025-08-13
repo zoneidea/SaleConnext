@@ -1,41 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="SALECOMMERCE" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Kodchasan:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;1,200;1,300;1,400;1,500;1,600;1,700&family=Prompt:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+    />
+    <title>SALECOMMERCE</title>
+    <link rel="shortcut icon" href="/public/media/logos/favicon.ico" />
 
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#000000" />
-  <meta name="description" content="SALECOMMERCE" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" />
-  <title>SALECOMMERCE</title>
-  <link rel="shortcut icon" href="/public/media/logos/favicon.ico" />
-  
-  <!-- เพิ่มการนำเข้าไฟล์ CSS ของ Metronic -->
-  <link href="/public/assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
+    <!-- เพิ่มการนำเข้าไฟล์ CSS ของ Metronic -->
+    <!-- <link
+      href="/public/assets/css/style.bundle.css"
+      rel="stylesheet"
+      type="text/css"
+    /> -->
 
-  <link rel="stylesheet" id="layout-styles-anchor" href="/public/splash-screen.css" />
-</head>
+    <link
+      rel="stylesheet"
+      id="layout-styles-anchor"
+      href="/public/splash-screen.css"
+    />
+  </head>
 
-<body id="kt_body" class="page-loading">
-  <noscript>You need to enable JavaScript to run this app.</noscript>
+  <body id="kt_body" class="page-loading">
+    <noscript>You need to enable JavaScript to run this app.</noscript>
 
-  <script>
-    let themeMode = 'system'
+    <script>
+      let themeMode = "system";
 
-    if (localStorage.getItem('kt_theme_mode_value')) {
-      themeMode = localStorage.getItem('kt_theme_mode_value')
-    }
+      if (localStorage.getItem("kt_theme_mode_value")) {
+        themeMode = localStorage.getItem("kt_theme_mode_value");
+      }
 
-    if (themeMode === 'system') {
-      themeMode = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-    }
+      if (themeMode === "system") {
+        themeMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
+      }
 
-    document.documentElement.setAttribute('data-bs-theme', themeMode)
-  </script>
+      document.documentElement.setAttribute("data-bs-theme", themeMode);
+    </script>
 
-  <div id="root"></div>
+    <div id="root"></div>
 
-  <!-- <div id="splash-screen" class="splash-screen">
+    <!-- <div id="splash-screen" class="splash-screen">
     <img src="/public/media/logos/logo-tsr-old.png" alt="TSR LIVING SOLUTION" className='h-15px'>
     <div class="loader-wrapper">
       <span class="loader"></span>
@@ -43,8 +55,7 @@
     </div>
   </div> -->
 
-  <div id="root-modals"></div>
-  <script type="module" src="/src/main.tsx"></script>
-</body>
-
+    <div id="root-modals"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>

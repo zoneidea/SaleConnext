@@ -283,27 +283,40 @@ export function Login() {
   );
 
   return (
-    <div className="d-flex justify-content-center">
+    <div
+      className="d-flex justify-content-center align-items-center"
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100vw", // ให้เต็มความกว้าง viewport
+        height: "100vh", // ให้เต็มความสูง viewport
+        backgroundImage: `url(${toAbsoluteUrl("media/logos/bg3.png")})`,
+        backgroundSize: "cover", // ยืดภาพให้เต็มทั้งหน้าจอ
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
       <form
         className="text-center d-flex flex-column align-items-center justify-content-center"
         onSubmit={formik.handleSubmit}
         noValidate
         id="kt_login_signin_form"
       >
-        <div className="d-flex justify-content-center align-items-center mb-4">
+        <div className="d-flex justify-content-center align-items-center my-15">
           <img
             alt="Logo"
-            src={toAbsoluteUrl("media/logos/logo-tsr-old.png")}
-            className="h-150px w-150px"
+            src={toAbsoluteUrl("media/logos/logo-tsr-old-white.png")}
+            style={{ width: "50%" }}
           />
         </div>
 
         <div className="fv-row mb-3 w-lg-500px w-300px w-md-500px">
-          <label
+          {/* <label
             className={`d-flex form-label fw-bolder text-gray-900 mb-0 ${styles.fontSize}`}
           >
             Username
-          </label>
+          </label> */}
           <input
             type="text"
             autoComplete="off"
@@ -313,6 +326,7 @@ export function Login() {
               "is-valid": formik.touched.username && !formik.errors.username,
             })}
             placeholder="Username"
+            style={{ color: "white" }}
           />
           {formik.touched.username && formik.errors.username && (
             <div className="fv-plugins-message-container">
@@ -326,13 +340,14 @@ export function Login() {
         </div>
 
         <div className="fv-row mb-3 w-lg-500px w-300px w-md-500px">
-          <label
+          {/* <label
             className={`d-flex form-label fw-bolder text-gray-900 mb-0 ${styles.fontSize}`}
           >
             Password
-          </label>
+          </label> */}
           <input
-            type="text"
+            style={{ color: "white" }}
+            type="password"
             placeholder="Password"
             autoComplete="off"
             {...formik.getFieldProps("password")}
@@ -357,12 +372,13 @@ export function Login() {
           )}
         </div>
 
-        <div className="d-grid my-10 w-lg-500px w-300px w-md-500px">
+        <div className="d-grid my-3 w-lg-500px w-300px w-md-500px">
           <button
             type="submit"
             id="kt_sign_in_submit"
             className="btn btn-primary d-flex justify-content-center align-items-center"
             disabled={formik.isSubmitting || !formik.isValid || loading}
+            style={{ backgroundColor: "#001830" }}
           >
             {loading && !hasFieldErrors ? (
               <>
@@ -374,13 +390,26 @@ export function Login() {
                 <span className={`ms-2 ${styles.fontSize}`}>กำลังโหลด...</span>
               </>
             ) : (
-              <span className={`${styles.fontSize}`}>เข้าสู่ระบบ</span>
+              <span
+                className={`${styles.fontSize}`}
+                // style={{ fontSize: 16 }}
+              >
+                เข้าสู่ระบบ
+              </span>
             )}
           </button>
         </div>
         <div className="fv-help-block d-flex">
-          <span role="alert" className={`${styles.fontSize}`}>
-            version {VERSION}
+          <span
+            role="alert"
+            className={`${styles.fontSize}`}
+            style={{
+              color: "white",
+              fontSize: 14,
+              marginTop: 20,
+            }}
+          >
+            v {VERSION}
           </span>
         </div>
       </form>

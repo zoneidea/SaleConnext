@@ -91,7 +91,11 @@ const SidebarMenuMain = () => {
       return toAbsoluteUrl('media/iconSidebar/money-send-svgrepo-com.png')
     } else if (menuName.includes('ระบบยืมสินค้า')) {
       return toAbsoluteUrl('media/iconSidebar/product-transfer-svgrepo-com.png')
-    }
+    } else if (menuName.includes('รายงานเก็บเงินประจำวัน')) {
+      return toAbsoluteUrl('media/iconSidebar/report-linechart-svgrepo-com.png')
+    } else if (menuName.includes('ระบบทำสัญญาจากใบจอง')) {
+      return toAbsoluteUrl('media/iconSidebar/contract-document-agreement-svgrepo-com.png')
+    } 
   }
 
   const handleMouseEnter = (event: React.MouseEvent<HTMLDivElement>) => {
@@ -107,7 +111,7 @@ const SidebarMenuMain = () => {
     <>
       {/* เมนูทั่วไป */}
       {menu
-        .filter((item) => item.MENU_NAME !== 'รายงานการขายประจำวัน'
+        .filter((item) => item.MENU_NAME !== 'รายงานการขายประจำวัน' && item.MENU_NAME !== 'รายงานเก็บเงินประจำวัน'
         )
         .map((item) => (
           <SidebarMenuItem
@@ -132,7 +136,7 @@ const SidebarMenuMain = () => {
 
       {/* เมนู "รายงานการขายประจำวัน" */}
       {menu
-        .filter((item) => item.MENU_NAME === 'รายงานการขายประจำวัน') // แสดงเฉพาะ "รายงานการขายประจำวัน"
+        .filter((item) => item.MENU_NAME === 'รายงานการขายประจำวัน' || item.MENU_NAME === 'รายงานเก็บเงินประจำวัน') // แสดงเฉพาะ "รายงานการขายประจำวัน"
         .map((item) => (
           <SidebarMenuItem
             fontSize={fontSize}

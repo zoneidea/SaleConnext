@@ -243,6 +243,9 @@ const PrivateRoutes = () => {
   const ReceiptFirstBill = lazy(
     () => import("../pages/firstBill/ReceiptFirstBill")
   );
+  const ReceiptFirstBillFromCreateFirstBill = lazy(
+    () => import("../pages/firstBill/ReceiptFirstBillFromCreateFirstBill")
+  );
 
   //หัวข้อ ระบบส่งเงิน
   const CreateSendMoney = lazy(
@@ -257,6 +260,7 @@ const PrivateRoutes = () => {
 
   // รายงานยอดขายประจำวัน
   const ReportSale = lazy(() => import("../pages/report/ReportSale"));
+  const ReportSaleDaily = lazy(() => import("../pages/report/ReportSalePayment"));
 
   return (
     <Routes>
@@ -830,6 +834,14 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
+        <Route
+          path="firstBill/receiptFromCreateFirstBill"
+          element={
+            <SuspensedView>
+              <ReceiptFirstBillFromCreateFirstBill />
+            </SuspensedView>
+          }
+        />
         {/* End ระบบเก็บเงินงวดแรก */}
 
         {/* Start ระบบส่งเงิน */}
@@ -887,6 +899,14 @@ const PrivateRoutes = () => {
           element={
             <SuspensedView>
               <ReportSale />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path="report/salePayment"
+          element={
+            <SuspensedView>
+              <ReportSaleDaily />
             </SuspensedView>
           }
         />

@@ -7,6 +7,7 @@ import Swal from 'sweetalert2'
 import withReactContent from 'sweetalert2-react-content'
 import { useAuth } from '../../../../modules/auth/core/Auth'
 import { useItemStore } from '../../store/useItemStore'
+import { useNavigate } from 'react-router-dom';
 
 type Props = {
   payments: any[]
@@ -20,6 +21,10 @@ const UPDATE_CONTACT_URL = `${API_URL_SALECONNEXT}/UpdateContact/VoidContract`
 // หรือถ้าชื่อจริงๆ เป็นอะไร ก็เปลี่ยนตามจริง
 
 const CardBillRecieveMoney: FC<Props> = ({ payments, isLoading }) => {
+  const navigate = useNavigate();
+
+  console.log(`payments`, payments);
+
   const MySwal = withReactContent(Swal)
   const { auth } = useAuth()
   const EmpId = auth?.data?.[0]?.EmpId || ''
@@ -61,18 +66,18 @@ const CardBillRecieveMoney: FC<Props> = ({ payments, isLoading }) => {
           // 2) เรียก API UpdateContact ต่อ
           // (เปลี่ยนสถานะเป็น REMOVE)
           // -----------------------------
-          const responseUpdate = await axios.post(UPDATE_CONTACT_URL, {
-            RefNo: pay.REFNO,
-            EmpId: EmpId,
-            // กรณีต้องการส่ง TeamSale หรือ Field/Data อื่นด้วย
-            // TEAMSALE: TeamSale,
-            // FIELD: 'STATUS',
-            // DATA: 'REMOVE',
-          })
-          console.log('Update success:', responseUpdate.data)
+          // const responseUpdate = await axios.post(UPDATE_CONTACT_URL, {
+          //   RefNo: pay.REFNO,
+          //   EmpId: EmpId,
+          //   // กรณีต้องการส่ง TeamSale หรือ Field/Data อื่นด้วย
+          //   // TEAMSALE: TeamSale,
+          //   // FIELD: 'STATUS',
+          //   // DATA: 'REMOVE',
+          // })
+          // console.log('Update success:', responseUpdate.data)
 
           // ถ้าทั้งสองสำเร็จ
-          Swal.fire({
+          await Swal.fire({
             icon: 'success',
             title: 'สำเร็จ!',
             text: `ใบเสร็จถูกยกเลิกเรียบร้อยแล้ว และสถานะถูกอัปเดตเป็น REMOVE`,
@@ -80,7 +85,9 @@ const CardBillRecieveMoney: FC<Props> = ({ payments, isLoading }) => {
             showConfirmButton: false,
           })
 
-          // TODO: หากต้องการรีเฟรชหน้าหรือ navigate ไปหน้าอื่น ก็เพิ่มได้
+          // บังคับรีเฟรช
+          navigate(0);
+
         } catch (error) {
           console.error('Error:', error)
           Swal.fire({
@@ -102,10 +109,20 @@ const CardBillRecieveMoney: FC<Props> = ({ payments, isLoading }) => {
     )
   }
 
+  // แปลงวันที่เป็นรูปแบบไทย
+  const formatToBE = (isoDate?: string) => {
+    if (!isoDate) return '';
+    const d = new Date(isoDate);
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yyyy = d.getFullYear() + 543;
+    return `${dd}/${mm}/${yyyy}`;
+  };
+
   return (
     <div className='row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4'>
       {payments.map((pay, index) => {
-        // ฟอร์แมตวันที่
+        // ฟอร์แมตวันที่z
         const receivedDate = pay.SENDDATE
           ? dayjs(pay.SENDDATE).format('DD/MM/YYYY')
           : '-'
@@ -121,66 +138,78 @@ const CardBillRecieveMoney: FC<Props> = ({ payments, isLoading }) => {
                 <div className='d-flex align-items-center'>
                   <KTIcon iconName='abstract-26' className='fs-3 me-2 text-primary' />
                   <span className='fw-bold fs-5'>
-                    เลขที่สัญญา {pay.CONTRACTREFERENCENO ?? '-'}
+                    เลขที่สัญญา {pay.CONTRACTREFERENCENO ?? ''}
                   </span>
                 </div>
                 <span className='badge bg-primary text-white fs-6'>
-                  งวดที่ {index + 1} / {payments.length}
+                  {/* งวดที่ {index + 1} / {payments.length} */}
+                  งวดที่ {pay.PAYMENTPERIODNUMBER ?? ''} / {pay.MAXPERIOD}
                 </span>
               </div>
 
               {/* Card body */}
               <div className='mb-3'>
-                <strong>ลูกค้า:</strong> {pay.CUSTOMERNAME ?? '-'} {pay.CUSTOMERLASTNAME}
+                <strong>เลขที่ใบรับเงิน:</strong> {pay.RECEIPTCODE ?? ''}
               </div>
               <div className='mb-3'>
-                <strong>เลขบัตร:</strong> {pay.IDCARD ?? '-'}
+                <strong>ลูกค้า:</strong> {pay.CUSTOMERNAME ?? ''} {pay.CUSTOMERLASTNAME}
               </div>
               <div className='mb-3'>
-                <strong>สินค้า:</strong> {pay.PRODUCTNAME ?? '-'}
+                <strong>เลขบัตร:</strong> {pay.IDCARD ?? ''}
               </div>
               <div className='mb-3'>
-                <strong>Model:</strong> {pay.MODEL ?? '-'}
+                <strong>สินค้า:</strong> {pay.PRODUCTNAME ?? ''}
               </div>
               <div className='mb-3'>
-                <strong>S/N:</strong> {pay.PRODUCTSERIALNUMBER ?? '-'}
+                <strong>Model:</strong> {pay.MODEL ?? ''}
               </div>
               <div className='mb-3'>
-                <strong>แพ็คเกจ:</strong> {pay.PACKAGETITLE ?? '-'}
+                <strong>S/N:</strong> {pay.PRODUCTSERIALNUMBER ?? ''}
               </div>
               <div className='mb-3'>
-                <strong>วันที่จ่าย:</strong> {pay.DATEPAYMENT ?? '-'}
+                <strong>แพ็คเกจ:</strong> {pay.PACKAGETITLE ?? ''}
+              </div>
+              <div className='mb-3'>
+                <strong>วันที่จ่าย:</strong> {formatToBE(pay.DATEPAYMENT) ?? ''}
               </div>
               <div className='mb-3'>
                 <strong>ยอดที่จ่าย:</strong>{' '}
-                {pay.ACCRUED
-                  ? Number(pay.ACCRUED).toLocaleString('th-TH')
-                  : '-'}{' '}
+                {pay.AMOUNT
+                  ? Number(pay.AMOUNT).toLocaleString('th-TH')
+                  : ''}{' '}
                 บาท
               </div>
               <div className='mb-3'>
-                <strong>ยอดที่จ่าย คำอ่าน:</strong> {pay.AMOUNTTEXT ?? '-'}
+                <strong>ยอดที่จ่าย คำอ่าน:</strong> {pay.AMOUNTTEXT ?? ''}
               </div>
               <div className='mb-3'>
                 <strong>ยอดคงเหลือ:</strong>{' '}
                 {pay.BALANCE
                   ? Number(pay.BALANCE).toLocaleString('th-TH')
-                  : '-'}{' '}
+                  : ''}{' '}
                 บาท
               </div>
               <div className='mb-4'>
-                <strong>ประเภทการชำระ:</strong> {pay.PAYMENTTYPE ?? '-'}
+                <strong>ประเภทการชำระ:</strong> {pay.PAYMENTTYPE ?? ''}
               </div>
 
-              {/* ปุ่มยกเลิกใบเสร็จ (Disable ถ้าไม่มี ISACTIVE_VOID) */}
-              <button
-                className='btn btn-danger w-100 w-md-auto align-self-center mt-7 mb-2'
-                type='button'
-                disabled={!pay.ISACTIVE_VOID}
-                onClick={() => handleVoidReceipt(pay)}
-              >
-                ยกเลิกใบเสร็จ
-              </button>
+              {pay.STATUSRECEIPT === 'VOID' && (
+                <div className='mb-4'>
+                  <strong>สถานะ:</strong>{' '}
+                  <span className='badge badge-light-danger'>ใบเสร็จที่ถูกยกเลิก</span>
+                </div>
+              )}
+
+              {pay.ISACTIVE_VOID === true && (
+                < button
+                  className='btn btn-danger w-100 w-md-auto align-self-center mt-7 mb-2'
+                  type='button'
+                  onClick={() => handleVoidReceipt(pay)}
+                >
+                  ยกเลิกใบเสร็จ
+                </button>
+              )}
+
             </div>
           </div>
         )

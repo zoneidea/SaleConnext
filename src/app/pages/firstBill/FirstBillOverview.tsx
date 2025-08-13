@@ -92,14 +92,6 @@ const FirstBillOverview: React.FC = () => {
             <h1 className="page-heading d-flex text-gray-900 fw-bold fs-3 my-0 flex-column justify-content-center">
               ระบบเก็บเงินงวดแรก
             </h1>
-            <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
-              <li className="breadcrumb-item text-muted">
-                <span className="text-muted text-hover-primary">
-                  ระบบเก็บเงินงวดแรก
-                </span></li>
-              <li className="breadcrumb-item"><span className="bullet bg-gray-500 w-5px h-2px"></span></li>
-              <li className="breadcrumb-item text-gray-900">ภาพรวม</li>
-            </ul>
           </div>
         </div>
 

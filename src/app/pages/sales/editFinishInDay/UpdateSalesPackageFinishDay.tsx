@@ -2624,78 +2624,149 @@ const UpdateSalesPackageFinishDay: React.FC = () => {
     delete cleanedItem.item;
 
     // ตรวจสอบ ConditionsCheckHistory ว่าต้องตรวจสอบประวัติไหม หากตรวจให้เช็ค CheckCustomer ต่อ
+    // const handleNextClick = async () => {
+    //     // console.log("SaveProductData ก่อนส่ง:", SaveProductData); // เพิ่มตรงนี้
+
+    //     try {
+    //         // Save product package
+    //         const response = await axios.post(
+    //             UPDATECONTACT,
+    //             {
+    //                 REFNO: refno ? refno : item.REFNO,
+    //                 EMPID: EmpId,
+    //                 TEAMSALE: TeamSale,
+    //                 FIELD: "PRODUCT",
+    //                 DATA: SaveProductData,
+    //             },
+    //             {
+    //                 headers: {
+    //                     "Content-Type": "application/json",
+    //                 },
+    //             }
+    //         );
+
+    //         // console.log('response: ', response)
+    //         if (response.status === 200) {
+    //             if (!response.data.data) {
+    //                 MySwal.fire(
+    //                     "เกิดข้อผิดพลาด",
+    //                     "ปรับปรุงข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา",
+    //                     "error"
+    //                 );
+    //             } else {
+    //                 Swal.fire({
+    //                     icon: "success",
+    //                     title: "สำเร็จ!",
+    //                     text: "ปรับปรุงข้อมูลแพ็คเกจแล้ว",
+    //                     timer: 2000, // แสดงผล 3 วินาที
+    //                     showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
+    //                 });
+    //             }
+    //             // if (!fromDiscount) {
+    //             //     navigate('/sale/update/updateSaleDiscount', {
+    //             //         state: {
+    //             //             matchedItem: item,
+    //             //             SaveProductData,
+    //             //             REFNO: refno ? refno : item.REFNO
+    //             //         }
+    //             //     });
+    //             // } else {
+    //             //     navigate('/sale/discount', {
+    //             //         state: {
+    //             //             SaveProductData,
+    //             //             REFNO: refno ? refno : item.REFNO
+    //             //         }
+    //             //     });
+    //             // }
+    //             navigate("/sale/editFinishInDay/UpdateSaleDiscountFinishDay", {
+    //                 state: {
+    //                     item: cleanedItem,
+    //                     SaveProductData,
+    //                     REFNO: refno ? refno : item.REFNO,
+    //                 },
+    //             });
+    //         } else {
+    //             MySwal.fire("เกิดข้อผิดพลาด", response.data.message, "error");
+    //         }
+    //     } catch (error) {
+    //         console.error("Error saving product package:", error);
+    //         MySwal.fire({
+    //             title: "เกิดข้อผิดพลาด",
+    //             text: "ไม่สามารถบันทึกข้อมูลได้",
+    //             icon: "error",
+    //             confirmButtonText: "ตกลง",
+    //         });
+    //     }
+    // };
+
+    const normalizeProduct = (rows: any[] = []) =>
+        rows.map(p => ({
+            MainItem: p.MainItem,
+            ItemCode: p.ItemCode,
+            ItemDescription: p.ItemDescription,
+            CategoriesId: p.CategoriesId ?? p.CategoriesID ?? "",
+            DescriptionEN: p.DescriptionEN ?? null,
+            DescriptionTH: p.DescriptionTH ?? null,
+            SerialNo: p.SerialNo ?? null,
+            Status: p.Status ?? null,
+            Branch: p.Branch ?? null,
+            TransDate: p.TransDate ?? null,
+            PromotionId: Number(p.PromotionId ?? p.PROMOTIONID ?? 0),
+            ProductId: p.ProductId ?? p.ProductID ?? "",
+            Package: (p.Package ?? []).map((pk: any) => ({
+                MODEL: pk.MODEL ?? null,
+                PACKAGETYPEID: Number(pk.PACKAGETYPEID ?? 0),
+            })),
+        }));
+
     const handleNextClick = async () => {
-        // console.log("SaveProductData ก่อนส่ง:", SaveProductData); // เพิ่มตรงนี้
+        // a = ของเดิมจาก DB, b = ของที่กำลังจะส่ง
+        const a = normalizeProduct(item.PRODUCT);
+        const b = normalizeProduct(SaveProductData);
 
-        try {
-            // Save product package
-            const response = await axios.post(
-                UPDATECONTACT,
-                {
-                    REFNO: refno ? refno : item.REFNO,
-                    EMPID: EmpId,
-                    TEAMSALE: TeamSale,
-                    FIELD: "PRODUCT",
-                    DATA: SaveProductData,
-                },
-                {
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                }
-            );
+        const unchanged = JSON.stringify(a) === JSON.stringify(b);
 
-            // console.log('response: ', response)
-            if (response.status === 200) {
-                if (!response.data.data) {
-                    MySwal.fire(
-                        "เกิดข้อผิดพลาด",
-                        "ปรับปรุงข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา",
-                        "error"
-                    );
-                } else {
-                    Swal.fire({
-                        icon: "success",
-                        title: "สำเร็จ!",
-                        text: "ปรับปรุงข้อมูลแพ็คเกจแล้ว",
-                        timer: 2000, // แสดงผล 3 วินาที
-                        showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
-                    });
-                }
-                // if (!fromDiscount) {
-                //     navigate('/sale/update/updateSaleDiscount', {
-                //         state: {
-                //             matchedItem: item,
-                //             SaveProductData,
-                //             REFNO: refno ? refno : item.REFNO
-                //         }
-                //     });
-                // } else {
-                //     navigate('/sale/discount', {
-                //         state: {
-                //             SaveProductData,
-                //             REFNO: refno ? refno : item.REFNO
-                //         }
-                //     });
-                // }
-                navigate("/sale/editFinishInDay/UpdateSaleDiscountFinishDay", {
-                    state: {
-                        item: cleanedItem,
-                        SaveProductData,
-                        REFNO: refno ? refno : item.REFNO,
-                    },
-                });
-            } else {
-                MySwal.fire("เกิดข้อผิดพลาด", response.data.message, "error");
-            }
-        } catch (error) {
-            console.error("Error saving product package:", error);
-            MySwal.fire({
-                title: "เกิดข้อผิดพลาด",
-                text: "ไม่สามารถบันทึกข้อมูลได้",
-                icon: "error",
-                confirmButtonText: "ตกลง",
+        if (unchanged) {
+            // ข้ามการอัปเดต เพื่อไม่ให้ DISCOUNT ถูกเคลียร์
+            navigate("/sale/editFinishInDay/UpdateSaleDiscountFinishDay", {
+                state: { item, SaveProductData, REFNO: refno ?? item.REFNO },
             });
+            return;
+        }
+
+        // มีการแก้ไขจริง → ค่อยอัปเดต
+        try {
+            const resp = await axios.post(UPDATECONTACT, {
+                REFNO: refno ?? item.REFNO,
+                EMPID: EmpId,
+                TEAMSALE: TeamSale,
+                FIELD: "PRODUCT",
+                DATA: SaveProductData,
+            }, { headers: { "Content-Type": "application/json" } });
+
+            if (resp.status !== 200 || !resp.data?.data) {
+                await MySwal.fire("เกิดข้อผิดพลาด", "ปรับปรุงข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา", "error");
+                return;
+            }
+
+            await Swal.fire({ icon: "success", title: "สำเร็จ!", text: "ปรับปรุงข้อมูลแพ็คเกจแล้ว", timer: 2000, showConfirmButton: false });
+
+            // *** ถ้ายังต้องรีเฟรช draft ต่อ ให้คงค่า DISCOUNT เดิมไว้ เมื่อ navigate ***
+            const refresh = await axios.get(DRAFT_ALLCONTRACT_URL);
+            const list: any[] = Array.isArray(refresh.data?.data) ? refresh.data.data : [];
+            const updatedItem = list.find(c => c.REFNO === (item?.REFNO ?? refno)) ?? item;
+            console.log(`updatedItem`, updatedItem);
+
+            navigate("/sale/editFinishInDay/UpdateSaleDiscountFinishDay", {
+                state: {
+                    item: { ...updatedItem, DISCOUNT: updatedItem.DISCOUNT?.length ? updatedItem.DISCOUNT : item.DISCOUNT },
+                    SaveProductData,
+                    REFNO: refno ?? item.REFNO,
+                },
+            });
+        } catch (err) {
+            console.error(err);
+            MySwal.fire({ title: "เกิดข้อผิดพลาด", text: "ไม่สามารถบันทึกข้อมูลได้", icon: "error" });
         }
     };
 

@@ -3655,6 +3655,11 @@ const UpdateSaleAddressFinishDay: React.FC = () => {
                 shouldValidate: true,
             });
 
+            setValue("addressNumberForPayment", addressNumber, { shouldValidate: true, shouldDirty: true });
+            setValue("provinceForPayment", String(selectedProvince ?? ""), { shouldValidate: true, shouldDirty: true });
+            setValue("districtForPayment", String(selectedDistrict ?? ""), { shouldValidate: true, shouldDirty: true });
+            setValue("subDistrictForPayment", String(selectedSubDistrict ?? ""), { shouldValidate: true, shouldDirty: true });
+
             // ล้างข้อผิดพลาดของทุกฟิลด์ใน accordion “ตามบัตร” และ “ติดตั้ง”
             clearErrors([
                 "homeNoIdCard",
@@ -3668,6 +3673,11 @@ const UpdateSaleAddressFinishDay: React.FC = () => {
                 "provinceForInstall",
                 "districtForInstall",
                 "subDistrictForInstall",
+
+                "addressNumberForPayment",
+                "provinceForPayment",
+                "districtForPayment",
+                "subDistrictForPayment",
             ]);
         }
 
@@ -3730,6 +3740,17 @@ const UpdateSaleAddressFinishDay: React.FC = () => {
                 setSelectedZipcodeForPayment(selectedZipcode);
                 setAddressPhoneForPayment(addressPhone);
             }
+
+            setValue("addressNumberForPayment", addressNumber, { shouldDirty: true, shouldValidate: true });
+            setValue("provinceForPayment", String(selectedProvince ?? ""), { shouldDirty: true, shouldValidate: true });
+            setValue("districtForPayment", String(selectedDistrict ?? ""), { shouldDirty: true, shouldValidate: true });
+            setValue("subDistrictForPayment", String(selectedSubDistrict ?? ""), { shouldDirty: true, shouldValidate: true });
+            clearErrors([
+                "addressNumberForPayment",
+                "provinceForPayment",
+                "districtForPayment",
+                "subDistrictForPayment",
+            ]);
         }
 
         if (name === "paymentLikeAddressInstall") {
@@ -3749,6 +3770,33 @@ const UpdateSaleAddressFinishDay: React.FC = () => {
                 setSelectedZipcodeForPayment(selectedZipcodeForInstall);
                 setAddressPhoneForPayment(addressPhoneForInstall);
             }
+
+            setValue("addressNumberForPayment", addressNumberForInstall ?? "", {
+                shouldDirty: true,
+                shouldValidate: true,
+            });
+            setValue(
+                "provinceForPayment",
+                String(selectedProvinceForInstall ?? ""),
+                { shouldDirty: true, shouldValidate: true }
+            );
+            setValue(
+                "districtForPayment",
+                String(selectedDistrictForInstall ?? ""),
+                { shouldDirty: true, shouldValidate: true }
+            );
+            setValue(
+                "subDistrictForPayment",
+                String(selectedSubDistrictForInstall ?? ""),
+                { shouldDirty: true, shouldValidate: true }
+            );
+
+            clearErrors([
+                "addressNumberForPayment",
+                "provinceForPayment",
+                "districtForPayment",
+                "subDistrictForPayment",
+            ]);
         }
 
         if (name === "showInstallAddress") {
@@ -3990,14 +4038,17 @@ const UpdateSaleAddressFinishDay: React.FC = () => {
         districtIdCard: yup.string().required("กรุณาเลือกอำเภอ / เขต"),
         subDistrictIdCard: yup.string().required("กรุณาเลือกตำบล / แขวง"),
         telNoIdCard: yup
-            .string()
-            .required("กรุณากรอกเบอร์ที่ติดต่อได้")
-            .matches(/^[0-9]{9,10}$/, "เบอร์โทรต้องเป็นตัวเลข 9-10 หลัก"),
+            .string(),
 
         addressNumberForInstall: yup.string().required("กรุณากรอกบ้านเลขที่"),
         provinceForInstall: yup.string().required("กรุณาเลือกจังหวัด"),
         districtForInstall: yup.string().required("กรุณาเลือกอำเภอ / เขต"),
         subDistrictForInstall: yup.string().required("กรุณาเลือกตำบล / แขวง"),
+
+        addressNumberForPayment: yup.string().required("กรุณากรอกบ้านเลขที่"),
+        provinceForPayment: yup.string().required("กรุณาเลือกจังหวัด"),
+        districtForPayment: yup.string().required("กรุณาเลือกอำเภอ / เขต"),
+        subDistrictForPayment: yup.string().required("กรุณาเลือกตำบล / แขวง"),
     });
 
     const {
@@ -4098,62 +4149,62 @@ const UpdateSaleAddressFinishDay: React.FC = () => {
 
     const statusAddr = item?.CUSTOMERSTATUS?.[0]?.Contract?.Address ?? [];
 
-    useEffect(() => {
-        if (statusAddr.length === 0) return;
+    // useEffect(() => {
+    //     if (statusAddr.length === 0) return;
 
-        // หาแต่ละ type ออกมา
-        const install = statusAddr.find(
-            (a: any) => a.AddressTypeCode === "AddressInstall"
-        );
-        const card = statusAddr.find(
-            (a: any) => a.AddressTypeCode === "AddressIDCard"
-        );
-        const payment = statusAddr.find(
-            (a: any) => a.AddressTypeCode === "AddressPayment"
-        );
-        const tax = statusAddr.find((a: any) => a.AddressTypeCode === "AddressTax");
+    //     // หาแต่ละ type ออกมา
+    //     const install = statusAddr.find(
+    //         (a: any) => a.AddressTypeCode === "AddressIDCard"
+    //     );
+    //     const card = statusAddr.find(
+    //         (a: any) => a.AddressTypeCode === "AddressInstall"
+    //     );
+    //     const payment = statusAddr.find(
+    //         (a: any) => a.AddressTypeCode === "AddressPayment"
+    //     );
+    //     const tax = statusAddr.find((a: any) => a.AddressTypeCode === "AddressTax");
 
-        // — ติดตั้ง —
-        if (install) {
-            setValue("homeNoIdCard", install.AddressDetail);
-            setAddressNumber(install.AddressDetail);
-            setSelectedProvince(Number(install.Province));
-            setAddressPhone(install.TelHome);
-        }
+    //     // — ติดตั้ง —
+    //     if (install) {
+    //         setValue("homeNoIdCard", install.AddressDetail);
+    //         setAddressNumber(install.AddressDetail);
+    //         setSelectedProvince(Number(install.Province));
+    //         setAddressPhone(install.TelHome);
+    //     }
 
-        // — ตามบัตร —
-        if (card) {
-            setValue("addressNumberForInstall", card.AddressDetail);
-            setAddressNumberForInstall(card.AddressDetail);
-            setSelectedProvinceForInstall(Number(card.Province));
-            setAddressPhoneForInstall(card.TelHome);
-        }
+    //     // — ตามบัตร —
+    //     if (card) {
+    //         setValue("addressNumberForInstall", card.AddressDetail);
+    //         setAddressNumberForInstall(card.AddressDetail);
+    //         setSelectedProvinceForInstall(Number(card.Province));
+    //         setAddressPhoneForInstall(card.TelHome);
+    //     }
 
-        // — เก็บเงิน —
-        if (payment) {
-            setValue("addressNumberForPayment", payment.AddressDetail);
-            setAddressNumberForPayment(payment.AddressDetail);
-            setSelectedProvinceForPayment(Number(payment.Province));
-            setAddressPhoneForPayment(payment.TelHome);
-        }
+    //     // — เก็บเงิน —
+    //     if (payment) {
+    //         setValue("addressNumberForPayment", payment.AddressDetail);
+    //         setAddressNumberForPayment(payment.AddressDetail);
+    //         setSelectedProvinceForPayment(Number(payment.Province));
+    //         setAddressPhoneForPayment(payment.TelHome);
+    //     }
 
-        // — ใบกำกับภาษี —
-        if (tax) {
-            setValue("addressNumberForBilling", tax.AddressDetail);
-            setAddressNumberForBilling(tax.AddressDetail);
-            setSelectedProvinceForBilling(Number(tax.Province));
-            setAddressPhoneForBilling(tax.TelHome);
-        }
+    //     // — ใบกำกับภาษี —
+    //     if (tax) {
+    //         setValue("addressNumberForBilling", tax.AddressDetail);
+    //         setAddressNumberForBilling(tax.AddressDetail);
+    //         setSelectedProvinceForBilling(Number(tax.Province));
+    //         setAddressPhoneForBilling(tax.TelHome);
+    //     }
 
-        // รีเซ็ต checkbox
-        setLikeAllAddr(false);
-        setInstallLikeCardAddr(false);
-        setPaymentLikeCardAddr(false);
-        setPaymentLikeInstallAddr(false);
-        setBillLikeCardAddr(false);
-        setBillLikeInstallAddr(false);
-        setBillLikePaymentAddr(false);
-    }, [statusAddr, setValue]);
+    //     // รีเซ็ต checkbox
+    //     setLikeAllAddr(false);
+    //     setInstallLikeCardAddr(false);
+    //     setPaymentLikeCardAddr(false);
+    //     setPaymentLikeInstallAddr(false);
+    //     setBillLikeCardAddr(false);
+    //     setBillLikeInstallAddr(false);
+    //     setBillLikePaymentAddr(false);
+    // }, [statusAddr, setValue]);
 
     // 2. หลังจาก load district/sub ↓ ให้ seed โค้ดอำเภอ+ตำบล
     // — ติดตั้ง —
@@ -4943,18 +4994,31 @@ const UpdateSaleAddressFinishDay: React.FC = () => {
                                             <div className="">
                                                 <div className="row mb-6">
                                                     <div className="col-lg-4 mb-3">
-                                                        <label className={`form-label ${styles.label}`}>
+                                                        <label className={`form-label required ${styles.label}`}>
                                                             บ้านเลขที่
                                                         </label>
-                                                        <input
-                                                            value={addressNumberForPayment}
-                                                            onChange={(e) => {
-                                                                setAddressNumberForPayment(e.target.value);
-                                                                resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                                            }}
-                                                            type="text"
-                                                            className={`form-control mb-3 mb-lg-0 ${styles.label}`}
+                                                        <Controller
+                                                            name="addressNumberForPayment"
+                                                            control={control}
+                                                            render={({ field }) => (
+                                                                <input
+                                                                    {...field}
+                                                                    className={`${styles.label} form-control ${errors.addressNumberForPayment ? "is-invalid" : ""}`}
+                                                                    value={addressNumberForPayment}
+                                                                    onChange={(e) => {
+                                                                        field.onChange(e);
+                                                                        setAddressNumberForPayment(e.target.value);
+                                                                        resetShowPaymentAddress();
+                                                                    }}
+                                                                    type="text"
+                                                                />
+                                                            )}
                                                         />
+                                                        {errors.addressNumberForPayment && (
+                                                            <p className={`text-danger ${styles.label}`}>
+                                                                {errors.addressNumberForPayment.message}
+                                                            </p>
+                                                        )}
                                                     </div>
                                                     <div className="col-lg-4 mb-3">
                                                         <label className={`form-label ${styles.label}`}>
@@ -5004,55 +5068,99 @@ const UpdateSaleAddressFinishDay: React.FC = () => {
                                                         />
                                                     </div>
                                                     <div className="col-lg-4 mb-3">
-                                                        <label className={`form-label ${styles.label}`}>
+                                                        <label className={`form-label required ${styles.label}`}>
                                                             จังหวัด
                                                         </label>
-                                                        <select
-                                                            className={`form-select ${styles.label}`}
-                                                            value={selectedProvinceForPayment}
-                                                            onChange={(e) => {
-                                                                setSelectedProvinceForPayment(
-                                                                    Number(e.target.value)
-                                                                );
-                                                                resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                                            }}
-                                                        >
-                                                            <option value="">เลือกจังหวัด...</option>
-                                                            {getProvinceForPayment.map((item: any) => (
-                                                                <option
-                                                                    key={item.PROVINCECODE}
-                                                                    value={item.PROVINCECODE}
+                                                        {/* <select
+                              className={`form-select ${styles.label}`}
+                              value={selectedProvinceForPayment}
+                              onChange={(e) => {
+                                setSelectedProvinceForPayment(
+                                  Number(e.target.value)
+                                );
+                                resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                              }}
+                            >
+                              <option value="">เลือกจังหวัด...</option>
+                              {getProvinceForPayment.map((item: any) => (
+                                <option
+                                  key={item.PROVINCECODE}
+                                  value={item.PROVINCECODE}
+                                >
+                                  {item.PROVINCENAME}
+                                </option>
+                              ))}
+                            </select> */}
+                                                        <Controller
+                                                            name="provinceForPayment"
+                                                            control={control}
+                                                            render={({ field }) => (
+                                                                <select
+                                                                    {...field}
+                                                                    className={`${styles.label} form-select ${errors.provinceForPayment ? "is-invalid" : ""}`}
+                                                                    value={selectedProvinceForPayment}
+                                                                    onChange={(e) => {
+                                                                        field.onChange(e.target.value);
+                                                                        setSelectedProvinceForPayment(Number(e.target.value));
+                                                                        resetShowPaymentAddress();
+                                                                    }}
                                                                 >
-                                                                    {item.PROVINCENAME}
-                                                                </option>
-                                                            ))}
-                                                        </select>
+                                                                    <option value="">เลือกจังหวัด...</option>
+                                                                    {getProvinceForPayment.map((p: any) => (
+                                                                        <option key={p.PROVINCECODE} value={p.PROVINCECODE}>{p.PROVINCENAME}</option>
+                                                                    ))}
+                                                                </select>
+                                                            )}
+                                                        />
+                                                        {errors.provinceForPayment && <p className={`text-danger ${styles.label}`}>{errors.provinceForPayment.message}</p>}
                                                     </div>
                                                     <div className="col-lg-4 mb-3">
-                                                        <label className={`form-label ${styles.label}`}>
+                                                        <label className={`form-label required ${styles.label}`}>
                                                             อำเภอ / เขต
                                                         </label>
-                                                        <select
-                                                            className={`form-select ${styles.label}`}
-                                                            value={selectedDistrictForPayment}
-                                                            onChange={(e) => {
-                                                                setSelectedDistrictForPayment(
-                                                                    Number(e.target.value)
-                                                                );
-                                                                resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                                            }}
-                                                        >
-                                                            <option value="">เลือกอำเภอ / เขต...</option>
-                                                            {Array.isArray(getDistrictForPayment) &&
-                                                                getDistrictForPayment.map((item: any) => (
-                                                                    <option
-                                                                        key={item.DISTRICTCODE}
-                                                                        value={item.DISTRICTCODE}
-                                                                    >
-                                                                        {item.DISTRICTNAME}
-                                                                    </option>
-                                                                ))}
-                                                        </select>
+                                                        {/* <select
+                              className={`form-select ${styles.label}`}
+                              value={selectedDistrictForPayment}
+                              onChange={(e) => {
+                                setSelectedDistrictForPayment(
+                                  Number(e.target.value)
+                                );
+                                resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                              }}
+                            >
+                              <option value="">เลือกอำเภอ / เขต...</option>
+                              {Array.isArray(getDistrictForPayment) &&
+                                getDistrictForPayment.map((item: any) => (
+                                  <option
+                                    key={item.DISTRICTCODE}
+                                    value={item.DISTRICTCODE}
+                                  >
+                                    {item.DISTRICTNAME}
+                                  </option>
+                                ))}
+                            </select> */}
+                                                        <Controller
+                                                            name="districtForPayment"
+                                                            control={control}
+                                                            render={({ field }) => (
+                                                                <select
+                                                                    {...field}
+                                                                    className={`${styles.label} form-select ${errors.districtForPayment ? "is-invalid" : ""}`}
+                                                                    value={selectedDistrictForPayment}
+                                                                    onChange={(e) => {
+                                                                        field.onChange(e.target.value);
+                                                                        setSelectedDistrictForPayment(Number(e.target.value));
+                                                                        resetShowPaymentAddress();
+                                                                    }}
+                                                                >
+                                                                    <option value="">เลือกอำเภอ / เขต...</option>
+                                                                    {getDistrictForPayment.map((d: any) => (
+                                                                        <option key={d.DISTRICTCODE} value={d.DISTRICTCODE}>{d.DISTRICTNAME}</option>
+                                                                    ))}
+                                                                </select>
+                                                            )}
+                                                        />
+                                                        {errors.districtForPayment && <p className={`text-danger ${styles.label}`}>{errors.districtForPayment.message}</p>}
                                                     </div>
                                                 </div>
                                             </div>
@@ -5060,30 +5168,52 @@ const UpdateSaleAddressFinishDay: React.FC = () => {
                                             <div className="">
                                                 <div className="row mb-6">
                                                     <div className="col-lg-4 mb-3">
-                                                        <label className={`form-label ${styles.label}`}>
+                                                        <label className={`form-label required ${styles.label}`}>
                                                             ตำบล / แขวง
                                                         </label>
-                                                        <select
-                                                            className={`form-select ${styles.label}`}
-                                                            value={selectedSubDistrictForPayment}
-                                                            onChange={(e) => {
-                                                                setSelectedSubDistrictForPayment(
-                                                                    Number(e.target.value)
-                                                                );
-                                                                resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                                                            }}
-                                                        >
-                                                            <option value="">เลือกตำบล / แขวง...</option>
-                                                            {Array.isArray(getSubDistrictForPayment) &&
-                                                                getSubDistrictForPayment.map((item: any) => (
-                                                                    <option
-                                                                        key={item.SUBDISTRICTCODE}
-                                                                        value={item.SUBDISTRICTCODE}
-                                                                    >
-                                                                        {item.SUBDISTRICTNAME}
-                                                                    </option>
-                                                                ))}
-                                                        </select>
+                                                        {/* <select
+                              className={`form-select ${styles.label}`}
+                              value={selectedSubDistrictForPayment}
+                              onChange={(e) => {
+                                setSelectedSubDistrictForPayment(
+                                  Number(e.target.value)
+                                );
+                                resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
+                              }}
+                            >
+                              <option value="">เลือกตำบล / แขวง...</option>
+                              {Array.isArray(getSubDistrictForPayment) &&
+                                getSubDistrictForPayment.map((item: any) => (
+                                  <option
+                                    key={item.SUBDISTRICTCODE}
+                                    value={item.SUBDISTRICTCODE}
+                                  >
+                                    {item.SUBDISTRICTNAME}
+                                  </option>
+                                ))}
+                            </select> */}
+                                                        <Controller
+                                                            name="subDistrictForPayment"
+                                                            control={control}
+                                                            render={({ field }) => (
+                                                                <select
+                                                                    {...field}
+                                                                    className={`${styles.label} form-select ${errors.subDistrictForPayment ? "is-invalid" : ""}`}
+                                                                    value={selectedSubDistrictForPayment}
+                                                                    onChange={(e) => {
+                                                                        field.onChange(e.target.value);
+                                                                        setSelectedSubDistrictForPayment(Number(e.target.value));
+                                                                        resetShowPaymentAddress();
+                                                                    }}
+                                                                >
+                                                                    <option value="">เลือกตำบล / แขวง...</option>
+                                                                    {getSubDistrictForPayment.map((s: any) => (
+                                                                        <option key={s.SUBDISTRICTCODE} value={s.SUBDISTRICTCODE}>{s.SUBDISTRICTNAME}</option>
+                                                                    ))}
+                                                                </select>
+                                                            )}
+                                                        />
+                                                        {errors.subDistrictForPayment && <p className={`text-danger ${styles.label}`}>{errors.subDistrictForPayment.message}</p>}
                                                     </div>
                                                     <div className="col-lg-4 mb-3">
                                                         <label className={`form-label ${styles.label}`}>

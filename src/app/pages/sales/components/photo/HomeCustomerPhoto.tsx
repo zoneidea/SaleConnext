@@ -16,7 +16,7 @@ import {
 
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
-import { log } from 'console';
+import styles from "@/styles/style.module.css";
 
 // อัพเดท
 interface ItemProps {
@@ -349,7 +349,7 @@ const HomeCustomerPhoto: React.FC = () => {
                     }}
                 >
                     <label
-                        className="btn btn-success px-5"
+                        className={`${styles.btnSuccess}`}
                         htmlFor="camera-input"
                         style={{
                             cursor: "pointer",
@@ -375,7 +375,7 @@ const HomeCustomerPhoto: React.FC = () => {
                 {fromStep ? (
                     <div className='d-none d-xl-flex justify-content-between align-items-center my-5 mx-7'>
                         <button
-                            className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'
+                            className={`${styles.btnSecondary}`}
                             onClick={() => navigate('/sale/photo/gallery/customerHome', { state: { data: item, fromStep } })}
                             disabled={isLoading}
                         >
@@ -393,14 +393,14 @@ const HomeCustomerPhoto: React.FC = () => {
                 ) : (
                     <div className='d-none d-xl-flex justify-content-between align-items-center my-5 mx-7'>
                         <button
-                            className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'
+                            className={`${styles.btnSecondary}`}
                             onClick={() => navigate('/sale/photo/gallery/customerHome', { state: { data: item, fromStep } })}
                             disabled={isLoading}
                         >
                             ย้อนกลับ
                         </button>
                         <button
-                            className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
+                            className={`${styles.btnPrimary}`}
                             type='button'
                             onClick={handleNextClick}
                             disabled={isLoading}
@@ -424,14 +424,14 @@ const HomeCustomerPhoto: React.FC = () => {
                         }}
                     >
                         <button
-                            className="btn btn-secondary w-auto me-2"
+                            className={`${styles.btnSecondary}`}
                             onClick={() => navigate('/sale/photo/gallery/customerHome', { state: { data: item, fromStep } })}
                             disabled={isLoading}
                         >
                             ย้อนกลับ
                         </button>
                         <button
-                            className="btn btn-warning w-auto me-2"
+                            className={`${styles.btnWarning}`}
                             onClick={handleNextClick}
                             disabled={isLoading}
                         >
@@ -450,14 +450,14 @@ const HomeCustomerPhoto: React.FC = () => {
                         }}
                     >
                         <button
-                            className="btn btn-secondary w-auto me-2"
+                            className={`${styles.btnSecondary}`}
                             onClick={() => navigate('/sale/photo/gallery/customerHome', { state: { data: item, fromStep } })}
                             disabled={isLoading}
                         >
                             ย้อนกลับ
                         </button>
                         <button
-                            className="btn btn-primary w-auto me-2"
+                            className={`${styles.btnPrimary}`}
                             onClick={handleNextClick}
                             disabled={isLoading}
                         >

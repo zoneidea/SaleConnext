@@ -3327,9 +3327,7 @@ const SalesPackage: React.FC = () => {
 
   const [selectedProductId, setSelectedProductId] = useState<any>("");
   // console.log(`selectedProductId`, selectedProductId);
-  const [selectedPromotion, setSelectedPromotion] = useState<string | number>(
-    ""
-  );
+  const [selectedPromotion, setSelectedPromotion] = useState<number | null>(null);
   // console.log(`selectedPromotion`, selectedPromotion);
 
   const [checktype, setChecktype] = useState<number | null>(null);
@@ -4110,7 +4108,7 @@ const SalesPackage: React.FC = () => {
     setSelectedStatus(null);
     setSelectedBranch(null);
     setSelectedTransDate(null);
-    setSelectedPromotion("");
+    setSelectedPromotion(null);
     setSelectedPackageTypeId(null);
     setSelectedPackageModel(null);
     setPackageList([]);
@@ -4198,7 +4196,7 @@ const SalesPackage: React.FC = () => {
     setSelectedItemCode(null);
     setItemID("");
     setProduct([]);
-    setSelectedPromotion("");
+    setSelectedPromotion(null);
     localStorage.removeItem("sp.selectedProductIndex");
     localStorage.removeItem("sp.selectedItemCode");
     localStorage.removeItem("sp.productId");
@@ -4450,6 +4448,35 @@ const SalesPackage: React.FC = () => {
     }
   }, [location.state]);
 
+  // บังคับทำ ถึงโชว์ปุ่มถัดไป
+  const canProceed = useMemo(() => {
+    // ต้องเลือกสินค้าแล้ว
+    if (selectedProductIndex === null) return false;
+    // ต้องเลือกโหมดแล้ว (ปกติ/บันเดิล)
+    if (useBundle === null) return false;
+    // ต้องเลือกโปรโมชันแล้ว
+    if (selectedPromotion === null) return false;
+    // ต้องเลือกประเภทการชำระแล้ว
+    if (selectedPackageTypeId === null) return false;
+    // ระหว่างโหลดแพ็กเกจ ห้ามกด
+    if (loadingPackages) return false;
+    // ถ้ามีรายการแพ็กเกจ ต้องเลือกโมเดลด้วย
+    if (packageList.length > 0 && selectedPackageModel === null) return false;
+    // ✅ เงื่อนไขใหม่: ถ้าเป็นบันเดิล ต้องสแกนสินค้าบันเดิลแล้ว
+    if (useBundle === "bundle" && !scannedBundleProduct) return false;
+
+    return true;
+  }, [
+    selectedProductIndex,
+    useBundle,
+    selectedPromotion,
+    selectedPackageTypeId,
+    loadingPackages,
+    packageList.length,
+    selectedPackageModel,
+    scannedBundleProduct, // สำคัญสำหรับบันเดิล
+  ]);
+
   return (
     <>
       <Content>
@@ -4603,7 +4630,11 @@ const SalesPackage: React.FC = () => {
                                     cursor: "pointer",
                                     transition: "background-color 0.2s",
                                   }}
-                                  onClick={() => setUseBundle("normal")}
+                                  onClick={() => {
+                                    setUseBundle("normal");
+                                    setSelectedPromotion(null);         // ✅ รีเซ็ต
+                                    setScannedBundleProduct(null);      // เผื่อเคยสแกนบันเดิลค้างไว้
+                                  }}
                                 >
                                   <p className={styles.fontSize}>ปกติ</p>
                                 </div>
@@ -4626,7 +4657,11 @@ const SalesPackage: React.FC = () => {
                                         cursor: "pointer",
                                         transition: "background-color 0.2s",
                                       }}
-                                      onClick={() => setUseBundle("bundle")}
+                                      onClick={() => {
+                                        setUseBundle("bundle");
+                                        setSelectedPromotion(null);         // ✅ รีเซ็ต
+                                        setScannedBundleProduct(null);      // ต้องสแกนใหม่อยู่ดี
+                                      }}
                                     >
                                       <p className={styles.fontSize}>บันเดิล</p>
                                     </div>
@@ -4646,7 +4681,7 @@ const SalesPackage: React.FC = () => {
                             </div>
                           )}
 
-                          {!loadingPromotion && (
+                          {/* {!loadingPromotion && (
                             <div className="row">
                               <div className="col-lg-6 my-7 my-xl-10">
                                 <label
@@ -4672,6 +4707,47 @@ const SalesPackage: React.FC = () => {
                                       key={index}
                                       value={item?.PROMOTIONID}
                                     >
+                                      {item.PROMOTIONNAME}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                            </div>
+                          )} */}
+
+                          {!loadingPromotion && (
+                            <div className="row">
+                              <div className="col-lg-6 my-7 my-xl-10">
+                                <label
+                                  className={`form-label required ${styles.label}`}
+                                >
+                                  โปรโมชั่น
+                                </label>
+                                <select
+                                  className={`${styles.fontSize} form-select`}
+                                  onChange={(e) => {
+                                    const v = e.target.value;
+                                    const promoId = v ? Number(v) : null;
+                                    setSelectedPromotion(promoId);
+
+                                    // เปลี่ยนโปรฯ เมื่ออยู่โหมดบันเดิล → ต้องสแกนใหม่
+                                    if (useBundle === "bundle") {
+                                      setScannedBundleProduct(null);
+                                      localStorage.removeItem("sp.barCodeBundle");
+                                      localStorage.removeItem("sp.bundleProduct");
+                                    }
+
+                                    if (promoId == null) {
+                                      localStorage.removeItem("sp.selectedPromotion");
+                                    } else {
+                                      localStorage.setItem("sp.selectedPromotion", String(promoId));
+                                    }
+                                  }}
+                                  value={selectedPromotion ?? ""}   // null → แสดง placeholder
+                                >
+                                  <option value="">เลือกโปรโมชั่น</option>
+                                  {promotion.map((item: any, idx: number) => (
+                                    <option key={idx} value={item?.PROMOTIONID}>
                                       {item.PROMOTIONNAME}
                                     </option>
                                   ))}
@@ -4886,7 +4962,7 @@ const SalesPackage: React.FC = () => {
             กลับหน้าแรก
           </button>
 
-          {selectedProductIndex !== null &&
+          {/* {selectedProductIndex !== null &&
             useBundle !== null &&
             selectedPromotion !== "" &&
             selectedPackageTypeId !== null &&
@@ -4895,7 +4971,12 @@ const SalesPackage: React.FC = () => {
               <button className={styles.btnPrimary} onClick={handleNextClick}>
                 ถัดไป
               </button>
-            )}
+            )} */}
+          {canProceed && (
+            <button className={styles.btnPrimary} onClick={handleNextClick}>
+              ถัดไป
+            </button>
+          )}
         </div>
 
         {/* ปุ่มในหน้าจอเล็ก */}
@@ -4916,7 +4997,7 @@ const SalesPackage: React.FC = () => {
             กลับหน้าแรก
           </button>
 
-          {selectedProductIndex !== null &&
+          {/* {selectedProductIndex !== null &&
             useBundle !== null &&
             selectedPromotion !== "" &&
             selectedPackageTypeId !== null &&
@@ -4925,7 +5006,12 @@ const SalesPackage: React.FC = () => {
               <button className={styles.btnPrimary} onClick={handleNextClick}>
                 ถัดไป
               </button>
-            )}
+            )} */}
+          {canProceed && (
+            <button className={styles.btnPrimary} onClick={handleNextClick}>
+              ถัดไป
+            </button>
+          )}
         </div>
       </Content>
     </>

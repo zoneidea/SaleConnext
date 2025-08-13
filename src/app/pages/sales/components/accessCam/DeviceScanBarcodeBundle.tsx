@@ -43,7 +43,7 @@ const DeviceScanBarcodeBundle: React.FC<Props> = ({ onSetBundleData }) => {
     const GET_STOCK_URL = `${import.meta.env.VITE_APP_API_MONGO}/Product/GetStock`;
     const PROMOTION_URL = `${import.meta.env.VITE_APP_API_SALECONNEXT}/GetProduct/ProductPromotionList`;
 
-    const goBack = (bundleProduct: any | null) => {
+    const goBack = (bundleProduct?: any | null) => {
         const newState: any = {
             origin,
             refno,
@@ -53,11 +53,12 @@ const DeviceScanBarcodeBundle: React.FC<Props> = ({ onSetBundleData }) => {
             barCode: originalBarCode,
         };
 
-        if (bundleProduct) {
+        if (bundleProduct != null) {
             newState.bundleProduct = bundleProduct;
-            newState.barCodeBundle = barCode;
+            newState.barCodeBundle = barCode; // มีค่าก็ตอนสแกนสำเร็จเท่านั้น
         }
-        navigate(origin, { state: newState });
+
+        navigate(origin || "/sale/update/updateSalePackage", { state: newState });
     };
 
     const html5QrcodeRef = useRef<Html5Qrcode | null>(null);
@@ -208,7 +209,11 @@ const DeviceScanBarcodeBundle: React.FC<Props> = ({ onSetBundleData }) => {
                         {/* <h3 className={`${styles.fontSize}`}>S/N ที่สแกนได้: {barCode}</h3> */}
                     </div>
                     <div className="d-flex justify-content-center align-items-center mt-5">
-                        <button className="btn btn-danger w-150px" onClick={goBack}>
+                        <button
+                            type="button"
+                            className="btn btn-danger w-150px"
+                            onClick={() => goBack(null)}
+                        >
                             <p className={`${styles.fontSize}`}>ปิด</p>
                         </button>
                     </div>

@@ -99,7 +99,7 @@ const ReceiptFirstBill: FC = () => {
 
   const API_URL_GET_RECEIPT = import.meta.env.VITE_APP_API_PDPA_LETTER;
   const POST_RECEIPT_URL = (r: string) =>
-    `${API_URL_GET_RECEIPT}/EReceipt/Receipt?RefNo=${encodeURIComponent(r)}`;
+    `${API_URL_GET_RECEIPT}/Electronic/Receipt?RefNo=${encodeURIComponent(r)}`;
 
   return (
     <div
@@ -137,9 +137,9 @@ const ReceiptFirstBill: FC = () => {
       <div className="d-none d-xl-flex justify-content-end align-items-center mt-5 mb-10">
         <button
           className={`${moduleStyles.btnPrimary}`}
-          onClick={() => navigate("/sale/overview")}
+          onClick={() => navigate("/sale/photo", { state: item })}
         >
-          จบการทำงาน
+          ถ่ายรูป
         </button>
       </div>
 
@@ -156,9 +156,9 @@ const ReceiptFirstBill: FC = () => {
       >
         <button
           className={`${moduleStyles.btnPrimary}`}
-          onClick={() => navigate("/sale/overview")}
+          onClick={() => navigate("/sale/photo", { state: item })}
         >
-          จบการทำงาน
+          ถ่ายรูป
         </button>
       </div>
     </div>

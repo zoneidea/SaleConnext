@@ -1524,7 +1524,7 @@ const SalesCreateCustCash: React.FC = () => {
 
   // เลือก item ที่ REFNO ตรงกัน (find สำหรับ 1 item หรือ filter สำหรับหลาย item)
   const matchedItem = draft.find((item) => item.REFNO === REFNO);
-  // console.log(`matchedItem`, matchedItem);
+  console.log(`matchedItem`, matchedItem);
 
   const [customerTypes, setCustomerTypes] = useState<any[]>([]);
 
@@ -1532,8 +1532,9 @@ const SalesCreateCustCash: React.FC = () => {
   const [valueAge, setValueAge] = useState<number | null>(null);
 
   const [selectedCustomerType, setsSelectedCustomerType] = useState<string>("");
-  // console.log(`selectedCustomerType`, selectedCustomerType);
+  console.log(`selectedCustomerType`, selectedCustomerType);
   const [selectedCardType, setSelectedCardType] = useState<string>("");
+  console.log(`selectedCardType`, selectedCardType);
   const [selectedPrefixId, setSelectedPrefixId] = useState<number>();
   const [selectedSexId, setSelectedSexId] = useState<number>();
 
@@ -1578,34 +1579,34 @@ const SalesCreateCustCash: React.FC = () => {
         CUSTOMEREMAIL: email ? email : "",
         CARDTYPE: customerTypeData?.CARDTYPE
           ? customerTypeData.CARDTYPE.filter((cardType: any) => {
-              // console.log("Selected Card Type:", selectedCardType);
-              // console.log("Available Card Type:", cardType.CARDTYPE);
-              return String(cardType.CARDTYPE) === String(selectedCardType); // ใช้การเปรียบเทียบแบบ string
-            }).map((cardType: any) => ({
-              CARDTYPE: selectedCardType,
-              CARDTYPECODE: cardType.CARDTYPECODE,
-              CARDTYPENAME: cardType.CARDTYPENAME,
-            }))
+            // console.log("Selected Card Type:", selectedCardType);
+            // console.log("Available Card Type:", cardType.CARDTYPE);
+            return String(cardType.CARDTYPE) === String(selectedCardType); // ใช้การเปรียบเทียบแบบ string
+          }).map((cardType: any) => ({
+            CARDTYPE: selectedCardType,
+            CARDTYPECODE: cardType.CARDTYPECODE,
+            CARDTYPENAME: cardType.CARDTYPENAME,
+          }))
           : [],
         PREFIX: customerTypeData?.PREFIX
           ? customerTypeData.PREFIX.filter(
-              (prefix: any) => prefix.PREFIXID === selectedPrefixId
-            ) // ใช้เฉพาะค่าที่เลือก
-              .map((prefix: any) => ({
-                PREFIXID: selectedPrefixId,
-                PREFIXCODE: prefix.PREFIXCODE,
-                PREFIXNAME: prefix.PREFIXNAME,
-              }))
+            (prefix: any) => prefix.PREFIXID === selectedPrefixId
+          ) // ใช้เฉพาะค่าที่เลือก
+            .map((prefix: any) => ({
+              PREFIXID: selectedPrefixId,
+              PREFIXCODE: prefix.PREFIXCODE,
+              PREFIXNAME: prefix.PREFIXNAME,
+            }))
           : [],
         SEX: customerTypeData?.SEX
           ? customerTypeData.SEX.filter(
-              (sex: any) => sex.SEXID === selectedSexId
-            ) // ใช้เฉพาะค่าที่เลือก
-              .map((sex: any) => ({
-                SEXID: selectedSexId,
-                SEXCODE: sex.SEXCODE,
-                SEXNAME: sex.SEXNAME,
-              }))
+            (sex: any) => sex.SEXID === selectedSexId
+          ) // ใช้เฉพาะค่าที่เลือก
+            .map((sex: any) => ({
+              SEXID: selectedSexId,
+              SEXCODE: sex.SEXCODE,
+              SEXNAME: sex.SEXNAME,
+            }))
           : [],
       },
     ];
@@ -1765,32 +1766,48 @@ const SalesCreateCustCash: React.FC = () => {
     }),
 
     // 3) เลขบัตร
-    idCard: yup.string().when("selectedCustomerType", {
-      is: (v: any) => v === "0" || v === "1",
-      then: (s) =>
-        s
-          .required("กรุณากรอก")
-          .matches(/^[0-9]{13}$/, "กรุณากรอกเลข 13 หลัก")
-          .test("valid-thai-id", "เลขบัตรประชาชนไม่ถูกต้อง", (val) =>
-            isValidThaiId(val || "")
-          ),
-      otherwise: (s) => s,
-    }),
+    idCard: yup
+      .string()
+      .when(
+        ["selectedCustomerType", "selectedCardType"] as const,
+        ([custType, cardType], schema) => {
+          // บุคคลธรรมดา + ประเภทบัตร = 3 -> ไม่ต้องบังคับ 13 หลัก
+          if (custType === "0" && cardType === "3") {
+            return schema
+              .required("กรุณากรอก")
+              .matches(/^\d+$/, "กรุณากรอกเป็นตัวเลข");
+          }
+
+          // เดิม: บุคคลธรรมดา(0) หรือ นิติบุคคล(1) -> บังคับ 13 หลัก + ตรวจเลขบัตร
+          if (custType === "0" || custType === "1") {
+            return schema
+              .required("กรุณากรอก")
+              .matches(/^[0-9]{13}$/, "กรุณากรอกเลข 13 หลัก")
+              .test("valid-thai-id", "เลขบัตรประชาชนไม่ถูกต้อง", (val) =>
+                isValidThaiId(val || "")
+              );
+          }
+
+          // อื่น ๆ ไม่บังคับ
+          return schema;
+        }
+      ),
 
     // 4) คำนำหน้าชื่อ
     selectedPrefixId: yup
       .number()
       .when(["selectedCustomerType"] as const, ([custType], schema) =>
         custType === "0" ||
-        custType === "1" ||
-        custType === "2" ||
-        custType === "3"
+          custType === "1" ||
+          custType === "2" ||
+          custType === "3"
           ? schema.required("กรุณาเลือกคำนำหน้าชื่อ")
           : schema
       ),
 
     // 5) ชื่อ บังคับกรอกเสมอ
     fullName: yup.string().required("กรุณากรอกชื่อ"),
+    lastName: yup.string(),
 
     // 6–8) วัน / เดือน / ปีเกิด (พ.ศ.) แยกสามฟิลด์
     selectedDay: yup
@@ -1829,12 +1846,12 @@ const SalesCreateCustCash: React.FC = () => {
       .string()
       .when(["selectedCustomerType"] as const, ([custType], schema) =>
         custType === "0" ||
-        custType === "1" ||
-        custType === "2" ||
-        custType === "3"
+          custType === "1" ||
+          custType === "2" ||
+          custType === "3"
           ? schema
-              .required("กรุณากรอกเบอร์ที่ติดต่อได้ 1")
-              .matches(/^[0-9]{10}$/, "เบอร์โทรต้องเป็นตัวเลข 10 หลัก")
+            .required("กรุณากรอกเบอร์ที่ติดต่อได้ 1")
+            .matches(/^[0-9]{10}$/, "เบอร์โทรต้องเป็นตัวเลข 10 หลัก")
           : schema.notRequired()
       ),
 
@@ -1861,6 +1878,7 @@ const SalesCreateCustCash: React.FC = () => {
       idCard: "",
       selectedPrefixId: undefined,
       fullName: "",
+      lastName: "",
       selectedDay: undefined,
       selectedMonth: undefined,
       selectedYearBE: undefined,
@@ -1870,107 +1888,153 @@ const SalesCreateCustCash: React.FC = () => {
     },
   });
 
-  // ตรง useEffect ที่ดึงค่า matchedItem เข้ามา
-  // useEffect(() => {
-  //     const custData = matchedItem?.CUSTOMERSTATUS?.[0];
-  //     if (!custData?.Contract) {
-  //         return;
-  //     }
+  // ชื่อประเภทลูกค้าที่มาจาก CUSTOMERSTATUS (string ภาษาไทย)
+  const contractCustTypeName =
+    matchedItem?.CUSTOMERSTATUS?.[0]?.Contract?.CustomerType?.trim() || "";
 
-  //     const contract = custData.Contract;
+  // เมื่อโหลด customerTypes เสร็จ และมีชื่อประเภทลูกค้า ให้หา item ที่ชื่อไทยตรงกัน
+  useEffect(() => {
+    if (!contractCustTypeName || customerTypes.length === 0) return;
 
-  //     // — IDCard ตามเดิม —
-  //     const newIdCard = contract.IDCard ?? '';
-  //     setIdCard(newIdCard);
-  //     setValue('idCard', newIdCard);
+    const found = customerTypes.find(
+      (ct: any) => (ct.CUSTOMERTYPENAME || "").trim() === contractCustTypeName
+    );
 
-  //     // — ชื่อ–นามสกุล จาก contract.CustomerName —
-  //     // trim() + split ด้วย whitespace แล้วเอาตัวแรกเป็นชื่อ
-  //     // ส่วนที่เหลือ join กลับเป็นนามสกุล
-  //     const rawName = (contract as any).CustomerName ?? '';
-  //     const parts = rawName.trim().split(/\s+/);
-  //     const first = parts.shift() || '';
-  //     const last = parts.join(' ') || '';
+    if (found) {
+      // เซ็ตทั้ง state และค่าใน RHF ให้ select โชว์ตรงกับที่หาได้
+      setsSelectedCustomerType(String(found.CUSTOMERTYPE));
+      setValue("selectedCustomerType", String(found.CUSTOMERTYPE), {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
 
-  //     setFullName(first);
-  //     setLastName(last);
+      // ถ้าต้องการ reset ประเภทบัตรเมื่อเปลี่ยนประเภทลูกค้า
+      setSelectedCardType("");
+      setValue("selectedCardType", "");
+    }
+  }, [contractCustTypeName, customerTypes]);
 
-  //     // ถ้าคุณใช้ react-hook-form เก็บ fullName ก็ setValue ด้วย
-  //     setValue('fullName', first);
-  //     // ถ้ามี lastName ใน form ก็เรียก setValue('lastName', last) ด้วย
+  // ชื่อคำนำหน้าชื่อที่มาจาก CUSTOMERSTATUS (string ภาษาไทย)
+  const contractPrefixName =
+    matchedItem?.CUSTOMERSTATUS?.[0]?.Contract?.PrefixName?.trim() || ""
 
-  //     // — เบอร์โทร เหมือนเดิม —
-  //     const address = Array.isArray(contract.Address)
-  //         ? contract.Address[0]
-  //         : {};
-  //     const rawMobile = address.TelMobile || address.TelHome || address.TelOffice || '';
-  //     const cleanedMobile = rawMobile.replace(/-/g, '');
-  //     setMobile(cleanedMobile);
-  //     setValue('telNo', cleanedMobile);
+  // กันการ override หลังผู้ใช้แก้เอง (ถ้าอยากให้ตั้งค่าแค่ครั้งแรก)
+  const [didInitPrefix, setDidInitPrefix] = useState(false)
 
-  // }, [matchedItem, setValue]);
+  // --- เพิ่ม useEffect อีกอัน: เลือกคำนำหน้าชื่อตาม PrefixName ---
+  useEffect(() => {
+    if (!contractPrefixName || !selectedCustomerType || didInitPrefix) return
+    // หา customer type ที่ถูกเลือก
+    const ct = customerTypes.find(
+      (x: any) => String(x.CUSTOMERTYPE) === String(selectedCustomerType)
+    )
+    if (!ct || !Array.isArray(ct.PREFIX)) return
+
+    // หา prefix ที่ชื่อไทยตรงกับ PrefixName จาก Contract
+    const found = ct.PREFIX.find(
+      (p: any) => (p.PREFIXNAME || "").trim() === contractPrefixName
+    )
+    if (!found) return
+
+    // เซ็ตทั้ง state และ RHF
+    setSelectedPrefixId(Number(found.PREFIXID))
+    setValue("selectedPrefixId", Number(found.PREFIXID), {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
+    setDidInitPrefix(true)
+  }, [contractPrefixName, selectedCustomerType, customerTypes]);
 
   useEffect(() => {
-    const custData = matchedItem?.CUSTOMERSTATUS?.[0];
-    if (!custData?.Contract || hasInitialized) return;
-
-    const contract = custData.Contract;
-
     // — IDCard ตามเดิม —
-    const newIdCard =
-      contract.IDCard && contract.IDCard !== "0" ? contract.IDCard : "";
-
+    const newIdCard = matchedItem?.CUSTOMERDETAIL?.[0].CUSTOMERID ?
+      matchedItem?.CUSTOMERDETAIL?.[0].CUSTOMERID :
+      matchedItem?.CUSTOMERSTATUS?.[0].Searchtext ??
+      '';
     setIdCard(newIdCard);
-    setValue("idCard", newIdCard);
+    setValue('idCard', newIdCard);
 
-    // — ชื่อ–นามสกุล —
-    const rawName = (contract as any).CustomerName ?? "";
-    const parts = rawName.trim().split(/\s+/);
-    const first = parts.shift() || "";
-    const last = parts.join(" ") || "";
-    setFullName(first);
-    setLastName(last);
-    setValue("fullName", first);
-    // ถ้ามี lastName ในฟอร์ม ก็เรียก setValue('lastName', last);
+    // — ชื่อ–นามสกุล จาก contract.CustomerName —
+    // trim() + split ด้วย whitespace แล้วเอาตัวแรกเป็นชื่อ
+    // ส่วนที่เหลือ join กลับเป็นนามสกุล
+    // const rawName = (contract as any).CustomerName ?? '';
+    // const parts = rawName.trim().split(/\s+/);
+    // const first = parts.shift() || '';
+    // const last = parts.join(' ') || '';
 
-    // — เบอร์โทร —
-    const address = Array.isArray(contract.Address) ? contract.Address[0] : {};
-    const rawMobile =
-      address.TelMobile || address.TelHome || address.TelOffice || "";
-    const cleanedMobile = rawMobile.replace(/-/g, "");
+    setFullName(matchedItem?.CUSTOMERDETAIL?.[0].CUSTOMERNAME);
+    setLastName(matchedItem?.CUSTOMERDETAIL?.[0].CUSTOMERLASTNAME);
+
+    // ถ้าคุณใช้ react-hook-form เก็บ fullName ก็ setValue ด้วย
+    setValue('fullName', matchedItem?.CUSTOMERDETAIL?.[0].CUSTOMERNAME);
+    // ถ้ามี lastName ใน form ก็เรียก setValue('lastName', last) ด้วย
+
+    // — เบอร์โทร เหมือนเดิม —
+    // const address = Array.isArray(contract.Address)
+    //   ? contract.Address[0]
+    //   : {};
+    const rawMobile = matchedItem?.CUSTOMERDETAIL?.[0].CUSTOMERMOBILE ?? '';
+    const cleanedMobile = rawMobile.replace(/-/g, '');
     setMobile(cleanedMobile);
-    setValue("telNo", cleanedMobile);
+    setValue('telNo', cleanedMobile);
 
-    // mark ว่า initialize เสร็จแล้ว
-    setHasInitialized(true);
+    // Brithday เก็บรูปแบบ "YYYY-MM-DD" (อาจเป็น พ.ศ. หรือ ค.ศ.)
+    const rawDob = matchedItem?.CUSTOMERSTATUS?.[0]?.Contract?.Brithday;
 
-    // ฟังก์ชันบันทึกข้อมูล CUSTOMERDETAIL อัตโนมัติ
-    const saveMatchedCustomer = async () => {
-      try {
-        await axios.post(
-          UPDATECONTACT,
-          {
-            REFNO,
-            EMPID: EmpId,
-            TEAMSALE: TeamSale,
-            SALECODE: SaleCode,
-            SUPEMPID: SupEmpId,
-            SECEMPID: SecEmpId,
-            FIELD: "CUSTOMERDETAIL",
-            DATA: SaveCustomertData,
-          },
-          {
-            headers: { "Content-Type": "application/json" },
-          }
-        );
-        // console.log("อัปเดต CUSTOMERDETAIL สำเร็จ");
-      } catch (err) {
-        console.error("Error auto-saving CUSTOMERDETAIL:", err);
-      }
-    };
+    if (rawDob) {
+      // รองรับทั้ง 2020-01-31 และ 2020/01/31
+      const parts = rawDob.trim().split(/[-/]/).map(Number);
+      // รูปแบบตามโจทย์: ปี-เดือน-วัน
+      const [y, m, d] = parts;
 
-    saveMatchedCustomer();
-  }, [matchedItem, SaveCustomertData, setValue, hasInitialized]);
+      // แปลงปี พ.ศ. -> ค.ศ. (ถ้าเกิน 2400 ถือว่าเป็น พ.ศ.)
+      const yearAD = y > 2400 ? y - 543 : y;
+      // ปี พ.ศ. ไว้แสดงใน UI
+      const yearBE = y > 2400 ? y : y + 543;
+
+      const dob = new Date(yearAD, (m || 1) - 1, d || 1);
+
+      // อัปเดต select วัน/เดือน/ปี (พ.ศ.)
+      setSelectedDay(d);
+      setSelectedMonth(m);
+      setSelectedYearBE(yearBE);
+
+      setValue("selectedDay", d);
+      setValue("selectedMonth", m);
+      setValue("selectedYearBE", yearBE);
+
+      // เก็บค่า Date (ค.ศ.) สำหรับคำนวณอายุ/validate อื่นๆ
+      setValueCalendar(dob);
+      setValueAge(dayjs().diff(dayjs(dob), "year"));
+    }
+
+  }, [matchedItem?.CUSTOMERDETAIL?.[0]]);
+
+  // const searchText = matchedItem?.CUSTOMERDETAIL?.[0]?.CUSTOMERID?.toString().trim() ?? '';
+  // const disableIdCard = /^\d{13}$/.test(searchText);
+
+  const hasSearchtext =
+    !!matchedItem?.CUSTOMERSTATUS?.[0]?.Searchtext;
+  console.log(`hasSearchtext`, hasSearchtext);
+
+  const searchText =
+    matchedItem?.CUSTOMERSTATUS?.[0]?.Searchtext ?? '';
+  console.log(`searchText`, searchText);
+
+  const is13Digits = /^\d{13}$/.test(searchText);
+
+  // ถ้ามีประวัติลูกค้า
+  const hasCustomerName =
+    !!matchedItem?.CUSTOMERSTATUS?.[0]?.CustomerName;
+
+  // ถ้ามี Searchtext: disable เฉพาะ ลูกค้าบุคคล (0) + บัตรประชาชน (0)
+  // ถ้าไม่มี Searchtext: กลับไปใช้เงื่อนไขเดิม (13 หลัก)
+  const disableIdCard =
+    hasCustomerName
+      ? true
+      : hasSearchtext
+        ? (selectedCustomerType === "0" && selectedCardType === "0")
+        : is13Digits;
 
   {
     /*-------------------- End Validate --------------------*/
@@ -2298,13 +2362,11 @@ const SalesCreateCustCash: React.FC = () => {
                                           </label>
                                           <select
                                             {...field}
-                                            className={`form-select ${
-                                              styles.label
-                                            } ${
-                                              errors.selectedCustomerType
+                                            className={`form-select ${styles.label
+                                              } ${errors.selectedCustomerType
                                                 ? "is-invalid"
                                                 : ""
-                                            }`}
+                                              }`}
                                             onChange={(e) => {
                                               field.onChange(e); // อัปเดต RHF
                                               setsSelectedCustomerType(
@@ -2366,13 +2428,11 @@ const SalesCreateCustCash: React.FC = () => {
                                           </label>
                                           <select
                                             {...field}
-                                            className={`form-select ${
-                                              styles.label
-                                            } ${
-                                              errors.selectedCardType
+                                            className={`form-select ${styles.label
+                                              } ${errors.selectedCardType
                                                 ? "is-invalid"
                                                 : ""
-                                            }`}
+                                              }`}
                                             onChange={(e) => {
                                               field.onChange(e); // อัปเดต RHF
                                               setSelectedCardType(
@@ -2424,13 +2484,11 @@ const SalesCreateCustCash: React.FC = () => {
                                       >
                                         <input
                                           {...field}
-                                          className={`form-control ${
-                                            styles.label
-                                          } ${
-                                            errors.idCard ? "is-invalid" : ""
-                                          }`}
+                                          className={`form-control ${styles.label
+                                            } ${errors.idCard ? "is-invalid" : ""
+                                            }`}
                                           value={idCard}
-                                          maxLength={13}
+                                          // maxLength={13}
                                           onKeyDown={(e) => {
                                             if (
                                               e.key === " " ||
@@ -2438,6 +2496,7 @@ const SalesCreateCustCash: React.FC = () => {
                                             )
                                               e.preventDefault();
                                           }}
+                                          disabled={disableIdCard}
                                           onPaste={(e) => {
                                             const cleaned = e.clipboardData
                                               .getData("Text")
@@ -2507,13 +2566,11 @@ const SalesCreateCustCash: React.FC = () => {
                                         <select
                                           {...field}
                                           value={field.value ?? ""}
-                                          className={`form-select ${
-                                            styles.label
-                                          } ${
-                                            errors.selectedPrefixId
+                                          className={`form-select ${styles.label
+                                            } ${errors.selectedPrefixId
                                               ? "is-invalid"
                                               : ""
-                                          }`}
+                                            }`}
                                           onChange={(e) => {
                                             const raw = e.target.value;
                                             // ถ้าผู้ใช้เลือก placeholder (""), ให้เป็น undefined
@@ -2567,11 +2624,9 @@ const SalesCreateCustCash: React.FC = () => {
                                         <input
                                           {...field}
                                           type="text"
-                                          className={`form-control ${
-                                            styles.label
-                                          } ${
-                                            errors.fullName ? "is-invalid" : ""
-                                          }`}
+                                          className={`form-control ${styles.label
+                                            } ${errors.fullName ? "is-invalid" : ""
+                                            }`}
                                           onChange={(e) => {
                                             field.onChange(e);
                                             setFullName(e.target.value);
@@ -2595,13 +2650,23 @@ const SalesCreateCustCash: React.FC = () => {
                                   >
                                     นามสกุล
                                   </label>
-                                  <input
-                                    type="text"
-                                    className={`form-control mb-3 mb-lg-0 ${styles.label}`}
-                                    value={lastName}
-                                    onChange={(e) =>
-                                      setLastName(e.target.value)
-                                    }
+                                  <Controller
+                                    name="lastName"
+                                    control={control}
+                                    render={({ field }) => (
+                                      <div className="col-lg-6 my-3">
+                                        <input
+                                          {...field}
+                                          type="text"
+                                          className={`form-control mb-3 mb-lg-0 ${styles.label}`}
+                                          value={field.value ?? lastName}            // กันค่าเริ่มต้น
+                                          onChange={(e) => {
+                                            field.onChange(e.target.value);
+                                            setLastName(e.target.value);            // sync กับ state ที่ส่งขึ้น API
+                                          }}
+                                        />
+                                      </div>
+                                    )}
                                   />
                                 </div>
                               </div>
@@ -2679,13 +2744,11 @@ const SalesCreateCustCash: React.FC = () => {
                                         <select
                                           {...field}
                                           value={field.value ?? ""}
-                                          className={`form-select ${
-                                            styles.label
-                                          } ${
-                                            errors.selectedDay
+                                          className={`form-select ${styles.label
+                                            } ${errors.selectedDay
                                               ? "is-invalid"
                                               : ""
-                                          }`}
+                                            }`}
                                           onChange={(e) => {
                                             const v =
                                               Number(e.target.value) || "";
@@ -2714,13 +2777,11 @@ const SalesCreateCustCash: React.FC = () => {
                                         <select
                                           {...field}
                                           value={field.value ?? ""}
-                                          className={`form-select ${
-                                            styles.label
-                                          } ${
-                                            errors.selectedMonth
+                                          className={`form-select ${styles.label
+                                            } ${errors.selectedMonth
                                               ? "is-invalid"
                                               : ""
-                                          }`}
+                                            }`}
                                           onChange={(e) => {
                                             const v =
                                               Number(e.target.value) || "";
@@ -2749,13 +2810,11 @@ const SalesCreateCustCash: React.FC = () => {
                                         <select
                                           {...field}
                                           value={field.value ?? ""}
-                                          className={`form-select ${
-                                            styles.label
-                                          } ${
-                                            errors.selectedYearBE
+                                          className={`form-select ${styles.label
+                                            } ${errors.selectedYearBE
                                               ? "is-invalid"
                                               : ""
-                                          }`}
+                                            }`}
                                           onChange={(e) => {
                                             const v =
                                               Number(e.target.value) || "";
@@ -2826,13 +2885,11 @@ const SalesCreateCustCash: React.FC = () => {
                                           </label>
                                           <select
                                             {...field}
-                                            className={`form-select ${
-                                              styles.label
-                                            } ${
-                                              errors.selectedSexId
+                                            className={`form-select ${styles.label
+                                              } ${errors.selectedSexId
                                                 ? "is-invalid"
                                                 : ""
-                                            }`}
+                                              }`}
                                             onChange={(e) => {
                                               field.onChange(e); // อัปเดต RHF
                                               setSelectedSexId(
@@ -2879,11 +2936,9 @@ const SalesCreateCustCash: React.FC = () => {
                                     render={({ field }) => (
                                       <input
                                         {...field}
-                                        className={`${
-                                          styles.label
-                                        } form-control ${
-                                          errors.telNo ? "is-invalid" : ""
-                                        }`}
+                                        className={`${styles.label
+                                          } form-control ${errors.telNo ? "is-invalid" : ""
+                                          }`}
                                         value={(mobile || "").replace(/-/g, "")}
                                         maxLength={10}
                                         onChange={(e) => {
@@ -2950,11 +3005,9 @@ const SalesCreateCustCash: React.FC = () => {
                                     render={({ field }) => (
                                       <input
                                         {...field}
-                                        className={`${
-                                          styles.label
-                                        } form-control ${
-                                          errors.email ? "is-invalid" : ""
-                                        }`}
+                                        className={`${styles.label
+                                          } form-control ${errors.email ? "is-invalid" : ""
+                                          }`}
                                         value={email}
                                         onChange={(e) => {
                                           field.onChange(e);
@@ -2995,13 +3048,11 @@ const SalesCreateCustCash: React.FC = () => {
                                           </label>
                                           <select
                                             {...field}
-                                            className={`form-select ${
-                                              styles.label
-                                            } ${
-                                              errors.selectedCustomerType
+                                            className={`form-select ${styles.label
+                                              } ${errors.selectedCustomerType
                                                 ? "is-invalid"
                                                 : ""
-                                            }`}
+                                              }`}
                                             onChange={(e) => {
                                               field.onChange(e); // อัปเดต RHF
                                               setsSelectedCustomerType(
@@ -3056,13 +3107,11 @@ const SalesCreateCustCash: React.FC = () => {
                                           <input
                                             {...field}
                                             type="text"
-                                            className={`form-control ${
-                                              styles.label
-                                            } ${
-                                              errors.fullName
+                                            className={`form-control ${styles.label
+                                              } ${errors.fullName
                                                 ? "is-invalid"
                                                 : ""
-                                            }`}
+                                              }`}
                                             onChange={(e) => {
                                               field.onChange(e);
                                               setFullName(e.target.value);
@@ -3118,11 +3167,9 @@ const SalesCreateCustCash: React.FC = () => {
                                         >
                                           <input
                                             {...field}
-                                            className={`form-control ${
-                                              styles.label
-                                            } ${
-                                              errors.idCard ? "is-invalid" : ""
-                                            }`}
+                                            className={`form-control ${styles.label
+                                              } ${errors.idCard ? "is-invalid" : ""
+                                              }`}
                                             value={idCard}
                                             maxLength={13}
                                             onKeyDown={(e) => {
@@ -3203,13 +3250,11 @@ const SalesCreateCustCash: React.FC = () => {
                                           </label>
                                           <select
                                             {...field}
-                                            className={`form-select ${
-                                              styles.label
-                                            } ${
-                                              errors.selectedPrefixId
+                                            className={`form-select ${styles.label
+                                              } ${errors.selectedPrefixId
                                                 ? "is-invalid"
                                                 : ""
-                                            }`}
+                                              }`}
                                             onChange={(e) => {
                                               field.onChange(e); // อัปเดต RHF
                                               setSelectedPrefixId(
@@ -3294,11 +3339,9 @@ const SalesCreateCustCash: React.FC = () => {
                                         render={({ field }) => (
                                           <input
                                             {...field}
-                                            className={`${
-                                              styles.label
-                                            } form-control ${
-                                              errors.telNo ? "is-invalid" : ""
-                                            }`}
+                                            className={`${styles.label
+                                              } form-control ${errors.telNo ? "is-invalid" : ""
+                                              }`}
                                             value={(mobile || "").replace(
                                               /-/g,
                                               ""

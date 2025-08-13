@@ -531,7 +531,7 @@ const SalesOverview: React.FC = () => {
                 คงค้าง
               </a>
             </li>
-            <li className='nav-item'>
+            {/* <li className='nav-item'>
               <a
                 className={`nav-link ${styles.fontSize}`}
                 data-bs-toggle='tab'
@@ -540,7 +540,7 @@ const SalesOverview: React.FC = () => {
               >
                 รอตรวจสอบ
               </a>
-            </li>
+            </li> */}
             <li className='nav-item'>
               <a
                 className={`nav-link ${styles.fontSize}`}

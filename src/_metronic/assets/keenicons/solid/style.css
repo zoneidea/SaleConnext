@@ -1,3 +1,9 @@
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 @font-face {
   font-family: 'keenicons-solid';
   src:  url('fonts/keenicons-solid.eot?812fv7');

@@ -22,14 +22,27 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item }) => {
     return `${day} ${thaiMonths[month]} ${year + 543}`;
   };
 
-  // console.log(`test`, item);
-  
+  const rawCheckerStatus =
+    item?.CHECKKERSTATUS ?? item?.CHECKERSTATUS ?? "";
+  const checkerStatusMap: Record<string, string> = {
+    PENDING: "รอตรวจสอบ",
+    EDIT: "แจ้งแก้ไข",
+    APPROVE: "อนุมัติ",
+  };
+  const checkerStatusText = checkerStatusMap[rawCheckerStatus] ?? "";
+
+  const checkerStatusClass: Record<string, string> = {
+    PENDING: "badge badge-light-primary",
+    EDIT: "badge badge-light-danger",
+    APPROVE: "badge badge-light-success",
+  };
+
   let customer, product, productPackage, serialNumber, createdAt, statusTxt, checkerComment
   if (item.CUSTOMERDETAIL.length > 0) {
     if (item.CUSTOMERDETAIL[0].CUSTOMERTYPE == 1) {
       customer = <span className='text-gray-700 fw-semibold d-block'>{`ชื่อบริษัท: ${item.CUSTOMERDETAIL[0].CUSTOMERMD}`}</span>
     } else {
-      customer = <span className='text-gray-700 fw-semibold d-block'>{`ชื่อลูกค้า: ${item.CUSTOMERDETAIL[0].CUSTOMERNAME}`}</span>
+      customer = <span className='text-gray-700 fw-semibold d-block'>{`ชื่อลูกค้า: ${item.CUSTOMERDETAIL[0].CUSTOMERNAME} ${item.CUSTOMERDETAIL[0].CUSTOMERLASTNAME}`}</span>
     }
   }
 
@@ -45,16 +58,16 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item }) => {
     createdAt = <span className='text-gray-700 fw-semibold d-block'>{`วันที่ทำสัญญา: ${item.CONTRACT[0].createdAt && (item.CONTRACT[0].createdAt)}`}</span>
   }
 
-  if (item.STATUS === 'DRAFT') {
-    statusTxt = <span className='text-warning fw-semibold d-block'>{`ร่าง`}</span>
-  } else if (item.STATUS === 'EDIT') {
-    statusTxt = <span className='text-danger fw-semibold d-block'>{`แก้ไข`}</span>
-    // checkerComment = <span className='text-danger fw-semibold d-block'>{`Comment: ${item.CHECKKERCOMMENT[0]?.COMMENT}`}</span>
-  } else if (item.STATUS === 'FINISH') {
-    statusTxt = <span className='text-success fw-semibold d-block'>{`เสร็จสมบูรณ์`}</span>
-  } else if (item.STATUS === 'PENDING') {
-    statusTxt = <span className='text-danger fw-semibold d-block'>{`รอตรวจสอบ`}</span>
-  }
+  // if (item.STATUS === 'DRAFT') {
+  //   statusTxt = <span className='text-warning fw-semibold d-block'>{`ร่าง`}</span>
+  // } else if (item.STATUS === 'EDIT') {
+  //   statusTxt = <span className='text-danger fw-semibold d-block'>{`แก้ไข`}</span>
+  //   // checkerComment = <span className='text-danger fw-semibold d-block'>{`Comment: ${item.CHECKKERCOMMENT[0]?.COMMENT}`}</span>
+  // } else if (item.STATUS === 'FINISH') {
+  //   statusTxt = <span className='text-success fw-semibold d-block'>{`เสร็จสมบูรณ์`}</span>
+  // } else if (item.STATUS === 'PENDING') {
+  //   statusTxt = <span className='text-danger fw-semibold d-block'>{`รอตรวจสอบ`}</span>
+  // }
 
   // console.log(`${status} item: `, item)
 
@@ -69,14 +82,21 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item }) => {
               </span>
               <div className='flex-grow-1 me-2'>
                 <div className='fw-bold text-gray-800 text-hover-primary fs-6'>
-                  {`REFNO: ${item.REFNO}`}
+                  {/* {`REFNO: ${item.REFNO}`} */}
+                  {`เลขที่สัญญา: ${item.CONTNO ?? ""}`}
                 </div>
                 {customer}
                 {product}
                 {productPackage}
                 {serialNumber}
                 {createdAt}
-                {statusTxt}
+                {/* {statusTxt} */}
+                สถานะตรวจสอบ:{" "}
+                {checkerStatusText && (
+                  <span className={checkerStatusClass[rawCheckerStatus] ?? "badge badge-light"}>
+                    {checkerStatusText}
+                  </span>
+                )}
                 {checkerComment}
               </div>
             </div>
@@ -89,14 +109,21 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item }) => {
               </span>
               <div className='flex-grow-1 me-2'>
                 <div className='fw-bold text-gray-800 text-hover-primary fs-6'>
-                  {`REFNO: ${item.REFNO}`}
+                  {/* {`REFNO: ${item.REFNO}`} */}
+                  {`เลขที่สัญญา: ${item.CONTNO ?? ""}`}
                 </div>
                 {customer}
                 {product}
                 {productPackage}
                 {serialNumber}
                 {createdAt}
-                {statusTxt}
+                สถานะตรวจสอบ:{" "}
+                {checkerStatusText && (
+                  <span className={checkerStatusClass[rawCheckerStatus] ?? "badge badge-light"}>
+                    {checkerStatusText}
+                  </span>
+                )}
+                {/* {statusTxt} */}
               </div>
             </div>
             :
@@ -107,14 +134,21 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item }) => {
                 </span>
                 <div className='flex-grow-1 me-2'>
                   <div className='fw-bold text-gray-800 text-hover-primary fs-6'>
-                    {`REFNO: ${item.REFNO}`}
+                    {/* {`REFNO: ${item.REFNO}`} */}
+                    {`เลขที่สัญญา: ${item.CONTNO ?? ""}`}
                   </div>
                   {customer}
                   {product}
                   {productPackage}
                   {serialNumber}
                   {createdAt}
-                  {statusTxt}
+                  สถานะตรวจสอบ:{" "}
+                  {checkerStatusText && (
+                    <span className={checkerStatusClass[rawCheckerStatus] ?? "badge badge-light"}>
+                      {checkerStatusText}
+                    </span>
+                  )}
+                  {/* {statusTxt} */}
                 </div>
               </div>
             </Link>

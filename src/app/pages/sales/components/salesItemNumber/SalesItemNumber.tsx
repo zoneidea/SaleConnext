@@ -260,13 +260,27 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({
   const DEL_CONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/DelContract`;
 
   const currentDate = new Date();
-  const formattedDate = `${currentDate.getFullYear()}-${
-    currentDate.getMonth() + 1
-  }-${currentDate.getDate()}`;
+  const formattedDate = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1
+    }-${currentDate.getDate()}`;
 
   let customer, product, productPackage, serialNumber, createdAt, statusTxt;
 
   let customerRow, serialRow, dateRow;
+
+  const rawCheckerStatus =
+    item?.CHECKKERSTATUS ?? item?.CHECKERSTATUS ?? "";
+  const checkerStatusMap: Record<string, string> = {
+    PENDING: "รอตรวจสอบ",
+    EDIT: "แจ้งแก้ไข",
+    APPROVE: "อนุมัติ",
+  };
+  const checkerStatusText = checkerStatusMap[rawCheckerStatus] ?? "";
+
+  const checkerStatusClass: Record<string, string> = {
+    PENDING: "badge badge-light-primary",
+    EDIT: "badge badge-light-danger",
+    APPROVE: "badge badge-light-success",
+  };
 
   if (item.CUSTOMERDETAIL?.length > 0) {
     const { CUSTOMERNAME, CUSTOMERLASTNAME } = item.CUSTOMERDETAIL[0];
@@ -436,9 +450,8 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({
             </div>
             {/* แสดงไอคอนถังขยะเฉพาะหน้าจอใหญ่ */}
             <span
-              className={`d-none d-md-inline me-5 ${
-                !isDataIncomplete ? "disabled" : ""
-              }`}
+              className={`d-none d-md-inline me-5 ${!isDataIncomplete ? "disabled" : ""
+                }`}
               onClick={(e) =>
                 isDataIncomplete && deleteDataDraft(e, item.REFNO)
               }
@@ -456,9 +469,8 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({
 
             {/* แสดงคำว่า "ลบ" ในหน้าจอเล็ก */}
             <button
-              className={`d-block d-md-none text-black fw-bold text-center rounded mt-5 ${
-                !isDataIncomplete ? "disabled" : ""
-              }`}
+              className={`d-block d-md-none text-black fw-bold text-center rounded mt-5 ${!isDataIncomplete ? "disabled" : ""
+                }`}
               style={{
                 backgroundColor: isDataIncomplete ? "#F6C000" : "#ccc",
                 cursor: isDataIncomplete ? "pointer" : "not-allowed",
@@ -634,6 +646,20 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({
                   className={`col-7 col-md-9 fw-bold text-gray-800 ${styles.fontSize}`}
                 >
                   {formatToBE(item.CONTRACT[0]?.createdAt)}
+                </div>
+                <div
+                  className={`col-5 col-md-3 fw-semibold text-gray-700 ${styles.fontSize}`}
+                >
+                  สถานะตรวจสอบ:
+                </div>
+                <div
+                  className={`col-7 col-md-9 fw-bold text-gray-800 ${styles.fontSize} `}
+                >
+                  <span
+                    className={`${checkerStatusClass[rawCheckerStatus] ?? "badge badge-light"} ${styles.statusBadgeBig}`}
+                  >
+                    {checkerStatusText}
+                  </span>
                 </div>
               </div>
             </div>

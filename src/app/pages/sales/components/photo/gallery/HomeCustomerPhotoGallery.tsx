@@ -5,6 +5,7 @@ import { useAuth } from '../../../../../modules/auth/core/Auth';
 import { useUUIDStore } from '../../../../../modules/stores/stepsStore';
 import axios from 'axios';
 import { ThreeDot } from 'react-loading-indicators';
+import styles from "@/styles/style.module.css";
 
 interface ItemProps {
     REFNO: string;
@@ -165,13 +166,13 @@ const HomeCustomerPhotoGallery: React.FC = () => {
                 )}
                 <div className='d-none d-xl-flex justify-content-between align-items-center my-5'>
                     <button
-                        className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'
+                        className={`${styles.btnSecondary}`}
                         onClick={() => navigate('/sale/photo', { state: { data: item, fromStep } })}
                     >
                         ย้อนกลับ
                     </button>
                     <button
-                        className="btn btn-primary w-100 w-md-auto align-self-center"
+                        className={`${styles.btnPrimary}`}
                         onClick={() => navigate('/sale/photo/home-customer', { state: { data: item, fromStep } })}
                     >
                         {isPC ? "เพิ่มรูปภาพ" : "แกลอรี่ / ถ่ายรูป"}
@@ -189,13 +190,13 @@ const HomeCustomerPhotoGallery: React.FC = () => {
                     }}
                 >
                     <button
-                        className="btn btn-secondary w-auto me-2"
-                        onClick={() => navigate('/sale/photo', { state: { data: item, fromStep } })}
+                        className={`${styles.btnSecondary}`}
+                        onClick={() => navigate('/sale/photo', { state: { data: item, fromStep, from: location.pathname, } })}
                     >
                         ย้อนกลับ
                     </button>
                     <button
-                        className="btn btn-primary w-auto me-2"
+                        className={`${styles.btnPrimary}`}
                         onClick={() => navigate('/sale/photo/home-customer', { state: { data: item, fromStep } })}
                     >
                         {isPC ? "เพิ่มรูปภาพ" : "แกลอรี่ / ถ่ายรูป"}

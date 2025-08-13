@@ -6,7 +6,7 @@ import { useAuth } from '../../../../../modules/auth/core/Auth';
 import { useUUIDStore } from '../../../../../modules/stores/stepsStore';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import { log } from 'console';
+import styles from "@/styles/style.module.css";
 
 const API_KEY_GOOGLE_MAP = import.meta.env.VITE_APP_GOOGLE_MAP_KEY as string;
 const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
@@ -67,7 +67,7 @@ const LocationFinder: React.FC = () => {
   const item = location.state?.data as ItemProps || [];
   const fromStep = location.state?.fromStep || false;
   // console.log(`fromStep`, fromStep);
-  
+
   const refno = fromStep ? item.REFNO : REFNO;
   // console.log(`refno`, refno);
 
@@ -198,7 +198,7 @@ const GoogleMapComponent: React.FC<{ position: Position; REFNO?: string; fromSte
 
       <div className='d-none d-xl-flex justify-content-between align-items-center my-5 mx-7'>
         <button
-          className='btn btn-secondary w-100 w-md-auto align-self-center mb-2 mb-md-0'
+          className={`${styles.btnSecondary}`}
           onClick={() => navigate('/sale/photo/gallery-gps', { state: { data: item, fromStep } })}
           disabled={isLoading}
         >
@@ -206,7 +206,7 @@ const GoogleMapComponent: React.FC<{ position: Position; REFNO?: string; fromSte
         </button>
         <button
           onClick={captureMap}
-          className='btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0'
+          className={`${styles.btnPrimary}`}
           disabled={isLoading}
         >
           บันทึกรูปภาพแผนที่ลงระบบ
@@ -224,14 +224,14 @@ const GoogleMapComponent: React.FC<{ position: Position; REFNO?: string; fromSte
         }}
       >
         <button
-          className="btn btn-secondary w-auto me-2"
+          className={`${styles.btnSecondary}`}
           onClick={() => navigate('/sale/photo/gallery-gps', { state: { data: item, fromStep } })}
           disabled={isLoading}
         >
           ย้อนกลับ
         </button>
         <button
-          className="btn btn-primary w-auto me-2"
+          className={`${styles.btnPrimary}`}
           onClick={captureMap}
           disabled={isLoading}
         >
