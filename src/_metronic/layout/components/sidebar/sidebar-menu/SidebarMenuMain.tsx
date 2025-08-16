@@ -49,9 +49,9 @@ const SidebarMenuMain = () => {
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 768) {
-        setFontSize('14px'); // ฟอนต์เล็กลงสำหรับหน้าจอเล็ก
+        setFontSize('13px'); // ฟอนต์เล็กลงสำหรับหน้าจอเล็ก
       } else {
-        setFontSize('16px'); // ฟอนต์ปกติสำหรับหน้าจอใหญ่
+        setFontSize('15px'); // ฟอนต์ปกติสำหรับหน้าจอใหญ่
       }
     };
 

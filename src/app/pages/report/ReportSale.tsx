@@ -169,7 +169,7 @@ const ReportSale: React.FC = () => {
                               const statusMap: Record<string, string> = {
                                 PENDING: "รอตรวจสอบ",
                                 EDIT: "แจ้งแก้ไข",
-                                FINISH: "อนุมัติผ่าน",
+                                APPROVE: "อนุมัติผ่าน",
                               };
                               return statusMap[item.CHECKKERSTATUS];
                             })()}

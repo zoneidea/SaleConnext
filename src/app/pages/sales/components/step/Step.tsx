@@ -3907,7 +3907,6 @@ const Step: React.FC = () => {
                     }}
                   >
                     <div className='d-flex align-items-center pb-8'>
-                      {/* bullet แดงเมื่อ packageChanged หรือยังไม่มี discount record */}
                       <span
                         className={`bullet bullet-vertical h-40px ${packageChanged || !discount || data[0].PRODUCT.length === 0 ? 'bg-danger' : 'bg-success'
                           }`}
@@ -4119,6 +4118,15 @@ const Step: React.FC = () => {
                         });
                         return; // ออกจาก function
                       }
+                      if (data[0]?.CUSTOMERDETAIL.length < 0) {
+                        Swal.fire({
+                          icon: 'error',
+                          title: 'เกิดข้อผิดพลาด',
+                          text: 'กรุณาบันทึกข้อมูลลูกค้าก่อน',
+                          confirmButtonText: 'ตกลง',
+                        });
+                        return; // ออกจาก function
+                      }
                       handleClick('updateAddress').then(ok => {
                         if (ok) {
                           navigate('/sale/update/updateAddress', { state: data[0] })
@@ -4136,10 +4144,10 @@ const Step: React.FC = () => {
                         {data[0].ADDRESS.length !== 0 && (
                           <>
                             <span className={`text-gray-700 d-block ${styles.label}`}>
-                              {`ที่อยู่ติดตั้ง: ${data[0].ADDRESS[0].ADDRESSINSTALLATION.ADDRESSSUBDISTRICTNAME} ${data[0].ADDRESS[0].ADDRESSINSTALLATION.ADDRESSDISTRICTNAME} ${data[0].ADDRESS[0].ADDRESSINSTALLATION.ADDRESSPROVINCENAME} ${data[0].ADDRESS[0].ADDRESSINSTALLATION.ADDRESSZIPCODE}`}
+                              {`ที่อยู่ตามบัตร: ${data[0].ADDRESS[0].ADDRESSCARD.ADDRESSSUBDISTRICTNAME} ${data[0].ADDRESS[0].ADDRESSCARD.ADDRESSDISTRICTNAME} ${data[0].ADDRESS[0].ADDRESSCARD.ADDRESSPROVINCENAME} ${data[0].ADDRESS[0].ADDRESSCARD.ADDRESSZIPCODE}`}
                             </span>
                             <span className={`text-gray-700 d-block ${styles.label}`}>
-                              {`ที่อยู่ตามบัตร: ${data[0].ADDRESS[0].ADDRESSCARD.ADDRESSSUBDISTRICTNAME} ${data[0].ADDRESS[0].ADDRESSCARD.ADDRESSDISTRICTNAME} ${data[0].ADDRESS[0].ADDRESSCARD.ADDRESSPROVINCENAME} ${data[0].ADDRESS[0].ADDRESSCARD.ADDRESSZIPCODE}`}
+                              {`ที่อยู่ติดตั้ง: ${data[0].ADDRESS[0].ADDRESSINSTALLATION.ADDRESSSUBDISTRICTNAME} ${data[0].ADDRESS[0].ADDRESSINSTALLATION.ADDRESSDISTRICTNAME} ${data[0].ADDRESS[0].ADDRESSINSTALLATION.ADDRESSPROVINCENAME} ${data[0].ADDRESS[0].ADDRESSINSTALLATION.ADDRESSZIPCODE}`}
                             </span>
                             <span className={`text-gray-700 d-block ${styles.label}`}>
                               {`ที่อยู่เก็บเงิน: ${data[0].ADDRESS[0].ADDRESSPAYMENT.ADDRESSSUBDISTRICTNAME} ${data[0].ADDRESS[0].ADDRESSPAYMENT.ADDRESSDISTRICTNAME} ${data[0].ADDRESS[0].ADDRESSPAYMENT.ADDRESSPROVINCENAME} ${data[0].ADDRESS[0].ADDRESSPAYMENT.ADDRESSZIPCODE}`}
@@ -4294,18 +4302,27 @@ const Step: React.FC = () => {
                       fontSize: 'inherit',
                     }}
                     onClick={async () => {
-                      if (data[0]?.CONTRACT.length === 0) {
+                      if (
+                        data[0]?.CUSTOMERSTATUS.length === 0 &&
+                        data[0]?.PRODUCT.length === 0 &&
+                        data[0]?.DISCOUNT.length === 0 &&
+                        data[0]?.SALEEMPLOYEE.length === 0 &&
+                        data[0]?.CUSTOMERDETAIL.length === 0 &&
+                        data[0]?.ADDRESS.length === 0 &&
+                        data[0]?.PDPA.length === 0 &&
+                        data[0]?.CONTRACT.length === 0
+                      ) {
                         await Swal.fire({
                           icon: 'error',
                           title: 'เกิดข้อผิดพลาด',
-                          text: 'กรุณาบันทึกรายละเอียดสัญญาก่อน',
+                          text: 'กรุณาบันทึกขั้นตอนก่อนหน้าให้ครบก่อน',
                           confirmButtonText: 'ตกลง',
                         });
                         return;
                       }
                       handleClick('photo').then(ok => {
                         if (ok) {
-                          navigate('/sale/photo', { state: { fromStep: true, data: data[0] } })
+                          navigate('/sale/update/UpdateSalesPhoto', { state: { fromStep: true, data: data[0] } })
                         }
                       })
                     }}

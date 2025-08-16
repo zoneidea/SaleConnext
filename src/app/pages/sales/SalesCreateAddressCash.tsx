@@ -6266,7 +6266,7 @@ const SalesCreateAddress: React.FC = () => {
     );
 
     return {
-      ADDRESSINSTALLATION: {
+      ADDRESSCARD: {
         ADDRESSNUMBER: addressNumber,
         ADDRESSMOO: addressMoo,
         ADDRESSSOI: addressSoi,
@@ -6283,7 +6283,7 @@ const SalesCreateAddress: React.FC = () => {
         ADDRESSPHONE: addressPhone,
         USETHISTAX: useThisTax,
       },
-      ADDRESSCARD: {
+      ADDRESSINSTALLATION: {
         ADDRESSNUMBER: addressNumberForInstall,
         ADDRESSMOO: addressMooForInstall,
         ADDRESSSOI: addressSoiForInstall,
@@ -6461,6 +6461,25 @@ const SalesCreateAddress: React.FC = () => {
   {
     /*-------------------- End บันทึกข้อมูล --------------------*/
   }
+
+  ///////// ล้างค้าที่อยู่ใบกำกับ หากยกเลิกการติ้กต้องการใบกำกับ
+  const clearBillingAddress = () => {
+    // เคลียร์ค่าฟิลด์ที่อยู่ใบกำกับ
+    setAddressNumberForBilling("");
+    setAddressMooForBilling("");
+    setAddressSoiForBilling("");
+    setAddressRoadForBilling("");
+    setSelectedProvinceForBilling(undefined);
+    setSelectedDistrictForBilling(undefined);
+    setSelectedSubDistrictForBilling(undefined);
+    setSelectedZipcodeForBilling("");
+    setAddressPhoneForBilling("");
+
+    // ปิดเช็กบ็อกซ์ “เหมือน…” ทั้งหมดของใบกำกับ เพื่อไม่ให้ลากค่าจาก panel อื่นกลับมาอีก
+    setBillLikeCardAddr(false);
+    setBillLikeInstallAddr(false);
+    setBillLikePaymentAddr(false);
+  };
 
   return (
     <>
@@ -7428,7 +7447,15 @@ const SalesCreateAddress: React.FC = () => {
                         name="showTaxAddress"
                         type="checkbox"
                         checked={showTaxAddress}
-                        onChange={(e) => setShowTaxAddress(e.target.checked)}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          setShowTaxAddress(checked);
+                          setUseThisTax(checked ? "TRUE" : "FALSE"); // ถ้าไม่ต้องการจะให้ FALSE
+
+                          if (!checked) {
+                            clearBillingAddress();  // ยกเลิกติ้ก → ล้างค่าที่อยู่ใบกำกับ
+                          }
+                        }}
                       />
                       <span className={`${styles.label} ps-3 mb-sm-5 mb-5`}>
                         ต้องการใบกำกับภาษี

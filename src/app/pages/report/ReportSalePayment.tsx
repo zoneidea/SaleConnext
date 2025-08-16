@@ -19,10 +19,10 @@ type Row = {
 const ReportSalePayment: React.FC = () => {
   const { auth } = useAuth();
 
-  const empId    = auth?.data?.[0]?.EmpId    ?? "";
+  const empId = auth?.data?.[0]?.EmpId ?? "";
   const teamSale = auth?.data?.[0]?.TeamSale ?? "";
-  const posId    = auth?.data?.[0]?.PosId    ?? auth?.data?.[0]?.PosID ?? "";
-  const depId    = auth?.data?.[0]?.DepId    ?? auth?.data?.[0]?.DepID ?? "";
+  const posId = auth?.data?.[0]?.PosId ?? auth?.data?.[0]?.PosID ?? "";
+  const depId = auth?.data?.[0]?.DepId ?? auth?.data?.[0]?.DepID ?? "";
 
   const today = dayjs().format("YYYY-MM-DD");
   const [valueCalendarStart, setValueCalendarStart] = useState<string>(today);
@@ -33,7 +33,8 @@ const ReportSalePayment: React.FC = () => {
   const [hasSearched, setHasSearched] = useState(false);
   const [totalFromApi, setTotalFromApi] = useState<string>("");
 
-  const BASE_URL = "https://salecommerce.zonedevnode.com/api/GetListPayments";
+  const API_URL_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT
+  const BASE_URL = `${API_URL_SALECONNEXT}/GetListPayments`;
 
   // helper: แปลงวันที่ใบเสร็จเป็น พ.ศ.
   const formatToBE = (datePayment?: string) => {
@@ -168,8 +169,8 @@ const ReportSalePayment: React.FC = () => {
                         <th>งวดที่</th>
                         <th>เลขที่สัญญา</th>
                         <th>ชื่อ - สกุล</th>
-                        <th className="text-end">จำนวนเงิน</th>
                         <th className="text-end">ค่างวด</th>
+                        <th className="text-end">จำนวนเงิน</th>
                         <th>สถานะ</th>
                       </tr>
                     </thead>
@@ -182,8 +183,8 @@ const ReportSalePayment: React.FC = () => {
                           <td>{r.PAYMENTPERIODNUMBER ?? "-"}</td>
                           <td>{r.CONTNO || "-"}</td>
                           <td>{r.CUSTOMERNAME || "-"}</td>
-                          <td className="text-end">{thb(r.PAYAMOUNT2 ?? r.PAYAMOUNT)}</td>
                           <td className="text-end">{thb(r.AMOUNTPERIOD)}</td>
+                          <td className="text-end">{thb(r.PAYAMOUNT2 ?? r.PAYAMOUNT)}</td>
                           <td>{r.STATUSPAY || "-"}</td>
                         </tr>
                       ))}

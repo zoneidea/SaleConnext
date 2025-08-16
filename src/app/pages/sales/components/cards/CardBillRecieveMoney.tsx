@@ -1,3 +1,4 @@
+import styles from '@/styles/style.module.css'
 import { FC } from 'react'
 import dayjs from 'dayjs'
 import { KTIcon } from '../../../../../_metronic/helpers'
@@ -34,14 +35,14 @@ const CardBillRecieveMoney: FC<Props> = ({ payments, isLoading }) => {
 
   const handleVoidReceipt = async (pay: any) => {
     Swal.fire({
-      title: 'คุณแน่ใจหรือไม่?',
-      text: `คุณต้องการยกเลิกใบเสร็จเลขที่ ${pay.RECEIPTCODE} หรือไม่?`,
+      title: 'คุณต้องการยกเลิกใบเสร็จเลขที่',
+      text: `${pay.RECEIPTCODE} หรือไม่?`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
       cancelButtonColor: '#3085d6',
       confirmButtonText: 'ใช่, ยกเลิก!',
-      cancelButtonText: 'ยกเลิก',
+      cancelButtonText: 'ไม่ต้องการ',
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
@@ -80,7 +81,7 @@ const CardBillRecieveMoney: FC<Props> = ({ payments, isLoading }) => {
           await Swal.fire({
             icon: 'success',
             title: 'สำเร็จ!',
-            text: `ใบเสร็จถูกยกเลิกเรียบร้อยแล้ว และสถานะถูกอัปเดตเป็น REMOVE`,
+            text: `ใบเสร็จถูกยกเลิกเรียบร้อยแล้ว`,
             timer: 2000,
             showConfirmButton: false,
           })
@@ -136,73 +137,72 @@ const CardBillRecieveMoney: FC<Props> = ({ payments, isLoading }) => {
               {/* ส่วนหัวการ์ด */}
               <div className='d-flex justify-content-between align-items-center mb-4'>
                 <div className='d-flex align-items-center'>
-                  <KTIcon iconName='abstract-26' className='fs-3 me-2 text-primary' />
-                  <span className='fw-bold fs-5'>
+                  <span className={`${styles.label}`}>
                     เลขที่สัญญา {pay.CONTRACTREFERENCENO ?? ''}
                   </span>
                 </div>
-                <span className='badge bg-primary text-white fs-6'>
+                <span className={`badge bg-primary text-white ${styles.label}`}>
                   {/* งวดที่ {index + 1} / {payments.length} */}
                   งวดที่ {pay.PAYMENTPERIODNUMBER ?? ''} / {pay.MAXPERIOD}
                 </span>
               </div>
 
               {/* Card body */}
-              <div className='mb-3'>
+              <div className={`${styles.fontSize} mb-3`}>
                 <strong>เลขที่ใบรับเงิน:</strong> {pay.RECEIPTCODE ?? ''}
               </div>
-              <div className='mb-3'>
+              <div className={`${styles.fontSize} mb-3`}>
                 <strong>ลูกค้า:</strong> {pay.CUSTOMERNAME ?? ''} {pay.CUSTOMERLASTNAME}
               </div>
-              <div className='mb-3'>
+              <div className={`${styles.fontSize} mb-3`}>
                 <strong>เลขบัตร:</strong> {pay.IDCARD ?? ''}
               </div>
-              <div className='mb-3'>
+              <div className={`${styles.fontSize} mb-3`}>
                 <strong>สินค้า:</strong> {pay.PRODUCTNAME ?? ''}
               </div>
-              <div className='mb-3'>
+              <div className={`${styles.fontSize} mb-3`}>
                 <strong>Model:</strong> {pay.MODEL ?? ''}
               </div>
-              <div className='mb-3'>
+              <div className={`${styles.fontSize} mb-3`}>
                 <strong>S/N:</strong> {pay.PRODUCTSERIALNUMBER ?? ''}
               </div>
-              <div className='mb-3'>
+              <div className={`${styles.fontSize} mb-3`}>
                 <strong>แพ็คเกจ:</strong> {pay.PACKAGETITLE ?? ''}
               </div>
-              <div className='mb-3'>
+              <div className={`${styles.fontSize} mb-3`}>
                 <strong>วันที่จ่าย:</strong> {formatToBE(pay.DATEPAYMENT) ?? ''}
               </div>
-              <div className='mb-3'>
+              <div className={`${styles.fontSize} mb-3`}>
                 <strong>ยอดที่จ่าย:</strong>{' '}
                 {pay.AMOUNT
                   ? Number(pay.AMOUNT).toLocaleString('th-TH')
                   : ''}{' '}
                 บาท
               </div>
-              <div className='mb-3'>
+              <div className={`${styles.fontSize} mb-3`}>
                 <strong>ยอดที่จ่าย คำอ่าน:</strong> {pay.AMOUNTTEXT ?? ''}
               </div>
-              <div className='mb-3'>
+              <div className={`${styles.fontSize} mb-3`}>
                 <strong>ยอดคงเหลือ:</strong>{' '}
                 {pay.BALANCE
                   ? Number(pay.BALANCE).toLocaleString('th-TH')
                   : ''}{' '}
                 บาท
               </div>
-              <div className='mb-4'>
+              <div className={`${styles.fontSize} mb-3`}>
                 <strong>ประเภทการชำระ:</strong> {pay.PAYMENTTYPE ?? ''}
               </div>
 
               {pay.STATUSRECEIPT === 'VOID' && (
-                <div className='mb-4'>
+                <div className={`${styles.fontSize} mb-3`}>
                   <strong>สถานะ:</strong>{' '}
-                  <span className='badge badge-light-danger'>ใบเสร็จที่ถูกยกเลิก</span>
+                  <span className={`badge badge-light-danger ${styles.fontSize}`}>ใบเสร็จที่ถูกยกเลิก</span>
                 </div>
               )}
 
               {pay.ISACTIVE_VOID === true && (
                 < button
-                  className='btn btn-danger w-100 w-md-auto align-self-center mt-7 mb-2'
+                  className={`${styles.btnDanger} mt-10 mb-5`}
                   type='button'
                   onClick={() => handleVoidReceipt(pay)}
                 >

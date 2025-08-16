@@ -1,3 +1,4 @@
+import styles from "@/styles/style.module.css";
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link, useNavigate, useLocation } from 'react-router-dom';

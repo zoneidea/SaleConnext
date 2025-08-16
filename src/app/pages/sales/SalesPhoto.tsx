@@ -828,7 +828,6 @@ const SalesPhoto: React.FC = () => {
 
     // ฟังก์ชัน ส่งตรวจสอบ (กรณีไม่ได้มาจาก step)
     const handleCheckerClick = async () => {
-        // เรียก SweetAlert2 loading
         MySwal.fire({
             title: "โปรดรอสักครู่...",
             text: "กำลังส่งข้อมูล",
@@ -859,14 +858,14 @@ const SalesPhoto: React.FC = () => {
                 }
             );
 
-            const payload = response.data.data;
-            const jsonString = JSON.stringify(payload, null, 2);
+            // const payload = response.data.data;
+            // const jsonString = JSON.stringify(payload, null, 2);
 
-            MySwal.fire({
-                icon: "error",
-                title: "เกิดข้อผิดพลาด",
-                html: `<pre style="text-align:left;white-space:pre-wrap;">${jsonString}</pre>`,
-            });
+            // MySwal.fire({
+            //     icon: "error",
+            //     title: "ดู response",
+            //     html: `<pre style="text-align:left;white-space:pre-wrap;">${jsonString}</pre>`,
+            // });
 
             // เมื่อสำเร็จ ปิด Loading ก่อน
             // Swal.close()
@@ -892,15 +891,16 @@ const SalesPhoto: React.FC = () => {
                     MySwal.fire({
                         icon: "error",
                         title: "เกิดข้อผิดพลาด",
-                        html: `
-                          <b>HTTP status:</b> ${response.status}<br/>
-                          <b>response.data:</b><br/>
-                          <pre style="text-align:left;white-space:pre-wrap;">${JSON.stringify(
-                            response.data,
-                            null,
-                            2
-                        )}</pre>
-                        `,
+                        text: "ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา",
+                        // html: `
+                        //   <b>HTTP status:</b> ${response.status}<br/>
+                        //   <b>response.data:</b><br/>
+                        //   <pre style="text-align:left;white-space:pre-wrap;">${JSON.stringify(
+                        //     response.data,
+                        //     null,
+                        //     2
+                        // )}</pre>
+                        // `,
                     });
                 } else {
                     MySwal.fire({
@@ -917,11 +917,12 @@ const SalesPhoto: React.FC = () => {
                 MySwal.fire({
                     icon: "error",
                     title: "เกิดข้อผิดพลาด",
-                    html: `
-                        <b>HTTP status:</b> ${response.status}<br/>
-                        <b>response.data.message:</b><br/>
-                        <pre style="text-align:left;white-space:pre-wrap;">${response.data.message}</pre>
-                      `,
+                    text: "ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา",
+                    // html: `
+                    //     <b>HTTP status:</b> ${response.status}<br/>
+                    //     <b>response.data.message:</b><br/>
+                    //     <pre style="text-align:left;white-space:pre-wrap;">${response.data.message}</pre>
+                    //   `,
                 });
             }
         } catch (error) {
@@ -931,9 +932,10 @@ const SalesPhoto: React.FC = () => {
             MySwal.fire({
                 icon: "error",
                 title: "เกิดข้อผิดพลาด",
-                html: `
-                  ${error}
-                `,
+                text: "ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา",
+                // html: `
+                //   ${error}
+                // `,
             });
         }
     };
@@ -965,17 +967,17 @@ const SalesPhoto: React.FC = () => {
                 }
             );
 
-            const payload = response.data.data;
-            const jsonString = JSON.stringify(payload, null, 2);
+            // const payload = response.data.data;
+            // const jsonString = JSON.stringify(payload, null, 2);
 
-            MySwal.fire({
-                icon: "error",
-                title: "เกิดข้อผิดพลาด",
-                html: `<pre style="text-align:left;white-space:pre-wrap;">${jsonString}</pre>`,
-            });
+            // MySwal.fire({
+            //     icon: "error",
+            //     title: "เกิดข้อผิดพลาด",
+            //     html: `<pre style="text-align:left;white-space:pre-wrap;">${jsonString}</pre>`,
+            // });
 
             // เมื่อสำเร็จ ปิด Loading ก่อน
-            Swal.close();
+            // Swal.close();
 
             if (response.status === 200) {
                 if (!response.data.data) {
@@ -1467,14 +1469,12 @@ const SalesPhoto: React.FC = () => {
                                     จบการทำงาน
                                 </button>
                             )} */}
-                            {/* {isDataComplete && ( */}
-                                <button
-                                    className={`${styles.btnPrimary}`}
-                                    onClick={handleCheckerClick}
-                                >
-                                    จบการทำงาน
-                                </button>
-                            {/* )} */}
+                            <button
+                                className={`${styles.btnPrimary}`}
+                                onClick={handleCheckerClick}
+                            >
+                                จบการทำงาน
+                            </button>
                         </div>
                     </div>
 
@@ -1519,14 +1519,12 @@ const SalesPhoto: React.FC = () => {
                                     จบการทำงาน
                                 </button>
                             )} */}
-                            {/* {isDataComplete && ( */}
-                                <button
-                                    className={`${styles.btnPrimary}`}
-                                    onClick={handleCheckerClick}
-                                >
-                                    จบการทำงาน
-                                </button>
-                            {/* )} */}
+                            <button
+                                className={`${styles.btnPrimary}`}
+                                onClick={handleCheckerClick}
+                            >
+                                จบการทำงาน
+                            </button>
                         </div>
                     </div>
                 </Content>

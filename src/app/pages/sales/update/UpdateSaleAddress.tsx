@@ -10309,11 +10309,12 @@ const UpdateSaleAddress: React.FC = () => {
     const location = useLocation();
 
     const item = (location.state as ItemProps) || [];
-    // console.log(`item`, item);
+    console.log(`item`, item);
 
     const refno = item?.REFNO;
     const custAddr = item?.ADDRESS;
     // console.log(`custAddr`, custAddr);
+    const hasDbCard = Boolean(custAddr?.[0]?.ADDRESSCARD?.ADDRESSPROVINCE);
 
     const { auth } = useAuth();
     const EmpId = auth?.data?.[0]?.EmpId || "";
@@ -10559,7 +10560,7 @@ const UpdateSaleAddress: React.FC = () => {
         );
 
         return {
-            ADDRESSINSTALLATION: {
+            ADDRESSCARD: {
                 ADDRESSNUMBER: addressNumber,
                 ADDRESSMOO: addressMoo,
                 ADDRESSSOI: addressSoi,
@@ -10576,7 +10577,7 @@ const UpdateSaleAddress: React.FC = () => {
                 ADDRESSPHONE: addressPhone,
                 USETHISTAX: useThisTax,
             },
-            ADDRESSCARD: {
+            ADDRESSINSTALLATION: {
                 ADDRESSNUMBER: addressNumberForInstall,
                 ADDRESSMOO: addressMooForInstall,
                 ADDRESSSOI: addressSoiForInstall,
@@ -10714,29 +10715,29 @@ const UpdateSaleAddress: React.FC = () => {
     ]);
 
     useEffect(() => {
-        setAddressNumberForInstall(custAddr?.[0]?.ADDRESSCARD.ADDRESSNUMBER);
-        setAddressMooForInstall(custAddr?.[0]?.ADDRESSCARD.ADDRESSMOO);
-        setAddressSoiForInstall(custAddr?.[0]?.ADDRESSCARD.ADDRESSSOI);
-        setAddressRoadForInstall(custAddr?.[0]?.ADDRESSCARD.ADDRESSROAD);
-        setSelectedProvinceForInstall(custAddr?.[0]?.ADDRESSCARD.ADDRESSPROVINCE);
-        setSelectedDistrictForInstall(custAddr?.[0]?.ADDRESSCARD.ADDRESSDISTRICT);
-        setSelectedSubDistrictForInstall(
+        setAddressNumber(custAddr?.[0]?.ADDRESSCARD.ADDRESSNUMBER);
+        setAddressMoo(custAddr?.[0]?.ADDRESSCARD.ADDRESSMOO);
+        setAddressSoi(custAddr?.[0]?.ADDRESSCARD.ADDRESSSOI);
+        setAddressRoad(custAddr?.[0]?.ADDRESSCARD.ADDRESSROAD);
+        setSelectedProvince(custAddr?.[0]?.ADDRESSCARD.ADDRESSPROVINCE);
+        setSelectedDistrict(custAddr?.[0]?.ADDRESSCARD.ADDRESSDISTRICT);
+        setSelectedSubDistrict(
             custAddr?.[0]?.ADDRESSCARD.ADDRESSSUBDISTRICT
         );
-        setSelectedZipcodeForInstall(custAddr?.[0]?.ADDRESSCARD.ADDRESSZIPCODE);
-        setAddressPhoneForInstall(custAddr?.[0]?.ADDRESSCARD.ADDRESSPHONE);
+        setSelectedZipcode(custAddr?.[0]?.ADDRESSCARD.ADDRESSZIPCODE);
+        setAddressPhone(custAddr?.[0]?.ADDRESSCARD.ADDRESSPHONE);
 
-        setAddressNumber(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSNUMBER);
-        setAddressMoo(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSMOO);
-        setAddressSoi(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSSOI);
-        setAddressRoad(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSROAD);
-        setSelectedProvince(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSPROVINCE);
-        setSelectedDistrict(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSDISTRICT);
-        setSelectedSubDistrict(
+        setAddressNumberForInstall(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSNUMBER);
+        setAddressMooForInstall(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSMOO);
+        setAddressSoiForInstall(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSSOI);
+        setAddressRoadForInstall(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSROAD);
+        setSelectedProvinceForInstall(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSPROVINCE);
+        setSelectedDistrictForInstall(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSDISTRICT);
+        setSelectedSubDistrictForInstall(
             custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSSUBDISTRICT
         );
-        setSelectedZipcode(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSZIPCODE);
-        setAddressPhone(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSPHONE);
+        setSelectedZipcodeForInstall(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSZIPCODE);
+        setAddressPhoneForInstall(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSPHONE);
 
         setAddressNumberForPayment(custAddr?.[0]?.ADDRESSPAYMENT.ADDRESSNUMBER);
         setAddressMooForPayment(custAddr?.[0]?.ADDRESSPAYMENT.ADDRESSMOO);
@@ -10980,22 +10981,18 @@ const UpdateSaleAddress: React.FC = () => {
                     const response = await axios.post(
                         SUBDISTRICT_URL,
                         { DistrictCode: selectedDistrictForInstall },
-                        {
-                            headers: {
-                                "Content-Type": "multipart/form-data",
-                            },
-                        }
-                    );
-                    setGetSubDistrictForInstall(response.data);
+                        { headers: { "Content-Type": "multipart/form-data" } }
+                    )
+                    setGetSubDistrictForInstall(response.data)
                 } catch (error) {
-                    console.error("Error fetching SUBDISTRICT_URL:", error);
+                    console.error("Error fetching SUBDISTRICT_URL:", error)
                 }
             } else {
-                setGetSubDistrictForInstall([]);
+                setGetSubDistrictForInstall([])
             }
-        };
-        fetchSubDistricts();
-    }, [selectedDistrictForInstall]);
+        }
+        fetchSubDistricts()
+    }, [selectedDistrictForInstall])
 
     // POST SubDistrict For Payment
     useEffect(() => {
@@ -11361,6 +11358,7 @@ const UpdateSaleAddress: React.FC = () => {
                 shouldValidate: true,
             });
 
+            // อัปเดตค่าใน RHF ของ accordion ติดตั้ง
             setValue("addressNumberForInstall", addressNumber, {
                 shouldDirty: true,
                 shouldValidate: true,
@@ -11377,6 +11375,8 @@ const UpdateSaleAddress: React.FC = () => {
                 shouldDirty: true,
                 shouldValidate: true,
             });
+
+            // อัปเดตค่าใน RHF ของ accordion จ่ายเงิน
             setValue("addressNumberForPayment", addressNumber, { shouldValidate: true, shouldDirty: true });
             setValue("provinceForPayment", String(selectedProvince ?? ""), { shouldValidate: true, shouldDirty: true });
             setValue("districtForPayment", String(selectedDistrict ?? ""), { shouldValidate: true, shouldDirty: true });
@@ -11689,7 +11689,7 @@ const UpdateSaleAddress: React.FC = () => {
                         // navigate("/sale/pdpa", {
                         //   state: { ...matchedItem }
                         // });
-                        navigate('/sale/pdpa', {
+                        navigate('/sale/update/UpdateSalesPDPA', {
                             state: { ...matchedItem, from: '/sale/update/updateAddress' },
                         });
                     }
@@ -11773,13 +11773,10 @@ const UpdateSaleAddress: React.FC = () => {
         /*-------------------- Start Validate --------------------*/
     }
     const schema = yup.object().shape({
-        //ที่อยู่ติดตั้ง
         homeNoIdCard: yup.string().required("กรุณากรอกบ้านเลขที่"),
         provinceIdCard: yup.string().required("กรุณาเลือกจังหวัด"),
         districtIdCard: yup.string().required("กรุณาเลือกอำเภอ / เขต"),
         subDistrictIdCard: yup.string().required("กรุณาเลือกตำบล / แขวง"),
-        telNoIdCard: yup
-            .string(),
 
         addressNumberForInstall: yup.string().required("กรุณากรอกบ้านเลขที่"),
         provinceForInstall: yup.string().required("กรุณาเลือกจังหวัด"),
@@ -11844,26 +11841,26 @@ const UpdateSaleAddress: React.FC = () => {
     useEffect(() => {
         if (!custAddr?.[0]) return;
 
-        const inst = custAddr[0].ADDRESSINSTALLATION;
         const card = custAddr[0].ADDRESSCARD;
+        const inst = custAddr[0].ADDRESSINSTALLATION;
         const pay = custAddr[0].ADDRESSPAYMENT;
         const tax = custAddr[0].ADDRESSTAX;
 
         // รีเซ็ตค่าให้ทั้งฟอร์ม
         reset({
-            // ที่อยู่ติดตั้ง
-            homeNoIdCard: inst.ADDRESSNUMBER,
-            provinceIdCard: inst.ADDRESSPROVINCE,
-            districtIdCard: inst.ADDRESSDISTRICT,
-            subDistrictIdCard: inst.ADDRESSSUBDISTRICT,
-            telNoIdCard: inst.ADDRESSPHONE,
-
             // ที่อยู่ตามบัตร
-            addressNumberForInstall: card.ADDRESSNUMBER,
-            provinceForInstall: card.ADDRESSPROVINCE,
-            districtForInstall: card.ADDRESSDISTRICT,
-            subDistrictForInstall: card.ADDRESSSUBDISTRICT,
-            addressPhoneForInstall: card.ADDRESSPHONE,
+            homeNoIdCard: card.ADDRESSNUMBER,
+            provinceIdCard: card.ADDRESSPROVINCE,
+            districtIdCard: card.ADDRESSDISTRICT,
+            subDistrictIdCard: card.ADDRESSSUBDISTRICT,
+            telNoIdCard: card.ADDRESSPHONE,
+
+            // ที่อยู่ติดตั้ง
+            addressNumberForInstall: inst.ADDRESSNUMBER,
+            provinceForInstall: inst.ADDRESSPROVINCE,
+            districtForInstall: inst.ADDRESSDISTRICT,
+            subDistrictForInstall: inst.ADDRESSSUBDISTRICT,
+            addressPhoneForInstall: inst.ADDRESSPHONE,
 
             // ที่อยู่เก็บเงิน
             addressNumberForPayment: pay.ADDRESSNUMBER,
@@ -11881,11 +11878,11 @@ const UpdateSaleAddress: React.FC = () => {
         });
 
         // อัปเดต React state ของคุณด้วย (เพื่อการคำนวณ SaveAddressData)
-        setAddressNumber(inst.ADDRESSNUMBER);
-        setSelectedProvince(Number(inst.ADDRESSPROVINCE));
-        setSelectedDistrict(Number(inst.ADDRESSDISTRICT));
-        setSelectedSubDistrict(Number(inst.ADDRESSSUBDISTRICT));
-        setAddressPhone(inst.ADDRESSPHONE);
+        setAddressNumber(card.ADDRESSNUMBER);
+        setSelectedProvince(Number(card.ADDRESSPROVINCE));
+        setSelectedDistrict(Number(card.ADDRESSDISTRICT));
+        setSelectedSubDistrict(Number(card.ADDRESSSUBDISTRICT));
+        setAddressPhone(card.ADDRESSPHONE);
     }, [custAddr, reset]);
 
     const statusAddr = item?.CUSTOMERSTATUS?.[0]?.Contract?.Address ?? [];
@@ -11894,47 +11891,45 @@ const UpdateSaleAddress: React.FC = () => {
         if (statusAddr.length === 0) return;
 
         // หาแต่ละ type ออกมา
-        const install = statusAddr.find(
-            (a: any) => a.AddressTypeCode === "AddressInstall"
-        );
         const card = statusAddr.find(
             (a: any) => a.AddressTypeCode === "AddressIDCard"
+        );
+        const install = statusAddr.find(
+            (a: any) => a.AddressTypeCode === "AddressInstall"
         );
         const payment = statusAddr.find(
             (a: any) => a.AddressTypeCode === "AddressPayment"
         );
         const tax = statusAddr.find((a: any) => a.AddressTypeCode === "AddressTax");
 
-        // — ติดตั้ง —
-        if (install) {
-            setValue("homeNoIdCard", install.AddressDetail);
-            setAddressNumber(install.AddressDetail);
-            setSelectedProvince(Number(install.Province));
-            setAddressPhone(install.TelHome);
+        if (card) {
+            setValue("homeNoIdCard", card.AddressDetail);
+            setAddressNumber(card.AddressDetail);
+            // setSelectedProvince(Number(card.Province));
+            setAddressPhone(card.TelHome);
         }
 
-        // — ตามบัตร —
-        // if (card) {
-        //   setValue("addressNumberForInstall", card.AddressDetail);
-        //   setAddressNumberForInstall("");
-        //   setSelectedProvinceForInstall(Number(card.Province));
-        //   // setAddressPhoneForInstall(card.TelHome);
-        // }
+        if (install) {
+            setValue("addressNumberForInstall", install.AddressDetail);
+            setAddressNumberForInstall(install.AddressDetail);
+            // setSelectedProvinceForInstall(Number(install.Province));
+            setAddressPhoneForInstall(install.TelHome);
+        }
 
         // — เก็บเงิน —
         if (payment) {
             setValue("addressNumberForPayment", payment.AddressDetail);
             setAddressNumberForPayment(payment.AddressDetail);
-            setSelectedProvinceForPayment(Number(payment.Province));
-            // setAddressPhoneForPayment(payment.TelHome);
+            // setSelectedProvinceForPayment(Number(payment.Province));
+            setAddressPhoneForPayment(payment.TelHome);
         }
 
         // — ใบกำกับภาษี —
         if (tax) {
             setValue("addressNumberForBilling", tax.AddressDetail);
             setAddressNumberForBilling(tax.AddressDetail);
-            setSelectedProvinceForBilling(Number(tax.Province));
-            // setAddressPhoneForBilling(tax.TelHome);
+            // setSelectedProvinceForBilling(Number(tax.Province));
+            setAddressPhoneForBilling(tax.TelHome);
         }
 
         // รีเซ็ต checkbox
@@ -11948,11 +11943,11 @@ const UpdateSaleAddress: React.FC = () => {
     }, [statusAddr, setValue]);
 
     // 2. หลังจาก load district/sub ↓ ให้ seed โค้ดอำเภอ+ตำบล
-    // — ติดตั้ง —
+    // — ตามบัตร —
     useEffect(() => {
         const addr0 = (item.ADDRESS ?? [])[0];
         if (!addr0 || getDistrict.length === 0) return;
-        const v = addr0.ADDRESSINSTALLATION.ADDRESSDISTRICT;
+        const v = addr0.ADDRESSCARD.ADDRESSDISTRICT;
         setValue("districtIdCard", v);
         setSelectedDistrict(Number(v));
     }, [getDistrict, item, setValue]);
@@ -11960,44 +11955,94 @@ const UpdateSaleAddress: React.FC = () => {
     useEffect(() => {
         const addr0 = (item.ADDRESS ?? [])[0];
         if (!addr0 || getSubDistrict.length === 0) return;
-        const v = addr0.ADDRESSINSTALLATION.ADDRESSSUBDISTRICT;
+        const v = addr0.ADDRESSCARD.ADDRESSSUBDISTRICT;
         setValue("subDistrictIdCard", v);
         setSelectedSubDistrict(Number(v));
     }, [getSubDistrict, item, setValue]);
 
-    // — ตามบัตร —
+    // — ติดตั้ง —
     useEffect(() => {
-        const addr0 = (item.ADDRESS ?? [])[0];
-        if (!addr0 || getDistrictForInstall.length === 0) return;
-        const v = addr0.ADDRESSCARD.ADDRESSDISTRICT;
-        setValue("districtForInstall", v);
-        setSelectedDistrictForInstall(Number(v));
-    }, [getDistrictForInstall, item, setValue]);
+        const addr0 = (item.ADDRESS ?? [])[0]
+        if (!addr0 || getDistrictForInstall.length === 0) return
+        if (installLikeCardAddr) return
+        if (selectedDistrictForInstall != null && selectedDistrictForInstall !== 0) return
 
+        const v = addr0.ADDRESSINSTALLATION?.ADDRESSDISTRICT
+        if (v) {
+            setValue("districtForInstall", String(v))
+            setSelectedDistrictForInstall(Number(v))
+        }
+    }, [
+        getDistrictForInstall,
+        item,
+        installLikeCardAddr,
+        selectedDistrictForInstall,
+        setValue,
+    ])
+
+    // — ติดตั้ง — (seed subdistrict ครั้งเดียว และไม่ override ตอน copy)
     useEffect(() => {
-        const addr0 = (item.ADDRESS ?? [])[0];
-        if (!addr0 || getSubDistrictForInstall.length === 0) return;
-        const v = addr0.ADDRESSCARD.ADDRESSSUBDISTRICT;
-        setValue("subDistrictForInstall", v);
-        setSelectedSubDistrictForInstall(Number(v));
-    }, [getSubDistrictForInstall, item, setValue]);
+        const addr0 = (item.ADDRESS ?? [])[0]
+        if (!addr0 || getSubDistrictForInstall.length === 0) return
+        if (installLikeCardAddr) return
+        if (selectedSubDistrictForInstall != null && selectedSubDistrictForInstall !== 0) return
+
+        const v = addr0.ADDRESSINSTALLATION?.ADDRESSSUBDISTRICT
+        if (v) {
+            setValue("subDistrictForInstall", String(v))
+            setSelectedSubDistrictForInstall(Number(v))
+        }
+    }, [
+        getSubDistrictForInstall,
+        item,
+        installLikeCardAddr,
+        selectedSubDistrictForInstall,
+        setValue,
+    ])
 
     // — เก็บเงิน —
     useEffect(() => {
         const addr0 = (item.ADDRESS ?? [])[0];
         if (!addr0 || getDistrictForPayment.length === 0) return;
-        const v = addr0.ADDRESSPAYMENT.ADDRESSDISTRICT;
-        setValue("districtForPayment", v);
-        setSelectedDistrictForPayment(Number(v));
-    }, [getDistrictForPayment, item, setValue]);
+
+        // ถ้ากำลังใช้ที่อยู่จากบัตร/ติดตั้ง หรือมีค่าอยู่แล้ว ไม่ต้อง seed ซ้ำ
+        if (paymentLikeCardAddr || paymentLikeInstallAddr) return;
+        if (selectedDistrictForPayment != null && selectedDistrictForPayment !== 0) return;
+
+        const v = addr0.ADDRESSPAYMENT?.ADDRESSDISTRICT;
+        if (v) {
+            setValue("districtForPayment", String(v));
+            setSelectedDistrictForPayment(Number(v));
+        }
+    }, [
+        getDistrictForPayment,
+        item,
+        setValue,
+        paymentLikeCardAddr,
+        paymentLikeInstallAddr,
+        selectedDistrictForPayment,
+    ]);
 
     useEffect(() => {
         const addr0 = (item.ADDRESS ?? [])[0];
         if (!addr0 || getSubDistrictForPayment.length === 0) return;
-        const v = addr0.ADDRESSPAYMENT.ADDRESSSUBDISTRICT;
-        setValue("subDistrictForPayment", v);
-        setSelectedSubDistrictForPayment(Number(v));
-    }, [getSubDistrictForPayment, item, setValue]);
+
+        if (paymentLikeCardAddr || paymentLikeInstallAddr) return;
+        if (selectedSubDistrictForPayment != null && selectedSubDistrictForPayment !== 0) return;
+
+        const v = addr0.ADDRESSPAYMENT?.ADDRESSSUBDISTRICT;
+        if (v) {
+            setValue("subDistrictForPayment", String(v));
+            setSelectedSubDistrictForPayment(Number(v));
+        }
+    }, [
+        getSubDistrictForPayment,
+        item,
+        setValue,
+        paymentLikeCardAddr,
+        paymentLikeInstallAddr,
+        selectedSubDistrictForPayment,
+    ]);
 
     // — ใบกำกับภาษี —
     useEffect(() => {
@@ -12026,18 +12071,24 @@ const UpdateSaleAddress: React.FC = () => {
         [item]
     );
 
-    const stripKhetKhwang = (s?: string) =>
-        (s ?? "").replace(/^(เขต|แขวง)\s*/g, "").trim();
+    const shouldUseCsFallback = useMemo(() => {
+        // ใช้ csAddress ก็ต่อเมื่อไม่มี ADDRESS เลย หรือ ADDRESSCARD ว่าง
+        const addr: any[] = Array.isArray(item?.ADDRESS) ? item.ADDRESS : [];
+        const card = addr?.[0]?.ADDRESSCARD;
+        return (
+            !Array.isArray(addr) || addr.length === 0 ||
+            !card || Object.keys(card).length === 0
+        );
+    }, [item]);
 
     useEffect(() => {
-        if (!csAddress || getProvince.length === 0) return;
+        if (!shouldUseCsFallback || !csAddress || getProvince.length === 0) return;
 
         // บ้านเลขที่ + โทร (ฟอร์ม "ตามบัตร")
         setAddressNumber(csAddress.AddressDetail || "");
         setValue("homeNoIdCard", csAddress.AddressDetail || "");
 
-        const phone =
-            (csAddress.TelHome || csAddress.TelMobile || "").replace(/-/g, "");
+        const phone = (csAddress.TelHome || csAddress.TelMobile || "").replace(/-/g, "");
         setAddressPhone(phone);
         setValue("telNoIdCard", phone);
 
@@ -12049,34 +12100,70 @@ const UpdateSaleAddress: React.FC = () => {
             setSelectedProvince(Number(p.PROVINCECODE));
             setValue("provinceIdCard", String(p.PROVINCECODE));
         }
-    }, [csAddress, getProvince, setValue]);
+    }, [shouldUseCsFallback, csAddress, getProvince, setValue]);
 
     const clean = (s?: string) =>
         (s ?? "").replace(/^(จ\.|จังหวัด|อ\.|ต\.|เขต|แขวง)\s*/g, "").trim();
 
     useEffect(() => {
-        if (!csAddress || getDistrict.length === 0) return;
+        if (!shouldUseCsFallback || !csAddress || getDistrict.length === 0) return;
         const amphurName = clean(csAddress.Amphur);
         const d = getDistrict.find((x: any) => clean(x.DISTRICTNAME) === amphurName);
         if (d) {
             setSelectedDistrict(Number(d.DISTRICTCODE));
             setValue("districtIdCard", String(d.DISTRICTCODE));
         }
-    }, [csAddress, getDistrict, setValue]);
+    }, [shouldUseCsFallback, csAddress, getDistrict, setValue]);
 
     useEffect(() => {
-        if (!csAddress || getSubDistrict.length === 0) return;
+        if (!shouldUseCsFallback || !csAddress || getSubDistrict.length === 0) return;
         const subName = clean(csAddress.District);
         const sd = getSubDistrict.find((x: any) => clean(x.SUBDISTRICTNAME) === subName);
         if (sd) {
             setSelectedSubDistrict(Number(sd.SUBDISTRICTCODE));
             setValue("subDistrictIdCard", String(sd.SUBDISTRICTCODE));
         }
-    }, [csAddress, getSubDistrict, setValue]);
+    }, [shouldUseCsFallback, csAddress, getSubDistrict, setValue]);
 
     {
         /*-------------------- End Validate --------------------*/
     }
+
+    /////// ล้างค่าที่อยู่ใบกำกับถ้าไม่ได้ติ้กต้องการใบกำกับ
+    const clearBillingAddress = () => {
+        // reset RHF
+        setValue("addressNumberForBilling", "", { shouldDirty: true, shouldValidate: false });
+        setValue("provinceForBilling", "", { shouldDirty: true, shouldValidate: false });
+        setValue("districtForBilling", "", { shouldDirty: true, shouldValidate: false });
+        setValue("subDistrictForBilling", "", { shouldDirty: true, shouldValidate: false });
+        setValue("addressPhoneForBilling", "", { shouldDirty: true, shouldValidate: false });
+        clearErrors([
+            "addressNumberForBilling",
+            "provinceForBilling",
+            "districtForBilling",
+            "subDistrictForBilling",
+            "addressPhoneForBilling",
+        ]);
+
+        // reset React states (สำหรับ SaveAddressData + UI)
+        setAddressNumberForBilling("");
+        setAddressMooForBilling("");
+        setAddressSoiForBilling("");
+        setAddressRoadForBilling("");
+        setSelectedProvinceForBilling(undefined);
+        setSelectedDistrictForBilling(undefined);
+        setSelectedSubDistrictForBilling(undefined);
+        setSelectedZipcodeForBilling("");
+        setAddressPhoneForBilling("");
+
+        // ไม่ใช้ใบกำกับ
+        setUseThisTax("FALSE");
+
+        // เคลียร์ checkbox อ้างอิงที่อยู่
+        setBillLikeCardAddr(false);
+        setBillLikeInstallAddr(false);
+        setBillLikePaymentAddr(false);
+    };
 
     return (
         <>
@@ -13069,7 +13156,13 @@ const UpdateSaleAddress: React.FC = () => {
                             type="checkbox"
                             id="showBillTaxCheckbox"
                             checked={showBillTax}
-                            onChange={(e) => setShowBillTax(e.target.checked)}
+                            onChange={(e) => {
+                                const checked = e.target.checked;
+                                setShowBillTax(checked);
+                                if (!checked) {
+                                    clearBillingAddress(); // ← ล้างค่าทันทีเมื่อยกเลิกติ๊ก
+                                }
+                            }}
                         />
                         <label
                             className={`form-check-label mx-2 ${styles.label}`}

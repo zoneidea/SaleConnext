@@ -116,59 +116,82 @@ const CustomerPhoto: React.FC = () => {
     }, [files, previewImages, refno]);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (event.target.files) {
-            const selectedFiles = Array.from(event.target.files);
+        const list = event.target.files;
+        if (!list) return;
 
-            selectedFiles.forEach((file) => {
-                const reader = new FileReader();
-                reader.onload = () => {
-                    if (reader.result) {
-                        const img = new Image();
-                        img.onload = () => {
-                            const canvas = document.createElement("canvas");
-                            const ctx = canvas.getContext("2d");
+        const selectedFiles = Array.from(list);
 
-                            // กำหนดขนาดสูงสุดของภาพ
-                            const maxSize = 1024;
-                            let width = img.width;
-                            let height = img.height;
+        // ✅ กรองเฉพาะรูปภาพ
+        const imageFiles: File[] = [];
+        const rejectedNames: string[] = [];
 
-                            if (width > height) {
-                                if (width > maxSize) {
-                                    height *= maxSize / width;
-                                    width = maxSize;
-                                }
-                            } else {
-                                if (height > maxSize) {
-                                    width *= maxSize / height;
-                                    height = maxSize;
-                                }
-                            }
+        selectedFiles.forEach((file) => {
+            if (file.type && file.type.startsWith('image/')) {
+                imageFiles.push(file);
+            } else {
+                rejectedNames.push(file.name);
+            }
+        });
 
-                            canvas.width = width;
-                            canvas.height = height;
-                            ctx?.drawImage(img, 0, 0, width, height);
-
-                            const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
-
-                            const newPreview = {
-                                file,
-                                preview: compressedBase64,
-                            };
-
-                            setPreviewImages((prevPreviews) => [...prevPreviews, newPreview]);
-                        };
-                        img.src = reader.result as string;
-                    }
-                };
-                reader.readAsDataURL(file);
+        if (rejectedNames.length) {
+            Swal.fire({
+                icon: 'error',
+                title: 'รองรับเฉพาะรูปภาพเท่านั้น',
+                text: `${rejectedNames.join(', ')}`,
             });
-
-            setFiles((prevFiles) => [...prevFiles, ...selectedFiles]);
-
-            // รีเซ็ตค่า input
-            event.target.value = '';
         }
+
+        if (imageFiles.length === 0) {
+            event.target.value = '';
+            return;
+        }
+
+        imageFiles.forEach((file) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                if (reader.result) {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+
+                        // resize สูงสุด 1024px เหมือนเดิม
+                        const maxSize = 1024;
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > height) {
+                            if (width > maxSize) {
+                                height *= maxSize / width;
+                                width = maxSize;
+                            }
+                        } else {
+                            if (height > maxSize) {
+                                width *= maxSize / height;
+                                height = maxSize;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        ctx?.drawImage(img, 0, 0, width, height);
+
+                        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+
+                        const newPreview = { file, preview: compressedBase64 };
+                        setPreviewImages((prev) => [...prev, newPreview]);
+                    };
+                    img.src = reader.result as string;
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // เก็บเฉพาะรูปจริง ๆ
+        setFiles((prev) => [...prev, ...imageFiles]);
+
+        // รีเซ็ต input
+        event.target.value = '';
     };
 
     const handleDeleteImage = (image: string, isFromSystem: boolean) => {
@@ -195,6 +218,7 @@ const CustomerPhoto: React.FC = () => {
 
         const formData = new FormData();
         formData.append('REFNO', refno);
+        formData.append('EMPID', EmpId);
         files.forEach((file) => {
             formData.append('IMAGECUSTOMER', file); // ส่งเฉพาะไฟล์ใน state files
         });

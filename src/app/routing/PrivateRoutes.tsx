@@ -78,6 +78,8 @@ const PrivateRoutes = () => {
     () => import("../pages/sales/SalesCreateAddressCash")
   );
   const SalesEmployee = lazy(() => import("../pages/sales/SalesEmployee"));
+  const SalesCreateFirstBill = lazy(() => import("../pages/sales/SalesCreateFirstBill"));
+  const SalesReceiptFirstBill = lazy(() => import("../pages/sales/SalesReceiptFirstBill"));
 
   //แก้ไขในวัน
   const EditFinishInDay = lazy(
@@ -193,6 +195,9 @@ const PrivateRoutes = () => {
   );
   const UpdateSalesEmployee = lazy(
     () => import("../pages/sales/update/UpdateSalesEmployee")
+  );
+  const UpdateSalesPhoto = lazy(
+    () => import("../pages/sales/update/UpdateSalesPhoto")
   );
 
   //หัวข้อ ระบบยืม
@@ -433,6 +438,22 @@ const PrivateRoutes = () => {
           element={
             <SuspensedView>
               <SalesEmployee />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path="sale/salesCreateFirstBill"
+          element={
+            <SuspensedView>
+              <SalesCreateFirstBill />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path="sale/salesReceiptFirstBill"
+          element={
+            <SuspensedView>
+              <SalesReceiptFirstBill />
             </SuspensedView>
           }
         />
@@ -748,6 +769,14 @@ const PrivateRoutes = () => {
           element={
             <SuspensedView>
               <UpdateSalesContract />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path="sale/update/UpdateSalesPhoto"
+          element={
+            <SuspensedView>
+              <UpdateSalesPhoto />
             </SuspensedView>
           }
         />

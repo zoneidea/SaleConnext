@@ -7378,8 +7378,8 @@ const UpdateSalesPackage: React.FC = () => {
     if (selectedPackageTypeId === null) return false;
     // ระหว่างโหลดแพ็กเกจ ห้ามกด
     if (loadingPackages) return false;
-    // ถ้ามีรายการแพ็กเกจ ต้องเลือกโมเดลด้วย
-    if (packageList.length > 0 && selectedPackageModel === null) return false;
+    // ต้องเลือกแพ็คเกจแล้ว
+    if (selectedPackageModel === null) return false;
     // ✅ เงื่อนไขใหม่: ถ้าเป็นบันเดิล ต้องสแกนสินค้าบันเดิลแล้ว
     if (useBundle === "bundle" && !scannedBundleProduct) return false;
 
@@ -7394,6 +7394,15 @@ const UpdateSalesPackage: React.FC = () => {
     selectedPackageModel,
     scannedBundleProduct, // สำคัญสำหรับบันเดิล
   ]);
+
+  useEffect(() => {
+    // เมื่อมีการเปลี่ยนสินค้า / โหมด (ปกติ-บันเดิล) / โปรโมชัน / ประเภทการชำระ
+    // ให้ล้างแพ็กเกจที่เลือกไว้
+    setSelectedPackageModel(null);
+
+    // ถ้าคุณต้องการล้าง Model ใน store ด้วย (กันค่าค้าง)
+    setModel(null as any);
+  }, [selectedProductIndex, useBundle, selectedPromotion, selectedPackageTypeId]);
 
   return (
     <>
@@ -7764,7 +7773,7 @@ const UpdateSalesPackage: React.FC = () => {
                           selectedProductIndex !== null && (
                             <div className="text-center my-7">
                               <h5 className={`${styles.fontSize}`}>
-                                ไม่มีรายการแพ็คเกจ
+                                ไม่มีรายการแพ็คเกจ<br />ไม่สามารถขายสินค้าได้
                               </h5>
                             </div>
                           )}

@@ -688,11 +688,11 @@ const SalesCancel: React.FC = () => {
   const handleCancelContract = () => {
     Swal.fire({
       title: "ยกเลิกสัญญา",
-      text: `คุณต้องการยกเลิกสัญญา REFNO: ${item.REFNO} หรือไม่?`,
+      text: `ต้องการยกเลิกสัญญา ${item.REFNO} หรือไม่?`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "ใช่, ยกเลิก!",
-      cancelButtonText: "ยกเลิก",
+      cancelButtonText: "ไม่ต้องการ",
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
@@ -770,6 +770,8 @@ const SalesCancel: React.FC = () => {
     const yyyy = d.getFullYear() + 543;
     return `${dd}/${mm}/${yyyy}`;
   };
+
+  const hasSigned = !!item?.CONTRACT?.[0]?.signature;
 
   return (
     <>
@@ -1049,7 +1051,7 @@ const SalesCancel: React.FC = () => {
                         {customerAddress[0]?.ADDRESSTAX.ADDRESSSUBDISTRICTNAME}
                       </>
                     )}&nbsp;
-                     {customerAddress[0]?.ADDRESSTAX.ADDRESSDISTRICTNAME && (
+                    {customerAddress[0]?.ADDRESSTAX.ADDRESSDISTRICTNAME && (
                       <>
                         {customerAddress[0]?.ADDRESSTAX.ADDRESSPROVINCENAME === "กรุงเทพมหานคร"
                           ? "เขต"
@@ -1245,6 +1247,21 @@ const SalesCancel: React.FC = () => {
                 )}
               </>
             )}
+
+            {/* --------------------- ลายเซ็น --------------------- */}
+            <div className="mb-5" style={{ maxWidth: 600, margin: "0 auto" }}>
+              {hasSigned && (
+                <div className="text-center">
+                  <p className={`${styles.label} mb-3`}>ลายเซ็นลูกค้า</p>
+                  <img
+                    src={`data:image/png;base64,${item.CONTRACT[0].signature}`}
+                    alt="signature"
+                    className="img-fluid"
+                    style={{ border: "1px solid #ccc", borderRadius: 4 }}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
         {/* End Card Body */}

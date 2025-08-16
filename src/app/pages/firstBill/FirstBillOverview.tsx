@@ -26,7 +26,6 @@ const FirstBillOverview: React.FC = () => {
   // console.log(`TeamCode: `, TeamCode);
 
   const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
-
   // const FINISH_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=FINISH&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`;
   const GET_PAYMENT_URL = `${API_URL_MONGO}/Payment/GetPaymentPeriod`;
 

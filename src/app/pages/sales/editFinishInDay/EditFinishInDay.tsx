@@ -818,10 +818,10 @@ const EditFinishInDay: React.FC = () => {
                         {data[0].ADDRESS.length !== 0 && (
                           <>
                             <span className={`text-gray-700 d-block ${styles.label}`}>
-                              {`ที่อยู่ติดตั้ง: ${data[0].ADDRESS[0].ADDRESSINSTALLATION.ADDRESSSUBDISTRICTNAME} ${data[0].ADDRESS[0].ADDRESSINSTALLATION.ADDRESSDISTRICTNAME} ${data[0].ADDRESS[0].ADDRESSINSTALLATION.ADDRESSPROVINCENAME} ${data[0].ADDRESS[0].ADDRESSINSTALLATION.ADDRESSZIPCODE}`}
+                              {`ที่อยู่ตามบัตร: ${data[0].ADDRESS[0].ADDRESSCARD.ADDRESSSUBDISTRICTNAME} ${data[0].ADDRESS[0].ADDRESSCARD.ADDRESSDISTRICTNAME} ${data[0].ADDRESS[0].ADDRESSCARD.ADDRESSPROVINCENAME} ${data[0].ADDRESS[0].ADDRESSCARD.ADDRESSZIPCODE}`}
                             </span>
                             <span className={`text-gray-700 d-block ${styles.label}`}>
-                              {`ที่อยู่ตามบัตร: ${data[0].ADDRESS[0].ADDRESSCARD.ADDRESSSUBDISTRICTNAME} ${data[0].ADDRESS[0].ADDRESSCARD.ADDRESSDISTRICTNAME} ${data[0].ADDRESS[0].ADDRESSCARD.ADDRESSPROVINCENAME} ${data[0].ADDRESS[0].ADDRESSCARD.ADDRESSZIPCODE}`}
+                              {`ที่อยู่ติดตั้ง: ${data[0].ADDRESS[0].ADDRESSINSTALLATION.ADDRESSSUBDISTRICTNAME} ${data[0].ADDRESS[0].ADDRESSINSTALLATION.ADDRESSDISTRICTNAME} ${data[0].ADDRESS[0].ADDRESSINSTALLATION.ADDRESSPROVINCENAME} ${data[0].ADDRESS[0].ADDRESSINSTALLATION.ADDRESSZIPCODE}`}
                             </span>
                             {data[0].ADDRESS[0].ADDRESSPAYMENT.ADDRESSPROVINCENAME.length > 0 && (
                               <span className={`text-gray-700 d-block ${styles.label}`}>
@@ -943,7 +943,7 @@ const EditFinishInDay: React.FC = () => {
                     onClick={() => {
                       handleClick('photo').then(ok => {
                         if (ok) {
-                          navigate('/sale/photo', { state: { fromStep: true, from: location.pathname, data: data[0] } })
+                          navigate('/sale/update/UpdateSalesPhoto', { state: { fromStep: true, from: location.pathname, data: data[0] } })
                         }
                       })
                     }}

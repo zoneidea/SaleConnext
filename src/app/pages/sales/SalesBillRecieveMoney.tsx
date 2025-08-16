@@ -137,7 +137,7 @@ const SalesBillRecieveMoney: React.FC = () => {
                 <div className='container-fluid mt-10 mb-20 mx-15'>
                     {/* Title */}
                     <div className='text-center mb-5'>
-                        <p className='fs-3 fw-bold'>ใบเสร็จรับเงิน</p>
+                        <p className={`${styles.label}`}>ใบเสร็จรับเงิน</p>
                     </div>
 
                     {/* เรียกใช้คอมโพเนนต์ CardBillRecieveMoney */}

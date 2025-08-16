@@ -5543,16 +5543,8 @@ const CreateFirstBill: React.FC = () => {
           showConfirmButton: false,
         });
 
-        // เส้นทางเดิมของคุณ
-        navigate("/");
+        navigate("/firstBill/receiptFromCreateFirstBill", { state: item });
 
-        if (item?.STATUS === "DRAFT" && payQuick) {
-          navigate("/firstBill/receipt", { state: item });
-        } else if (item?.STATUS === "DRAFT" && !payQuick) {
-          navigate("/sale/photo", { state: { data: item, fromStep: "true" } });
-        } else {
-          navigate("/firstBill/receiptFromCreateFirstBill", { state: item });
-        }
       } else {
         Swal.fire("เกิดข้อผิดพลาด", response.data.message || "ไม่สามารถบันทึกข้อมูลได้", "error");
       }

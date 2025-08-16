@@ -128,29 +128,37 @@ const GoogleMapComponent: React.FC<{ position: Position; REFNO?: string; fromSte
   const navigate = useNavigate();
   const mapRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false); // State สำหรับควบคุมปุ่ม
+  console.log(`isLoading`, isLoading);
 
   const captureMap = async () => {
-    if (mapRef.current) {
-      try {
-        setIsLoading(true); // Disable ปุ่ม
-        const canvas = await html2canvas(mapRef.current, {
-          useCORS: true,
-        });
-        const dataUrl = canvas.toDataURL('image/png');
-        const blob = await (await fetch(dataUrl)).blob();
+    if (!mapRef.current) return;
+    try {
+      setIsLoading(true); // disable ปุ่ม
+      const canvas = await html2canvas(mapRef.current, { useCORS: true });
+      const dataUrl = canvas.toDataURL('image/png');
+      const blob = await (await fetch(dataUrl)).blob();
 
-        const formData = new FormData();
-        if (REFNO) {
-          formData.append('REFNO', REFNO);
-        }
-        formData.append('IMAGEGPS', blob, 'map.png');
+      // ✅ ตั้งชื่อไฟล์ไม่ซ้ำทุกครั้ง
+      const ts = new Date().toISOString().replace(/[:.]/g, '-'); // เช่น 2025-08-16T07-31-22-123Z
+      const uid = (crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2, 10));
+      const uniqueName = `gps_${REFNO ?? 'ref'}_${ts}_${uid}.png`;
 
-        await handleNextClick(formData);
-      } catch (error) {
-        console.error('เกิดข้อผิดพลาดในการสร้างภาพด้วย html2canvas:', error);
-      } finally {
-        setIsLoading(false); // Enable ปุ่มเมื่อทำงานเสร็จ
-      }
+      // ✅ แปลงเป็น File แล้ว append ด้วยชื่อไฟล์ใหม่
+      const file = new File([blob], uniqueName, { type: 'image/png' });
+      console.log(`file`, file);
+      console.log(`uniqueName`, uniqueName);
+
+      const formData = new FormData();
+      if (REFNO) formData.append('REFNO', REFNO);
+      formData.append('IMAGEGPS', file, uniqueName);  // ชื่อไฟล์ไม่ซ้ำ
+      formData.append('LATITUDE', `${position.latitude ?? ''}`);
+      formData.append('LONGITUDE', `${position.longitude ?? ''}`);
+
+      await handleNextClick(formData);
+    } catch (error) {
+      console.error('เกิดข้อผิดพลาดในการสร้างภาพด้วย html2canvas:', error);
+    } finally {
+      setIsLoading(false); // enable ปุ่ม
     }
   };
 
@@ -196,48 +204,54 @@ const GoogleMapComponent: React.FC<{ position: Position; REFNO?: string; fromSte
         </div>
       </LoadScript>
 
-      <div className='d-none d-xl-flex justify-content-between align-items-center my-5 mx-7'>
-        <button
-          className={`${styles.btnSecondary}`}
-          onClick={() => navigate('/sale/photo/gallery-gps', { state: { data: item, fromStep } })}
-          disabled={isLoading}
-        >
-          ย้อนกลับ
-        </button>
-        <button
-          onClick={captureMap}
-          className={`${styles.btnPrimary}`}
-          disabled={isLoading}
-        >
-          บันทึกรูปภาพแผนที่ลงระบบ
-        </button>
-      </div>
+      {isLoading === false && (
+        <>
+          <div className='d-none d-xl-flex justify-content-between align-items-center my-5 mx-7'>
+            <button
+              className={`${styles.btnSecondary}`}
+              onClick={() => navigate('/sale/photo/gallery-gps', { state: { data: item, fromStep } })}
+            >
+              ย้อนกลับ
+            </button>
+            <button
+              onClick={captureMap}
+              className={`${styles.btnPrimary}`}
+            >
+              บันทึกรูปภาพแผนที่ลงระบบ
+            </button>
+          </div>
+        </>
+      )}
+
       {/* ปุ่มในหน้าจอเล็ก */}
-      <div
-        className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
-        style={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          zIndex: 1050,
-        }}
-      >
-        <button
-          className={`${styles.btnSecondary}`}
-          onClick={() => navigate('/sale/photo/gallery-gps', { state: { data: item, fromStep } })}
-          disabled={isLoading}
-        >
-          ย้อนกลับ
-        </button>
-        <button
-          className={`${styles.btnPrimary}`}
-          onClick={captureMap}
-          disabled={isLoading}
-        >
-          บันทึกรูปภาพแผนที่ลงระบบ
-        </button>
-      </div>
+      {isLoading === false && (
+        <>
+          <div
+            className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
+            style={{
+              position: "fixed",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              zIndex: 1050,
+            }}
+          >
+            <button
+              className={`${styles.btnSecondary}`}
+              onClick={() => navigate('/sale/photo/gallery-gps', { state: { data: item, fromStep } })}
+            >
+              ย้อนกลับ
+            </button>
+            <button
+              className={`${styles.btnPrimary}`}
+              onClick={captureMap}
+            >
+              บันทึกรูปภาพแผนที่ลงระบบ
+            </button>
+          </div>
+        </>
+      )}
+
     </>
   );
 };

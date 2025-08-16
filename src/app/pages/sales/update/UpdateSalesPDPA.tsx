@@ -1402,576 +1402,914 @@
 // export default UpdateSalesPDPA;
 
 
-import styles from '@/styles/style.module.css'
-import axios from 'axios';
-import { useRef, useState, useEffect, useMemo } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import SignaturePad from 'react-signature-pad-wrapper';
-import { Content } from '../../../../_metronic/layout/components/content';
-import { useUUIDStore, useSaveCustomerStore } from '../../../modules/stores/stepsStore';
-import { useAuth } from '../../../modules/auth/core/Auth';
+// import styles from '@/styles/style.module.css'
+// import axios from 'axios';
+// import { useRef, useState, useEffect, useMemo } from 'react';
+// import { Link, useNavigate, useLocation } from 'react-router-dom';
+// import SignaturePad from 'react-signature-pad-wrapper';
+// import { Content } from '../../../../_metronic/layout/components/content';
+// import { useUUIDStore, useSaveCustomerStore } from '../../../modules/stores/stepsStore';
+// import { useAuth } from '../../../modules/auth/core/Auth';
 
-import Swal from 'sweetalert2';
-import withReactContent from 'sweetalert2-react-content';
+// import Swal from 'sweetalert2';
+// import withReactContent from 'sweetalert2-react-content';
 
-interface ContractState {
-    contNo: string;
-}
+// interface ContractState {
+//     contNo: string;
+// }
+
+// interface ItemProps {
+//     REFNO: string,
+//     CONTNO: string,
+//     EMPID: string,
+//     TEAMSALE: string,
+//     SALECODE: string,
+//     SUPEMPID: string,
+//     SECEMPID: string,
+//     STATUS: string,
+//     PRODUCT: [any],
+//     CUSTOMERSTATUS: [any],
+//     DISCOUNT: [any],
+//     CUSTOMERDETAIL: [any],
+//     ADDRESS: [any],
+//     PDPA: [any],
+//     CONTRACT: [any],
+//     IMAGE: [any],
+//     CHECKERCOMMENT: [any]
+// }
+
+// interface ImagesType {
+//     IMAGECARD: string[];
+//     IMAGEGPS: string[];
+//     IMAGEMAP: string[];
+//     IMAGECUSTOMERHOME: string[];
+//     IMAGEINSTALLATION: string[];
+//     IMAGETDS: string[];
+//     IMAGECUSTOMER: string[];
+//     IMAGETRADEIN: string[];
+// }
+
+// const UpdateSalesPDPA: React.FC = () => {
+//     const navigate = useNavigate()
+//     const MySwal = withReactContent(Swal);
+
+//     const { auth } = useAuth();
+//     const EmpId = auth?.data?.[0]?.EmpId || '';
+//     const TeamSale = auth?.data?.[0]?.TeamSale || '';
+//     const SaleCode = auth?.data?.[0]?.SaleCode || '';
+//     const SupEmpId = auth?.data?.[0]?.SupEmp || '';
+//     const SecEmpId = auth?.data?.[0]?.SecEmp || '';
+
+//     const location = useLocation();
+//     const item = location.state as ItemProps || [];
+//     // console.log(`item`, item);
+
+//     const refno = item?.REFNO
+//     const pdpaContract = item?.PDPA
+//     // console.log(`pdpaContract`, pdpaContract[0].SIGNATURE);
+//     const customer = item?.CUSTOMERDETAIL
+//     // console.log(`customer`, customer);
+
+//     const API_URL_PDPA_LETTER = import.meta.env.VITE_APP_API_PDPA_LETTER;
+//     const CONSENT_LETTER_API = `${API_URL_PDPA_LETTER}/PDPA?OrganizationCode=0`;
+
+//     const API_URL_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
+//     const SEND_SMS_API = `${API_URL_SALECONNEXT}/sendSMS/PDPA`;
+//     const CHECK_OTP_API = `${API_URL_SALECONNEXT}/CheckOTP/PDPA`;
+
+//     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
+//     const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
+//     const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage`;
+
+//     const { saveCustomerTypes } = useSaveCustomerStore()
+
+//     const [consentGiven, setConsentGiven] = useState<boolean>(pdpaContract?.[0]?.CONSENTGIVEN || false); // ให้ความยินยอม
+//     // console.log(`consentGiven`, consentGiven);
+
+//     const [consentNotGiven, setConsentNotGiven] = useState<boolean>(!pdpaContract?.[0]?.CONSENTGIVEN || false); // ไม่ให้ความยินยอม
+//     // console.log(`consentNotGiven`, consentNotGiven);
+
+//     const [Alllow_Contract, setAlllow_Contract] = useState<number | undefined>();
+//     const [PDPA_Code, setPDPA_Code] = useState<string | null>();
+//     // console.log(`PDPA_Code`, PDPA_Code);
+
+//     const signaturePadRef = useRef<any>(null);
+//     const [signatureDataURL, setSignatureDataURL] = useState<string | null>(null);
+//     // console.log(`signatureDataURL`, signatureDataURL);
+
+//     const [isSignatureSaved, setIsSignatureSaved] = useState<boolean>(false); // สถานะการเซ็นชื่อ
+//     const [inputOTP, setInputOTP] = useState<string>('');
+//     // console.log(`inputOTP`, inputOTP);
+
+//     const [isOTPSent, setIsOTPSent] = useState<boolean>(false);
+//     const [responseCheckOTPSuccess, setResponseCheckOTPSuccess] = useState<boolean>(false);
+
+//     // State สำหรับเก็บ ContNo
+//     const [contNo, setContNo] = useState<string | null>(item?.CONTNO || null);
+
+//     const [images, setImages] = useState<ImagesType | null>(null);
+
+//     const otpInputRef = useRef<HTMLInputElement | null>(null);
+
+//     // เมื่อกด ดำเนินการต่อ ให้โฟกัสที่ input รับ OTP เลย
+//     useEffect(() => {
+//         if (isSignatureSaved && otpInputRef.current) {
+//             otpInputRef.current.focus();
+//         }
+//     }, [isSignatureSaved]);
+
+//     // Memoized ContNo สำหรับการใช้งานใน component อื่น
+//     const memoizedContNo = useMemo(() => {
+//         // ตรวจสอบว่าค่าที่ได้มาจาก item.CONTNO หรือ contNo
+//         if (!item?.CONTNO && contNo) {
+//             return contNo;
+//         }
+//         return item?.CONTNO || null; // ใช้ค่า item.CONTNO ถ้ามีค่าอยู่แล้ว
+//     }, [item?.CONTNO, contNo]);
+
+//     // console.log(`memoizedContNo`, memoizedContNo);
+
+//     // ตรวจสอบว่า `signaturePadRef` พร้อมใช้งานแล้ว
+//     useEffect(() => {
+//         if (signaturePadRef.current) {
+//             // console.log("SignaturePad is ready");
+//         }
+//     }, [signaturePadRef]);
+
+//     const clear = () => signaturePadRef.current?.clear()
+
+//     // Function to save the signature
+//     const saveSignature = () => {
+//         if (signaturePadRef.current && !signaturePadRef.current.isEmpty()) {
+//             const signatureData = signaturePadRef.current.toDataURL('image/png');
+//             const base64Data = signatureData.replace(/^data:image\/png;base64,/, '');
+//             setSignatureDataURL(base64Data);
+//             signaturePadRef.current.clear();
+
+//             setIsSignatureSaved(true);
+//         } else {
+//             // console.log("Signature pad is empty or not ready.");
+//         }
+//     };
+
+//     useEffect(() => {
+//         if (signatureDataURL) {
+//             sendSMS(); // เรียกใช้ sendSMS เมื่อ signatureDataURL เปลี่ยนแปลง
+//         }
+//     }, [signatureDataURL]); // ใช้ useEffect เพื่อรอให้ signatureDataURL มีค่า  
+
+//     // ให้ความยินยอมหรือไม่
+//     const handleConsentChange = (isGiven: boolean) => {
+//         setConsentGiven(isGiven);
+//         setConsentNotGiven(!isGiven);
+//     };
+
+//     useEffect(() => {
+//         setAlllow_Contract(consentGiven ? 1 : 0);
+//     }, [consentGiven]);
+
+//     useEffect(() => {
+//         setPDPA_Code(consentGiven ? '0001' : '0000');
+//     }, [consentGiven]);
+
+//     // fetch collection ContractImage
+//     useEffect(() => {
+//         const fetchImages = async () => {
+//             try {
+//                 const response = await axios.get(GET_IMAGES_API, {
+//                     params: { REFNO: refno },
+//                 });
+
+//                 // ตรวจสอบว่า response.data เป็นไปตามโครงสร้างของ ImagesType
+//                 const data = response.data;
+
+//                 if (
+//                     data &&
+//                     typeof data === 'object' &&
+//                     'IMAGECARD' in data &&
+//                     'IMAGEGPS' in data &&
+//                     'IMAGEMAP' in data &&
+//                     'IMAGECUSTOMERHOME' in data &&
+//                     'IMAGEINSTALLATION' in data &&
+//                     'IMAGETDS' in data &&
+//                     'IMAGETRADEIN' in data
+//                 ) {
+//                     setImages(data as ImagesType);
+//                 } else {
+//                     setImages(null);
+//                 }
+//             } catch (err) {
+//                 console.error('Error fetching images:', err);
+//                 setImages(null); // ตั้งค่าเป็น null หากมีข้อผิดพลาด
+//             }
+//         };
+
+//         fetchImages();
+//     }, [refno]);
+
+//     const currentDate = new Date();
+//     const formattedDate = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate()}`;
+
+//     const sendSMS = async () => {
+//         saveSignature()
+//         setIsOTPSent(true)
+//         try {
+//             const responseSendSMS = await axios.post(SEND_SMS_API, {
+//                 RefNo: refno,
+//                 Alllow_Contract,
+//                 PDPA_Code,
+//                 TelMobile: customer?.[0]?.CUSTOMERMOBILE,
+//                 IDCard: customer?.[0]?.CUSTOMERID,
+//                 SignPath: pdpaContract?.[0]?.SIGNATURE || signatureDataURL,
+//             }, {
+//                 headers: {
+//                     'Content-Type': 'multipart/form-data',
+//                 },
+//             });
+//             // console.log(`responseSendSMS: `, responseSendSMS.data);
+//             if (responseSendSMS.data.status === 200) {
+//                 if (!item?.CONTNO) {
+//                     setContNo(responseSendSMS.data.ContNo);
+//                 }
+//             } if (otpInputRef.current) {
+//                 otpInputRef.current.focus();
+//             }
+//         } catch (error) {
+//             console.error('Error responseSendSMS:', error);
+//         }
+//     };
+
+//     const checkOTP = async () => {
+//         try {
+//             const responseCheckOTP = await axios.post(CHECK_OTP_API, {
+//                 EmpID: EmpId,
+//                 RefNo: refno,
+//                 OTP: inputOTP,
+//             }, {
+//                 headers: {
+//                     'Content-Type': 'multipart/form-data',
+//                 },
+//             });
+
+//             // ตรวจสอบสถานะการตอบกลับ
+//             if (responseCheckOTP.data.status === 400) {
+//                 Swal.fire({
+//                     icon: 'error',
+//                     title: 'ข้อผิดพลาด!',
+//                     text: 'รหัส OTP ไม่ถูกต้อง!',
+//                     confirmButtonText: 'ตกลง',
+//                 });
+//             } else if (responseCheckOTP.data.status === 200) {
+//                 Swal.fire({
+//                     icon: 'success',
+//                     title: 'สำเร็จ!',
+//                     text: 'การตรวจสอบ OTP สำเร็จ!',
+//                     timer: 2000, // แสดงผล 3 วินาที
+//                     showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
+//                 });
+
+//                 setResponseCheckOTPSuccess(true);
+
+//                 // เรียก API handleUpdateContract หลังจาก OTP สำเร็จ
+//                 handleUpdateContract();
+//             }
+//         } catch (error) {
+//             console.error('Error responseCheckOTP:', error);
+//             Swal.fire({
+//                 icon: 'error',
+//                 title: 'ข้อผิดพลาด!',
+//                 text: 'ไม่สามารถตรวจสอบ OTP ได้!',
+//                 confirmButtonText: 'ตกลง',
+//             });
+//         }
+//     };
+
+//     const handleUpdateContract = async () => {
+//         try {
+//             // 1) เรียก UPDATECONTACT เพื่ออัปเดต PDPA ก่อน
+//             const updatePDPA = await axios.post(UPDATECONTACT, {
+//                 REFNO: refno,
+//                 EMPID: EmpId,
+//                 TEAMSALE: TeamSale,
+//                 FIELD: 'PDPA',
+//                 CONTNO: contNo,
+//                 DATA: [
+//                     {
+//                         CONSENTGIVEN: consentGiven,
+//                         SIGNATURE: pdpaContract?.[0]?.SIGNATURE || signatureDataURL,
+//                         OTP: inputOTP,
+//                     },
+//                 ],
+//             },
+//                 {
+//                     headers: { 'Content-Type': 'application/json' },
+//                 })
+
+//             // ตรวจสอบว่าอัปเดตสำเร็จหรือไม่
+//             if (updatePDPA.data.message === 'Update contract successfully.') {
+//                 // 2) เมื่ออัปเดต PDPA สำเร็จแล้ว จึงเรียก UPDATECONTACT อีกครั้ง เพื่ออัปเดต createdAt
+//                 const updateCreatedAt = await axios.post(UPDATECONTACT, {
+//                     REFNO: refno,
+//                     EMPID: EmpId,
+//                     TEAMSALE: TeamSale,
+//                     SALECODE: SaleCode,
+//                     SUPEMPID: SupEmpId,
+//                     SECEMPID: SecEmpId,
+//                     FIELD: 'CONTRACT',
+//                     DATA: { createdAt: formattedDate },
+//                 },
+//                     {
+//                         headers: { 'Content-Type': 'application/json' },
+//                     })
+
+//                 if (updateCreatedAt.data.message === 'Update contract successfully.') {
+//                     // แสดง Alert เมื่ออัปเดตทั้ง PDPA และ createdAt สำเร็จ
+//                     Swal.fire({
+//                         icon: 'success',
+//                         title: 'สำเร็จ!',
+//                         text: 'ปรับปรุงข้อมูล PDPA และวันที่ทำสัญญาเรียบร้อยแล้ว',
+//                         timer: 2000,
+//                         showConfirmButton: false,
+//                     })
+//                 } else {
+//                     // กรณีอัปเดต PDPA สำเร็จ แต่ไม่สามารถอัปเดต createdAt ได้
+//                     MySwal.fire('เกิดข้อผิดพลาด', updateCreatedAt.data.message, 'error')
+//                 }
+//             } else {
+//                 // กรณีอัปเดต PDPA ไม่สำเร็จ
+//                 MySwal.fire('เกิดข้อผิดพลาด', updatePDPA.data.message, 'error')
+//             }
+//         } catch (error) {
+//             console.error('Error updating contract:', error)
+//             Swal.fire({
+//                 icon: 'error',
+//                 title: 'เกิดข้อผิดพลาด!',
+//                 text: 'ไม่สามารถอัปเดตสัญญาได้ กรุณาลองใหม่',
+//             })
+//         }
+//     }
+
+//     const handleCheckerClick = async () => {
+//         const response = await axios.post(UPDATECONTACT, {
+//             REFNO: item.REFNO,
+//             EMPID: EmpId,
+//             TEAMSALE: TeamSale,
+//             FIELD: "STATUS",
+//             DATA: "PENDING",
+//         }, {
+//             headers: {
+//                 'Content-Type': 'application/json',
+//             },
+//         });
+
+//         // console.log(response)
+
+//         if (response.status === 200) {
+//             if (!response.data.data) {
+//                 MySwal.fire('เกิดข้อผิดพลาด', 'ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
+//             } else {
+//                 Swal.fire({
+//                     icon: 'success',
+//                     title: 'สำเร็จ!',
+//                     text: 'ส่งข้อมูลตรวจสอบแล้ว',
+//                     timer: 2000, // แสดงผล 3 วินาที
+//                     showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
+//                 })
+//             }
+//         } else {
+//             MySwal.fire('เกิดข้อผิดพลาด', response.data.message, 'error');
+//         }
+//     }
+
+//     // เช็คว่า data ใน item มีครบทุกขั้นตอน (ไม่เป็น array เปล่า) ใช่ไหม ถ้าเป็นจะ disabled ปุ่มส่งตรวจสอบ
+//     const isDataComplete = useMemo(() => {
+//         // ตรวจสอบว่ามีรูปภาพในฟิลด์ใดฟิลด์หนึ่งใน images อย่างน้อย 1 รูป
+//         const hasImages = images && Object.values(images).some(
+//             (field) => Array.isArray(field) && field.length > 0
+//         );
+
+//         return (
+//             Array.isArray(item.ADDRESS) && item.ADDRESS.length > 0 &&
+//             Array.isArray(item.CUSTOMERDETAIL) && item.CUSTOMERDETAIL.length > 0 &&
+//             Array.isArray(item.CUSTOMERSTATUS) && item.CUSTOMERSTATUS.length > 0 &&
+//             Array.isArray(item.DISCOUNT) && item.DISCOUNT.length > 0 &&
+//             Array.isArray(item.PDPA) && item.PDPA.length > 0 &&
+//             Array.isArray(item.PRODUCT) && item.PRODUCT.length > 0 &&
+//             hasImages
+//         );
+//     }, [item, images]);
+
+//     return (
+//         <>
+//             <Content>
+//                 <div className='d-flex justify-content-between align-items-center my-5'>
+//                     <div id="kt_page_title" data-kt-swapper="true" data-kt-swapper-mode="prepend"
+//                         data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
+//                         className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
+//                         <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
+//                             <li className={`breadcrumb-item text-gray-900 font ${styles.titlePage}`}>แก้ไข PDPA</li>
+//                         </ul>
+//                     </div>
+//                 </div>
+//                 <span className={`${styles.fontSize}`}>เลขที่ขาย: </span><span className={`${styles.titlePage}`}>{refno}</span>
+
+//                 <div className='card mb-10 px-4'>
+//                     <div className='card-body flex justify-between items-center p-5'>
+//                         <iframe
+//                             src={CONSENT_LETTER_API}
+//                             title="Consent Letter"
+//                             width="100%"
+//                             height="1250px"
+//                         />
+//                         <div className='row mt-10 mb-4'>
+//                             <div className='col-12'>
+//                                 <div className="d-flex justify-content-center align-items-center gap-4">
+//                                     <label className='form-check form-check-inline form-check-solid me-5'>
+//                                         <input
+//                                             className="form-check-input"
+//                                             name="showInstallAddress"
+//                                             type="checkbox"
+//                                             checked={consentGiven}
+//                                             onChange={() => handleConsentChange(true)}
+//                                         />
+//                                         <span className={`fw-bold ${styles.fontSize}`}>ให้ความยินยอม</span>
+//                                     </label>
+//                                     <label className='form-check form-check-inline form-check-solid me-5 mt-3 mt-sm-0'>
+//                                         <input
+//                                             className="form-check-input"
+//                                             name="showBillAddress"
+//                                             type="checkbox"
+//                                             checked={consentNotGiven}
+//                                             onChange={() => handleConsentChange(false)}
+//                                         />
+//                                         <span className={`fw-bold ${styles.fontSize}`}>ไม่ให้ความยินยอม</span>
+//                                     </label>
+//                                 </div>
+//                             </div>
+//                         </div>
+//                         <br />
+
+//                         {isOTPSent && (
+//                             <div className='col-lg-12 my-10'>
+//                                 <label className='form-label required fw-bold fs-6'>OTP ที่ได้รับจากลูกค้า</label>
+//                                 <input
+//                                     ref={otpInputRef}
+//                                     value={inputOTP}
+//                                     onChange={(e) => setInputOTP(e.target.value)}
+//                                     type='text'
+//                                     className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
+//                                     placeholder='OTP ที่ได้รับจากลูกค้า'
+//                                 />
+//                             </div>
+//                         )}
+//                     </div>
+//                 </div>
+
+//                 <div className='d-none d-xl-flex justify-content-between align-items-center mt-5'>
+//                     <button
+//                         className={`${styles.btnSecondary}`}
+//                         onClick={() => navigate('/sale/update/updateAddress', { state: item })}
+//                     >
+//                         แก้ไขที่อยู่ลูกค้า
+//                     </button>
+
+//                     {/* {!responseCheckOTPSuccess && ( */}
+//                     <>
+//                         {isOTPSent ? (
+//                             <button
+//                                 className={`${styles.btnPrimary}`}
+//                                 type='button'
+//                                 onClick={checkOTP}
+//                             >
+//                                 ถัดไป
+//                             </button>
+//                         ) : (
+//                             <button
+//                                 className={`${styles.btnPrimary}`}
+//                                 type='button'
+//                                 onClick={sendSMS}
+//                             >
+//                                 รับ OTP
+//                             </button>
+//                         )}
+//                     </>
+//                     {/* )} */}
+//                     {/* 
+//                     {responseCheckOTPSuccess && (
+//                         <button
+//                             className='btn btn-warning w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'
+//                             onClick={handleUpdateContract}>
+//                             อัพเดทข้อมูล
+//                         </button>
+//                     )} */}
+
+//                     {/* <button className={`btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0 ${!isDataComplete ? `disabled` : ``}`}
+//                         disabled={!isDataComplete}
+//                         type='button'
+//                         onClick={handleCheckerClick}
+//                     >
+//                         ส่งตรวจสอบ
+//                     </button> */}
+//                 </div>
+
+//                 {/* ปุ่มในหน้าจอเล็ก */}
+//                 <div
+//                     className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
+//                     style={{
+//                         position: "fixed",
+//                         bottom: 0,
+//                         left: 0,
+//                         right: 0,
+//                         zIndex: 1050,
+//                     }}
+//                 >
+//                     <button
+//                         className={`${styles.btnSecondary}`}
+//                         onClick={() => navigate('/sale/update/updateAddress', { state: item })}
+//                     >
+//                         แก้ไขที่อยู่ลูกค้า
+//                     </button>
+
+//                     {/* {!responseCheckOTPSuccess && ( */}
+//                     <>
+//                         {isOTPSent ? (
+//                             <button
+//                                 className={`${styles.btnPrimary}`}
+//                                 type='button'
+//                                 onClick={checkOTP}
+//                             >
+//                                 ถัดไป
+//                             </button>
+//                         ) : (
+//                             <button
+//                                 className={`${styles.btnPrimary}`}
+//                                 type='button'
+//                                 onClick={sendSMS}
+//                             >
+//                                 รับ OTP
+//                             </button>
+//                         )}
+//                     </>
+//                     {/* )} */}
+
+//                     {/* {responseCheckOTPSuccess && (
+//                         <button
+//                             className="btn btn-warning w-auto me-2"
+//                             onClick={handleUpdateContract}>
+//                             อัพเดทข้อมูล
+//                         </button>
+//                     )} */}
+
+//                     {/* <button className={`btn btn-primary w-auto me-2 ${!isDataComplete ? `disabled` : ``}`}
+//                         disabled={!isDataComplete}
+//                         type='button'
+//                         onClick={handleCheckerClick}
+//                     >
+//                         ส่งตรวจสอบ
+//                     </button> */}
+//                 </div>
+
+//             </Content>
+//         </>
+//     )
+// }
+
+// export default UpdateSalesPDPA;
+
+
+
+import styles from "@/styles/style.module.css";
+import axios from "axios";
+import { useRef, useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Content } from "../../../../_metronic/layout/components/content";
+import {
+  useUUIDStore,
+  useSaveCustomerStore,
+} from "../../../modules/stores/stepsStore";
+import { useAuth } from "../../../modules/auth/core/Auth";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
 
 interface ItemProps {
-    REFNO: string,
-    CONTNO: string,
-    EMPID: string,
-    TEAMSALE: string,
-    SALECODE: string,
-    SUPEMPID: string,
-    SECEMPID: string,
-    STATUS: string,
-    PRODUCT: [any],
-    CUSTOMERSTATUS: [any],
-    DISCOUNT: [any],
-    CUSTOMERDETAIL: [any],
-    ADDRESS: [any],
-    PDPA: [any],
-    CONTRACT: [any],
-    IMAGE: [any],
-    CHECKERCOMMENT: [any]
-}
-
-interface ImagesType {
-    IMAGECARD: string[];
-    IMAGEGPS: string[];
-    IMAGEMAP: string[];
-    IMAGECUSTOMERHOME: string[];
-    IMAGEINSTALLATION: string[];
-    IMAGETDS: string[];
-    IMAGECUSTOMER: string[];
-    IMAGETRADEIN: string[];
+  REFNO: string;
+  CONTNO: string;
+  EMPID: string;
+  TEAMSALE: string;
+  SALECODE: string;
+  SUPEMPID: string;
+  SECEMPID: string;
+  STATUS: string;
+  PRODUCT: any[];
+  CUSTOMERSTATUS: any[];
+  DISCOUNT: any[];
+  CUSTOMERDETAIL: any[];
+  ADDRESS: any[];
+  PDPA: any[];
+  CONTRACT: any[];
+  IMAGE: any[];
+  CHECKERCOMMENT: any[];
 }
 
 const UpdateSalesPDPA: React.FC = () => {
-    const navigate = useNavigate()
-    const MySwal = withReactContent(Swal);
+  const navigate = useNavigate();
+  const MySwal = withReactContent(Swal);
 
-    const { auth } = useAuth();
-    const EmpId = auth?.data?.[0]?.EmpId || '';
-    const TeamSale = auth?.data?.[0]?.TeamSale || '';
-    const SaleCode = auth?.data?.[0]?.SaleCode || '';
-    const SupEmpId = auth?.data?.[0]?.SupEmp || '';
-    const SecEmpId = auth?.data?.[0]?.SecEmp || '';
+  const location = useLocation();
+  const item = (location.state as ItemProps) || ({} as ItemProps);
+  console.log(`item`, item);
 
-    const location = useLocation();
-    const item = location.state as ItemProps || [];
-    // console.log(`item`, item);
+  const { auth } = useAuth();
+  const EmpId = auth?.data?.[0]?.EmpId || "";
+  const TeamSale = auth?.data?.[0]?.TeamSale || "";
+  const SaleCode = auth?.data?.[0]?.SaleCode || "";
+  const SupEmpId = auth?.data?.[0]?.SupEmp || "";
+  const SecEmpId = auth?.data?.[0]?.SecEmp || "";
 
-    const refno = item?.REFNO
-    const pdpaContract = item?.PDPA
-    // console.log(`pdpaContract`, pdpaContract[0].SIGNATURE);
-    const customer = item?.CUSTOMERDETAIL
-    // console.log(`customer`, customer);
+  const [isLoadingDraft, setIsLoadingDraft] = useState<boolean>(false);
+  const [draft, setDraft] = useState<any[]>([]);
+  const [matchedItem, setMatchedItem] = useState<ItemProps | null>(null);
+  console.log(`matchedItem`, matchedItem);
 
-    const API_URL_PDPA_LETTER = import.meta.env.VITE_APP_API_PDPA_LETTER;
-    const CONSENT_LETTER_API = `${API_URL_PDPA_LETTER}/PDPA?OrganizationCode=0`;
+  const { REFNO } = useUUIDStore();
+  const API_URL_PDPA_LETTER = import.meta.env.VITE_APP_API_PDPA_LETTER;
+  const CONSENT_LETTER_API = `${API_URL_PDPA_LETTER}/PDPA?OrganizationCode=0`;
 
-    const API_URL_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
-    const SEND_SMS_API = `${API_URL_SALECONNEXT}/sendSMS/PDPA`;
-    const CHECK_OTP_API = `${API_URL_SALECONNEXT}/CheckOTP/PDPA`;
+  const API_URL_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
+  const SEND_SMS_API = `${API_URL_SALECONNEXT}/sendSMS/PDPA`;
+  const CHECK_OTP_API = `${API_URL_SALECONNEXT}/CheckOTP/PDPA`;
 
-    const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
-    const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
-    const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage`;
+  const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
+  const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
+  const DRAFT_ALLCONTRACT_URL = `${API_URL_MONGO}/Contract/GetAllContract?status=DRAFT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`;
 
-    const { saveCustomerTypes } = useSaveCustomerStore()
+  const { saveCustomerTypes } = useSaveCustomerStore();
 
-    const [consentGiven, setConsentGiven] = useState<boolean>(pdpaContract?.[0]?.CONSENTGIVEN || false); // ให้ความยินยอม
-    // console.log(`consentGiven`, consentGiven);
+  const [consentGiven, setConsentGiven] = useState(false);
+  const [consentNotGiven, setConsentNotGiven] = useState(false);
+  const [Alllow_Contract, setAlllow_Contract] = useState<number>();
+  const [PDPA_Code, setPDPA_Code] = useState<string | null>();
+  const [inputOTP, setInputOTP] = useState("");
+  const [isOTPRequested, setIsOTPRequested] = useState(false);
 
-    const [consentNotGiven, setConsentNotGiven] = useState<boolean>(!pdpaContract?.[0]?.CONSENTGIVEN || false); // ไม่ให้ความยินยอม
-    // console.log(`consentNotGiven`, consentNotGiven);
+  const telCustomer =
+    matchedItem?.CUSTOMERDETAIL?.[0]?.CUSTOMERMOBILE ??
+    item?.CUSTOMERDETAIL?.[0]?.CUSTOMERMOBILE ??
+    "";
+  console.log(`telCustomer`, telCustomer);
 
-    const [Alllow_Contract, setAlllow_Contract] = useState<number | undefined>();
-    const [PDPA_Code, setPDPA_Code] = useState<string | null>();
-    // console.log(`PDPA_Code`, PDPA_Code);
+  const otpInputRef = useRef<HTMLInputElement | null>(null);
 
-    const signaturePadRef = useRef<any>(null);
-    const [signatureDataURL, setSignatureDataURL] = useState<string | null>(null);
-    // console.log(`signatureDataURL`, signatureDataURL);
+  // เช็คว่าติ้ก consent ยัง
+  const hasChosenConsent = consentGiven || consentNotGiven;
 
-    const [isSignatureSaved, setIsSignatureSaved] = useState<boolean>(false); // สถานะการเซ็นชื่อ
-    const [inputOTP, setInputOTP] = useState<string>('');
-    // console.log(`inputOTP`, inputOTP);
-
-    const [isOTPSent, setIsOTPSent] = useState<boolean>(false);
-    const [responseCheckOTPSuccess, setResponseCheckOTPSuccess] = useState<boolean>(false);
-
-    // State สำหรับเก็บ ContNo
-    const [contNo, setContNo] = useState<string | null>(item?.CONTNO || null);
-
-    const [images, setImages] = useState<ImagesType | null>(null);
-
-    const otpInputRef = useRef<HTMLInputElement | null>(null);
-
-    // เมื่อกด ดำเนินการต่อ ให้โฟกัสที่ input รับ OTP เลย
-    useEffect(() => {
-        if (isSignatureSaved && otpInputRef.current) {
-            otpInputRef.current.focus();
-        }
-    }, [isSignatureSaved]);
-
-    // Memoized ContNo สำหรับการใช้งานใน component อื่น
-    const memoizedContNo = useMemo(() => {
-        // ตรวจสอบว่าค่าที่ได้มาจาก item.CONTNO หรือ contNo
-        if (!item?.CONTNO && contNo) {
-            return contNo;
-        }
-        return item?.CONTNO || null; // ใช้ค่า item.CONTNO ถ้ามีค่าอยู่แล้ว
-    }, [item?.CONTNO, contNo]);
-
-    // console.log(`memoizedContNo`, memoizedContNo);
-
-    // ตรวจสอบว่า `signaturePadRef` พร้อมใช้งานแล้ว
-    useEffect(() => {
-        if (signaturePadRef.current) {
-            // console.log("SignaturePad is ready");
-        }
-    }, [signaturePadRef]);
-
-    const clear = () => signaturePadRef.current?.clear()
-
-    // Function to save the signature
-    const saveSignature = () => {
-        if (signaturePadRef.current && !signaturePadRef.current.isEmpty()) {
-            const signatureData = signaturePadRef.current.toDataURL('image/png');
-            const base64Data = signatureData.replace(/^data:image\/png;base64,/, '');
-            setSignatureDataURL(base64Data);
-            signaturePadRef.current.clear();
-
-            setIsSignatureSaved(true);
-        } else {
-            // console.log("Signature pad is empty or not ready.");
-        }
+  useEffect(() => {
+    const getDataDraft = async () => {
+      setIsLoadingDraft(true);
+      try {
+        const response = await axios.get(DRAFT_ALLCONTRACT_URL);
+        const data = Array.isArray(response.data.data) ? response.data.data : [];
+        setDraft(data);
+      } catch (error) {
+        console.error("Error fetching DRAFT_ALLCONTRACT_URL:", error);
+      } finally {
+        setIsLoadingDraft(false);
+      }
     };
+    getDataDraft();
+  }, [DRAFT_ALLCONTRACT_URL]);
 
-    useEffect(() => {
-        if (signatureDataURL) {
-            sendSMS(); // เรียกใช้ sendSMS เมื่อ signatureDataURL เปลี่ยนแปลง
-        }
-    }, [signatureDataURL]); // ใช้ useEffect เพื่อรอให้ signatureDataURL มีค่า  
+  useEffect(() => {
+    if (!isLoadingDraft) {
+      const found = draft.find((d) => d.REFNO === REFNO) || null;
+      setMatchedItem(found);
+    }
+  }, [draft, isLoadingDraft, REFNO]);
 
-    // ให้ความยินยอมหรือไม่
-    const handleConsentChange = (isGiven: boolean) => {
-        setConsentGiven(isGiven);
-        setConsentNotGiven(!isGiven);
-    };
+  useEffect(() => {
+    setAlllow_Contract(consentGiven ? 1 : 0);
+    setPDPA_Code(consentGiven ? "0001" : "0000");
+  }, [consentGiven]);
 
-    useEffect(() => {
-        setAlllow_Contract(consentGiven ? 1 : 0);
-    }, [consentGiven]);
+  useEffect(() => {
+    if (isOTPRequested && otpInputRef.current) {
+      otpInputRef.current.focus();
+    }
+  }, [isOTPRequested]);
 
-    useEffect(() => {
-        setPDPA_Code(consentGiven ? '0001' : '0000');
-    }, [consentGiven]);
+  const handleConsentChange = (isGiven: boolean) => {
+    setConsentGiven(isGiven);
+    setConsentNotGiven(!isGiven);
+  };
 
-    // fetch collection ContractImage
-    useEffect(() => {
-        const fetchImages = async () => {
-            try {
-                const response = await axios.get(GET_IMAGES_API, {
-                    params: { REFNO: refno },
-                });
+  // เลือกแหล่งข้อมูลที่ “เชื่อ” มากกว่า
+  const fromTag = (location.state as any)?.from;
+  const preferItem =
+    fromTag === "/sale/step" || fromTag === "/sale/update/updateAddress";
+  const ctxItem: ItemProps = (preferItem ? item : matchedItem ?? item) as ItemProps;
 
-                // ตรวจสอบว่า response.data เป็นไปตามโครงสร้างของ ImagesType
-                const data = response.data;
+  // REFNO ที่จะ “ล็อก” ทั้งหน้าจอ PDPA
+  const refNoToShow = (ctxItem?.REFNO as string) ?? "";
+  console.log(`refNoToShow`, refNoToShow);
 
-                if (
-                    data &&
-                    typeof data === 'object' &&
-                    'IMAGECARD' in data &&
-                    'IMAGEGPS' in data &&
-                    'IMAGEMAP' in data &&
-                    'IMAGECUSTOMERHOME' in data &&
-                    'IMAGEINSTALLATION' in data &&
-                    'IMAGETDS' in data &&
-                    'IMAGETRADEIN' in data
-                ) {
-                    setImages(data as ImagesType);
-                } else {
-                    setImages(null);
-                }
-            } catch (err) {
-                console.error('Error fetching images:', err);
-                setImages(null); // ตั้งค่าเป็น null หากมีข้อผิดพลาด
-            }
-        };
-
-        fetchImages();
-    }, [refno]);
-
-    const currentDate = new Date();
-    const formattedDate = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate()}`;
-
-    const sendSMS = async () => {
-        saveSignature()
-        setIsOTPSent(true)
-        try {
-            const responseSendSMS = await axios.post(SEND_SMS_API, {
-                RefNo: refno,
-                Alllow_Contract,
-                PDPA_Code,
-                TelMobile: customer?.[0]?.CUSTOMERMOBILE,
-                IDCard: customer?.[0]?.CUSTOMERID,
-                SignPath: pdpaContract?.[0]?.SIGNATURE || signatureDataURL,
-            }, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-            // console.log(`responseSendSMS: `, responseSendSMS.data);
-            if (responseSendSMS.data.status === 200) {
-                if (!item?.CONTNO) {
-                    setContNo(responseSendSMS.data.ContNo);
-                }
-            } if (otpInputRef.current) {
-                otpInputRef.current.focus();
-            }
-        } catch (error) {
-            console.error('Error responseSendSMS:', error);
-        }
-    };
-
-    const checkOTP = async () => {
-        try {
-            const responseCheckOTP = await axios.post(CHECK_OTP_API, {
-                EmpID: EmpId,
-                RefNo: refno,
-                OTP: inputOTP,
-            }, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-
-            // ตรวจสอบสถานะการตอบกลับ
-            if (responseCheckOTP.data.status === 400) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'ข้อผิดพลาด!',
-                    text: 'รหัส OTP ไม่ถูกต้อง!',
-                    confirmButtonText: 'ตกลง',
-                });
-            } else if (responseCheckOTP.data.status === 200) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'สำเร็จ!',
-                    text: 'การตรวจสอบ OTP สำเร็จ!',
-                    timer: 2000, // แสดงผล 3 วินาที
-                    showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
-                });
-
-                setResponseCheckOTPSuccess(true);
-
-                // เรียก API handleUpdateContract หลังจาก OTP สำเร็จ
-                handleUpdateContract();
-            }
-        } catch (error) {
-            console.error('Error responseCheckOTP:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'ข้อผิดพลาด!',
-                text: 'ไม่สามารถตรวจสอบ OTP ได้!',
-                confirmButtonText: 'ตกลง',
-            });
-        }
-    };
-
-    const handleUpdateContract = async () => {
-        try {
-            // 1) เรียก UPDATECONTACT เพื่ออัปเดต PDPA ก่อน
-            const updatePDPA = await axios.post(UPDATECONTACT, {
-                REFNO: refno,
-                EMPID: EmpId,
-                TEAMSALE: TeamSale,
-                FIELD: 'PDPA',
-                CONTNO: contNo,
-                DATA: [
-                    {
-                        CONSENTGIVEN: consentGiven,
-                        SIGNATURE: pdpaContract?.[0]?.SIGNATURE || signatureDataURL,
-                        OTP: inputOTP,
-                    },
-                ],
-            },
-                {
-                    headers: { 'Content-Type': 'application/json' },
-                })
-
-            // ตรวจสอบว่าอัปเดตสำเร็จหรือไม่
-            if (updatePDPA.data.message === 'Update contract successfully.') {
-                // 2) เมื่ออัปเดต PDPA สำเร็จแล้ว จึงเรียก UPDATECONTACT อีกครั้ง เพื่ออัปเดต createdAt
-                const updateCreatedAt = await axios.post(UPDATECONTACT, {
-                    REFNO: refno,
-                    EMPID: EmpId,
-                    TEAMSALE: TeamSale,
-                    SALECODE: SaleCode,
-                    SUPEMPID: SupEmpId,
-                    SECEMPID: SecEmpId,
-                    FIELD: 'CONTRACT',
-                    DATA: { createdAt: formattedDate },
-                },
-                    {
-                        headers: { 'Content-Type': 'application/json' },
-                    })
-
-                if (updateCreatedAt.data.message === 'Update contract successfully.') {
-                    // แสดง Alert เมื่ออัปเดตทั้ง PDPA และ createdAt สำเร็จ
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'สำเร็จ!',
-                        text: 'ปรับปรุงข้อมูล PDPA และวันที่ทำสัญญาเรียบร้อยแล้ว',
-                        timer: 2000,
-                        showConfirmButton: false,
-                    })
-                } else {
-                    // กรณีอัปเดต PDPA สำเร็จ แต่ไม่สามารถอัปเดต createdAt ได้
-                    MySwal.fire('เกิดข้อผิดพลาด', updateCreatedAt.data.message, 'error')
-                }
-            } else {
-                // กรณีอัปเดต PDPA ไม่สำเร็จ
-                MySwal.fire('เกิดข้อผิดพลาด', updatePDPA.data.message, 'error')
-            }
-        } catch (error) {
-            console.error('Error updating contract:', error)
-            Swal.fire({
-                icon: 'error',
-                title: 'เกิดข้อผิดพลาด!',
-                text: 'ไม่สามารถอัปเดตสัญญาได้ กรุณาลองใหม่',
-            })
-        }
+  const handleRequestOTP = async () => {
+    if (!telCustomer || (telCustomer.length !== 9 && telCustomer.length !== 10)) {
+      Swal.fire({ icon: "warning", title: "กรุณาระบุเบอร์โทรลูกค้าให้ถูกต้อง" });
+      return;
     }
 
-    const handleCheckerClick = async () => {
-        const response = await axios.post(UPDATECONTACT, {
-            REFNO: item.REFNO,
-            EMPID: EmpId,
-            TEAMSALE: TeamSale,
-            FIELD: "STATUS",
-            DATA: "PENDING",
-        }, {
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
+    try {
+      await axios.post(
+        SEND_SMS_API,
+        {
+          RefNo: REFNO, // ถ้าต้องการให้ผูกกับ refNoToShow เปลี่ยนเป็น refNoToShow ได้
+          Alllow_Contract,
+          PDPA_Code,
+          TelMobile: telCustomer,
+        },
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
 
-        // console.log(response)
-
-        if (response.status === 200) {
-            if (!response.data.data) {
-                MySwal.fire('เกิดข้อผิดพลาด', 'ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา', 'error');
-            } else {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'สำเร็จ!',
-                    text: 'ส่งข้อมูลตรวจสอบแล้ว',
-                    timer: 2000, // แสดงผล 3 วินาที
-                    showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
-                })
-            }
-        } else {
-            MySwal.fire('เกิดข้อผิดพลาด', response.data.message, 'error');
-        }
+      setIsOTPRequested(true);
+      MySwal.fire({
+        toast: true,
+        icon: "success",
+        title: "ส่ง OTP ไปยังเบอร์โทรลูกค้าสำเร็จ",
+        timer: 2000,
+        showConfirmButton: false,
+      }).then(() => otpInputRef.current?.focus());
+    } catch (error) {
+      console.error("ส่ง OTP ไม่สำเร็จ:", error);
+      Swal.fire({ icon: "error", title: "ไม่สามารถส่ง OTP ได้" });
     }
+  };
 
-    // เช็คว่า data ใน item มีครบทุกขั้นตอน (ไม่เป็น array เปล่า) ใช่ไหม ถ้าเป็นจะ disabled ปุ่มส่งตรวจสอบ
-    const isDataComplete = useMemo(() => {
-        // ตรวจสอบว่ามีรูปภาพในฟิลด์ใดฟิลด์หนึ่งใน images อย่างน้อย 1 รูป
-        const hasImages = images && Object.values(images).some(
-            (field) => Array.isArray(field) && field.length > 0
-        );
+  const checkOTP = async () => {
+    try {
+      const resp = await axios.post(
+        CHECK_OTP_API,
+        { EmpID: EmpId, RefNo: REFNO, OTP: inputOTP }, // จะเปลี่ยนเป็น refNoToShow ก็ได้เช่นกัน
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
 
-        return (
-            Array.isArray(item.ADDRESS) && item.ADDRESS.length > 0 &&
-            Array.isArray(item.CUSTOMERDETAIL) && item.CUSTOMERDETAIL.length > 0 &&
-            Array.isArray(item.CUSTOMERSTATUS) && item.CUSTOMERSTATUS.length > 0 &&
-            Array.isArray(item.DISCOUNT) && item.DISCOUNT.length > 0 &&
-            Array.isArray(item.PDPA) && item.PDPA.length > 0 &&
-            Array.isArray(item.PRODUCT) && item.PRODUCT.length > 0 &&
-            hasImages
-        );
-    }, [item, images]);
+      if (resp.data.status === 400) {
+        Swal.fire({ icon: "error", title: "OTP ไม่ถูกต้อง" });
+        return;
+      }
 
-    return (
-        <>
-            <Content>
-                <div className='d-flex justify-content-between align-items-center my-5'>
-                    <div id="kt_page_title" data-kt-swapper="true" data-kt-swapper-mode="prepend"
-                        data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
-                        className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
-                        <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
-                            <li className={`breadcrumb-item text-gray-900 font ${styles.titlePage}`}>แก้ไข PDPA</li>
-                        </ul>
-                    </div>
+      // อัปเดต PDPA เข้าเอกสารที่เราจะแสดง
+      await axios.post(UPDATECONTACT, {
+        REFNO: refNoToShow,
+        EMPID: EmpId,
+        TEAMSALE: TeamSale,
+        SALECODE: SaleCode,
+        SUPEMPID: SupEmpId,
+        SECEMPID: SecEmpId,
+        FIELD: "PDPA",
+        DATA: [{ CONSENTGIVEN: consentGiven, TELCUSTOMER: telCustomer, OTP: inputOTP }],
+      });
+
+      Swal.fire({ icon: "success", title: "จัดเก็บข้อมูลสำเร็จ", timer: 2000, showConfirmButton: false });
+
+      // ⬇️ ส่ง state แบบ “แบน” + REFNO = refNoToShow
+      const payload: ItemProps = { ...(matchedItem ?? item), REFNO: refNoToShow } as ItemProps;
+      navigate("/sale/update/UpdateSalesContract", { state: { ...payload, from: "/sale/update/UpdateSalesPDPA" } });
+    } catch (error) {
+      console.error("ตรวจสอบ OTP ล้มเหลว:", error);
+      Swal.fire({ icon: "error", title: "ไม่สามารถตรวจสอบ OTP ได้" });
+    }
+  };
+
+  return (
+    <>
+      <Content>
+        <div className="d-flex justify-content-between align-items-center my-5">
+          <div className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
+            <ul className="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
+              <li className={`breadcrumb-item text-gray-900 font ${styles.titlePage}`}>PDPA</li>
+            </ul>
+          </div>
+        </div>
+
+        <span className={`${styles.fontSize}`}>เลขที่ขาย: </span>
+        <span className={`${styles.titlePage}`}>{refNoToShow}</span>
+
+        <div className="card mb-10 px-4">
+          <div className="card-body flex justify-between items-center p-5">
+            <iframe src={CONSENT_LETTER_API} title="Consent Letter" width="100%" height="500px" />
+
+            <div className="row mt-10 mb-4">
+              <div className="col-12">
+                <div className="d-flex justify-content-center align-items-center gap-4">
+                  <label className="form-check form-check-inline form-check-solid">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      checked={consentGiven}
+                      onChange={() => handleConsentChange(true)}
+                    />
+                    <span className={`fw-bold ${styles.fontSize}`}>ให้ความยินยอม</span>
+                  </label>
+                  <label className="form-check form-check-inline form-check-solid">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      checked={consentNotGiven}
+                      onChange={() => handleConsentChange(false)}
+                    />
+                    <span className={`fw-bold ${styles.fontSize}`}>ไม่ให้ความยินยอม</span>
+                  </label>
                 </div>
-                <span className={`${styles.fontSize}`}>เลขที่ขาย: </span><span className={`${styles.titlePage}`}>{refno}</span>
+              </div>
+            </div>
 
-                <div className='card mb-10 px-4'>
-                    <div className='card-body flex justify-between items-center p-5'>
-                        <iframe
-                            src={CONSENT_LETTER_API}
-                            title="Consent Letter"
-                            width="100%"
-                            height="1250px"
-                        />
-                        <div className='row mt-10 mb-4'>
-                            <div className='col-12'>
-                                <div className="d-flex justify-content-center align-items-center gap-4">
-                                    <label className='form-check form-check-inline form-check-solid me-5'>
-                                        <input
-                                            className="form-check-input"
-                                            name="showInstallAddress"
-                                            type="checkbox"
-                                            checked={consentGiven}
-                                            onChange={() => handleConsentChange(true)}
-                                        />
-                                        <span className={`fw-bold ${styles.fontSize}`}>ให้ความยินยอม</span>
-                                    </label>
-                                    <label className='form-check form-check-inline form-check-solid me-5 mt-3 mt-sm-0'>
-                                        <input
-                                            className="form-check-input"
-                                            name="showBillAddress"
-                                            type="checkbox"
-                                            checked={consentNotGiven}
-                                            onChange={() => handleConsentChange(false)}
-                                        />
-                                        <span className={`fw-bold ${styles.fontSize}`}>ไม่ให้ความยินยอม</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                        <br />
+            <div className="col-lg-12 mb-10">
+              <label className={`form-label required fw-bold ${styles.fontSize}`}>เบอร์โทรลูกค้า</label>
+              <input
+                value={telCustomer}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                className={`form-control form-control-lg form-control-solid mb-3 mb-lg-0 ${styles.placeholder}`}
+                readOnly
+              />
+            </div>
 
-                        {isOTPSent && (
-                            <div className='col-lg-12 my-10'>
-                                <label className='form-label required fw-bold fs-6'>OTP ที่ได้รับจากลูกค้า</label>
-                                <input
-                                    ref={otpInputRef}
-                                    value={inputOTP}
-                                    onChange={(e) => setInputOTP(e.target.value)}
-                                    type='text'
-                                    className='form-control form-control-lg form-control-solid mb-3 mb-lg-0'
-                                    placeholder='OTP ที่ได้รับจากลูกค้า'
-                                />
-                            </div>
-                        )}
-                    </div>
-                </div>
+            {isOTPRequested && (
+              <div className="col-lg-12 my-10">
+                <label className={`form-label required fw-bold ${styles.fontSize}`}>
+                  OTP ที่ได้รับจากลูกค้า
+                </label>
+                <input
+                  ref={otpInputRef}
+                  value={inputOTP}
+                  onChange={(e) => setInputOTP(e.target.value)}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  className="form-control form-control-lg form-control-solid mb-3 mb-lg-0"
+                />
+              </div>
+            )}
+          </div>
+        </div>
 
-                <div className='d-none d-xl-flex justify-content-between align-items-center mt-5'>
-                    <button
-                        className={`${styles.btnSecondary}`}
-                        onClick={() => navigate('/sale/update/updateAddress', { state: item })}
-                    >
-                        แก้ไขที่อยู่ลูกค้า
-                    </button>
+        {/* ปุ่ม */}
+        <div className="d-none d-xl-flex justify-content-between align-items-center mt-5">
+          {!isOTPRequested ? (
+            <button
+              className={`${styles.btnPrimary}`}
+              type="button" onClick={handleRequestOTP}
+            >
+              รับ OTP
+            </button>
+          ) : (
+            <>
+              <button
+                className={`${styles.btnSuccess} me-3`}
+                type="button" onClick={handleRequestOTP}
+              >
+                ส่ง OTP ใหม่
+              </button>
+              {inputOTP && hasChosenConsent && (
+                <button className={`${styles.btnPrimary}`} type="button" onClick={checkOTP}>
+                  จัดเก็บข้อมูล
+                </button>
+              )}
+            </>
+          )}
+        </div>
 
-                    {/* {!responseCheckOTPSuccess && ( */}
-                    <>
-                        {isOTPSent ? (
-                            <button
-                                className={`${styles.btnPrimary}`}
-                                type='button'
-                                onClick={checkOTP}
-                            >
-                                ถัดไป
-                            </button>
-                        ) : (
-                            <button
-                                className={`${styles.btnPrimary}`}
-                                type='button'
-                                onClick={sendSMS}
-                            >
-                                รับ OTP
-                            </button>
-                        )}
-                    </>
-                    {/* )} */}
-                    {/* 
-                    {responseCheckOTPSuccess && (
-                        <button
-                            className='btn btn-warning w-100 w-md-auto align-self-center mb-5 mb-md-0 h-50px'
-                            onClick={handleUpdateContract}>
-                            อัพเดทข้อมูล
-                        </button>
-                    )} */}
-
-                    {/* <button className={`btn btn-primary w-100 w-md-auto align-self-center mb-2 mb-md-0 ${!isDataComplete ? `disabled` : ``}`}
-                        disabled={!isDataComplete}
-                        type='button'
-                        onClick={handleCheckerClick}
-                    >
-                        ส่งตรวจสอบ
-                    </button> */}
-                </div>
-
-                {/* ปุ่มในหน้าจอเล็ก */}
-                <div
-                    className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
-                    style={{
-                        position: "fixed",
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        zIndex: 1050,
-                    }}
-                >
-                    <button
-                        className={`${styles.btnSecondary}`}
-                        onClick={() => navigate('/sale/update/updateAddress', { state: item })}
-                    >
-                        แก้ไขที่อยู่ลูกค้า
-                    </button>
-
-                    {/* {!responseCheckOTPSuccess && ( */}
-                    <>
-                        {isOTPSent ? (
-                            <button
-                                className={`${styles.btnPrimary}`}
-                                type='button'
-                                onClick={checkOTP}
-                            >
-                                ถัดไป
-                            </button>
-                        ) : (
-                            <button
-                                className={`${styles.btnPrimary}`}
-                                type='button'
-                                onClick={sendSMS}
-                            >
-                                รับ OTP
-                            </button>
-                        )}
-                    </>
-                    {/* )} */}
-
-                    {/* {responseCheckOTPSuccess && (
-                        <button
-                            className="btn btn-warning w-auto me-2"
-                            onClick={handleUpdateContract}>
-                            อัพเดทข้อมูล
-                        </button>
-                    )} */}
-
-                    {/* <button className={`btn btn-primary w-auto me-2 ${!isDataComplete ? `disabled` : ``}`}
-                        disabled={!isDataComplete}
-                        type='button'
-                        onClick={handleCheckerClick}
-                    >
-                        ส่งตรวจสอบ
-                    </button> */}
-                </div>
-
-            </Content>
-        </>
-    )
-}
+        <div
+          className="d-flex d-xl-none justify-content-between align-items-center bg-light p-3 border-top"
+          style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 1050 }}
+        >
+          {!isOTPRequested ? (
+            <button
+              className={`${styles.btnPrimary}`}
+              onClick={handleRequestOTP}
+            >
+              รับ OTP
+            </button>
+          ) : (
+            <>
+              <button
+                className={`${styles.btnSuccess} me-3`}
+                onClick={handleRequestOTP}
+              >
+                ส่ง OTP ใหม่
+              </button>
+              {inputOTP && hasChosenConsent && (
+                <button className={`${styles.btnPrimary}`} type="button" onClick={checkOTP}>
+                  จัดเก็บข้อมูล
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      </Content>
+    </>
+  );
+};
 
 export default UpdateSalesPDPA;

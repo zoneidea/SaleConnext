@@ -2541,7 +2541,7 @@ interface ImagesType {
 }
 
 type YourFormValues = {
-    // ที่อยู่ติดตั้ง
+    // ที่อยู่ตามบัตร
     homeNoIdCard: string;
     addressMoo: string;
     addressSoi: string;
@@ -2551,7 +2551,7 @@ type YourFormValues = {
     subDistrictIdCard: string;
     telNoIdCard: string;
 
-    // ที่อยู่ตามบัตร
+    // ที่อยู่ติดตั้ง
     addressNumberForInstall: string;
     addressMooForInstall: string;
     addressSoiForInstall: string;
@@ -2836,7 +2836,7 @@ const UpdateSaleAddressFinishDay: React.FC = () => {
         );
 
         return {
-            ADDRESSINSTALLATION: {
+            ADDRESSCARD: {
                 ADDRESSNUMBER: addressNumber,
                 ADDRESSMOO: addressMoo,
                 ADDRESSSOI: addressSoi,
@@ -2853,7 +2853,7 @@ const UpdateSaleAddressFinishDay: React.FC = () => {
                 ADDRESSPHONE: addressPhone,
                 USETHISTAX: useThisTax,
             },
-            ADDRESSCARD: {
+            ADDRESSINSTALLATION: {
                 ADDRESSNUMBER: addressNumberForInstall,
                 ADDRESSMOO: addressMooForInstall,
                 ADDRESSSOI: addressSoiForInstall,
@@ -2991,29 +2991,29 @@ const UpdateSaleAddressFinishDay: React.FC = () => {
     ]);
 
     useEffect(() => {
-        setAddressNumberForInstall(custAddr?.[0]?.ADDRESSCARD.ADDRESSNUMBER);
-        setAddressMooForInstall(custAddr?.[0]?.ADDRESSCARD.ADDRESSMOO);
-        setAddressSoiForInstall(custAddr?.[0]?.ADDRESSCARD.ADDRESSSOI);
-        setAddressRoadForInstall(custAddr?.[0]?.ADDRESSCARD.ADDRESSROAD);
-        setSelectedProvinceForInstall(custAddr?.[0]?.ADDRESSCARD.ADDRESSPROVINCE);
-        setSelectedDistrictForInstall(custAddr?.[0]?.ADDRESSCARD.ADDRESSDISTRICT);
-        setSelectedSubDistrictForInstall(
+        setAddressNumber(custAddr?.[0]?.ADDRESSCARD.ADDRESSNUMBER);
+        setAddressMoo(custAddr?.[0]?.ADDRESSCARD.ADDRESSMOO);
+        setAddressSoi(custAddr?.[0]?.ADDRESSCARD.ADDRESSSOI);
+        setAddressRoad(custAddr?.[0]?.ADDRESSCARD.ADDRESSROAD);
+        setSelectedProvince(custAddr?.[0]?.ADDRESSCARD.ADDRESSPROVINCE);
+        setSelectedDistrict(custAddr?.[0]?.ADDRESSCARD.ADDRESSDISTRICT);
+        setSelectedSubDistrict(
             custAddr?.[0]?.ADDRESSCARD.ADDRESSSUBDISTRICT
         );
-        setSelectedZipcodeForInstall(custAddr?.[0]?.ADDRESSCARD.ADDRESSZIPCODE);
-        setAddressPhoneForInstall(custAddr?.[0]?.ADDRESSCARD.ADDRESSPHONE);
+        setSelectedZipcode(custAddr?.[0]?.ADDRESSCARD.ADDRESSZIPCODE);
+        setAddressPhone(custAddr?.[0]?.ADDRESSCARD.ADDRESSPHONE);
 
-        setAddressNumber(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSNUMBER);
-        setAddressMoo(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSMOO);
-        setAddressSoi(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSSOI);
-        setAddressRoad(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSROAD);
-        setSelectedProvince(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSPROVINCE);
-        setSelectedDistrict(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSDISTRICT);
-        setSelectedSubDistrict(
+        setAddressNumberForInstall(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSNUMBER);
+        setAddressMooForInstall(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSMOO);
+        setAddressSoiForInstall(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSSOI);
+        setAddressRoadForInstall(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSROAD);
+        setSelectedProvinceForInstall(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSPROVINCE);
+        setSelectedDistrictForInstall(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSDISTRICT);
+        setSelectedSubDistrictForInstall(
             custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSSUBDISTRICT
         );
-        setSelectedZipcode(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSZIPCODE);
-        setAddressPhone(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSPHONE);
+        setSelectedZipcodeForInstall(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSZIPCODE);
+        setAddressPhoneForInstall(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSPHONE);
 
         setAddressNumberForPayment(custAddr?.[0]?.ADDRESSPAYMENT.ADDRESSNUMBER);
         setAddressMooForPayment(custAddr?.[0]?.ADDRESSPAYMENT.ADDRESSMOO);
@@ -4037,8 +4037,6 @@ const UpdateSaleAddressFinishDay: React.FC = () => {
         provinceIdCard: yup.string().required("กรุณาเลือกจังหวัด"),
         districtIdCard: yup.string().required("กรุณาเลือกอำเภอ / เขต"),
         subDistrictIdCard: yup.string().required("กรุณาเลือกตำบล / แขวง"),
-        telNoIdCard: yup
-            .string(),
 
         addressNumberForInstall: yup.string().required("กรุณากรอกบ้านเลขที่"),
         provinceForInstall: yup.string().required("กรุณาเลือกจังหวัด"),
@@ -4103,26 +4101,26 @@ const UpdateSaleAddressFinishDay: React.FC = () => {
     useEffect(() => {
         if (!custAddr?.[0]) return;
 
-        const inst = custAddr[0].ADDRESSINSTALLATION;
         const card = custAddr[0].ADDRESSCARD;
+        const inst = custAddr[0].ADDRESSINSTALLATION;
         const pay = custAddr[0].ADDRESSPAYMENT;
         const tax = custAddr[0].ADDRESSTAX;
 
         // รีเซ็ตค่าให้ทั้งฟอร์ม
         reset({
-            // ที่อยู่ติดตั้ง
-            homeNoIdCard: inst.ADDRESSNUMBER,
-            provinceIdCard: inst.ADDRESSPROVINCE,
-            districtIdCard: inst.ADDRESSDISTRICT,
-            subDistrictIdCard: inst.ADDRESSSUBDISTRICT,
-            telNoIdCard: inst.ADDRESSPHONE,
-
             // ที่อยู่ตามบัตร
-            addressNumberForInstall: card.ADDRESSNUMBER,
-            provinceForInstall: card.ADDRESSPROVINCE,
-            districtForInstall: card.ADDRESSDISTRICT,
-            subDistrictForInstall: card.ADDRESSSUBDISTRICT,
-            addressPhoneForInstall: card.ADDRESSPHONE,
+            homeNoIdCard: card.ADDRESSNUMBER,
+            provinceIdCard: card.ADDRESSPROVINCE,
+            districtIdCard: card.ADDRESSDISTRICT,
+            subDistrictIdCard: card.ADDRESSSUBDISTRICT,
+            telNoIdCard: card.ADDRESSPHONE,
+
+            // ที่อยู่ติดตั้ง
+            addressNumberForInstall: inst.ADDRESSNUMBER,
+            provinceForInstall: inst.ADDRESSPROVINCE,
+            districtForInstall: inst.ADDRESSDISTRICT,
+            subDistrictForInstall: inst.ADDRESSSUBDISTRICT,
+            addressPhoneForInstall: inst.ADDRESSPHONE,
 
             // ที่อยู่เก็บเงิน
             addressNumberForPayment: pay.ADDRESSNUMBER,
@@ -4140,11 +4138,11 @@ const UpdateSaleAddressFinishDay: React.FC = () => {
         });
 
         // อัปเดต React state ของคุณด้วย (เพื่อการคำนวณ SaveAddressData)
-        setAddressNumber(inst.ADDRESSNUMBER);
-        setSelectedProvince(Number(inst.ADDRESSPROVINCE));
-        setSelectedDistrict(Number(inst.ADDRESSDISTRICT));
-        setSelectedSubDistrict(Number(inst.ADDRESSSUBDISTRICT));
-        setAddressPhone(inst.ADDRESSPHONE);
+        setAddressNumber(card.ADDRESSNUMBER);
+        setSelectedProvince(Number(card.ADDRESSPROVINCE));
+        setSelectedDistrict(Number(card.ADDRESSDISTRICT));
+        setSelectedSubDistrict(Number(card.ADDRESSSUBDISTRICT));
+        setAddressPhone(card.ADDRESSPHONE);
     }, [custAddr, reset]);
 
     const statusAddr = item?.CUSTOMERSTATUS?.[0]?.Contract?.Address ?? [];
@@ -4207,11 +4205,11 @@ const UpdateSaleAddressFinishDay: React.FC = () => {
     // }, [statusAddr, setValue]);
 
     // 2. หลังจาก load district/sub ↓ ให้ seed โค้ดอำเภอ+ตำบล
-    // — ติดตั้ง —
+     // — ตามบัตร —
     useEffect(() => {
         const addr0 = (item.ADDRESS ?? [])[0];
         if (!addr0 || getDistrict.length === 0) return;
-        const v = addr0.ADDRESSINSTALLATION.ADDRESSDISTRICT;
+        const v = addr0.ADDRESSCARD.ADDRESSDISTRICT;
         setValue("districtIdCard", v);
         setSelectedDistrict(Number(v));
     }, [getDistrict, item, setValue]);
@@ -4219,16 +4217,16 @@ const UpdateSaleAddressFinishDay: React.FC = () => {
     useEffect(() => {
         const addr0 = (item.ADDRESS ?? [])[0];
         if (!addr0 || getSubDistrict.length === 0) return;
-        const v = addr0.ADDRESSINSTALLATION.ADDRESSSUBDISTRICT;
+        const v = addr0.ADDRESSCARD.ADDRESSSUBDISTRICT;
         setValue("subDistrictIdCard", v);
         setSelectedSubDistrict(Number(v));
     }, [getSubDistrict, item, setValue]);
 
-    // — ตามบัตร —
+      // — ติดตั้ง —
     useEffect(() => {
         const addr0 = (item.ADDRESS ?? [])[0];
         if (!addr0 || getDistrictForInstall.length === 0) return;
-        const v = addr0.ADDRESSCARD.ADDRESSDISTRICT;
+        const v = addr0.ADDRESSINSTALLATION.ADDRESSDISTRICT;
         setValue("districtForInstall", v);
         setSelectedDistrictForInstall(Number(v));
     }, [getDistrictForInstall, item, setValue]);
@@ -4236,7 +4234,7 @@ const UpdateSaleAddressFinishDay: React.FC = () => {
     useEffect(() => {
         const addr0 = (item.ADDRESS ?? [])[0];
         if (!addr0 || getSubDistrictForInstall.length === 0) return;
-        const v = addr0.ADDRESSCARD.ADDRESSSUBDISTRICT;
+        const v = addr0.ADDRESSINSTALLATION.ADDRESSSUBDISTRICT;
         setValue("subDistrictForInstall", v);
         setSelectedSubDistrictForInstall(Number(v));
     }, [getSubDistrictForInstall, item, setValue]);

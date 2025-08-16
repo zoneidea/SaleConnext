@@ -84,7 +84,7 @@ const HomeCustomerPhotoGallery: React.FC = () => {
 
     return (
         <>
-            {images.length > 0 && (<h5 className='mt-8 mb-2 mx-8' style={{ color: 'red' }}>* กดที่รูป หากต้องการดูภาพขนาดใหญ่</h5>)}
+            {images.length > 0 && (<h5 className='mt-8 mb-2 mx-8' style={{ color: 'red' }}>* กดที่รูป หากต้องการดูรูปขนาดใหญ่</h5>)}
             <div className="row mx-5 mt-1">
                 {loading ? (
                     <div className="text-center w-100">
