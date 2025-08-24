@@ -156,7 +156,7 @@ const DrawingMapPhoto: React.FC = () => {
                         const ctx = canvas.getContext('2d');
 
                         // resize สูงสุด 1024px เหมือนเดิม
-                        const maxSize = 1024;
+                        const maxSize = 640;
                         let width = img.width;
                         let height = img.height;
 
@@ -176,7 +176,7 @@ const DrawingMapPhoto: React.FC = () => {
                         canvas.height = height;
                         ctx?.drawImage(img, 0, 0, width, height);
 
-                        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+                        const compressedBase64 = canvas.toDataURL('image/jpeg', 1);
 
                         const newPreview = { file, preview: compressedBase64 };
                         setPreviewImages((prev) => [...prev, newPreview]);

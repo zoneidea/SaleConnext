@@ -1,4 +1,5 @@
 import { FC } from 'react';
+import styles from "@/styles/style.module.css";
 
 type Props = {
     DescriptionTH: string;
@@ -52,7 +53,7 @@ const CardProductStockWithdraw: FC<Props> = ({
             <div className="d-flex justify-content-lg-center justify-content-md-center gap-2 mt-7">
                 <button
                     type="button"
-                    className="btn btn-sm btn-primary w-100 w-md-auto w-lg-150px"
+                    className={`${styles.btnPrimary}`}
                     onClick={onAccept}
                 >
                     รับสินค้าเข้าคลัง

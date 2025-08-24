@@ -1,3 +1,4 @@
+import styles from "@/styles/style.module.css";
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import dayjs from 'dayjs'
@@ -90,10 +91,10 @@ const ReportDailyTable: React.FC<Props> = ({
             <div className='card-body mt-3'>
                 <div className='d-flex justify-content-between align-items-center mb-5'>
                     <div className='page-title d-flex flex-wrap me-3 flex-column justify-content-center'>
-                        <h2 className='page-heading d-flex text-gray-900 fw-bold fs-3 my-0 flex-column justify-content-center'>
+                        <p className={`page-heading d-flex text-gray-900 my-0 flex-column justify-content-center ${styles.label}`}>
                             รายงานการขายวันที่ {currentDay}
-                        </h2>
-                        <p className="mt-3">จำนวน: {tableData.length} รายการ</p>
+                        </p>
+                        <p className={`mt-3 ${styles.label}`}>จำนวน: {tableData.length} รายการ</p>
                     </div>
                 </div>
 

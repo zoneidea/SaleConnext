@@ -1,4 +1,5 @@
 import React from 'react'
+import styles from '@/styles/style.module.css'
 
 type Props = {
     initialProduct: any[]

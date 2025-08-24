@@ -159,8 +159,11 @@ const ReportSalePayment: React.FC = () => {
               ) : hasSearched && tableData.length === 0 ? (
                 <div className="text-center">ไม่พบข้อมูล</div>
               ) : tableData.length > 0 ? (
-                <div style={{ overflowX: "auto", width: "100%" }}>
-                  <table className="table table-rounded table-row-bordered border table-striped gs-7 mt-3">
+                <div className="table-responsive">
+                  <table
+                    className="table table-rounded table-row-bordered border table-striped gs-7 mt-3 text-nowrap"
+                    style={{ minWidth: 1200 }}
+                  >
                     <thead>
                       <tr className="fw-bold">
                         <th>ลำดับ</th>
@@ -198,10 +201,10 @@ const ReportSalePayment: React.FC = () => {
                       </tr>
                     </tbody>
                   </table>
-                  <p className="mt-3">จำนวน: {tableData.length} รายการ</p>
                 </div>
               ) : null}
             </div>
+            <p className="mt-3">จำนวน: {tableData.length} รายการ</p>
           </div>
         </div>
       </form>

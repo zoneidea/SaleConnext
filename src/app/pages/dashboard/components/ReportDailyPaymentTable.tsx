@@ -1,3 +1,4 @@
+import styles from "@/styles/style.module.css";
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import dayjs from 'dayjs'
@@ -108,10 +109,10 @@ const ReportDailyPaymentTable: React.FC<Props> = ({ className = '' }) => {
             <div className='card-body mt-3'>
                 <div className='d-flex justify-content-between align-items-center mb-5'>
                     <div className='page-title d-flex flex-wrap me-3 flex-column justify-content-center'>
-                        <h2 className='page-heading d-flex text-gray-900 fw-bold fs-3 my-0 flex-column justify-content-center'>
+                        <p className={`page-heading d-flex text-gray-900 my-0 flex-column justify-content-center ${styles.label}`}>
                             รายงานเก็บเงินวันที่ {currentDay}
-                        </h2>
-                        <p className="mt-3">จำนวน: {tableData.length} รายการ</p>
+                        </p>
+                        <p className={`mt-3 ${styles.label}`}>จำนวน: {tableData.length} รายการ</p>
                     </div>
                 </div>
 
@@ -127,7 +128,7 @@ const ReportDailyPaymentTable: React.FC<Props> = ({ className = '' }) => {
                                     <th>ลำดับ</th>
                                     <th>เลขที่ใบเสร็จ</th>
                                     <th>เลขที่สัญญา</th>
-                                    <th>ค่างวด</th>
+                                    <th>จำนวนเงิน</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -143,7 +144,7 @@ const ReportDailyPaymentTable: React.FC<Props> = ({ className = '' }) => {
                                             {r.CONTNO || "-"}
                                         </td>
                                         <td style={{ whiteSpace: 'normal', wordBreak: 'break-word', maxWidth: '200px' }}>
-                                            {thb(r.AMOUNTPERIOD)}
+                                            <td className="text-end">{thb(r.PAYAMOUNT2 ?? r.PAYAMOUNT)}</td>
                                         </td>
                                     </tr>
                                 ))}

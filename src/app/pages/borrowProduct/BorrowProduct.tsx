@@ -6,6 +6,8 @@ import { Content } from '../../../_metronic/layout/components/content';
 import { useAuth } from '../../modules/auth/core/Auth';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBarcode } from "@fortawesome/free-solid-svg-icons";
 
 // useStore
 import {
@@ -524,7 +526,7 @@ const BorrowProduct: React.FC = () => {
                                     onClick={handleScanBarcodeClick}
                                 >
                                     <label
-                                        className="btn btn-success px-5 w-200px"
+                                        className={`${styles.btnSuccess}`}
                                         htmlFor="camera-input"
                                         style={{
                                             cursor: "pointer",
@@ -533,6 +535,7 @@ const BorrowProduct: React.FC = () => {
                                         }}
                                     >
                                         สแกนบาร์โค้ด
+                                        <FontAwesomeIcon icon={faBarcode} className="ms-3" />
                                     </label>
                                 </div>
                                 {/* สแกนบาร์โค้ด */}
@@ -620,12 +623,12 @@ const BorrowProduct: React.FC = () => {
                                                                     <div className="d-flex justify-content-start mb-4">
                                                                         <button
                                                                             type="button"
-                                                                            className="btn btn-sm btn-primary"
+                                                                            className={`${styles.btnPrimary}`}
                                                                             onClick={() => {
                                                                                 getBorrowerList();
                                                                             }}
                                                                         >
-                                                                            รีเฟรชรายการสินค้าที่ยืม
+                                                                            รายการสินค้าที่ยืม
                                                                         </button>
                                                                     </div>
 
@@ -660,12 +663,12 @@ const BorrowProduct: React.FC = () => {
                                                                     <div className="d-flex justify-content-start mb-4">
                                                                         <button
                                                                             type="button"
-                                                                            className="btn btn-sm btn-primary"
+                                                                            className={`${styles.btnPrimary}`}
                                                                             onClick={() => {
                                                                                 getWaitingApprovals();
                                                                             }}
                                                                         >
-                                                                            รีเฟรชรายการสินค้าที่รออนุมัติ
+                                                                            รายการสินค้าที่รออนุมัติ
                                                                         </button>
                                                                     </div>
 

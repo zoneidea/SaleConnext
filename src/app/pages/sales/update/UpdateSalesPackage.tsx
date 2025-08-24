@@ -7470,7 +7470,7 @@ const UpdateSalesPackage: React.FC = () => {
                         onClick={handleScanBarcodeClick}
                       >
                         <label
-                          className={`btn btn-success ${styles.label}`}
+                          className={`${styles.btnSuccess}`}
                           htmlFor="camera-input"
                           style={{
                             cursor: "pointer",
@@ -7682,7 +7682,7 @@ const UpdateSalesPackage: React.FC = () => {
                             onClick={handleScanBarcodeBundleClick}
                           >
                             <label
-                              className={`btn btn-success ${styles.label}`}
+                              className={`${styles.btnSuccess}`}
                               htmlFor="camera-input"
                               style={{
                                 cursor: "pointer",

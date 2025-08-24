@@ -12,6 +12,8 @@ const ReportSale: React.FC = () => {
   const teamSale = auth.data[0].TeamSale;
   const saleCode = auth.data[0].SaleCode;
   const postName = auth.data[0].PosName2;
+  const posID = auth.data[0].PosID;
+  const depID = auth.data[0].DepID;
 
   const today = dayjs().format("YYYY-MM-DD");
   const [valueCalendarStart, setValueCalendarStart] = useState<string>(today);
@@ -22,7 +24,9 @@ const ReportSale: React.FC = () => {
   const [hasSearched, setHasSearched] = useState<boolean>(false);
 
   const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
-  const REPORT_DAILY_URL = `${API_URL_MONGO}/Report/GetReportDaily`;
+  const API_URL_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
+  // const REPORT_DAILY_URL = `${API_URL_MONGO}/Report/GetReportDaily`;
+  const REPORT_DAILY_URL = `${API_URL_SALECONNEXT}/GetListContracts?EmpId=${empId}&TeamSale=${teamSale}&PosId=${posID}&DepId=${depID}&Sdate=${valueCalendarStart}&Edate=${valueCalendarEnd}`;
 
   const handleSearch = async () => {
     if (!valueCalendarStart || !valueCalendarEnd) {
@@ -33,14 +37,14 @@ const ReportSale: React.FC = () => {
     setIsLoading(true);
     setHasSearched(false);
     try {
-      const response = await axios.post(REPORT_DAILY_URL, {
-        EMPID: empId,
-        TEAMSALE: teamSale,
-        SALECODE: saleCode,
-        POSNAME: postName,
-        STARTDATE: valueCalendarStart,
-        ENDDATE: valueCalendarEnd,
-      });
+      // const response = await axios.post(REPORT_DAILY_URL, {
+      //   EMPID: empId,
+      //   TEAMSALE: teamSale,
+      //   SALECODE: saleCode,
+      //   POSNAME: postName,
+      //   STARTDATE: valueCalendarStart,
+      //   ENDDATE: valueCalendarEnd,
+      const response = await axios.get(REPORT_DAILY_URL);
 
       if (response.data && response.data.data) {
         setTableData(response.data.data);
@@ -59,14 +63,30 @@ const ReportSale: React.FC = () => {
     handleSearch();
   }, []);
 
-  const formatToBE = (isoDate?: string) => {
-    if (!isoDate) return "";
-    const d = new Date(isoDate);
-    const dd = String(d.getDate()).padStart(2, "0");
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const yyyy = d.getFullYear() + 543;
-    return `${dd}/${mm}/${yyyy}`;
-  };
+  const toThaiDate = (iso?: string) => {
+    if (!iso) return '-'
+    const d = new Date(iso)
+    if (!isNaN(d.getTime())) {
+      const dd = String(d.getDate()).padStart(2, '0')
+      const mm = String(d.getMonth() + 1).padStart(2, '0')
+      const yyyy = d.getFullYear() + 543
+      return `${dd}/${mm}/${yyyy}`
+    }
+    return String(iso).split(' ')[0]
+  }
+
+  const payStatusMap: Record<string, string> = {
+    PENDING: 'รอตรวจสอบ',
+    EDIT: 'แจ้งแก้ไข',
+    FINISH: 'อนุมัติผ่าน',
+    APPROVE: 'อนุมัติผ่าน',
+  }
+  const num = (v: any) => {
+    const n = Number(v)
+    return isNaN(n) ? 0 : n
+  }
+  const money = (n: number) =>
+    n.toLocaleString('th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
 
   return (
     <Content>
@@ -130,57 +150,87 @@ const ReportSale: React.FC = () => {
               ) : hasSearched && tableData.length === 0 ? (
                 <div className="text-center">ไม่พบข้อมูล</div>
               ) : tableData.length > 0 ? (
-                <div style={{ overflowX: "auto", width: "100%" }}>
+                <div style={{ overflowX: 'auto', width: '100%' }}>
                   <table className="table table-rounded table-row-bordered border table-striped gs-7 mt-3">
                     <thead>
                       <tr className="fw-bold">
-                        <th>ContNo</th>
-                        <th>สินค้า</th>
-                        <th>แพ็คเกจ</th>
-                        <th>ลูกค้า</th>
-                        <th>ทีมขาย</th>
-                        <th>รหัสขาย</th>
-                        <th>วันที่ทำสัญญา</th>
-                        <th>สถานะ</th>
+                        <th style={{ minWidth: 70 }}>ลำดับ<br /><span className="text-muted fs-7"></span></th>
+                        <th style={{ minWidth: 140 }}>เลขที่สัญญา<br /><span className="text-muted fs-7"></span></th>
+                        <th style={{ minWidth: 120 }}>สถานะ<br /><span className="text-muted fs-7"></span></th>
+                        <th style={{ minWidth: 140 }}>วันที่ทำสัญญา<br /><span className="text-muted fs-7"></span></th>
+                        <th style={{ minWidth: 220 }}>ชื่อ-นามสกุล<br /><span className="text-muted fs-7"></span></th>
+
+                        <th style={{ minWidth: 240 }}>สินค้า<br /><span className="text-muted fs-7"></span></th>
+                        <th style={{ minWidth: 220 }}>แพ็กเกจ<br /><span className="text-muted fs-7"></span></th>
+                        <th style={{ minWidth: 140, textAlign: 'right' }}>ราคาขาย<br /><span className="text-muted fs-7"></span></th>
+                        <th style={{ minWidth: 140, textAlign: 'right' }}>ส่วนลด<br /><span className="text-muted fs-7"></span></th>
+                        <th style={{ minWidth: 140, textAlign: 'right' }}>ราคาสุทธิ<br /><span className="text-muted fs-7"></span></th>
+
+                        <th style={{ minWidth: 140 }}>ทีมขาย<br /><span className="text-muted fs-7"></span></th>
+                        <th style={{ minWidth: 240 }}>พนักงานขาย<br /><span className="text-muted fs-7"></span></th>
                       </tr>
                     </thead>
+
                     <tbody>
-                      {tableData.map((item, index) => (
-                        <tr key={index}>
-                          <td>{item.CONTNO}</td>
-                          <td style={{ whiteSpace: 'normal', wordBreak: 'break-word', maxWidth: '150px' }}>
-                            {item.PRODUCT[0]?.ItemDescription || "-"}
-                          </td>
-                          <td style={{ whiteSpace: 'normal', wordBreak: 'break-word', maxWidth: '250px' }}>
-                            {item.PRODUCT[0]?.Package[0]?.PACKAGETITLE || "-"}
-                          </td>
-                          <td>
-                            {item.CUSTOMERDETAIL[0]?.PREFIX[0]?.PREFIXNAME ||
-                              ""}{" "}
-                            {item.CUSTOMERDETAIL[0]?.CUSTOMERNAME || ""} {item.CUSTOMERDETAIL[0]?.CUSTOMERLASTNAME || ""}
-                          </td>
-                          <td>{item.TEAMSALE}</td>
-                          <td style={{ whiteSpace: 'normal', wordBreak: 'break-word', maxWidth: '150px' }}>
-                            {item.SALEEMPLOYEE[0].SALEEMPLOYEE.SaleCode}-<br/>{item.SALEEMPLOYEE[0].SALEEMPLOYEE.FName} {item.SALEEMPLOYEE[0].SALEEMPLOYEE.LName}
-                          </td>
-                          <td>{formatToBE(item.EFFDATE)}</td>
-                          <td>
-                            {(() => {
-                              const statusMap: Record<string, string> = {
-                                PENDING: "รอตรวจสอบ",
-                                EDIT: "แจ้งแก้ไข",
-                                APPROVE: "อนุมัติผ่าน",
-                              };
-                              return statusMap[item.CHECKKERSTATUS];
-                            })()}
-                          </td>
-                        </tr>
-                      ))}
+                      {tableData.map((item: any, index: number) => {
+                        const contNo = item?.CONTNO ?? '-'
+                        const payStatus = item?.PAYSTATUS ?? payStatusMap[item?.CHECKKERSTATUS] ?? '-'
+                        const effDate = (toThaiDate(item?.EFFDATE));
+
+                        const customerName =
+                          [
+                            item?.CUSTOMERNAME,
+                          ].filter(Boolean).join(' ') || '-'
+
+                        const productName =
+                          item?.PRODUCT?.[0]?.ItemDescription ??
+                          item?.PRODUCTNAME ??
+                          '-'
+
+                        const packageTitle =
+                          item?.PRODUCT?.[0]?.Package?.[0]?.PACKAGETITLE ??
+                          item?.PRODUCT?.[0]?.PackageTitle ??
+                          item?.PACKAGETITLE ??
+                          '-'
+
+                        const sales = item?.SALES ?? 0
+                        const tradeInDiscount = item?.TRADEINDISCOUNT ?? 0
+                        const totalPrice = item?.TOTALPRICE ?? 0
+
+                        const teamCode = item?.SALETEAMCODE ?? '-'
+                        const emp = item?.SALEEMPLOYEE?.[0]?.SALEEMPLOYEE
+                        const employeeName =
+                          <>
+                            {item.SALECODE} - <br />
+                            {item?.SALEEMPLOYEENAME}
+                          </>
+
+
+                        return (
+                          <tr key={index}>
+                            <td>{index + 1}</td>
+                            <td style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{contNo}</td>
+                            <td>{payStatus}</td>
+                            <td>{effDate}</td>
+                            <td style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{customerName}</td>
+
+                            <td style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{productName}</td>
+                            <td style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{packageTitle}</td>
+                            <td style={{ textAlign: 'right' }}>{sales}</td>
+                            <td style={{ textAlign: 'right' }}>{tradeInDiscount}</td>
+                            <td style={{ textAlign: 'right' }}>{totalPrice}</td>
+
+                            <td>{teamCode}</td>
+                            <td style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{employeeName}</td>
+                          </tr>
+                        )
+                      })}
                     </tbody>
                   </table>
                 </div>
               ) : null}
             </div>
+            <p className="mt-3">จำนวน: {tableData.length} รายการ</p>
           </div>
         </div>
       </form>

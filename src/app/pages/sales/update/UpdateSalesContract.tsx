@@ -1636,7 +1636,7 @@ const UpdateSalesContract: React.FC = () => {
         showConfirmButton: false,
       });
 
-      navigate("/firstBill/CreateFirstBill", {
+      navigate("/sale/salesCreateFirstBill", {
         state: { item, from: location.pathname },
       });
     } catch (error) {

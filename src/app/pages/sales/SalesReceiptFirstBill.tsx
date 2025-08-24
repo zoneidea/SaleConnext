@@ -137,7 +137,7 @@ const ReceiptFirstBillFromCreateFirstBill: FC = () => {
       <div className="d-none d-xl-flex justify-content-end align-items-center mt-5 mb-10">
         <button
           className={`${moduleStyles.btnPrimary}`}
-          onClick={() => navigate("/sale/overview")}
+          onClick={() => navigate("/sale/photo", { state: { data: item, fromStep: "true" } })}
         >
           จบการทำงาน
         </button>
@@ -156,7 +156,8 @@ const ReceiptFirstBillFromCreateFirstBill: FC = () => {
       >
         <button
           className={`${moduleStyles.btnPrimary}`}
-          onClick={() => navigate("/sale/overview")}
+          // onClick={() => navigate("/sale/overview")}
+          onClick={() => navigate("/sale/photo", { state: { data: item, fromStep: "true" } })}
         >
           จบการทำงาน
         </button>

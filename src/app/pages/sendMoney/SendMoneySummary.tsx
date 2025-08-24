@@ -67,8 +67,12 @@ const SendMoneySummary: React.FC = () => {
     const channelName = itemData.CHANNELNAME || ''
     const channelItemName = itemData.CHANNELITEMNAME || ''
     const sendDate = itemData.SENDDATE || ''
-    const barcode = itemData.BARCODE || ''
+    const barcodeType = itemData.BARCODETYPE || ''
     const barcodeText = itemData.BARCODETEXT || ''
+    const qrText = itemData.QRBASE64 || ''
+    const barcodeSend = barcodeType === "BARCODE" ? barcodeText : qrText;
+    // console.log(`barcodeSend`, barcodeSend);
+    
     const ref1 = itemData.REFERENCE1 || ''
     const ref2 = itemData.REFERENCE2 || ''
     const amount = itemData.AMOUNT || 0
@@ -85,7 +89,7 @@ const SendMoneySummary: React.FC = () => {
 
                 <div className='d-flex justify-content-center align-items-center mb-10'>
                     <Barcode
-                        value={barcodeText}
+                        value={barcodeSend}
                         format='CODE128'
                     />
                 </div>
