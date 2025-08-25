@@ -3830,7 +3830,7 @@ const UpdateSaleCustDetail: React.FC = () => {
   const [idCard, setIdCard] = useState<string>("");
   const [fullName, setFullName] = useState<string>("");
   const [lastName, setLastName] = useState<string>("");
-  console.log(`lastName`, lastName);
+  // console.log(`lastName`, lastName);
   const [nameMD, setNameMD] = useState<string>("");
   // const [age, setAge] = useState<string>('');
   const [age, setAge] = useState<number | null>(null);
@@ -3927,7 +3927,7 @@ const UpdateSaleCustDetail: React.FC = () => {
 
   // เลือก item ที่ REFNO ตรงกัน (find สำหรับ 1 item หรือ filter สำหรับหลาย item)
   const matchedItem = draft.find((item) => item.REFNO === refno);
-  console.log(`matchedItem`, matchedItem);
+  // console.log(`matchedItem`, matchedItem);
 
   {
     /****** matchedItem *******/

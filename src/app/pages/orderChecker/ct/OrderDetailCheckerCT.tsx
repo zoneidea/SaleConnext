@@ -88,7 +88,7 @@ const OrderDetailCheckerCT: React.FC = () => {
     // รับข้อมูล item จาก state
     const state = location.state as { item: ItemProps } | undefined;
     const item = state?.item;
-    console.log(`item`, item);
+    // console.log(`item`, item);
 
     const MySwal = withReactContent(Swal);
 

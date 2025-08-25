@@ -3666,7 +3666,7 @@ const SalesContract: React.FC = () => {
 
   // ⬇️ state จาก PDPA (หรือหน้าอื่น)
   const state = location.state as IncomingState;
-  console.log(`state`, state);
+  // console.log(`state`, state);
 
   const { auth } = useAuth();
   const EmpId = auth?.data?.[0]?.EmpId || "";
@@ -3715,7 +3715,7 @@ const SalesContract: React.FC = () => {
   // ✅ ข้อมูลที่ใช้เรนเดอร์ทั้งหมด
   // ถ้ามีใน draft (อัปเดตสุด) ใช้ draft ก่อน, ถ้ายังไม่เจอใช้ state
   const data: ItemProps = (recordFromDraft || state || ({} as ItemProps)) as ItemProps;
-  console.log(`data`, data);
+  // console.log(`data`, data);
 
   // console.log("refNoToUse:", refNoToUse);
   // console.log("recordFromDraft:", recordFromDraft);

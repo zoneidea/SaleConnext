@@ -518,14 +518,14 @@ const DashboardWrapper: FC = () => {
   }, [draft, finish, pending, edit])
 
   const allContract = draft.length + finish.length
-  console.log(`draft`, draft);
-  console.log(`finish`, finish);
-  console.log(`pending`, pending);
-  console.log(`edit`, edit);
+  // console.log(`draft`, draft);
+  // console.log(`finish`, finish);
+  // console.log(`pending`, pending);
+  // console.log(`edit`, edit);
 
   ////////////// Payments ///////////////
   const [rows, setRows] = useState<any[]>([])
-  console.log(`rows`, rows);
+  // console.log(`rows`, rows);
   const [loading, setLoading] = useState(false)
 
   const fetchPayments = async () => {
@@ -565,7 +565,7 @@ const DashboardWrapper: FC = () => {
     }, 0)
   }, [rows, EmpId])
 
-  console.log(`cashOnHandTotal`, cashOnHandTotal);
+  // console.log(`cashOnHandTotal`, cashOnHandTotal);
 
   return (
     <>

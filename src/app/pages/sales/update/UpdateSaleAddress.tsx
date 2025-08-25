@@ -10309,7 +10309,7 @@ const UpdateSaleAddress: React.FC = () => {
     const location = useLocation();
 
     const item = (location.state as ItemProps) || [];
-    console.log(`item`, item);
+    // console.log(`item`, item);
 
     const refno = item?.REFNO;
     const custAddr = item?.ADDRESS;
@@ -10512,7 +10512,7 @@ const UpdateSaleAddress: React.FC = () => {
     }, []);
 
     const matchedItem = draft.find((item) => item.REFNO === refno);
-    console.log(`matchedItem`, matchedItem);
+    // console.log(`matchedItem`, matchedItem);
 
     {
         /****** matchedItem *******/

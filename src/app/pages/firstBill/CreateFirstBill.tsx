@@ -8615,7 +8615,7 @@ const CreateFirstBill: React.FC = () => {
     (from === "/firstBill/overview"
       ? item?.PERIODDETAILS?.[0]?.PAYMENTAMOUNT
       : product?.[0]?.Package?.[0]?.PERIODDETAILS?.[0]?.PAYMENTAMOUNT - discountAmount) ?? 0;
-  console.log(`paymentAmount`, paymentAmount);
+  // console.log(`paymentAmount`, paymentAmount);
 
   const totalPrice = Number(product?.[0]?.Package?.[0]?.TOTALPRICE ?? 0);
   const netPrice = totalPrice - discountAmount;
@@ -8627,7 +8627,7 @@ const CreateFirstBill: React.FC = () => {
   // ชำระเต็ม หรือ ชำระบางส่วน / เกินจำนวน
   const [payFullAmount, setPayFullAmount] = useState<boolean>(true);
   const [paySomeAmount, setPaySomeAmount] = useState<number>(0);
-  console.log(`จำนวนเงินแบ่งชำระ`, paySomeAmount);
+  // console.log(`จำนวนเงินแบ่งชำระ`, paySomeAmount);
   const [paymentChoice, setPaymentChoice] = useState<string>("FULL");
 
   const [priceOption, setPriceOption] = useState<string>("CASH");
@@ -8905,7 +8905,7 @@ const CreateFirstBill: React.FC = () => {
     DISCOUNT: discountAmount,
     PAYMENTID: paymentId,
   };
-  console.log(`allData`, allData);
+  // console.log(`allData`, allData);
 
   const onSubmit = async () => {
     // บังคับเลือกวันที่ในเคสที่ต้องมีวัน
@@ -9129,10 +9129,10 @@ const CreateFirstBill: React.FC = () => {
   const hasRedirectedRef = useRef(false)
   const countdownIdRef = useRef<number | null>(null)
   const secondsLeftRef = useRef<number>(0)
-  console.log(`paidBaselineCountRef`, paidBaselineCountRef);
-  console.log(`hasRedirectedRef`, hasRedirectedRef);
-  console.log(`countdownIdRef`, countdownIdRef);
-  console.log(`secondsLeftRef`, secondsLeftRef);
+  // console.log(`paidBaselineCountRef`, paidBaselineCountRef);
+  // console.log(`hasRedirectedRef`, hasRedirectedRef);
+  // console.log(`countdownIdRef`, countdownIdRef);
+  // console.log(`secondsLeftRef`, secondsLeftRef);
 
   // sync ค่า countdown เข้ากับ ref เสมอ
   useEffect(() => {

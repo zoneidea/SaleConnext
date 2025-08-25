@@ -3323,7 +3323,7 @@ const SalesPackage: React.FC = () => {
   const [selectedPackageModel, setSelectedPackageModel] = useState<
     number | null
   >(null);
-  console.log(`selectedPackageModel`, selectedPackageModel);
+  // console.log(`selectedPackageModel`, selectedPackageModel);
 
   const [selectedProductId, setSelectedProductId] = useState<any>("");
   // console.log(`selectedProductId`, selectedProductId);

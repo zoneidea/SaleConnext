@@ -34,7 +34,7 @@ const OrderCheckerAdmin: React.FC = () => {
     const BOOKING_CHECKER_URL = `${API_BOOKING_CHECKER}/BookingLists`;
 
     const [getBookingData, setGetBookingData] = useState<any[]>([]); // กำหนดให้ state เป็น array เพื่อรองรับ map()
-    console.log(`getBookingData`, getBookingData);
+    // console.log(`getBookingData`, getBookingData);
 
     const [isLoadingPending, setIsLoadingPending] = useState<boolean>(false);
     const [search, setSearch] = useState<string>(''); // State สำหรับค้นหา

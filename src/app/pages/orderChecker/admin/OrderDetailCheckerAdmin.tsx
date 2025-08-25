@@ -1547,7 +1547,7 @@ const OrderDetailCheckerAdmin: React.FC = () => {
         },
     });
 
-    console.log("Errors:", errors)
+    // console.log("Errors:", errors)
 
     {/*-------------------- End Validate --------------------*/ }
 
@@ -1656,7 +1656,7 @@ const OrderDetailCheckerAdmin: React.FC = () => {
 
     const location = useLocation();
     const item = location.state as ItemProps || [];
-    console.log(`item`, item);
+    // console.log(`item`, item);
 
     const [isLoadingPending, setIsLoadingPending] = useState<boolean>(false);
     const [search, setSearch] = useState<string>(''); // State สำหรับค้นหา

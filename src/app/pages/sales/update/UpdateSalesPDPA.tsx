@@ -2017,7 +2017,7 @@ const UpdateSalesPDPA: React.FC = () => {
 
   const location = useLocation();
   const item = (location.state as ItemProps) || ({} as ItemProps);
-  console.log(`item`, item);
+  // console.log(`item`, item);
 
   const { auth } = useAuth();
   const EmpId = auth?.data?.[0]?.EmpId || "";
@@ -2029,7 +2029,7 @@ const UpdateSalesPDPA: React.FC = () => {
   const [isLoadingDraft, setIsLoadingDraft] = useState<boolean>(false);
   const [draft, setDraft] = useState<any[]>([]);
   const [matchedItem, setMatchedItem] = useState<ItemProps | null>(null);
-  console.log(`matchedItem`, matchedItem);
+  // console.log(`matchedItem`, matchedItem);
 
   const { REFNO } = useUUIDStore();
   const API_URL_PDPA_LETTER = import.meta.env.VITE_APP_API_PDPA_LETTER;
@@ -2056,7 +2056,7 @@ const UpdateSalesPDPA: React.FC = () => {
     matchedItem?.CUSTOMERDETAIL?.[0]?.CUSTOMERMOBILE ??
     item?.CUSTOMERDETAIL?.[0]?.CUSTOMERMOBILE ??
     "";
-  console.log(`telCustomer`, telCustomer);
+  // console.log(`telCustomer`, telCustomer);
 
   const otpInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -2110,7 +2110,7 @@ const UpdateSalesPDPA: React.FC = () => {
 
   // REFNO ที่จะ “ล็อก” ทั้งหน้าจอ PDPA
   const refNoToShow = (ctxItem?.REFNO as string) ?? "";
-  console.log(`refNoToShow`, refNoToShow);
+  // console.log(`refNoToShow`, refNoToShow);
 
   const handleRequestOTP = async () => {
     if (!telCustomer || (telCustomer.length !== 9 && telCustomer.length !== 10)) {
@@ -2122,7 +2122,7 @@ const UpdateSalesPDPA: React.FC = () => {
       await axios.post(
         SEND_SMS_API,
         {
-          RefNo: REFNO, // ถ้าต้องการให้ผูกกับ refNoToShow เปลี่ยนเป็น refNoToShow ได้
+          RefNo: refNoToShow, // ถ้าต้องการให้ผูกกับ refNoToShow เปลี่ยนเป็น refNoToShow ได้
           Alllow_Contract,
           PDPA_Code,
           TelMobile: telCustomer,
@@ -2148,7 +2148,7 @@ const UpdateSalesPDPA: React.FC = () => {
     try {
       const resp = await axios.post(
         CHECK_OTP_API,
-        { EmpID: EmpId, RefNo: REFNO, OTP: inputOTP }, // จะเปลี่ยนเป็น refNoToShow ก็ได้เช่นกัน
+        { EmpID: EmpId, RefNo: refNoToShow, OTP: inputOTP }, // จะเปลี่ยนเป็น refNoToShow ก็ได้เช่นกัน
         { headers: { "Content-Type": "multipart/form-data" } }
       );
 

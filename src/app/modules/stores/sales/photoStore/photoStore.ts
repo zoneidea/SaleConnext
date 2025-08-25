@@ -24,7 +24,7 @@ export const usePhotoIdCardStore = create<PhotoIdCardStore>((set) => ({
         "IdCardImages",
         JSON.stringify(newImages.map((img) => ({ preview: img.preview })))
       );
-      console.log("Images after add:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
+      // console.log("Images after add:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
       return { imagesIdCard: newImages };
     });
   },
@@ -36,7 +36,7 @@ export const usePhotoIdCardStore = create<PhotoIdCardStore>((set) => ({
         "IdCardImages",
         JSON.stringify(newImages.map((img) => ({ preview: img.preview })))
       );
-      console.log("Images after remove:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
+      // console.log("Images after remove:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
       return { imagesIdCard: newImages };
     });
   },
@@ -76,7 +76,7 @@ export const usePhotoDrawingMapStore = create<photoDrawingMapStore>((set) => ({
         "DrawingMapImages",
         JSON.stringify(newImages.map((img) => ({ preview: img.preview })))
       );
-      console.log("Images after add:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
+      // console.log("Images after add:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
       return { imagesDrawingMap: newImages };
     });
   },
@@ -88,7 +88,7 @@ export const usePhotoDrawingMapStore = create<photoDrawingMapStore>((set) => ({
         "DrawingMapImages",
         JSON.stringify(newImages.map((img) => ({ preview: img.preview })))
       );
-      console.log("Images after remove:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
+      // console.log("Images after remove:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
       return { imagesDrawingMap: newImages };
     });
   },
@@ -159,7 +159,7 @@ export const usePhotoTurnStore = create<photoTurnStore>((set) => ({
         "turnImages",
         JSON.stringify(newImages.map((img) => ({ preview: img.preview })))
       );
-      console.log("Images after add:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
+      // console.log("Images after add:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
       return { imagesTurn: newImages };
     });
   },
@@ -171,7 +171,7 @@ export const usePhotoTurnStore = create<photoTurnStore>((set) => ({
         "turnImages",
         JSON.stringify(newImages.map((img) => ({ preview: img.preview })))
       );
-      console.log("Images after remove:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
+      // console.log("Images after remove:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
       return { imagesTurn: newImages };
     });
   },
@@ -243,7 +243,7 @@ export const usePhotoInstallationStore = create<photoInstallationStore>((set) =>
         "InstallationImages",
         JSON.stringify(newImages.map((img) => ({ preview: img.preview })))
       );
-      console.log("Images after add:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
+      // console.log("Images after add:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
       return { imagesInstallation: newImages };
     });
   },
@@ -255,7 +255,7 @@ export const usePhotoInstallationStore = create<photoInstallationStore>((set) =>
         "InstallationImages",
         JSON.stringify(newImages.map((img) => ({ preview: img.preview })))
       );
-      console.log("Images after remove:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
+      // console.log("Images after remove:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
       return { imagesInstallation: newImages };
     });
   },
@@ -327,7 +327,7 @@ export const usePhotoHomeCustomerStore = create<photoHomeCustomerStore>((set) =>
         "HomeCustomerImages",
         JSON.stringify(newImages.map((img) => ({ preview: img.preview })))
       );
-      console.log("Images after add:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
+      // console.log("Images after add:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
       return { imagesHomeCustomer: newImages };
     });
   },
@@ -339,7 +339,7 @@ export const usePhotoHomeCustomerStore = create<photoHomeCustomerStore>((set) =>
         "HomeCustomerImages",
         JSON.stringify(newImages.map((img) => ({ preview: img.preview })))
       );
-      console.log("Images after remove:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
+      // console.log("Images after remove:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
       return { imagesHomeCustomer: newImages };
     });
   },
@@ -411,7 +411,7 @@ export const usePhotoCustomerStore = create<photoCustomerStore>((set) => ({
         "CustomerImages",
         JSON.stringify(newImages.map((img) => ({ preview: img.preview })))
       );
-      console.log("Images after add:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
+      // console.log("Images after add:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
       return { imagesCustomer: newImages };
     });
   },
@@ -423,7 +423,7 @@ export const usePhotoCustomerStore = create<photoCustomerStore>((set) => ({
         "CustomerImages",
         JSON.stringify(newImages.map((img) => ({ preview: img.preview })))
       );
-      console.log("Images after remove:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
+      // console.log("Images after remove:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
       return { imagesCustomer: newImages };
     });
   },
@@ -495,7 +495,7 @@ export const usePhotoEquipmentStore = create<photoEquipmentStore>((set) => ({
         "EquipmentImages",
         JSON.stringify(newImages.map((img) => ({ preview: img.preview })))
       );
-      console.log("Images after add:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
+      // console.log("Images after add:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
       return { imagesEquipment: newImages };
     });
   },
@@ -507,7 +507,7 @@ export const usePhotoEquipmentStore = create<photoEquipmentStore>((set) => ({
         "EquipmentImages",
         JSON.stringify(newImages.map((img) => ({ preview: img.preview })))
       );
-      console.log("Images after remove:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
+      // console.log("Images after remove:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
       return { imagesEquipment: newImages };
     });
   },
@@ -582,7 +582,7 @@ export const usePhotoGPSStore = create<PhotoGPSStore>((set) => ({
         "GPSImages",
         JSON.stringify(newImages.map((img) => ({ preview: img.preview })))
       );
-      console.log("Images after add:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
+      // console.log("Images after add:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
       return { imagesGPS: newImages };
     });
   },
@@ -594,7 +594,7 @@ export const usePhotoGPSStore = create<PhotoGPSStore>((set) => ({
         "GPSImages",
         JSON.stringify(newImages.map((img) => ({ preview: img.preview })))
       );
-      console.log("Images after remove:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
+      // console.log("Images after remove:", newImages); // Log เพื่อตรวจสอบข้อมูลใน state
       return { imagesGPS: newImages };
     });
   },

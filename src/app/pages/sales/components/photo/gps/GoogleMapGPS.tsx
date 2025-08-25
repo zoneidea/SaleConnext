@@ -128,7 +128,7 @@ const GoogleMapComponent: React.FC<{ position: Position; REFNO?: string; fromSte
   const navigate = useNavigate();
   const mapRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false); // State สำหรับควบคุมปุ่ม
-  console.log(`isLoading`, isLoading);
+  // console.log(`isLoading`, isLoading);
 
   const captureMap = async () => {
     if (!mapRef.current) return;
@@ -145,8 +145,8 @@ const GoogleMapComponent: React.FC<{ position: Position; REFNO?: string; fromSte
 
       // ✅ แปลงเป็น File แล้ว append ด้วยชื่อไฟล์ใหม่
       const file = new File([blob], uniqueName, { type: 'image/png' });
-      console.log(`file`, file);
-      console.log(`uniqueName`, uniqueName);
+      // console.log(`file`, file);
+      // console.log(`uniqueName`, uniqueName);
 
       const formData = new FormData();
       if (REFNO) formData.append('REFNO', REFNO);

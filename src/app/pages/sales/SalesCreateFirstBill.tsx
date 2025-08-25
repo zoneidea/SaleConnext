@@ -1849,7 +1849,7 @@ const SalesCreateFirstBill: React.FC = () => {
 
     const state = (location.state ?? {}) as LocationState;
     const item = state.item;
-    console.log(`item`, item);
+    // console.log(`item`, item);
     const from = state.from ?? "";
 
     const refno = item?.REFNO ?? "";
@@ -1887,7 +1887,7 @@ const SalesCreateFirstBill: React.FC = () => {
         product?.[0]?.Package?.[0]?.PERIODDETAILS?.[0]?.PAYMENTAMOUNT ?? 0;
 
     const paymentAmount = product?.[0]?.Package?.[0]?.PERIODDETAILS?.[0]?.PAYMENTAMOUNT - discountAmount;
-    console.log(`paymentAmount`, paymentAmount);
+    // console.log(`paymentAmount`, paymentAmount);
 
     const totalPrice = Number(product?.[0]?.Package?.[0]?.TOTALPRICE ?? 0);
     const netPrice = totalPrice - discountAmount;
@@ -2358,10 +2358,10 @@ const SalesCreateFirstBill: React.FC = () => {
     const hasRedirectedRef = useRef(false)
     const countdownIdRef = useRef<number | null>(null)
     const secondsLeftRef = useRef<number>(0)
-    console.log(`paidBaselineCountRef`, paidBaselineCountRef);
-    console.log(`hasRedirectedRef`, hasRedirectedRef);
-    console.log(`countdownIdRef`, countdownIdRef);
-    console.log(`secondsLeftRef`, secondsLeftRef);
+    // console.log(`paidBaselineCountRef`, paidBaselineCountRef);
+    // console.log(`hasRedirectedRef`, hasRedirectedRef);
+    // console.log(`countdownIdRef`, countdownIdRef);
+    // console.log(`secondsLeftRef`, secondsLeftRef);
 
     // sync ค่า countdown เข้ากับ ref เสมอ
     useEffect(() => {
