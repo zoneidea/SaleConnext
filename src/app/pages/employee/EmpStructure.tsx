@@ -233,7 +233,9 @@ const EmpStructure: React.FC = () => {
                     {
                         EmpId: auth.data[0].EmpId,
                         TeamSale: auth.data[0].TeamSale,
-                        DataType : "EmpStructure"
+                        ProcessType: auth.processtype,
+                        DepID: auth.data[0].DepID,
+                        DataType: "EmpStructure"
                     }, {
                     headers: {
                         'Content-Type': 'multipart/form-data',

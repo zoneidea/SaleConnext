@@ -26,7 +26,7 @@ const ReportSale: React.FC = () => {
   const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
   const API_URL_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
   // const REPORT_DAILY_URL = `${API_URL_MONGO}/Report/GetReportDaily`;
-  const REPORT_DAILY_URL = `${API_URL_SALECONNEXT}/GetListContracts?EmpId=${empId}&TeamSale=${teamSale}&PosId=${posID}&DepId=${depID}&Sdate=${valueCalendarStart}&Edate=${valueCalendarEnd}`;
+  const REPORT_DAILY_URL = `${API_URL_SALECONNEXT}/GetListContracts?EmpId=${empId}&TeamSale=${teamSale}&PosId=${posID}&DepId=${depID}&Sdate=${valueCalendarStart}&Edate=${valueCalendarEnd}&ProcessType=${auth.processtype}`;
 
   const handleSearch = async () => {
     if (!valueCalendarStart || !valueCalendarEnd) {

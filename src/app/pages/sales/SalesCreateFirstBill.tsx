@@ -1867,6 +1867,9 @@ const SalesCreateFirstBill: React.FC = () => {
     const thirdAddress = addressArray?.[2];
     const fourthAddress = addressArray?.[3];
 
+    const API_URL_FIRST_PAYMENT = import.meta.env.VITE_APP_FIRST_PAYMENT;
+    const UPDATE_APPOINTMENT = `${API_URL_FIRST_PAYMENT}/GetListFirstPayments/UpdateAppointment`;
+
     // กดเข้ามาแล้วถ้ามีวันนัดชำระ ให้ติ๊กอยู่ที่ นัดชำระ แล้ววันที่ให้โชวันที่นัดก่อนหน้า
     useEffect(() => {
         if (item?.SCHEDULE && item.SCHEDULE.length > 0) {
@@ -2074,13 +2077,38 @@ const SalesCreateFirstBill: React.FC = () => {
 
     const submitPayment = async () => {
         try {
+            // ถ้าเป็นโหมดนัดชำระ ให้ส่งนัดหมายเข้า UPDATE_APPOINTMENT ก่อน
+            if (status === "SCHEDULE") {
+                if (!dueDate) {
+                    Swal.fire("แจ้งเตือน", "กรุณาเลือกวันที่นัดชำระ", "warning");
+                    return;
+                }
+
+                const appointmentPayload = {
+                    RefNo: refno,
+                    EmpId: EmpId,
+                    TeamSale: TeamSale,
+                    Appointdate: dueDate,
+                };
+
+                const appRes = await axios.post(UPDATE_APPOINTMENT, appointmentPayload, {
+                    headers: { "Content-Type": "application/json" },
+                });
+
+                // ถ้า API ฝั่งนัดชำระไม่โอเค ให้หยุดไว้ก่อน
+                if (appRes.status !== 200) {
+                    Swal.fire("เกิดข้อผิดพลาด", "บันทึกวันนัดชำระไม่สำเร็จ", "error");
+                    return;
+                }
+            }
+
+            // จากนั้นบันทึกธุรกรรมการชำระ/นัดชำระตามเดิม
             const response = await axios.post(POST_PAYMENT_TRANSACTION_URL, allData, {
                 headers: { "Content-Type": "application/json" },
             });
 
             if (response.status === 200) {
-                // ปักธงว่า REFNO นี้บันทึกแล้ว
-                localStorage.setItem(`paymentDone:${refno.toUpperCase().trim()}`, '1');
+                localStorage.setItem(`paymentDone:${refno.toUpperCase().trim()}`, "1");
 
                 Swal.fire({
                     icon: "success",
@@ -2090,13 +2118,9 @@ const SalesCreateFirstBill: React.FC = () => {
                     showConfirmButton: false,
                 });
 
-                if (item?.STATUS === "DRAFT" && payQuick) {
-                    navigate("/sale/salesReceiptFirstBill", { state: item });
-                } else if (item?.STATUS === "DRAFT" && !payQuick) {
-                    navigate("/sale/photo", { state: { data: item, fromStep: "true" } });
-                }
+                navigate("/firstBill/receiptFromCreateFirstBill", { state: item });
             } else {
-                Swal.fire("เกิดข้อผิดพลาด", response.data.message || "ไม่สามารถบันทึกข้อมูลได้", "error");
+                Swal.fire("เกิดข้อผิดพลาด", response.data?.message || "ไม่สามารถบันทึกข้อมูลได้", "error");
             }
         } catch (error) {
             console.error("Error saving data:", error);
@@ -2335,6 +2359,7 @@ const SalesCreateFirstBill: React.FC = () => {
                 params: {
                     EMPID: EmpId,
                     TEAMSALE: TeamSale,
+                    ProcessType: auth.processtype
                 },
             });
             const data = Array.isArray(response.data.data) ? response.data.data : [];

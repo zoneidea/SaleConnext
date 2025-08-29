@@ -26,8 +26,11 @@ const FirstBillOverview: React.FC = () => {
   // console.log(`TeamCode: `, TeamCode);
 
   const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
+  const API_URL_FIRST_PAYMENT = import.meta.env.VITE_APP_FIRST_PAYMENT;
+
   // const FINISH_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=FINISH&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`;
   const GET_PAYMENT_URL = `${API_URL_MONGO}/Payment/GetPaymentPeriod`;
+  const GET_LIST_FIRST_PAYMENT = `${API_URL_FIRST_PAYMENT}/GetListFirstPayments?EmpId=${EmpId}&TeamSale=${TeamSale}&ProcessType=${auth.processtype}`;
 
   const { fetchCategory } = useFetchCategoryStore();
   // console.log(`fetchCategory: `, fetchCategory);
@@ -53,7 +56,8 @@ const FirstBillOverview: React.FC = () => {
       const response = await axios.get(GET_PAYMENT_URL, {
         params: {
           EMPID: EmpId,
-          TEAMSALE: TeamSale
+          TEAMSALE: TeamSale,
+          ProcessType: auth.processtype
         }
       });
       const data = Array.isArray(response.data.data) ? response.data.data : [];
@@ -64,6 +68,19 @@ const FirstBillOverview: React.FC = () => {
       setIsLoadingFinish(false);
     }
   };
+
+  // const getDataFinish = async () => {
+  //   setIsLoadingFinish(true);
+  //   try {
+  //     const response = await axios.get(GET_LIST_FIRST_PAYMENT);
+  //     const data = Array.isArray(response.data.data) ? response.data.data : [];
+  //     setFinish(data);
+  //   } catch (error) {
+  //     console.error('Error fetching GET_PAYMENT_URL:', error);
+  //   } finally {
+  //     setIsLoadingFinish(false);
+  //   }
+  // };
 
   // กรองข้อมูลตาม search
   const searchLower = search.toLowerCase();

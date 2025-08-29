@@ -69,21 +69,30 @@ const SalesProductStock: React.FC = () => {
     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
     // เมื่อมีการเลือกหมวดหมู่จะเรียก API พร้อม filter ด้วย categoryId
     const getProductUrl = () =>
-        `${API_URL_MONGO}/Product/GetStock?empid=${EmpId}&teamSale=${TeamSale}&categoryId=${selectedCategoryId}`;
+        `${API_URL_MONGO}/Product/GetStock?empid=${EmpId}&teamSale=${TeamSale}&categoryId=${selectedCategoryId}&ProcessType=${auth.processtype}`;
 
     const API_TSR = import.meta.env.VITE_APP_API_THIENSURAT;
     const API_TSR_UAT = import.meta.env.VITE_APP_API_THIENSURAT_UAT;
-    const PRODUCT_STOCK_ALL_COMPANY_URL = `${API_TSR_UAT}/ProductStock`;
 
-    // const GET_BORROW_URL = (empid: string, teamSale: string, sn: string) =>
-    //     `${API_TSR_UAT}/Product/GetBorrow?empid=${empid}&teamSale=${teamSale}&sn=${sn}`
-
+    /////////////// PRODUCTION ////////////////////
+    const PRODUCT_STOCK_ALL_COMPANY_URL = `${API_TSR}/ProductStock`;
+    const GET_BORROW_URL = (empid: string, teamSale: string, sn: string) =>
+        `${API_TSR}/Product/GetBorrow?empid=${empid}&teamSale=${teamSale}&sn=${sn}`
     const MOVE_PRODUCT_STOCK_URL = `${API_TSR}/MoveProductInStock`;
     const GET_STOCK_URL = `${API_URL_MONGO}/Product/GetStock`;
     const GET_STOCK_WITHDRAW = `${API_TSR}/ProductStock/GetStock`
     const ACCEPT_PRODUCT_URL = `${API_TSR}/ProductStock/AcceptProduct`;
-
     const UPDATE_STOCK_URL = `${API_URL_MONGO}/Product/UpdateStock`;
+
+    /////////////// UAT ////////////////////
+    // const PRODUCT_STOCK_ALL_COMPANY_URL = `${API_TSR_UAT}/ProductStock`;
+    // const GET_BORROW_URL = (empid: string, teamSale: string, sn: string) =>
+    //     `${API_TSR_UAT}/Product/GetBorrow?empid=${empid}&teamSale=${teamSale}&sn=${sn}`
+    // const MOVE_PRODUCT_STOCK_URL = `${API_TSR_UAT}/MoveProductInStock`;
+    // const GET_STOCK_URL = `${API_URL_MONGO}/Product/GetStock`;
+    // const GET_STOCK_WITHDRAW = `${API_TSR_UAT}/ProductStock/GetStock`
+    // const ACCEPT_PRODUCT_URL = `${API_TSR_UAT}/ProductStock/AcceptProduct`;
+    // const UPDATE_STOCK_URL = `${API_URL_MONGO}/Product/UpdateStock`;
 
     {/**************** สินค้าในสต๊อกตัวเอง **********************/ }
 
@@ -197,7 +206,7 @@ const SalesProductStock: React.FC = () => {
                     icon: "success",
                     title: "บันทึกข้อมูลสำเร็จ",
                     timer: 2000,
-                    showConfirmButton: false, 
+                    showConfirmButton: false,
                 });
                 // รีเฟรชรายการใหม่
                 // เรียก fetchStock ภายใน useEffect หรือแยกเป็นฟังก์ชันแล้วเรียกซ้ำ
@@ -223,6 +232,7 @@ const SalesProductStock: React.FC = () => {
             form.append("EmpID", EmpId);
             form.append("TeamSale", TeamSale);
             form.append("CategoriesId", selectedCategoryId);
+            form.append("ProcessType", auth.processtype);
 
             const response = await axios.post(GET_STOCK_WITHDRAW, form);
             const data = Array.isArray(response.data.data) ? response.data.data : [];

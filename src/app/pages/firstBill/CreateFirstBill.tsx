@@ -8848,13 +8848,39 @@ const CreateFirstBill: React.FC = () => {
 
   const submitPayment = async () => {
     try {
+      // ถ้าเป็นโหมดนัดชำระ ให้ส่งนัดหมายเข้า UPDATE_APPOINTMENT ก่อน
+      if (status === "SCHEDULE") {
+        if (!dueDate) {
+          Swal.fire("แจ้งเตือน", "กรุณาเลือกวันที่นัดชำระ", "warning");
+          return;
+        }
+
+        const appointmentPayload = {
+          RefNo: refno,
+          EmpId: EmpId,
+          TeamSale: TeamSale,
+          SalePaymentPeriodID: paymentPeriodDetailId,
+          Appointdate: dueDate, 
+        };
+
+        const appRes = await axios.post(UPDATE_APPOINTMENT, appointmentPayload, {
+          headers: { "Content-Type": "application/json" },
+        });
+
+        // ถ้า API ฝั่งนัดชำระไม่โอเค ให้หยุดไว้ก่อน
+        if (appRes.status !== 200) {
+          Swal.fire("เกิดข้อผิดพลาด", "บันทึกวันนัดชำระไม่สำเร็จ", "error");
+          return;
+        }
+      }
+
+      // จากนั้นบันทึกธุรกรรมการชำระ/นัดชำระตามเดิม
       const response = await axios.post(POST_PAYMENT_TRANSACTION_URL, allData, {
         headers: { "Content-Type": "application/json" },
       });
 
       if (response.status === 200) {
-        // ปักธงว่า REFNO นี้บันทึกแล้ว
-        localStorage.setItem(`paymentDone:${refno.toUpperCase().trim()}`, '1');
+        localStorage.setItem(`paymentDone:${refno.toUpperCase().trim()}`, "1");
 
         Swal.fire({
           icon: "success",
@@ -8865,9 +8891,8 @@ const CreateFirstBill: React.FC = () => {
         });
 
         navigate("/firstBill/receiptFromCreateFirstBill", { state: item });
-
       } else {
-        Swal.fire("เกิดข้อผิดพลาด", response.data.message || "ไม่สามารถบันทึกข้อมูลได้", "error");
+        Swal.fire("เกิดข้อผิดพลาด", response.data?.message || "ไม่สามารถบันทึกข้อมูลได้", "error");
       }
     } catch (error) {
       console.error("Error saving data:", error);
@@ -9106,6 +9131,7 @@ const CreateFirstBill: React.FC = () => {
         params: {
           EMPID: EmpId,
           TEAMSALE: TeamSale,
+          ProcessType: auth.processtype
         },
       });
       const data = Array.isArray(response.data.data) ? response.data.data : [];
@@ -9259,10 +9285,14 @@ const CreateFirstBill: React.FC = () => {
   const ss = String(secondsLeft % 60).padStart(2, '0')
 
   const API_URL_GET_ALLCONTRACT = import.meta.env.VITE_APP_API_MONGO;
+  const API_URL_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
+  const API_URL_FIRST_PAYMENT = import.meta.env.VITE_APP_FIRST_PAYMENT;
+
   const POST_PAYMENT_TRANSACTION_URL = `${API_URL_GET_ALLCONTRACT}/Payment/UpdatePaymentTransaction`;
 
-  const API_URL_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
   const GET_QR_PAYMENT_URL = `${API_URL_SALECONNEXT}/GetQRPayment`;
+  const UPDATE_APPOINTMENT = `${API_URL_FIRST_PAYMENT}/GetListFirstPayments/UpdateAppointment`;
+
   const getCheckPaidUrl = (ref: string, amount: number) =>
     `${API_URL_SALECONNEXT}/GetQRPayment/CheckPaidQR?RefNo=${encodeURIComponent(ref)}&Amount=${encodeURIComponent(amount)}`
 
@@ -9796,13 +9826,11 @@ const CreateFirstBill: React.FC = () => {
                     </div>
                   </div>
 
-                  {firstAddress?.ADDRESSCARD.ADDRESSPROVINCENAME && (
+                  {/* {firstAddress?.ADDRESSCARD.ADDRESSPROVINCENAME && (
                     <div className="row mb-7">
-                      {/* หัวข้ออยู่ col-lg-4 */}
                       <label className={`col-lg-4 text-muted ${styles.label}`}>
                         ที่อยู่ตามบัตร
                       </label>
-                      {/* เนื้อหาอยู่ col-lg-7 */}
                       <div className="col-lg-7 d-flex align-items-center">
                         <span className={`${styles.label} me-2`}>
                           {firstAddress.ADDRESSCARD.ADDRESSNUMBER &&
@@ -9841,11 +9869,9 @@ const CreateFirstBill: React.FC = () => {
 
                   {firstAddress?.ADDRESSINSTALLATION.ADDRESSPROVINCENAME && (
                     <div className="row mb-7">
-                      {/* หัวข้ออยู่ col-lg-4 */}
                       <label className={`col-lg-4 text-muted ${styles.label}`}>
                         ที่อยู่ติดตั้ง
                       </label>
-                      {/* เนื้อหาอยู่ col-lg-7 */}
                       <div className="col-lg-7 d-flex align-items-center">
                         <span className={`${styles.label} me-2`}>
                           {firstAddress.ADDRESSINSTALLATION.ADDRESSNUMBER}{" "}
@@ -9879,7 +9905,7 @@ const CreateFirstBill: React.FC = () => {
                         <FontAwesomeIcon icon={faLocationDot} size="2x" />
                       </div>
                     </div>
-                  )}
+                  )} */}
 
                   {firstAddress?.ADDRESSPAYMENT.ADDRESSPROVINCENAME && (
                     <div className="row mb-7">

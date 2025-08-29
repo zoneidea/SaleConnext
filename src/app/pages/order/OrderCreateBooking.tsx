@@ -63,7 +63,7 @@ const OrderCreateBooking: React.FC = () => {
 
     const SAVEDATA_URL = `${API_SALECONNEXT}/CreateBooking/Submit_Createbooking`;
 
-    const getProductUrl = () => `${API_URL_MONGO}/Product/GetStock?empid=${auth.data[0].EmpId}&teamSale=${auth.data[0].TeamSale}&categoryId=${selectedCategoryId}`;
+    const getProductUrl = () => `${API_URL_MONGO}/Product/GetStock?empid=${auth.data[0].EmpId}&teamSale=${auth.data[0].TeamSale}&categoryId=${selectedCategoryId}&ProcessType=${auth.processtype}`;
 
     const [isLoading, setIsLoading] = useState<boolean>(false)
 
@@ -100,6 +100,9 @@ const OrderCreateBooking: React.FC = () => {
                 const response = await axios.post(EMPLOYEE_URL,
                     {
                         EmpId: auth.data[0].EmpId,
+                        TeamSale: auth.data[0].TeamSale,
+                        ProcessType: auth.processtype,
+                        DepID: auth.data[0].DepID,
                     }, {
                     headers: {
                         'Content-Type': 'multipart/form-data',

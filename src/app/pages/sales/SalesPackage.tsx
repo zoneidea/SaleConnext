@@ -3827,8 +3827,8 @@ const SalesPackage: React.FC = () => {
       try {
         // ดึง stock
         const url = selectedCategoryId
-          ? `${API_URL_MONGO}/Product/GetStock?empid=${EmpId}&teamSale=${TeamSale}&categoryId=${selectedCategoryId}`
-          : `${API_URL_MONGO}/Product/GetStock?empid=${EmpId}&teamSale=${TeamSale}&sn=${barCodeNormal}`;
+          ? `${API_URL_MONGO}/Product/GetStock?empid=${EmpId}&teamSale=${TeamSale}&categoryId=${selectedCategoryId}&ProcessType=${auth.processtype}`
+          : `${API_URL_MONGO}/Product/GetStock?empid=${EmpId}&teamSale=${TeamSale}&sn=${barCodeNormal}&ProcessType=${auth.processtype}`;
         const res = await axios.get(url);
         const data = Array.isArray(res.data.data) ? res.data.data : [];
 
@@ -4123,7 +4123,7 @@ const SalesPackage: React.FC = () => {
       try {
         setLoadingProducts(true);
         const response = await axios.get(
-          `${API_URL_MONGO}/Product/GetStock?empid=${EmpId}&teamSale=${TeamSale}&categoryId=${value}`
+          `${API_URL_MONGO}/Product/GetStock?empid=${EmpId}&teamSale=${TeamSale}&categoryId=${value}&ProcessType=${auth.processtype}`
         );
         const data = Array.isArray(response.data.data)
           ? response.data.data

@@ -36,7 +36,7 @@ const SalesEmployee: React.FC = () => {
   const { REFNO } = useUUIDStore();
   const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
   const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
-  const DRAFT_ALLCONTRACT_URL = `${API_URL_MONGO}/Contract/GetAllContract?status=DRAFT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`;
+  const DRAFT_ALLCONTRACT_URL = `${API_URL_MONGO}/Contract/GetAllContract?status=DRAFT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}&ProcessType=${auth.processtype}`;
 
   const [empInTeam, setEmpInTeam] = useState<Employee[]>([]);
   const [adviserList, setAdviserList] = useState<Employee[]>([]);
@@ -83,6 +83,8 @@ const SalesEmployee: React.FC = () => {
         formData.append("EmpId", EmpId);
         formData.append("SaleCode", SaleCode);
         formData.append("TeamSale", TeamSale);
+        formData.append("ProcessType", auth.processtype);
+        formData.append("DepID", auth?.data?.[0]?.DepID);
 
         const resp = await axios.post(url, formData, {
           headers: { "Content-Type": "multipart/form-data" },

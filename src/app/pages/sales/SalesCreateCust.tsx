@@ -11631,7 +11631,7 @@ const SalesCreateCust: React.FC = () => {
     const ZIPCODE_URL = `${API_SALECONNEXT}/GetAddress/Zipcode`;
 
     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
-    const DRAFT_ALLCONTRACT_URL = `${API_URL_MONGO}/Contract/GetAllContract?status=DRAFT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`;
+    const DRAFT_ALLCONTRACT_URL = `${API_URL_MONGO}/Contract/GetAllContract?status=DRAFT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}&ProcessType=${auth.processtype}`;
     const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
 
     {/************ สแกนบัตร ************/ }

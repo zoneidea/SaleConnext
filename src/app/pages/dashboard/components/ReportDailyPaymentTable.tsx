@@ -72,6 +72,7 @@ const ReportDailyPaymentTable: React.FC<Props> = ({ className = '' }) => {
                     DepId: depId,
                     Sdate: startDate,
                     Edate: endDate,
+                    ProcessType: auth.processtype,
                 },
             })
             const rows: Row[] = Array.isArray(res.data?.data) ? res.data.data : []

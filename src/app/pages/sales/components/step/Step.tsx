@@ -3372,7 +3372,12 @@ const Step: React.FC = () => {
     const getEmpInTeam = async () => {
       try {
         const formData = new FormData();
-        formData.append('EmpId', EmpId);
+        formData.append("EmpId", EmpId);
+        formData.append("SaleCode", SaleCode);
+        formData.append("TeamSale", TeamSale);
+        formData.append("ProcessType", auth.processtype);
+        formData.append("DepID", auth?.data?.[0]?.DepID);
+
         const response = await axios.post(
           EMP_IN_TEAM_URL,
           formData,
@@ -3456,7 +3461,8 @@ const Step: React.FC = () => {
       const response = await axios.get(GET_PAYMENT_URL, {
         params: {
           EMPID: EmpId,
-          TEAMSALE: TeamSale
+          TEAMSALE: TeamSale,
+          ProcessType: auth.processtype
         }
       });
       const data = Array.isArray(response.data.data) ? response.data.data : [];

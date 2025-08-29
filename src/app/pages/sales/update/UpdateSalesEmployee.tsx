@@ -63,7 +63,7 @@ const UpdateSalesEmployee: React.FC = () => {
     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO
     const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`
     const DRAFT_ALLCONTRACT_URL =
-        `${API_URL_MONGO}/Contract/GetAllContract?status=DRAFT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`
+        `${API_URL_MONGO}/Contract/GetAllContract?status=DRAFT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}&ProcessType=${auth.processtype}`
 
     // ตัวเลือก
     const [empInTeam, setEmpInTeam] = useState<Employee[]>([])
@@ -126,8 +126,12 @@ const UpdateSalesEmployee: React.FC = () => {
     const fetchList = useCallback(
         (url: string, setter: React.Dispatch<React.SetStateAction<Employee[]>>) => {
             const form = new FormData()
-            form.append('EmpId', EmpId)
-            form.append('TeamSale', TeamSale)
+            form.append("EmpId", EmpId);
+            form.append("SaleCode", SaleCode);
+            form.append("TeamSale", TeamSale);
+            form.append("ProcessType", auth.processtype);
+            form.append("DepID", auth?.data?.[0]?.DepID);
+
             axios
                 .post(url, form, { headers: { 'Content-Type': 'multipart/form-data' } })
                 .then(r => {
@@ -137,7 +141,7 @@ const UpdateSalesEmployee: React.FC = () => {
                     MySwal.fire('Error', 'ไม่สามารถโหลดข้อมูลพนักงานได้', 'error')
                 })
         },
-        [EmpId]
+        [EmpId, TeamSale, SaleCode]
     )
 
     // โหลดตัวเลือกเมื่อ EmpId พร้อม

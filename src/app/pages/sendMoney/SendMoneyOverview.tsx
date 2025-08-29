@@ -56,6 +56,7 @@ const SendMoneyOverview: React.FC = () => {
       formData.append('EmpId', EmpId);
       formData.append('TeamSale', TeamSale);
       formData.append('SaleCode', SaleCode);
+      formData.append('ProcessType', auth.processtype);
 
       const response = await axios.post(GET_SEND_MONEY, formData, {
         headers: {
@@ -83,6 +84,7 @@ const SendMoneyOverview: React.FC = () => {
       formData.append('EmpId', EmpId);
       formData.append('TeamSale', TeamSale);
       formData.append('SaleCode', SaleCode);
+      formData.append('ProcessType', auth.processtype);
 
       const response = await axios.post(GET_DATA_SEND_MONEY, formData, {
         headers: {

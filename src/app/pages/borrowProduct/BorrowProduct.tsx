@@ -73,7 +73,7 @@ const BorrowProduct: React.FC = () => {
     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
     // เมื่อมีการเลือกหมวดหมู่จะเรียก API พร้อม filter ด้วย categoryId
     const getProductUrl = () =>
-        `${API_URL_MONGO}/Product/GetStock?empid=${EmpId}&teamSale=${TeamSale}&categoryId=${selectedCategoryId}`;
+        `${API_URL_MONGO}/Product/GetStock?empid=${EmpId}&teamSale=${TeamSale}&categoryId=${selectedCategoryId}&ProcessType=${auth.processtype}`;
 
     {/**************** ระบบยืม **********************/ }
     const location = useLocation() as unknown as { state?: MyLocationState }
@@ -234,7 +234,10 @@ const BorrowProduct: React.FC = () => {
         setLoadingWatingProductAprroveBorrower(true);
         try {
             const { data } = await axios.post(GET_BORROW_LIST, {
-                TEAMSALE: TeamSale, SALECODE: SaleCode, EMPID: EmpId
+                TEAMSALE: TeamSale, 
+                SALECODE: SaleCode, 
+                EMPID: EmpId,
+                ProcessType: auth.processtype
             }, { headers: { 'Content-Type': 'application/json' } });
             // บาง API return มาใน data.data บางตัวใน data
             const list = Array.isArray(data.data) ? data.data : data;
@@ -373,6 +376,7 @@ const BorrowProduct: React.FC = () => {
                 TEAMSALE: TeamSale,
                 SALECODE: SaleCode,
                 EMPID: EmpId,
+                ProcessType: auth.processtype,
             }, {
                 headers: {
                     'Content-Type': 'application/json',

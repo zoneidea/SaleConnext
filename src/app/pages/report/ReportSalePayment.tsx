@@ -69,6 +69,7 @@ const ReportSalePayment: React.FC = () => {
           DepId: depId,
           Sdate: valueCalendarStart,
           Edate: valueCalendarEnd,
+          ProcessType: auth.processtype,
         },
       });
 

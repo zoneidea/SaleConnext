@@ -71,14 +71,18 @@ const UpdateSalesEmployeeFinishDay: React.FC = () => {
     // helper โหลดรายชื่อ
     const fetchList = useCallback((url: string, setter: React.Dispatch<React.SetStateAction<Employee[]>>) => {
         const form = new FormData()
-        form.append('EmpId', EmpId)
-        form.append('TeamSale', TeamSale)
+        form.append("EmpId", EmpId);
+        form.append("SaleCode", SaleCode);
+        form.append("TeamSale", TeamSale);
+        form.append("ProcessType", auth.processtype);
+        form.append("DepID", auth?.data?.[0]?.DepID);
+
         axios.post(url, form, { headers: { 'Content-Type': 'multipart/form-data' } })
             .then(r => setter(Array.isArray(r.data.data) ? r.data.data : []))
             .catch(() => {
                 MySwal.fire('Error', 'ไม่สามารถโหลดข้อมูลพนักงานได้', 'error')
             })
-    }, [EmpId, TeamSale])
+    }, [EmpId, TeamSale, SaleCode])
 
     // โหลด dropdown เมื่อ EmpId พร้อม
     useEffect(() => {

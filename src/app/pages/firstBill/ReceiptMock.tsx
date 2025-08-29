@@ -79,7 +79,11 @@ const ReceiptMock: FC = () => {
     setIsLoadingFinish(true);
     try {
       const response = await axios.get(GET_PAYMENT_URL, {
-        params: { EMPID: EmpId, TEAMSALE: TeamSale },
+        params: { 
+          EMPID: EmpId, 
+          TEAMSALE: TeamSale,
+          ProcessType: auth.processtype
+        },
       });
       // ดึง array ทั้งหมดมา
       const allPayments = Array.isArray(response.data.data)

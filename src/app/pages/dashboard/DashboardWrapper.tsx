@@ -479,10 +479,10 @@ const DashboardWrapper: FC = () => {
   const headers = { 'Content-Type': 'application/json' as const }
   const GET_PAYMENT_URL = `${API_URL_GET_ALLCONTRACT}/Payment/GetPaymentPeriod`
 
-  const DRAFT_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=DRAFT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`
-  const FINISH_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=FINISH&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`
-  const PENDING_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=PENDING&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`
-  const EDIT_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=EDIT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`
+  const DRAFT_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=DRAFT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}&ProcessType=${auth.processtype}`
+  const FINISH_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=FINISH&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}&ProcessType=${auth.processtype}`
+  const PENDING_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=PENDING&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}&ProcessType=${auth.processtype}`
+  const EDIT_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=EDIT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}&ProcessType=${auth.processtype}`
 
   const fetchAllContracts = async () => {
     try {
@@ -535,10 +535,10 @@ const DashboardWrapper: FC = () => {
     try {
       const res = await axios.get(GET_PAYMENT_URL, {
         params: {
-          EMPID: EmpId,      // <-- ต้องเป็นตัวใหญ่ให้ตรงกับ API
-          TEAMSALE: TeamSale // <-- ต้องเป็นตัวใหญ่ให้ตรงกับ API
+          EMPID: EmpId,     
+          TEAMSALE: TeamSale,
+          ProcessType: auth.processtype
         },
-        // GET ไม่จำเป็นต้องตั้ง Content-Type ก็ได้
       })
       const data = Array.isArray(res?.data?.data) ? res.data.data : []
       setRows(data)

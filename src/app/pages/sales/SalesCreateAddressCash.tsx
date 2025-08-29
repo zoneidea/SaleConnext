@@ -4952,7 +4952,7 @@ const SalesCreateAddress: React.FC = () => {
   const SecEmpId = auth?.data?.[0]?.SecEmp || "";
 
   const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
-  const DRAFT_ALLCONTRACT_URL = `${API_URL_MONGO}/Contract/GetAllContract?status=DRAFT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`;
+  const DRAFT_ALLCONTRACT_URL = `${API_URL_MONGO}/Contract/GetAllContract?status=DRAFT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}&ProcessType=${auth.processtype}`;
   const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
 
   const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;

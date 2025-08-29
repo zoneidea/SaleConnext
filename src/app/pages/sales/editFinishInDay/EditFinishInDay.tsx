@@ -200,7 +200,12 @@ const EditFinishInDay: React.FC = () => {
     const getEmpInTeam = async () => {
       try {
         const formData = new FormData();
-        formData.append('EmpId', EmpId);
+        formData.append("EmpId", EmpId);
+        formData.append("SaleCode", SaleCode);
+        formData.append("TeamSale", TeamSale);
+        formData.append("ProcessType", auth.processtype);
+        formData.append("DepID", auth?.data?.[0]?.DepID);
+
         const response = await axios.post(
           EMP_IN_TEAM_URL,
           formData,
