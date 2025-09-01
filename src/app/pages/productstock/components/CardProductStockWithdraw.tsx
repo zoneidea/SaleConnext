@@ -49,6 +49,9 @@ const CardProductStockWithdraw: FC<Props> = ({
             <div className="d-flex align-items-center mb-2">
                 <span className="fw-regular fs-7 d-block">S/N: {SerialNo}</span>
             </div>
+            <div className="d-flex align-items-center mb-2">
+                <span className="fw-regular fs-7 d-block">วันที่เบิก: {TransDate}</span>
+            </div>
 
             <div className="d-flex justify-content-lg-center justify-content-md-center gap-2 mt-7">
                 <button

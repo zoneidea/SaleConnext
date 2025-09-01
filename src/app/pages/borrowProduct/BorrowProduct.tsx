@@ -234,8 +234,8 @@ const BorrowProduct: React.FC = () => {
         setLoadingWatingProductAprroveBorrower(true);
         try {
             const { data } = await axios.post(GET_BORROW_LIST, {
-                TEAMSALE: TeamSale, 
-                SALECODE: SaleCode, 
+                TEAMSALE: TeamSale,
+                SALECODE: SaleCode,
                 EMPID: EmpId,
                 ProcessType: auth.processtype
             }, { headers: { 'Content-Type': 'application/json' } });
@@ -400,6 +400,7 @@ const BorrowProduct: React.FC = () => {
                 EMPNAME: EmpName,
                 TEAMSALE: TeamSale,
                 SALECODE: SaleCode,
+                ProcessType: auth.processtype,
                 STATUS: "APPROVE"
             }, {
                 headers: {
@@ -424,7 +425,15 @@ const BorrowProduct: React.FC = () => {
 
     const handleReject = async (refno: string, SerialNo: string) => {
         try {
-            const payload = { REFNO: refno, EMPID: EmpId, EMPNAME: EmpName, TEAMSALE: TeamSale, SALECODE: SaleCode, STATUS: "REJECT" };
+            const payload = {
+                REFNO: refno,
+                EMPID: EmpId,
+                EMPNAME: EmpName,
+                TEAMSALE: TeamSale,
+                SALECODE: SaleCode,
+                ProcessType: auth.processtype,
+                STATUS: "REJECT"
+            };
             const res = await axios.post(UPDATE_BORROW_STATUS, payload, {
                 headers: { 'Content-Type': 'application/json' },
             });

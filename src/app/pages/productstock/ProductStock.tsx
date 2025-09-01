@@ -106,6 +106,7 @@ const SalesProductStock: React.FC = () => {
                 form.append('DepartId', auth.data[0].DepartId);
                 form.append('DepartGroup', auth.data[0].DepartGroup);
                 form.append('TeamSale', auth.data[0].TeamSale);
+                form.append('ProcessType', auth.processtype);
 
                 const res = await axios.post(CATEGORIES_URL, form);
                 const data = Array.isArray(res.data.data) ? res.data.data : [];
@@ -133,7 +134,11 @@ const SalesProductStock: React.FC = () => {
     const fetchAllProducts = async () => {
         setLoadingProducts(true)
         try {
-            const params = new URLSearchParams({ empid: EmpId, teamSale: TeamSale })
+            const params = new URLSearchParams({
+                empid: EmpId,
+                teamSale: TeamSale,
+                ProcessType: auth.processtype
+            })
             const res = await axios.get(`${GET_STOCK_URL}?${params.toString()}`)
             const data = Array.isArray(res.data.data) ? res.data.data : []
             setProduct(data)
@@ -145,7 +150,11 @@ const SalesProductStock: React.FC = () => {
     const fetchProductsByCategory = async (categoryId: string) => {
         setLoadingProducts(true)
         try {
-            const params = new URLSearchParams({ empid: EmpId, teamSale: TeamSale })
+            const params = new URLSearchParams({
+                empid: EmpId,
+                teamSale: TeamSale,
+                ProcessType: auth.processtype
+            })
             if (categoryId) params.append('categoryId', categoryId)
             const res = await axios.get(`${GET_STOCK_URL}?${params.toString()}`)
             const data = Array.isArray(res.data.data) ? res.data.data : []
