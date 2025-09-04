@@ -88,6 +88,17 @@ const ReportSale: React.FC = () => {
   const money = (n: number) =>
     n.toLocaleString('th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
 
+  const formatToBE = (datePayment?: string) => {
+    if (!datePayment) return "";
+    // DATEPAYMENT = "DD-MM-YYYY HH:mm"
+    const m = dayjs(datePayment, "DD-MM-YYYY HH:mm");
+    if (!m.isValid()) return datePayment;
+    const dd = m.date().toString().padStart(2, "0");
+    const mm = (m.month() + 1).toString().padStart(2, "0");
+    const yyyyBE = m.year() + 543;
+    return `${dd}/${mm}/${yyyyBE}`;
+  };
+
   return (
     <Content>
       <form
@@ -175,7 +186,7 @@ const ReportSale: React.FC = () => {
                       {tableData.map((item: any, index: number) => {
                         const contNo = item?.CONTNO ?? '-'
                         const payStatus = item?.PAYSTATUS ?? payStatusMap[item?.CHECKKERSTATUS] ?? '-'
-                        const effDate = (toThaiDate(item?.EFFDATE));
+                        const effDate = item?.EFFDATE?.substring(0, 10);
 
                         const customerName =
                           [

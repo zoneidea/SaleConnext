@@ -8421,7 +8421,7 @@
 
 
 
-
+/////////////////////////// API เก่าจากมองโก
 import styles from "@/styles/style.module.css";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
@@ -10390,7 +10390,8 @@ export default CreateFirstBill;
 //     // ไม่ให้เลือกย้อนหลัง (เสริมความปลอดภัย)
 //     const todayStr = dayjs().format("YYYY-MM-DD");
 
-//     const getAmountForQR = () => (payFullAmount ? paymentAmount : paySomeAmount);
+//     // const getAmountForQR = () => (payFullAmount ? paymentAmount : paySomeAmount);
+//     const getAmountForQR = () => (payFullAmount ? balanceOfPeriod : paySomeAmount);
 
 //     // const getQRPayment = async () => {
 //     //   try {

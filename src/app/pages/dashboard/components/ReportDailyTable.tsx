@@ -29,6 +29,7 @@ const ReportDailyTable: React.FC<Props> = ({
     const endDate = defaultEndDate ?? today
 
     const [tableData, setTableData] = useState<any[]>([])
+    
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const [hasSearched, setHasSearched] = useState<boolean>(false)
 
