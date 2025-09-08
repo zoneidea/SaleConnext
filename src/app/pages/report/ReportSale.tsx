@@ -170,12 +170,14 @@ const ReportSale: React.FC = () => {
                         <th style={{ minWidth: 120 }}>สถานะ<br /><span className="text-muted fs-7"></span></th>
                         <th style={{ minWidth: 140 }}>วันที่ทำสัญญา<br /><span className="text-muted fs-7"></span></th>
                         <th style={{ minWidth: 220 }}>ชื่อ-นามสกุล<br /><span className="text-muted fs-7"></span></th>
+                        <th style={{ minWidth: 220 }}>หมายเลขสินค้า<br /><span className="text-muted fs-7"></span></th>
 
                         <th style={{ minWidth: 240 }}>สินค้า<br /><span className="text-muted fs-7"></span></th>
                         <th style={{ minWidth: 220 }}>แพ็กเกจ<br /><span className="text-muted fs-7"></span></th>
                         <th style={{ minWidth: 140, textAlign: 'right' }}>ราคาขาย<br /><span className="text-muted fs-7"></span></th>
                         <th style={{ minWidth: 140, textAlign: 'right' }}>ส่วนลด<br /><span className="text-muted fs-7"></span></th>
                         <th style={{ minWidth: 140, textAlign: 'right' }}>ราคาสุทธิ<br /><span className="text-muted fs-7"></span></th>
+                        <th style={{ minWidth: 140, textAlign: 'right' }}>แต้ม<br /><span className="text-muted fs-7"></span></th>
 
                         <th style={{ minWidth: 140 }}>ทีมขาย<br /><span className="text-muted fs-7"></span></th>
                         <th style={{ minWidth: 240 }}>พนักงานขาย<br /><span className="text-muted fs-7"></span></th>
@@ -198,6 +200,10 @@ const ReportSale: React.FC = () => {
                           item?.PRODUCTNAME ??
                           '-'
 
+                        const productSerialNumber =
+                          item?.PRODUCTSERIALNUMBER ??
+                          '-'
+
                         const packageTitle =
                           item?.PRODUCT?.[0]?.Package?.[0]?.PACKAGETITLE ??
                           item?.PRODUCT?.[0]?.PackageTitle ??
@@ -205,6 +211,7 @@ const ReportSale: React.FC = () => {
                           '-'
 
                         const sales = item?.SALES ?? 0
+                        const point = item?.POINT ?? 0
                         const tradeInDiscount = item?.TRADEINDISCOUNT ?? 0
                         const totalPrice = item?.TOTALPRICE ?? 0
 
@@ -224,13 +231,13 @@ const ReportSale: React.FC = () => {
                             <td>{payStatus}</td>
                             <td>{effDate}</td>
                             <td style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{customerName}</td>
-
+                            <td style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{productSerialNumber}</td>
                             <td style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{productName}</td>
                             <td style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{packageTitle}</td>
                             <td style={{ textAlign: 'right' }}>{sales}</td>
                             <td style={{ textAlign: 'right' }}>{tradeInDiscount}</td>
                             <td style={{ textAlign: 'right' }}>{totalPrice}</td>
-
+                            <td style={{ textAlign: 'right' }}>{point}</td>
                             <td>{teamCode}</td>
                             <td style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{employeeName}</td>
                           </tr>
