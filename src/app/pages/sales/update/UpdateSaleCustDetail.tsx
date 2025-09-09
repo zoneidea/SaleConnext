@@ -4454,18 +4454,20 @@ const UpdateSaleCustDetail: React.FC = () => {
       }),
 
     // 10) เบอร์ที่ติดต่อได้ 1
-    telNo: yup
-      .string()
-      .when(["selectedCustomerType"] as const, ([custType], schema) =>
-        custType === "0" ||
-          custType === "1" ||
-          custType === "2" ||
-          custType === "3"
-          ? schema
-            .required("กรุณากรอกเบอร์ที่ติดต่อได้ 1")
-            .matches(/^[0-9]{10}$/, "เบอร์โทรต้องเป็นตัวเลข 10 หลัก")
-          : schema.notRequired()
-      ),
+    // telNo: yup
+    //   .string()
+    //   .when(["selectedCustomerType"] as const, ([custType], schema) =>
+    //     custType === "0" ||
+    //       custType === "1" ||
+    //       custType === "2" ||
+    //       custType === "3"
+    //       ? schema
+    //         .required("กรุณากรอกเบอร์ที่ติดต่อได้ 1")
+    //         .matches(/^[0-9]{10}$/, "เบอร์โทรต้องเป็นตัวเลข 10 หลัก")
+    //       : schema.notRequired()
+    //   ),
+
+    telNo: yup.string().required("กรุณากรอกเบอร์ที่ติดต่อได้ 1"),
 
     // 11) อีเมล ไม่บังคับ
     email: yup.string().notRequired().email("รูปแบบอีเมลไม่ถูกต้อง"),
@@ -5300,18 +5302,16 @@ const UpdateSaleCustDetail: React.FC = () => {
                                 name="lastName"
                                 control={control}
                                 render={({ field }) => (
-                                  <div className="col-lg-6 my-3">
-                                    <input
-                                      {...field}
-                                      type="text"
-                                      className={`form-control mb-3 mb-lg-0 ${styles.label}`}
-                                      value={field.value ?? lastName}            // กันค่าเริ่มต้น
-                                      onChange={(e) => {
-                                        field.onChange(e.target.value);
-                                        setLastName(e.target.value);            // sync กับ state ที่ส่งขึ้น API
-                                      }}
-                                    />
-                                  </div>
+                                  <input
+                                    {...field}
+                                    type="text"
+                                    className={`form-control mb-3 mb-lg-0 ${styles.label}`}
+                                    value={field.value ?? lastName}            // กันค่าเริ่มต้น
+                                    onChange={(e) => {
+                                      field.onChange(e.target.value);
+                                      setLastName(e.target.value);            // sync กับ state ที่ส่งขึ้น API
+                                    }}
+                                  />
                                 )}
                               />
                             </div>

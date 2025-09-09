@@ -783,7 +783,15 @@ const EditFinishInDay: React.FC = () => {
                     style={{ cursor: 'pointer' }}
                   >
                     <div className='d-flex align-items-center pb-8'>
-                      <span className={`bullet bullet-vertical h-40px ${data[0].CUSTOMERDETAIL.length === 0 ? 'bg-danger' : 'bg-success'}`}></span>
+                      <span
+                        className={`bullet bullet-vertical h-40px ${!data[0]?.CUSTOMERDETAIL?.[0]?.CUSTOMERTYPE &&
+                          !data[0]?.CUSTOMERDETAIL?.[0]?.CUSTOMERNAME &&
+                          !data[0]?.CUSTOMERDETAIL?.[0]?.CUSTOMERMOBILE &&
+                          !(data[0]?.CUSTOMERDETAIL?.[0]?.PREFIX?.length > 0)
+                          ? 'bg-danger'
+                          : 'bg-success'
+                          }`}
+                      />
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className={`${styles.label}`}>5. บันทึกข้อมูลลูกค้า</div>

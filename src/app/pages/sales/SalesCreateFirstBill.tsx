@@ -1867,8 +1867,8 @@ const SalesCreateFirstBill: React.FC = () => {
     const thirdAddress = addressArray?.[2];
     const fourthAddress = addressArray?.[3];
 
-    const API_URL_FIRST_PAYMENT = import.meta.env.VITE_APP_FIRST_PAYMENT;
-    const UPDATE_APPOINTMENT = `${API_URL_FIRST_PAYMENT}/GetListFirstPayments/UpdateAppointment`;
+    // const API_URL_FIRST_PAYMENT = import.meta.env.VITE_APP_API_SALECONNEXT;
+    // const UPDATE_APPOINTMENT = `${API_URL_FIRST_PAYMENT}/GetListFirstPayments/UpdateAppointment`;
 
     // กดเข้ามาแล้วถ้ามีวันนัดชำระ ให้ติ๊กอยู่ที่ นัดชำระ แล้ววันที่ให้โชวันที่นัดก่อนหน้า
     useEffect(() => {
@@ -2078,29 +2078,29 @@ const SalesCreateFirstBill: React.FC = () => {
     const submitPayment = async () => {
         try {
             // ถ้าเป็นโหมดนัดชำระ ให้ส่งนัดหมายเข้า UPDATE_APPOINTMENT ก่อน
-            if (status === "SCHEDULE") {
-                if (!dueDate) {
-                    Swal.fire("แจ้งเตือน", "กรุณาเลือกวันที่นัดชำระ", "warning");
-                    return;
-                }
+            // if (status === "SCHEDULE") {
+            //     if (!dueDate) {
+            //         Swal.fire("แจ้งเตือน", "กรุณาเลือกวันที่นัดชำระ", "warning");
+            //         return;
+            //     }
 
-                const appointmentPayload = {
-                    RefNo: refno,
-                    EmpId: EmpId,
-                    TeamSale: TeamSale,
-                    Appointdate: dueDate,
-                };
+            //     const appointmentPayload = {
+            //         RefNo: refno,
+            //         EmpId: EmpId,
+            //         TeamSale: TeamSale,
+            //         Appointdate: dueDate,
+            //     };
 
-                const appRes = await axios.post(UPDATE_APPOINTMENT, appointmentPayload, {
-                    headers: { "Content-Type": "application/json" },
-                });
+            //     const appRes = await axios.post(UPDATE_APPOINTMENT, appointmentPayload, {
+            //         headers: { "Content-Type": "application/json" },
+            //     });
 
-                // ถ้า API ฝั่งนัดชำระไม่โอเค ให้หยุดไว้ก่อน
-                if (appRes.status !== 200) {
-                    Swal.fire("เกิดข้อผิดพลาด", "บันทึกวันนัดชำระไม่สำเร็จ", "error");
-                    return;
-                }
-            }
+            //     // ถ้า API ฝั่งนัดชำระไม่โอเค ให้หยุดไว้ก่อน
+            //     if (appRes.status !== 200) {
+            //         Swal.fire("เกิดข้อผิดพลาด", "บันทึกวันนัดชำระไม่สำเร็จ", "error");
+            //         return;
+            //     }
+            // }
 
             // จากนั้นบันทึกธุรกรรมการชำระ/นัดชำระตามเดิม
             const response = await axios.post(POST_PAYMENT_TRANSACTION_URL, allData, {
@@ -2160,7 +2160,25 @@ const SalesCreateFirstBill: React.FC = () => {
     };
     // console.log(`allData`, allData);
 
+    //// หากกดถัดไป บันทึกลง localstorage
+    const saveNextClick = () => {
+        try {
+            const payload = {
+                ...allData,
+                clicked: 'next',
+                at: new Date().toISOString(),
+                actor: { EmpId, EmpName, TeamSale, SaleCode },
+            };
+            localStorage.setItem(`firstBill:next:${refno.toUpperCase().trim()}`, JSON.stringify(payload));
+        } catch (e) {
+            // กัน error localStorage เต็ม/โหมด private
+            console.error('localStorage save error:', e);
+        }
+    };
+
     const onSubmit = async () => {
+        saveNextClick();
+
         // บังคับเลือกวันที่ในเคสที่ต้องมีวัน
         const mustHaveDueDate = (!payQuick) || (payQuick && !payFullAmount);
         if (mustHaveDueDate && !valueCalendarInstall) {

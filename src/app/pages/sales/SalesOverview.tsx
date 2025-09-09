@@ -559,7 +559,7 @@ const SalesOverview: React.FC = () => {
               <input
                 type='text'
                 className={`form-control ${styles.placeholder}`}
-                placeholder='ชื่อสินค้า, แพ็คเกจ, S/N, ชื่อลูกค้า'
+                placeholder='S/N, ชื่อลูกค้า'
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />

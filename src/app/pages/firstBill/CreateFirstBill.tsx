@@ -56,6 +56,8 @@ interface ItemProps {
   TRANSACTION: [any];
   SCHEDULE: [any];
   PERIODDETAILS: [any];
+  LATITUDE: [any];
+  LONGITUDE: [any];
 }
 
 interface AddressCard {
@@ -437,7 +439,7 @@ const CreateFirstBill: React.FC = () => {
           EmpId: EmpId,
           TeamSale: TeamSale,
           SalePaymentPeriodID: paymentPeriodDetailId,
-          Appointdate: dueDate, 
+          Appointdate: dueDate,
         };
 
         const appRes = await axios.post(UPDATE_APPOINTMENT, appointmentPayload, {
@@ -872,6 +874,41 @@ const CreateFirstBill: React.FC = () => {
 
   const getCheckPaidUrl = (ref: string, amount: number) =>
     `${API_URL_SALECONNEXT}/GetQRPayment/CheckPaidQR?RefNo=${encodeURIComponent(ref)}&Amount=${encodeURIComponent(amount)}`
+
+  // สร้างลิงก์ Google Maps จาก "ที่อยู่เก็บเงิน" เท่านั้น
+  const mapHref = useMemo(() => {
+    const pay = item?.ADDRESS?.[0]?.ADDRESSPAYMENT;
+    if (!pay) return "";
+
+    const parts: string[] = [];
+    if (pay.ADDRESSNUMBER) parts.push(pay.ADDRESSNUMBER);
+    if (pay.ADDRESSMOO) parts.push(`หมู่ ${pay.ADDRESSMOO}`);
+    if (pay.ADDRESSSOI) parts.push(`ซอย${pay.ADDRESSSOI}`);
+    if (pay.ADDRESSROAD) parts.push(`ถนน${pay.ADDRESSROAD}`);
+    if (pay.ADDRESSSUBDISTRICTNAME) {
+      const subLabel = pay.ADDRESSPROVINCENAME === "กรุงเทพมหานคร" ? "แขวง" : "ตำบล";
+      parts.push(`${subLabel}${pay.ADDRESSSUBDISTRICTNAME}`);
+    }
+    if (pay.ADDRESSDISTRICTNAME) {
+      const distLabel = pay.ADDRESSPROVINCENAME === "กรุงเทพมหานคร" ? "เขต" : "อำเภอ";
+      parts.push(`${distLabel}${pay.ADDRESSDISTRICTNAME}`);
+    }
+    if (pay.ADDRESSPROVINCENAME) parts.push(`จังหวัด${pay.ADDRESSPROVINCENAME}`);
+    if (pay.ADDRESSZIPCODE) parts.push(pay.ADDRESSZIPCODE);
+
+    const full = parts.join(" ").replace(/\s+/g, " ").trim();
+    if (!full) return "";
+
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(full)}`;
+  }, [item?.ADDRESS]);
+
+  // เปิดแบบ _blank เท่านั้น
+  const openMap = (e: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!mapHref) return;
+    window.open(mapHref, "_blank");
+  };
 
   return (
     <>
@@ -1403,87 +1440,6 @@ const CreateFirstBill: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* {firstAddress?.ADDRESSCARD.ADDRESSPROVINCENAME && (
-                    <div className="row mb-7">
-                      <label className={`col-lg-4 text-muted ${styles.label}`}>
-                        ที่อยู่ตามบัตร
-                      </label>
-                      <div className="col-lg-7 d-flex align-items-center">
-                        <span className={`${styles.label} me-2`}>
-                          {firstAddress.ADDRESSCARD.ADDRESSNUMBER &&
-                            firstAddress.ADDRESSCARD.ADDRESSNUMBER}{" "}
-                          {firstAddress.ADDRESSCARD.ADDRESSMOO &&
-                            `หมู่ ${firstAddress.ADDRESSCARD.ADDRESSMOO}`}{" "}
-                          {firstAddress.ADDRESSCARD.ADDRESSSOI &&
-                            `ซอย${firstAddress.ADDRESSCARD.ADDRESSSOI}`}{" "}
-                          {firstAddress.ADDRESSCARD.ADDRESSROAD &&
-                            `ถนน${firstAddress.ADDRESSCARD.ADDRESSROAD}`}{" "}
-                          {firstAddress.ADDRESSCARD.ADDRESSSUBDISTRICTNAME && (
-                            <>
-                              {firstAddress.ADDRESSCARD.ADDRESSPROVINCENAME === "กรุงเทพมหานคร"
-                                ? "แขวง"
-                                : "ตำบล"}
-                              {firstAddress.ADDRESSCARD.ADDRESSSUBDISTRICTNAME}
-                            </>
-                          )}{" "}
-                          {firstAddress.ADDRESSCARD.ADDRESSDISTRICTNAME && (
-                            <>
-                              {firstAddress.ADDRESSCARD.ADDRESSPROVINCENAME === "กรุงเทพมหานคร"
-                                ? "เขต"
-                                : "อำเภอ"}
-                              {firstAddress.ADDRESSCARD.ADDRESSDISTRICTNAME}
-                            </>
-                          )}{" "}
-                          {firstAddress.ADDRESSCARD.ADDRESSPROVINCENAME &&
-                            `จังหวัด${firstAddress.ADDRESSCARD.ADDRESSPROVINCENAME}`}{" "}
-                          {firstAddress.ADDRESSCARD.ADDRESSZIPCODE &&
-                            firstAddress.ADDRESSCARD.ADDRESSZIPCODE}
-                        </span>
-                        <FontAwesomeIcon icon={faLocationDot} size="2x" />
-                      </div>
-                    </div>
-                  )}
-
-                  {firstAddress?.ADDRESSINSTALLATION.ADDRESSPROVINCENAME && (
-                    <div className="row mb-7">
-                      <label className={`col-lg-4 text-muted ${styles.label}`}>
-                        ที่อยู่ติดตั้ง
-                      </label>
-                      <div className="col-lg-7 d-flex align-items-center">
-                        <span className={`${styles.label} me-2`}>
-                          {firstAddress.ADDRESSINSTALLATION.ADDRESSNUMBER}{" "}
-                          {firstAddress.ADDRESSINSTALLATION.ADDRESSMOO &&
-                            `หมู่ ${firstAddress.ADDRESSINSTALLATION.ADDRESSMOO}`}{" "}
-                          {firstAddress.ADDRESSINSTALLATION.ADDRESSSOI &&
-                            `ซอย${firstAddress.ADDRESSINSTALLATION.ADDRESSSOI}`}{" "}
-                          {firstAddress.ADDRESSINSTALLATION.ADDRESSROAD &&
-                            `ถนน${firstAddress.ADDRESSINSTALLATION.ADDRESSROAD}`}{" "}
-                          {firstAddress.ADDRESSINSTALLATION.ADDRESSSUBDISTRICTNAME && (
-                            <>
-                              {firstAddress.ADDRESSINSTALLATION.ADDRESSPROVINCENAME === "กรุงเทพมหานคร"
-                                ? "แขวง"
-                                : "ตำบล"}
-                              {firstAddress.ADDRESSINSTALLATION.ADDRESSSUBDISTRICTNAME}
-                            </>
-                          )}{" "}
-                          {firstAddress.ADDRESSINSTALLATION.ADDRESSDISTRICTNAME && (
-                            <>
-                              {firstAddress.ADDRESSINSTALLATION.ADDRESSPROVINCENAME === "กรุงเทพมหานคร"
-                                ? "เขต"
-                                : "อำเภอ"}
-                              {firstAddress.ADDRESSINSTALLATION.ADDRESSDISTRICTNAME}
-                            </>
-                          )}{" "}
-                          {firstAddress.ADDRESSINSTALLATION
-                            .ADDRESSPROVINCENAME &&
-                            `จังหวัด${firstAddress.ADDRESSINSTALLATION.ADDRESSPROVINCENAME}`}{" "}
-                          {firstAddress.ADDRESSINSTALLATION.ADDRESSZIPCODE}
-                        </span>
-                        <FontAwesomeIcon icon={faLocationDot} size="2x" />
-                      </div>
-                    </div>
-                  )} */}
-
                   {firstAddress?.ADDRESSPAYMENT.ADDRESSPROVINCENAME && (
                     <div className="row mb-7">
                       {/* หัวข้ออยู่ col-lg-4 */}
@@ -1523,7 +1479,15 @@ const CreateFirstBill: React.FC = () => {
                           {firstAddress.ADDRESSPAYMENT.ADDRESSZIPCODE &&
                             firstAddress.ADDRESSPAYMENT.ADDRESSZIPCODE}{" "}
                         </span>
-                        <FontAwesomeIcon icon={faLocationDot} size="2x" />
+                        <button
+                          type="button"
+                          onClick={openMap}
+                          className="btn btn-link p-0 ms-2"
+                          title="เปิดแผนที่ใน Google Maps"
+                          style={{ lineHeight: 0, position: "relative", zIndex: 10, pointerEvents: "auto" }}
+                        >
+                          <FontAwesomeIcon icon={faLocationDot} size="2x" style={{ pointerEvents: "none" }} />
+                        </button>
                       </div>
                     </div>
                   )}

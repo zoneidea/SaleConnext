@@ -3478,14 +3478,14 @@ const Step: React.FC = () => {
   const [matchedItem, setMatchedItem] = useState<ItemProps | null>(null);
   // console.log(`matchedItem`, matchedItem);
 
-  useEffect(() => {
-    if (!isLoading) {
-      const found = finish.find((d) => d.REFNO === item?.REFNO || refnoFromUpdate);
-      setMatchedItem(found);
-    }
-  }, [finish, isLoading]);
+  // useEffect(() => {
+  //   if (!isLoading) {
+  //     const found = finish.find((d) => d.REFNO === item?.REFNO || refnoFromUpdate);
+  //     setMatchedItem(found);
+  //   }
+  // }, [finish, isLoading]);
 
-  const hasPaymentPeriod = !!matchedItem  // true = มีงวดชำระ/นัดชำระแล้ว
+  // const hasPaymentPeriod = !!matchedItem  // true = มีงวดชำระ/นัดชำระแล้ว
 
   //////////เช็คว่ามีการชำระเงินรึยัง
 
@@ -3955,57 +3955,6 @@ const Step: React.FC = () => {
                     </div>
                   </a>
 
-                  {/* 5. เลือกพนักงานขาย */}
-                  {/* <a
-                    style={{ cursor: 'pointer' }}
-                    onClick={() => {
-                      if (data[0].CUSTOMERSTATUS.length === 0) {
-                        Swal.fire({
-                          icon: 'error',
-                          title: 'เกิดข้อผิดพลาด',
-                          text: 'กรุณาตรวจสอบข้อมูลลูกค้าก่อน',
-                          confirmButtonText: 'ตกลง'
-                        })
-                        return
-                      }
-                      if (data[0].DISCOUNT.length === 0) {
-                        Swal.fire({
-                          icon: 'error',
-                          title: 'เกิดข้อผิดพลาด',
-                          text: 'กรุณาทำขั้นตอนก่อนหน้าให้เสร็จก่อน',
-                          confirmButtonText: 'ตกลง'
-                        })
-                        return
-                      }
-                      handleCheckEmpSale()
-                    }}
-                  >
-                    <div className='d-flex align-items-center pb-8'>
-                      <span className={`bullet bullet-vertical h-40px ${data[0].SALEEMPLOYEE.length === 0 ? 'bg-danger' : 'bg-success'}`}></span>
-                      <div className='form-check form-check-custom form-check-solid mx-5'></div>
-                      <div className='flex-grow-1'>
-                        <div className={`${styles.label}`}>5. เลือกพนักงานขาย</div>
-                        {data[0].SALEEMPLOYEE.length !== 0 && (
-                          <>
-                            <span className={`text-gray-700 d-block ${styles.label}`}>
-                              {`พนักงานขาย: ${data[0].SALEEMPLOYEE[0].SALEEMPLOYEE.FName} ${data[0].SALEEMPLOYEE[0].SALEEMPLOYEE.LName}`}
-                            </span>
-                            {data[0].SALEEMPLOYEE[0].ADVISER && (
-                              <span className={`text-gray-700 d-block ${styles.label}`}>
-                                {`ผู้แนะนำ: ${data[0].SALEEMPLOYEE[0].ADVISER.FName} ${data[0].SALEEMPLOYEE[0].ADVISER.LName}`}
-                              </span>
-                            )}
-                            {data[0].SALEEMPLOYEE[0].INSTALLER && (
-                              <span className={`text-gray-700 d-block ${styles.label}`}>
-                                {`ช่างติดตั้ง: ${data[0].SALEEMPLOYEE[0].INSTALLER.FName} ${data[0].SALEEMPLOYEE[0].INSTALLER.LName}`}
-                              </span>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </a> */}
-
                   <button
                     onClick={async () => {
                       if (data[0]?.PRODUCT.length === 0 || data[0]?.DISCOUNT.length === 0) {
@@ -4093,7 +4042,15 @@ const Step: React.FC = () => {
                     style={{ cursor: 'pointer' }}
                   >
                     <div className='d-flex align-items-center pb-8'>
-                      <span className={`bullet bullet-vertical h-40px ${data[0].CUSTOMERDETAIL.length === 0 ? 'bg-danger' : 'bg-success'}`}></span>
+                      <span
+                        className={`bullet bullet-vertical h-40px ${!data[0]?.CUSTOMERDETAIL?.[0]?.CUSTOMERTYPE &&
+                            !data[0]?.CUSTOMERDETAIL?.[0]?.CUSTOMERNAME &&
+                            !data[0]?.CUSTOMERDETAIL?.[0]?.CUSTOMERMOBILE &&
+                            !(data[0]?.CUSTOMERDETAIL?.[0]?.PREFIX?.length > 0)
+                            ? 'bg-danger'
+                            : 'bg-success'
+                          }`}
+                      />
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className={`${styles.label}`}>5. บันทึกข้อมูลลูกค้า</div>
@@ -4251,14 +4208,14 @@ const Step: React.FC = () => {
                         });
                         return;
                       }
-                      if (hasPaymentPeriod) {
-                        await Swal.fire({
-                          icon: 'info',
-                          title: 'ไม่สามารถแก้ไขได้',
-                          confirmButtonText: 'ตกลง',
-                        });
-                        return;
-                      }
+                      // if (hasPaymentPeriod) {
+                      //   await Swal.fire({
+                      //     icon: 'info',
+                      //     title: 'ไม่สามารถแก้ไขได้',
+                      //     confirmButtonText: 'ตกลง',
+                      //   });
+                      //   return;
+                      // }
                       // if (paidFromLocal) {
                       //   await Swal.fire({
                       //     icon: 'info',

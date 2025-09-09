@@ -107,7 +107,7 @@ const FirstBillOverview: React.FC = () => {
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="ค้นหาจาก ชื่อสินค้า, แพ็คเกจ, Serial Number, ชื่อลูกค้า"
+                  placeholder="S/N, ชื่อลูกค้า"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
@@ -272,7 +272,7 @@ export { FirstBillOverview };
 //                 <input
 //                   type="text"
 //                   className="form-control"
-//                   placeholder="ค้นหาจาก ชื่อสินค้า, แพ็คเกจ, Serial Number, ชื่อลูกค้า"
+//                   placeholder="S/N, ชื่อลูกค้า"
 //                   value={search}
 //                   onChange={(e) => setSearch(e.target.value)}
 //                 />
