@@ -3478,14 +3478,14 @@ const Step: React.FC = () => {
   const [matchedItem, setMatchedItem] = useState<ItemProps | null>(null);
   // console.log(`matchedItem`, matchedItem);
 
-  // useEffect(() => {
-  //   if (!isLoading) {
-  //     const found = finish.find((d) => d.REFNO === item?.REFNO || refnoFromUpdate);
-  //     setMatchedItem(found);
-  //   }
-  // }, [finish, isLoading]);
+  useEffect(() => {
+    if (!isLoading) {
+      const found = finish.find((d) => d.REFNO === item?.REFNO || refnoFromUpdate);
+      setMatchedItem(found);
+    }
+  }, [finish, isLoading]);
 
-  // const hasPaymentPeriod = !!matchedItem  // true = มีงวดชำระ/นัดชำระแล้ว
+  const hasPaymentPeriod = !!matchedItem  // true = มีงวดชำระ/นัดชำระแล้ว
 
   //////////เช็คว่ามีการชำระเงินรึยัง
 
@@ -4044,11 +4044,11 @@ const Step: React.FC = () => {
                     <div className='d-flex align-items-center pb-8'>
                       <span
                         className={`bullet bullet-vertical h-40px ${!data[0]?.CUSTOMERDETAIL?.[0]?.CUSTOMERTYPE &&
-                            !data[0]?.CUSTOMERDETAIL?.[0]?.CUSTOMERNAME &&
-                            !data[0]?.CUSTOMERDETAIL?.[0]?.CUSTOMERMOBILE &&
-                            !(data[0]?.CUSTOMERDETAIL?.[0]?.PREFIX?.length > 0)
-                            ? 'bg-danger'
-                            : 'bg-success'
+                          !data[0]?.CUSTOMERDETAIL?.[0]?.CUSTOMERNAME &&
+                          !data[0]?.CUSTOMERDETAIL?.[0]?.CUSTOMERMOBILE &&
+                          !(data[0]?.CUSTOMERDETAIL?.[0]?.PREFIX?.length > 0)
+                          ? 'bg-danger'
+                          : 'bg-success'
                           }`}
                       />
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
@@ -4208,22 +4208,30 @@ const Step: React.FC = () => {
                         });
                         return;
                       }
-                      // if (hasPaymentPeriod) {
-                      //   await Swal.fire({
-                      //     icon: 'info',
-                      //     title: 'ไม่สามารถแก้ไขได้',
-                      //     confirmButtonText: 'ตกลง',
-                      //   });
-                      //   return;
-                      // }
-                      // if (paidFromLocal) {
-                      //   await Swal.fire({
-                      //     icon: 'info',
-                      //     title: 'ไม่สามารถแก้ไขได้',
-                      //     confirmButtonText: 'ตกลง',
-                      //   });
-                      //   return;
-                      // }
+                      if (hasPaymentPeriod) {
+                        await Swal.fire({
+                          icon: 'info',
+                          title: 'ไม่สามารถแก้ไขได้',
+                          confirmButtonText: 'ตกลง',
+                        });
+                        return;
+                      }
+                      if (paidFromLocal) {
+                        await Swal.fire({
+                          icon: 'info',
+                          title: 'ไม่สามารถแก้ไขได้',
+                          confirmButtonText: 'ตกลง',
+                        });
+                        return;
+                      }
+                      if (data[0]?.CONTRACT.length > 0) {
+                        await Swal.fire({
+                          icon: 'info',
+                          title: 'ไม่สามารถแก้ไขได้',
+                          confirmButtonText: 'ตกลง',
+                        });
+                        return;
+                      }
                       handleClick('UpdateSalesContract').then(ok => {
                         if (ok) {
                           // navigate('/firstBill/CreateFirstBill', { state: data[0] })
