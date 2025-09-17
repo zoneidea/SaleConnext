@@ -1867,8 +1867,17 @@ const SalesCreateFirstBill: React.FC = () => {
     const thirdAddress = addressArray?.[2];
     const fourthAddress = addressArray?.[3];
 
-    // const API_URL_FIRST_PAYMENT = import.meta.env.VITE_APP_API_SALECONNEXT;
-    // const UPDATE_APPOINTMENT = `${API_URL_FIRST_PAYMENT}/GetListFirstPayments/UpdateAppointment`;
+    const API_URL_GET_ALLCONTRACT = import.meta.env.VITE_APP_API_MONGO;
+    const API_URL_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
+
+    const POST_PAYMENT_TRANSACTION_URL = `${API_URL_GET_ALLCONTRACT}/Payment/UpdatePaymentTransaction`;
+
+    const GET_QR_PAYMENT_URL = `${API_URL_SALECONNEXT}/GetQRPayment`;
+
+    const getCheckPaidUrl = (ref: string, amount: number) =>
+        `${API_URL_SALECONNEXT}/GetQRPayment/CheckPaidQR?RefNo=${encodeURIComponent(ref)}&Amount=${encodeURIComponent(amount)}`
+
+    const UPDATE_APPOINTMENT = `${API_URL_SALECONNEXT}/GetListFirstPayments/UpdateAppointment`;
 
     // กดเข้ามาแล้วถ้ามีวันนัดชำระ ให้ติ๊กอยู่ที่ นัดชำระ แล้ววันที่ให้โชวันที่นัดก่อนหน้า
     useEffect(() => {
@@ -1911,21 +1920,6 @@ const SalesCreateFirstBill: React.FC = () => {
     // const [paymentChoice, setPaymentChoice] = useState<string>("FULL");
     const [priceOption, setPriceOption] = useState<string>("CASH");
 
-    // ประเภทการชำระเงิน
-    // const [paymentChannel, setPaymentChannel] = useState<string>("CASH");
-
-    // const remainingAmount = Math.max(
-    //   0,
-    //   (product[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTAMOUNT || 0) -
-    //   discountAmount -
-    //   paySomeAmount
-    // );
-
-    // ใช้ยอดงวดล่าสุด ถ้ามี TRANSACTION ********สำคัญ
-    // const remainingAmount = Math.max(
-    //   0,
-    //   paymentAmount - discountAmount - paySomeAmount
-    // );
     const remainingAmount = Math.max(0, paymentAmount - paySomeAmount);
 
     const [valueCalendarInstall, setValueCalendarInstall] = useState<Date | null>(
@@ -2077,30 +2071,30 @@ const SalesCreateFirstBill: React.FC = () => {
 
     const submitPayment = async () => {
         try {
-            // ถ้าเป็นโหมดนัดชำระ ให้ส่งนัดหมายเข้า UPDATE_APPOINTMENT ก่อน
-            // if (status === "SCHEDULE") {
-            //     if (!dueDate) {
-            //         Swal.fire("แจ้งเตือน", "กรุณาเลือกวันที่นัดชำระ", "warning");
-            //         return;
-            //     }
+            //ถ้าเป็นโหมดนัดชำระ ให้ส่งนัดหมายเข้า UPDATE_APPOINTMENT ก่อน
+            if (status === "SCHEDULE") {
+                if (!dueDate) {
+                    Swal.fire("แจ้งเตือน", "กรุณาเลือกวันที่นัดชำระ", "warning");
+                    return;
+                }
 
-            //     const appointmentPayload = {
-            //         RefNo: refno,
-            //         EmpId: EmpId,
-            //         TeamSale: TeamSale,
-            //         Appointdate: dueDate,
-            //     };
+                const appointmentPayload = {
+                    RefNo: refno,
+                    EmpId: EmpId,
+                    TeamSale: TeamSale,
+                    Appointdate: dueDate,
+                };
 
-            //     const appRes = await axios.post(UPDATE_APPOINTMENT, appointmentPayload, {
-            //         headers: { "Content-Type": "application/json" },
-            //     });
+                const appRes = await axios.post(UPDATE_APPOINTMENT, appointmentPayload, {
+                    headers: { "Content-Type": "application/json" },
+                });
 
-            //     // ถ้า API ฝั่งนัดชำระไม่โอเค ให้หยุดไว้ก่อน
-            //     if (appRes.status !== 200) {
-            //         Swal.fire("เกิดข้อผิดพลาด", "บันทึกวันนัดชำระไม่สำเร็จ", "error");
-            //         return;
-            //     }
-            // }
+                // ถ้า API ฝั่งนัดชำระไม่โอเค ให้หยุดไว้ก่อน
+                if (appRes.status !== 200) {
+                    Swal.fire("เกิดข้อผิดพลาด", "บันทึกวันนัดชำระไม่สำเร็จ", "error");
+                    return;
+                }
+            }
 
             // จากนั้นบันทึกธุรกรรมการชำระ/นัดชำระตามเดิม
             const response = await axios.post(POST_PAYMENT_TRANSACTION_URL, allData, {
@@ -2401,11 +2395,7 @@ const SalesCreateFirstBill: React.FC = () => {
     const hasRedirectedRef = useRef(false)
     const countdownIdRef = useRef<number | null>(null)
     const secondsLeftRef = useRef<number>(0)
-    // console.log(`paidBaselineCountRef`, paidBaselineCountRef);
-    // console.log(`hasRedirectedRef`, hasRedirectedRef);
-    // console.log(`countdownIdRef`, countdownIdRef);
-    // console.log(`secondsLeftRef`, secondsLeftRef);
-
+    
     // sync ค่า countdown เข้ากับ ref เสมอ
     useEffect(() => {
         secondsLeftRef.current = secondsLeft
@@ -2529,14 +2519,6 @@ const SalesCreateFirstBill: React.FC = () => {
 
     const mm = String(Math.floor(secondsLeft / 60)).padStart(2, '0')
     const ss = String(secondsLeft % 60).padStart(2, '0')
-
-    const API_URL_GET_ALLCONTRACT = import.meta.env.VITE_APP_API_MONGO;
-    const POST_PAYMENT_TRANSACTION_URL = `${API_URL_GET_ALLCONTRACT}/Payment/UpdatePaymentTransaction`;
-
-    const API_URL_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
-    const GET_QR_PAYMENT_URL = `${API_URL_SALECONNEXT}/GetQRPayment`;
-    const getCheckPaidUrl = (ref: string, amount: number) =>
-        `${API_URL_SALECONNEXT}/GetQRPayment/CheckPaidQR?RefNo=${encodeURIComponent(ref)}&Amount=${encodeURIComponent(amount)}`
 
     return (
         <>

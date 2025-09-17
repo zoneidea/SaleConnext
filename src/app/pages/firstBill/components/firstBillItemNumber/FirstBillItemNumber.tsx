@@ -1,126 +1,4 @@
 /////////////////////////// API เก่าจากมองโก
-import styles from '@/styles/style.module.css'
-import { KTIcon } from '../../../../../_metronic/helpers'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
-
-interface StatusLabelProps {
-    item: any
-}
-
-const FirstBillItemNumber: React.FC<StatusLabelProps> = ({ item }) => {
-    // console.log(`item: `, item);
-
-    let newRefNo, customer, telNo, product, productPackage, serialNumber, createdAt, statusTxt, dueDate;
-
-    if (item.CUSTOMERDETAIL.length > 0) {
-        if (item.CUSTOMERDETAIL[0]?.CUSTOMERTYPE == 1) {
-            customer = <span className='text-gray-700 fw-semibold d-block'>
-                {`${item.CUSTOMERDETAIL[0]?.CUSTOMERNAME} 
-                ${item.CUSTOMERDETAIL[0]?.CUSTOMERLASTNAME && item.CUSTOMERDETAIL[0]?.CUSTOMERLASTNAME}`}
-            </span>
-            telNo = <span className='text-gray-700 fw-semibold d-block'>{`${item.CUSTOMERDETAIL[0]?.CUSTOMERMOBILE}`}</span>
-        } else {
-            customer = <span className='text-gray-700 fw-semibold d-block'>
-                {`${item.CUSTOMERDETAIL[0]?.CUSTOMERNAME} 
-                ${item.CUSTOMERDETAIL[0]?.CUSTOMERLASTNAME && item.CUSTOMERDETAIL[0]?.CUSTOMERLASTNAME}`}
-            </span>
-            telNo = <span className='text-gray-700 fw-semibold d-block'>{`${item.CUSTOMERDETAIL[0]?.CUSTOMERMOBILE}`}</span>
-        }
-    }
-
-    if (item.PRODUCT.length > 0) {
-        product = <span className='text-gray-700 fw-semibold d-block'>{`${item.PRODUCT[0]?.ItemDescription}`}</span>
-        serialNumber = <span className='text-gray-700 fw-semibold d-block'>{`${item.PRODUCT[0]?.SerialNo}`}</span>
-        if (item.PRODUCT[0]?.Package.length > 0) {
-            productPackage = <span className='text-gray-700 fw-semibold d-block'>{`${item.PRODUCT[0]?.Package[0]?.PACKAGETITLE}`}</span>
-        }
-    }
-
-    // if (item.CONTRACT.length > 0) {
-    //     createdAt = <span className='text-gray-700 fw-semibold d-block'>{`วันที่ทำสัญญา: ${item.CONTRACT[0].createdAt}`}</span>
-    // }
-
-    if (item.STATUS === 'DRAFT') {
-        statusTxt = <span className='text-warning fw-semibold d-block'>{`ร่าง`}</span>
-    } else if (item.STATUS === 'EDIT') {
-        statusTxt = <span className='text-danger fw-semibold d-block'>{`แก้ไข`}</span>
-    } else if (item.STATUS === 'FINISH') {
-        statusTxt = <span className='text-danger fw-semibold d-block'>{`รอชำระเงิน`}</span>
-    } else if (item.STATUS === 'PENDING') {
-        statusTxt = <span className='text-danger fw-semibold d-block'>{`รอตรวจสอบ`}</span>
-    }
-
-    const formatToBE = (isoDate?: string) => {
-        if (!isoDate) return '';
-        const d = new Date(isoDate);
-        const dd = String(d.getDate()).padStart(2, '0');
-        const mm = String(d.getMonth() + 1).padStart(2, '0');
-        const yyyy = d.getFullYear() + 543;
-        return `${dd}/${mm}/${yyyy}`;
-    };
-
-    return (
-        // <Link to='/firstBill/CreateFirstBill' state={item}>
-        <Link
-            to="/firstBill/CreateFirstBill"
-            state={{
-                item: item,
-                from: location.pathname
-            }}
-        >
-            <div className='d-flex align-items-center bg-light-success rounded p-5 mb-3'>
-
-                {/* ฝั่งขวา: แบ่งเป็นสองคอลัมน์ (col-6 กับ col-6) */}
-                <div className='flex-grow-1'>
-                    <div className='row'>
-                        {/* คอลัมน์ซ้าย: Label */}
-                        <div className='col-6'>
-                            <div className={`fw-bold text-gray-700 d-block mb-2 ${styles.fontSize}`}>
-                                เลขที่สัญญา:
-                            </div>
-                            <div className={`fw-bold text-gray-700 d-block mb-2 ${styles.fontSize}`}>
-                                ชื่อลูกค้า:
-                            </div>
-                            <div className={`fw-bold text-gray-700 d-block mb-2 ${styles.fontSize}`}>
-                                S/N:
-                            </div>
-                            <div className={`fw-bold text-gray-700 d-block mb-2 ${styles.fontSize}`}>
-                                วันที่ทำสัญญา:
-                            </div>
-                            <div className={`fw-bold text-gray-700 d-block mb-2 ${styles.fontSize}`}>
-                                วันที่นัดชำระ:
-                            </div>
-                        </div>
-
-                        {/* คอลัมน์ขวา: Value */}
-                        <div className='col-6'>
-                            <div className={`text-gray-800 d-block mb-2 ${styles.fontSize}`}>
-                                {item.CONTNO || "-"}
-                            </div>
-                            <div className={`text-gray-800 d-block mb-2 ${styles.fontSize}`}>
-                                {customer || "-"}
-                            </div>
-                            <div className={`text-gray-800 d-block mb-2 ${styles.fontSize}`}>
-                                {serialNumber || "-"}
-                            </div>
-                            <div className={`text-gray-800 d-block mb-2 ${styles.fontSize}`}>
-                                {formatToBE(item.CREATEDATE)}
-                            </div>
-                            <div className={`text-gray-800 d-block mb-2 ${styles.fontSize}`}>
-                                {formatToBE(item.SCHEDULE?.[0]?.DUEDATE ?? item.firstDueDate)}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </Link>
-    )
-}
-
-export { FirstBillItemNumber }
-
-
-
 // import styles from '@/styles/style.module.css'
 // import { KTIcon } from '../../../../../_metronic/helpers'
 // import { Link, useNavigate, useLocation } from 'react-router-dom'
@@ -130,22 +8,31 @@ export { FirstBillItemNumber }
 // }
 
 // const FirstBillItemNumber: React.FC<StatusLabelProps> = ({ item }) => {
-//     const { pathname } = useLocation();
+//     // console.log(`item: `, item);
 
 //     let newRefNo, customer, telNo, product, productPackage, serialNumber, createdAt, statusTxt, dueDate;
 
-//     if (item.CUSTOMERNAME.length > 0) {
-//         customer = <span className='text-gray-700 fw-semibold d-block'>
-//             {`${item.CUSTOMERNAME}`}
-//         </span>
-//         telNo = <span className='text-gray-700 fw-semibold d-block'>{`${item.TEL1}`}</span>
+//     if (item.CUSTOMERDETAIL.length > 0) {
+//         if (item.CUSTOMERDETAIL[0]?.CUSTOMERTYPE == 1) {
+//             customer = <span className='text-gray-700 fw-semibold d-block'>
+//                 {`${item.CUSTOMERDETAIL[0]?.CUSTOMERNAME} 
+//                 ${item.CUSTOMERDETAIL[0]?.CUSTOMERLASTNAME && item.CUSTOMERDETAIL[0]?.CUSTOMERLASTNAME}`}
+//             </span>
+//             telNo = <span className='text-gray-700 fw-semibold d-block'>{`${item.CUSTOMERDETAIL[0]?.CUSTOMERMOBILE}`}</span>
+//         } else {
+//             customer = <span className='text-gray-700 fw-semibold d-block'>
+//                 {`${item.CUSTOMERDETAIL[0]?.CUSTOMERNAME} 
+//                 ${item.CUSTOMERDETAIL[0]?.CUSTOMERLASTNAME && item.CUSTOMERDETAIL[0]?.CUSTOMERLASTNAME}`}
+//             </span>
+//             telNo = <span className='text-gray-700 fw-semibold d-block'>{`${item.CUSTOMERDETAIL[0]?.CUSTOMERMOBILE}`}</span>
+//         }
 //     }
 
-//     if (item.PRODUCTNAME.length > 0) {
-//         product = <span className='text-gray-700 fw-semibold d-block'>{`${item.PRODUCTNAME}`}</span>
-//         serialNumber = <span className='text-gray-700 fw-semibold d-block'>{`${item.SERIALNUMBER}`}</span>
-//         if (item.PACKAGETITLE.length > 0) {
-//             productPackage = <span className='text-gray-700 fw-semibold d-block'>{`${item.PACKAGETITLE}`}</span>
+//     if (item.PRODUCT.length > 0) {
+//         product = <span className='text-gray-700 fw-semibold d-block'>{`${item.PRODUCT[0]?.ItemDescription}`}</span>
+//         serialNumber = <span className='text-gray-700 fw-semibold d-block'>{`${item.PRODUCT[0]?.SerialNo}`}</span>
+//         if (item.PRODUCT[0]?.Package.length > 0) {
+//             productPackage = <span className='text-gray-700 fw-semibold d-block'>{`${item.PRODUCT[0]?.Package[0]?.PACKAGETITLE}`}</span>
 //         }
 //     }
 
@@ -153,15 +40,15 @@ export { FirstBillItemNumber }
 //     //     createdAt = <span className='text-gray-700 fw-semibold d-block'>{`วันที่ทำสัญญา: ${item.CONTRACT[0].createdAt}`}</span>
 //     // }
 
-//     // if (item.STATUS === 'DRAFT') {
-//     //     statusTxt = <span className='text-warning fw-semibold d-block'>{`ร่าง`}</span>
-//     // } else if (item.STATUS === 'EDIT') {
-//     //     statusTxt = <span className='text-danger fw-semibold d-block'>{`แก้ไข`}</span>
-//     // } else if (item.STATUS === 'FINISH') {
-//     //     statusTxt = <span className='text-danger fw-semibold d-block'>{`รอชำระเงิน`}</span>
-//     // } else if (item.STATUS === 'PENDING') {
-//     //     statusTxt = <span className='text-danger fw-semibold d-block'>{`รอตรวจสอบ`}</span>
-//     // }
+//     if (item.STATUS === 'DRAFT') {
+//         statusTxt = <span className='text-warning fw-semibold d-block'>{`ร่าง`}</span>
+//     } else if (item.STATUS === 'EDIT') {
+//         statusTxt = <span className='text-danger fw-semibold d-block'>{`แก้ไข`}</span>
+//     } else if (item.STATUS === 'FINISH') {
+//         statusTxt = <span className='text-danger fw-semibold d-block'>{`รอชำระเงิน`}</span>
+//     } else if (item.STATUS === 'PENDING') {
+//         statusTxt = <span className='text-danger fw-semibold d-block'>{`รอตรวจสอบ`}</span>
+//     }
 
 //     const formatToBE = (isoDate?: string) => {
 //         if (!isoDate) return '';
@@ -176,7 +63,10 @@ export { FirstBillItemNumber }
 //         // <Link to='/firstBill/CreateFirstBill' state={item}>
 //         <Link
 //             to="/firstBill/CreateFirstBill"
-//             state={{ item, from: pathname }}
+//             state={{
+//                 item: item,
+//                 from: location.pathname
+//             }}
 //         >
 //             <div className='d-flex align-items-center bg-light-success rounded p-5 mb-3'>
 
@@ -205,19 +95,19 @@ export { FirstBillItemNumber }
 //                         {/* คอลัมน์ขวา: Value */}
 //                         <div className='col-6'>
 //                             <div className={`text-gray-800 d-block mb-2 ${styles.fontSize}`}>
-//                                 {item.CONTNO}
+//                                 {item.CONTNO || "-"}
 //                             </div>
 //                             <div className={`text-gray-800 d-block mb-2 ${styles.fontSize}`}>
-//                                 {customer}
+//                                 {customer || "-"}
 //                             </div>
 //                             <div className={`text-gray-800 d-block mb-2 ${styles.fontSize}`}>
-//                                 {serialNumber}
+//                                 {serialNumber || "-"}
 //                             </div>
 //                             <div className={`text-gray-800 d-block mb-2 ${styles.fontSize}`}>
-//                                 {formatToBE(item.EFFDATE)}
+//                                 {formatToBE(item.CREATEDATE)}
 //                             </div>
 //                             <div className={`text-gray-800 d-block mb-2 ${styles.fontSize}`}>
-//                                 {formatToBE(item.PAYMENTAPPOINTMENTDATE)}
+//                                 {formatToBE(item.SCHEDULE?.[0]?.DUEDATE ?? item.firstDueDate)}
 //                             </div>
 //                         </div>
 //                     </div>
@@ -228,3 +118,113 @@ export { FirstBillItemNumber }
 // }
 
 // export { FirstBillItemNumber }
+
+
+
+import styles from '@/styles/style.module.css'
+import { KTIcon } from '../../../../../_metronic/helpers'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
+
+interface StatusLabelProps {
+    item: any
+}
+
+const FirstBillItemNumber: React.FC<StatusLabelProps> = ({ item }) => {
+    const { pathname } = useLocation();
+
+    let newRefNo, customer, telNo, product, productPackage, serialNumber, createdAt, statusTxt, dueDate;
+
+    if (item.CUSTOMERNAME.length > 0) {
+        customer = <span className='text-gray-700 fw-semibold d-block'>
+            {`${item.CUSTOMERNAME}`}
+        </span>
+        telNo = <span className='text-gray-700 fw-semibold d-block'>{`${item.TEL1}`}</span>
+    }
+
+    if (item.PRODUCTNAME.length > 0) {
+        product = <span className='text-gray-700 fw-semibold d-block'>{`${item.PRODUCTNAME}`}</span>
+        serialNumber = <span className='text-gray-700 fw-semibold d-block'>{`${item.SERIALNUMBER}`}</span>
+        if (item.PACKAGETITLE.length > 0) {
+            productPackage = <span className='text-gray-700 fw-semibold d-block'>{`${item.PACKAGETITLE}`}</span>
+        }
+    }
+
+    // if (item.CONTRACT.length > 0) {
+    //     createdAt = <span className='text-gray-700 fw-semibold d-block'>{`วันที่ทำสัญญา: ${item.CONTRACT[0].createdAt}`}</span>
+    // }
+
+    // if (item.STATUS === 'DRAFT') {
+    //     statusTxt = <span className='text-warning fw-semibold d-block'>{`ร่าง`}</span>
+    // } else if (item.STATUS === 'EDIT') {
+    //     statusTxt = <span className='text-danger fw-semibold d-block'>{`แก้ไข`}</span>
+    // } else if (item.STATUS === 'FINISH') {
+    //     statusTxt = <span className='text-danger fw-semibold d-block'>{`รอชำระเงิน`}</span>
+    // } else if (item.STATUS === 'PENDING') {
+    //     statusTxt = <span className='text-danger fw-semibold d-block'>{`รอตรวจสอบ`}</span>
+    // }
+
+    const formatToBE = (isoDate?: string) => {
+        if (!isoDate) return '';
+        const d = new Date(isoDate);
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const yyyy = d.getFullYear() + 543;
+        return `${dd}/${mm}/${yyyy}`;
+    };
+
+    return (
+        // <Link to='/firstBill/CreateFirstBill' state={item}>
+        <Link
+            to="/firstBill/CreateFirstBill"
+            state={{ item, from: pathname }}
+        >
+            <div className='d-flex align-items-center bg-light-success rounded p-5 mb-3'>
+
+                {/* ฝั่งขวา: แบ่งเป็นสองคอลัมน์ (col-6 กับ col-6) */}
+                <div className='flex-grow-1'>
+                    <div className='row'>
+                        {/* คอลัมน์ซ้าย: Label */}
+                        <div className='col-6'>
+                            <div className={`fw-bold text-gray-700 d-block mb-2 ${styles.fontSize}`}>
+                                เลขที่สัญญา:
+                            </div>
+                            <div className={`fw-bold text-gray-700 d-block mb-2 ${styles.fontSize}`}>
+                                ชื่อลูกค้า:
+                            </div>
+                            <div className={`fw-bold text-gray-700 d-block mb-2 ${styles.fontSize}`}>
+                                S/N:
+                            </div>
+                            <div className={`fw-bold text-gray-700 d-block mb-2 ${styles.fontSize}`}>
+                                วันที่ทำสัญญา:
+                            </div>
+                            <div className={`fw-bold text-gray-700 d-block mb-2 ${styles.fontSize}`}>
+                                วันที่นัดชำระ:
+                            </div>
+                        </div>
+
+                        {/* คอลัมน์ขวา: Value */}
+                        <div className='col-6'>
+                            <div className={`text-gray-800 d-block mb-2 ${styles.fontSize}`}>
+                                {item.CONTNO}
+                            </div>
+                            <div className={`text-gray-800 d-block mb-2 ${styles.fontSize}`}>
+                                {customer}
+                            </div>
+                            <div className={`text-gray-800 d-block mb-2 ${styles.fontSize}`}>
+                                {serialNumber}
+                            </div>
+                            <div className={`text-gray-800 d-block mb-2 ${styles.fontSize}`}>
+                                {formatToBE(item.EFFDATE)}
+                            </div>
+                            <div className={`text-gray-800 d-block mb-2 ${styles.fontSize}`}>
+                                {formatToBE(item.PAYMENTAPPOINTMENTDATE)}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Link>
+    )
+}
+
+export { FirstBillItemNumber }

@@ -164,8 +164,8 @@ export function Login() {
         if (ps.state === "prompt") {
           // จะเรียกให้แสดง dialog ขออนุญาต
           navigator.geolocation.getCurrentPosition(
-            () => {},
-            () => {}
+            () => { },
+            () => { }
           );
         }
       });
@@ -392,12 +392,21 @@ export function Login() {
             ) : (
               <span
                 className={`${styles.fontSize}`}
-                // style={{ fontSize: 16 }}
+              // style={{ fontSize: 16 }}
               >
                 เข้าสู่ระบบ
               </span>
             )}
           </button>
+        </div>
+        <div className="fv-help-block d-flex w-lg-500px w-md-500px w-300px">
+          <a
+            href="https://app.tsrplc.com/Dataphone/ChangePassword"
+            className={`${styles.fontSize} ms-auto text-decoration-none`}
+            style={{ color: "white", fontSize: 16, marginTop: 15, textDecoration: 'underline', cursor: 'pointer' }}
+          >
+            เปลี่ยนรหัสผ่าน
+          </a>
         </div>
         <div className="fv-help-block d-flex">
           <span
@@ -406,7 +415,7 @@ export function Login() {
             style={{
               color: "white",
               fontSize: 14,
-              marginTop: 20,
+              marginTop: 30,
             }}
           >
             v {VERSION}

@@ -1,173 +1,4 @@
 /////////////////////////// API เก่าจากมองโก
-import axios from 'axios';
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
-import { Content } from '../../../_metronic/layout/components/content';
-import { FirstBillItemNumber } from './components/firstBillItemNumber/FirstBillItemNumber';
-import { useUUIDStore } from '../../modules/stores/stepsStore';
-import { useAuth } from '../../modules/auth/core/Auth';
-
-import { EntriesDropdown, PaginationTable } from '../../modules/entriesAndPagination/Pagination';
-import { ThreeDot } from 'react-loading-indicators';
-
-//useStore
-import { useFetchCategoryStore } from '../../modules/stores/sales/packageStore/packageStore';
-
-const FirstBillOverview: React.FC = () => {
-  const navigate = useNavigate();
-  const { SETREFNO } = useUUIDStore();
-
-  const { auth } = useAuth();
-  const EmpId = auth?.data?.[0]?.EmpId
-  const TeamSale = auth?.data?.[0]?.TeamSale
-  const SaleCode = auth?.data?.[0]?.SaleCode
-  const TeamCode = auth?.data?.[0]?.TeamCode
-  // console.log(`EmpId: `, EmpId);
-  // console.log(`TeamCode: `, TeamCode);
-
-  const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
-
-  // const FINISH_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=FINISH&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`;
-  const GET_PAYMENT_URL = `${API_URL_MONGO}/Payment/GetPaymentPeriod`;
-
-  const { fetchCategory } = useFetchCategoryStore();
-  // console.log(`fetchCategory: `, fetchCategory);
-
-  const [finish, setFinish] = useState<any[]>([]); // กำหนดให้ state เป็น array เพื่อรองรับ map()
-  // console.log(`finish`, finish);
-
-  const [isLoadingFinish, setIsLoadingFinish] = useState<boolean>(false);
-
-  const [search, setSearch] = useState<string>(''); // State สำหรับค้นหา
-
-  // Pagination states
-  const [entries, setEntries] = useState<number>(10); // Default entries per page
-  const [currentPageFinish, setCurrentPageFinish] = useState<number>(1);
-
-  useEffect(() => {
-    getDataFinish();
-  }, []);
-
-  const getDataFinish = async () => {
-    setIsLoadingFinish(true);
-    try {
-      const response = await axios.get(GET_PAYMENT_URL, {
-        params: {
-          EMPID: EmpId,
-          TEAMSALE: TeamSale,
-          ProcessType: auth.processtype
-        }
-      });
-      const data = Array.isArray(response.data.data) ? response.data.data : [];
-      setFinish(data);
-    } catch (error) {
-      console.error('Error fetching GET_PAYMENT_URL:', error);
-    } finally {
-      setIsLoadingFinish(false);
-    }
-  };
-
-  // กรองข้อมูลตาม search
-  const searchLower = search.toLowerCase();
-
-  const filteredFinish = search
-    ? finish.filter((item) =>
-      (item.CUSTOMERDETAIL?.[0]?.CUSTOMERNAME || "").toLowerCase().includes(searchLower) ||
-      (item.PRODUCT?.[0]?.Package?.[0]?.PACKAGETITLE || "").toLowerCase().includes(searchLower) ||
-      (item.PRODUCT?.[0]?.ItemDescription || "").toLowerCase().includes(searchLower) ||
-      (item.PRODUCT?.[0]?.SerialNo || "").toLowerCase().includes(searchLower)
-    )
-    : finish;
-
-  // Pagination logic for Finish
-  const finishStartIndex = (currentPageFinish - 1) * entries;
-  const finishDisplayedData = filteredFinish.slice(finishStartIndex, finishStartIndex + entries);
-
-  return (
-    <>
-      <Content>
-        <div className='d-flex justify-content-between align-items-center my-5'>
-          <div id="kt_page_title" data-kt-swapper="true" data-kt-swapper-mode="prepend"
-            data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
-            className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
-            <h1 className="page-heading d-flex text-gray-900 fw-bold fs-3 my-0 flex-column justify-content-center">
-              ระบบเก็บเงินงวดแรก
-            </h1>
-          </div>
-        </div>
-
-        {/* Card Body */}
-        <div className='card mb-10'>
-          <div className='card-body d-flex align-items-center'>
-            <div className='col-12'>
-
-              {/* ช่องค้นหา */}
-              <div className="mb-5 col-xl-6">
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="S/N, ชื่อลูกค้า"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
-
-              {isLoadingFinish ? (
-                <div className="text-center my-10">
-                  <ThreeDot />
-                </div>
-              ) : finishDisplayedData.length > 0 ? (
-                <>
-                  {finishDisplayedData.map((item, index) => (
-                    <FirstBillItemNumber key={index} item={item} />
-                  ))}
-
-                  <div className='d-none d-xl-flex justify-content-end align-items-center mt-5'>
-                    <PaginationTable
-                      totalData={filteredFinish.length}
-                      entries={entries}
-                      currentPage={currentPageFinish}
-                      onPageChange={setCurrentPageFinish}
-                    />
-                  </div>
-
-                  {/* PaginationTable หน้าจอเล็ก */}
-                  <div
-                    className="d-flex d-xl-none justify-content-end align-items-center bg-light p-3 border-top"
-                    style={{
-                      position: "fixed",
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      zIndex: 1050,
-                    }}
-                  >
-                    <PaginationTable
-                      totalData={filteredFinish.length}
-                      entries={entries}
-                      currentPage={currentPageFinish}
-                      onPageChange={setCurrentPageFinish}
-                    />
-                  </div>
-
-                </>
-              ) : (
-                <p className="text-gray-600 text-center mt-3">ไม่มีรายการที่เสร็จสมบูรณ์</p>
-              )}
-
-            </div>
-          </div>
-        </div>
-        {/* End Card Body */}
-      </Content>
-    </>
-  )
-}
-
-export { FirstBillOverview };
-
-
 // import axios from 'axios';
 // import { useState, useEffect } from 'react';
 // import { Link } from 'react-router-dom';
@@ -196,11 +27,9 @@ export { FirstBillOverview };
 //   // console.log(`TeamCode: `, TeamCode);
 
 //   const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
-//   const API_URL_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
 
 //   // const FINISH_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=FINISH&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`;
-//   // const GET_PAYMENT_URL = `${API_URL_MONGO}/Payment/GetPaymentPeriod`;
-//   const GET_LIST_FIRST_PAYMENT = `${API_URL_SALECONNEXT}/GetListFirstPayments?EmpId=${EmpId}&TeamSale=${TeamSale}&ProcessType=${auth.processtype}`;
+//   const GET_PAYMENT_URL = `${API_URL_MONGO}/Payment/GetPaymentPeriod`;
 
 //   const { fetchCategory } = useFetchCategoryStore();
 //   // console.log(`fetchCategory: `, fetchCategory);
@@ -223,7 +52,13 @@ export { FirstBillOverview };
 //   const getDataFinish = async () => {
 //     setIsLoadingFinish(true);
 //     try {
-//       const response = await axios.get(GET_LIST_FIRST_PAYMENT);
+//       const response = await axios.get(GET_PAYMENT_URL, {
+//         params: {
+//           EMPID: EmpId,
+//           TEAMSALE: TeamSale,
+//           ProcessType: auth.processtype
+//         }
+//       });
 //       const data = Array.isArray(response.data.data) ? response.data.data : [];
 //       setFinish(data);
 //     } catch (error) {
@@ -238,10 +73,10 @@ export { FirstBillOverview };
 
 //   const filteredFinish = search
 //     ? finish.filter((item) =>
-//       (item.CUSTOMERNAME || "").toLowerCase().includes(searchLower) ||
-//       (item.PACKAGETITLE || "").toLowerCase().includes(searchLower) ||
-//       (item.PRODUCTNAME || "").toLowerCase().includes(searchLower) ||
-//       (item.SERIALNUMBER || "").toLowerCase().includes(searchLower)
+//       (item.CUSTOMERDETAIL?.[0]?.CUSTOMERNAME || "").toLowerCase().includes(searchLower) ||
+//       (item.PRODUCT?.[0]?.Package?.[0]?.PACKAGETITLE || "").toLowerCase().includes(searchLower) ||
+//       (item.PRODUCT?.[0]?.ItemDescription || "").toLowerCase().includes(searchLower) ||
+//       (item.PRODUCT?.[0]?.SerialNo || "").toLowerCase().includes(searchLower)
 //     )
 //     : finish;
 
@@ -331,3 +166,168 @@ export { FirstBillOverview };
 // }
 
 // export { FirstBillOverview };
+
+
+import axios from 'axios';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { Content } from '../../../_metronic/layout/components/content';
+import { FirstBillItemNumber } from './components/firstBillItemNumber/FirstBillItemNumber';
+import { useUUIDStore } from '../../modules/stores/stepsStore';
+import { useAuth } from '../../modules/auth/core/Auth';
+
+import { EntriesDropdown, PaginationTable } from '../../modules/entriesAndPagination/Pagination';
+import { ThreeDot } from 'react-loading-indicators';
+
+//useStore
+import { useFetchCategoryStore } from '../../modules/stores/sales/packageStore/packageStore';
+
+const FirstBillOverview: React.FC = () => {
+  const navigate = useNavigate();
+  const { SETREFNO } = useUUIDStore();
+
+  const { auth } = useAuth();
+  const EmpId = auth?.data?.[0]?.EmpId
+  const TeamSale = auth?.data?.[0]?.TeamSale
+  const SaleCode = auth?.data?.[0]?.SaleCode
+  const TeamCode = auth?.data?.[0]?.TeamCode
+  // console.log(`EmpId: `, EmpId);
+  // console.log(`TeamCode: `, TeamCode);
+
+  const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
+  const API_URL_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
+
+  // const FINISH_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=FINISH&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`;
+  // const GET_PAYMENT_URL = `${API_URL_MONGO}/Payment/GetPaymentPeriod`;
+  const GET_LIST_FIRST_PAYMENT = `${API_URL_SALECONNEXT}/GetListFirstPayments?EmpId=${EmpId}&TeamSale=${TeamSale}&ProcessType=${auth.processtype}`;
+
+  const { fetchCategory } = useFetchCategoryStore();
+  // console.log(`fetchCategory: `, fetchCategory);
+
+  const [finish, setFinish] = useState<any[]>([]); // กำหนดให้ state เป็น array เพื่อรองรับ map()
+  // console.log(`finish`, finish);
+
+  const [isLoadingFinish, setIsLoadingFinish] = useState<boolean>(false);
+
+  const [search, setSearch] = useState<string>(''); // State สำหรับค้นหา
+
+  // Pagination states
+  const [entries, setEntries] = useState<number>(10); // Default entries per page
+  const [currentPageFinish, setCurrentPageFinish] = useState<number>(1);
+
+  useEffect(() => {
+    getDataFinish();
+  }, []);
+
+  const getDataFinish = async () => {
+    setIsLoadingFinish(true);
+    try {
+      const response = await axios.get(GET_LIST_FIRST_PAYMENT);
+      const data = Array.isArray(response.data.data) ? response.data.data : [];
+      setFinish(data);
+    } catch (error) {
+      console.error('Error fetching GET_PAYMENT_URL:', error);
+    } finally {
+      setIsLoadingFinish(false);
+    }
+  };
+
+  // กรองข้อมูลตาม search
+  const searchLower = search.toLowerCase();
+
+  const filteredFinish = search
+    ? finish.filter((item) =>
+      (item.CUSTOMERNAME || "").toLowerCase().includes(searchLower) ||
+      (item.PACKAGETITLE || "").toLowerCase().includes(searchLower) ||
+      (item.PRODUCTNAME || "").toLowerCase().includes(searchLower) ||
+      (item.SERIALNUMBER || "").toLowerCase().includes(searchLower)
+    )
+    : finish;
+
+  // Pagination logic for Finish
+  const finishStartIndex = (currentPageFinish - 1) * entries;
+  const finishDisplayedData = filteredFinish.slice(finishStartIndex, finishStartIndex + entries);
+
+  return (
+    <>
+      <Content>
+        <div className='d-flex justify-content-between align-items-center my-5'>
+          <div id="kt_page_title" data-kt-swapper="true" data-kt-swapper-mode="prepend"
+            data-kt-swapper-parent="{default: '#kt_content_container', 'lg': '#kt_toolbar_container'}"
+            className="page-title d-flex flex-wrap me-3 flex-column justify-content-center">
+            <h1 className="page-heading d-flex text-gray-900 fw-bold fs-3 my-0 flex-column justify-content-center">
+              ระบบเก็บเงินงวดแรก
+            </h1>
+          </div>
+        </div>
+
+        {/* Card Body */}
+        <div className='card mb-10'>
+          <div className='card-body d-flex align-items-center'>
+            <div className='col-12'>
+
+              {/* ช่องค้นหา */}
+              <div className="mb-5 col-xl-6">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="S/N, ชื่อลูกค้า"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+
+              {isLoadingFinish ? (
+                <div className="text-center my-10">
+                  <ThreeDot />
+                </div>
+              ) : finishDisplayedData.length > 0 ? (
+                <>
+                  {finishDisplayedData.map((item, index) => (
+                    <FirstBillItemNumber key={index} item={item} />
+                  ))}
+
+                  <div className='d-none d-xl-flex justify-content-end align-items-center mt-5'>
+                    <PaginationTable
+                      totalData={filteredFinish.length}
+                      entries={entries}
+                      currentPage={currentPageFinish}
+                      onPageChange={setCurrentPageFinish}
+                    />
+                  </div>
+
+                  {/* PaginationTable หน้าจอเล็ก */}
+                  <div
+                    className="d-flex d-xl-none justify-content-end align-items-center bg-light p-3 border-top"
+                    style={{
+                      position: "fixed",
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      zIndex: 1050,
+                    }}
+                  >
+                    <PaginationTable
+                      totalData={filteredFinish.length}
+                      entries={entries}
+                      currentPage={currentPageFinish}
+                      onPageChange={setCurrentPageFinish}
+                    />
+                  </div>
+
+                </>
+              ) : (
+                <p className="text-gray-600 text-center mt-3">ไม่มีรายการที่เสร็จสมบูรณ์</p>
+              )}
+
+            </div>
+          </div>
+        </div>
+        {/* End Card Body */}
+      </Content>
+    </>
+  )
+}
+
+export { FirstBillOverview };
