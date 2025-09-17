@@ -476,13 +476,16 @@ const DashboardWrapper: FC = () => {
   const [editP, setEditP] = useState(0)
 
   const API_URL_GET_ALLCONTRACT = import.meta.env.VITE_APP_API_MONGO
+  const API_URL_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT
+
   const headers = { 'Content-Type': 'application/json' as const }
-  const GET_PAYMENT_URL = `${API_URL_GET_ALLCONTRACT}/Payment/GetPaymentPeriod`
 
   const DRAFT_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=DRAFT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}&ProcessType=${auth.processtype}`
   const FINISH_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=FINISH&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}&ProcessType=${auth.processtype}`
   const PENDING_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=PENDING&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}&ProcessType=${auth.processtype}`
   const EDIT_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=EDIT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}&ProcessType=${auth.processtype}`
+
+  const FIRST_PAYMENTS_URL = `${API_URL_SALECONNEXT}/GetListFirstPayments`
 
   const fetchAllContracts = async () => {
     try {
@@ -506,7 +509,6 @@ const DashboardWrapper: FC = () => {
   useEffect(() => {
     if (!EmpId && !TeamSale && !SaleCode) return
     fetchAllContracts()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [EmpId, TeamSale, SaleCode])
 
   useEffect(() => {
@@ -518,32 +520,29 @@ const DashboardWrapper: FC = () => {
   }, [draft, finish, pending, edit])
 
   const allContract = draft.length + finish.length
-  // console.log(`draft`, draft);
-  // console.log(`finish`, finish);
-  // console.log(`pending`, pending);
-  // console.log(`edit`, edit);
 
-  ////////////// Payments ///////////////
+  // ////////////// Payments ///////////////
   const [rows, setRows] = useState<any[]>([])
-  // console.log(`rows`, rows);
   const [loading, setLoading] = useState(false)
 
   const fetchPayments = async () => {
-    // ยิงเมื่อมีทั้ง EMPID และ TEAMSALE (ใช้ OR ไม่ใช่ AND)
     if (!EmpId || !TeamSale) return
     setLoading(true)
     try {
-      const res = await axios.get(GET_PAYMENT_URL, {
+      const res = await axios.get(FIRST_PAYMENTS_URL, {
         params: {
-          EMPID: EmpId,     
-          TEAMSALE: TeamSale,
-          ProcessType: auth.processtype
+          EmpId: EmpId,                
+          TeamSale: TeamSale,
+          ProcessType: auth.processtype 
         },
       })
-      const data = Array.isArray(res?.data?.data) ? res.data.data : []
+     
+      const data =
+        Array.isArray(res?.data) ? res.data :
+          Array.isArray(res?.data?.data) ? res.data.data : []
       setRows(data)
     } catch (err) {
-      console.error('Error fetching payment periods:', err)
+      console.error('Error fetching first payments:', err)
       setRows([])
     } finally {
       setLoading(false)
@@ -552,20 +551,7 @@ const DashboardWrapper: FC = () => {
 
   useEffect(() => {
     fetchPayments()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [EmpId, TeamSale])
-
-  // เงินสด On Hand (รวม CASHONHAND เฉพาะของพนักงานคนนี้)
-  const cashOnHandTotal = useMemo(() => {
-    if (!EmpId) return 0
-    return rows.reduce((sum: number, r: any) => {
-      const isThisEmp = String(r?.EMPID ?? '') === String(EmpId)
-      const val = Number(r?.CASHONHAND ?? 0)
-      return isThisEmp ? sum + (isNaN(val) ? 0 : val) : sum
-    }, 0)
-  }, [rows, EmpId])
-
-  // console.log(`cashOnHandTotal`, cashOnHandTotal);
+  }, [EmpId, TeamSale, auth?.processtype])
 
   return (
     <>
@@ -610,19 +596,20 @@ const DashboardWrapper: FC = () => {
             </div>
           </div>
 
-          <div className='col-12 col-md-6 col-xl-6 col-xxl-3 align-self-start'>
+          {/* <div className='col-12 col-md-6 col-xl-6 col-xxl-3 align-self-start'>
             <div
               className='card card-flush w-100 h-auto'
               style={{ backgroundColor: '#F88379', height: 140 }}
             >
-              {/* <div className='card-body d-flex flex-column align-items-center justify-content-center text-center p-4'>
+              <div className='card-body d-flex flex-column align-items-center justify-content-center text-center p-4'>
                 <span className='fs-1 fw-bold me-2 lh-1 ls-n2 mt-2' style={{ color: '#002B49' }}>เงินสด On Hand</span>
                 <div className='fw-bold text-white lh-1 mt-5' style={{ fontSize: 50 }}>
                   {cashOnHandTotal.toLocaleString()}
                 </div>
-              </div> */}
+              </div>
             </div>
-          </div>
+          </div> */}
+
         </div>
 
         {/* ตารางรายงาน */}
