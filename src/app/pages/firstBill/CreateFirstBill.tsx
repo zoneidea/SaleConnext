@@ -1871,8 +1871,6 @@ const CreateFirstBill: React.FC = () => {
             });
 
             if (response.status === 200) {
-                localStorage.setItem(`paymentDone:${refno.toUpperCase().trim()}`, "1");
-
                 Swal.fire({
                     icon: "success",
                     title: "สำเร็จ!",
@@ -1881,9 +1879,13 @@ const CreateFirstBill: React.FC = () => {
                     showConfirmButton: false,
                 });
 
-                navigate("/firstBill/receiptFromCreateFirstBill", {
-                    state: { REFNO: refno }
-                });
+                if (status === "SCHEDULE") {
+                    navigate("/firstBill/overview", { state: item });
+                } else {
+                    navigate("/firstBill/receiptFromCreateFirstBill", {
+                        state: { REFNO: refno },
+                    });
+                }
             } else {
                 Swal.fire("เกิดข้อผิดพลาด", response.data?.message || "ไม่สามารถบันทึกข้อมูลได้", "error");
             }
@@ -2119,7 +2121,7 @@ const CreateFirstBill: React.FC = () => {
                         navigate("/firstBill/receiptFromCreateFirstBill", {
                             state: { REFNO: refno }
                         });
-                        
+
                         return
                     }
                 }
