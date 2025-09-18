@@ -1628,13 +1628,10 @@ const CreateFirstBill: React.FC = () => {
     const SecEmpId = auth?.data?.[0]?.SecEmp || "";
 
     const location = useLocation();
-    // const item = location.state as ItemProps || [];
-    // const from = location.state as ItemProps || [];
     const state = (location.state ?? {}) as LocationState;
 
     // ⭐ เก็บใน state ภายในหน้า
     const [item, setItem] = useState<ItemProps | undefined>(state.item);
-    // console.log(`item`, item);
     const from = state.from ?? "";
 
     const refno = String(item?.REFNO);
@@ -1678,14 +1675,6 @@ const CreateFirstBill: React.FC = () => {
         }
     }, [item]);
 
-    // อ่านแพ็กเกจ/งวด
-    // const paymentPeriodDetailId =
-    //   product?.[0]?.Package?.[0]?.PERIODDETAILS?.[0]?.PAYMENTPERIODDETAILID;
-    // const paymentPeriodNumber =
-    //   product?.[0]?.Package?.[0]?.PERIODDETAILS?.[0]?.PAYMENTPERIODNUMBER;
-    // const periodAmount =
-    //   product?.[0]?.Package?.[0]?.PERIODDETAILS?.[0]?.PAYMENTAMOUNT ?? 0;
-
     // ชำระเงินทันที หรือ นัดชำระ
     const [payQuick, setPayQuick] = useState<boolean>(true);
     const [status, setStatus] = useState("PAID");
@@ -1701,19 +1690,6 @@ const CreateFirstBill: React.FC = () => {
     // ประเภทการชำระเงิน
     const [paymentChannel, setPaymentChannel] = useState<string>("CASH");
 
-    // const remainingAmount = Math.max(
-    //   0,
-    //   (product[0]?.Package[0]?.PERIODDETAILS[0]?.PAYMENTAMOUNT || 0) -
-    //   discountAmount -
-    //   paySomeAmount
-    // );
-
-    // ใช้ยอดงวดล่าสุด ถ้ามี TRANSACTION ********สำคัญ
-    // const remainingAmount = Math.max(
-    //   0,
-    //   paymentAmount - discountAmount - paySomeAmount
-    // );
-
     const remainingAmount = Math.max(0, balanceOfPeriod - paySomeAmount);
 
     const [valueCalendarInstall, setValueCalendarInstall] = useState<Date | null>(
@@ -1727,12 +1703,10 @@ const CreateFirstBill: React.FC = () => {
     const [errorMessage, setErrorMessage] = useState<string>("");
 
     const [qrCodeData, setQrCodeData] = useState<string>("");
-    // console.log(`qrCodeData`, qrCodeData);
 
     const [loadingQR, setLoadingQR] = useState<boolean>(false);
 
     const paymentId = uuidv4();
-    // console.log(`paymentId`, paymentId);
 
     ///////// บังคับกรอกปฏิทิน
     const [dateError, setDateError] = useState<string>("");
@@ -1741,58 +1715,7 @@ const CreateFirstBill: React.FC = () => {
     // ไม่ให้เลือกย้อนหลัง (เสริมความปลอดภัย)
     const todayStr = dayjs().format("YYYY-MM-DD");
 
-    // const getAmountForQR = () => (payFullAmount ? paymentAmount : paySomeAmount);
     const getAmountForQR = () => (payFullAmount ? balanceOfPeriod : paySomeAmount);
-
-    // const getQRPayment = async () => {
-    //   try {
-    //     setLoadingQR(true);
-
-    //     // ตรงนี้คำนวนยอดที่จะจ่ายก่อน
-    //     // ถ้า PACKAGETYPEID !== 1 → เงินผ่อน (installment) → ใช้ amountToPay
-    //     // ถ้า PACKAGETYPEID === 1 → เงินสด (cash) → ใช้ netPrice
-    //     //   const amountToPay = payFullAmount ? paymentAmount : paySomeAmount;
-    //     //   const isInstallment = product[0]?.Package[0]?.PACKAGETYPEID !== 1;
-    //     //   const qrAmount = isInstallment ? amountToPay : netPrice;
-
-    //     // คำนวณยอดที่จะจ่าย
-    //     // ถ้าเป็นเงินผ่อน (installment)
-    //     const isInstallment = product[0]?.Package[0]?.PACKAGETYPEID !== 1;
-
-    //     // ยอดสุทธิหลังหักส่วนลด
-    //     // const netPrice = totalPrice - discountAmount;
-    //     // console.log(`netPrice`, netPrice);
-
-    //     // เลือกยอดที่จะส่งไปขอ QR
-    //     let qrAmount: number;
-    //     if (!isInstallment) {
-    //       qrAmount = payFullAmount ? paymentAmount : paySomeAmount;
-    //     } else {
-    //       qrAmount = paySomeAmount;
-    //     }
-
-    //     const formData = new FormData();
-    //     formData.append("RefNo", refno);
-    //     formData.append("Amount", qrAmount.toString());
-
-    //     //   console.log("refno", refno);
-    //     // console.log("สแกน", qrAmount.toString());
-
-    //     const response = await axios.post(GET_QR_PAYMENT_URL, formData, {
-    //       headers: { "Content-Type": "multipart/form-data" },
-    //     });
-
-    //     // console.log(`response`, response);
-
-    //     if (response.status === 200 && response.data) {
-    //       setQrCodeData(response.data.data.QrCode || "");
-    //     }
-    //   } catch (error) {
-    //     console.error("Error fetching QR Payment:", error);
-    //   } finally {
-    //     setLoadingQR(false);
-    //   }
-    // };
 
     const getQRPayment = async () => {
         try {
@@ -1958,7 +1881,9 @@ const CreateFirstBill: React.FC = () => {
                     showConfirmButton: false,
                 });
 
-                navigate("/firstBill/receiptFromCreateFirstBill", { state: item });
+                navigate("/firstBill/receiptFromCreateFirstBill", {
+                    state: { REFNO: refno }
+                });
             } else {
                 Swal.fire("เกิดข้อผิดพลาด", response.data?.message || "ไม่สามารถบันทึกข้อมูลได้", "error");
             }
@@ -1992,7 +1917,7 @@ const CreateFirstBill: React.FC = () => {
             status === "SCHEDULE" && paymentChoice === "NONE"
                 ? paymentAmount - tradeInDiscount
                 : paymentChoice === "FULL"
-                    ? paymentAmount
+                    ? balanceOfPeriod
                     : paySomeAmount,
         PERIODAMOUNT: firstPeriod - tradeInDiscount,
         DISCOUNT: tradeInDiscount,
@@ -2029,130 +1954,6 @@ const CreateFirstBill: React.FC = () => {
         await submitPayment();
     };
 
-    // const onSubmit = async (data: any) => {
-    //   // ตรวจสอบการมี qrCodeData เมื่อเลือกช่องทาง QR CODE
-    //   // if (paymentChannel === "QR CODE" && qrCodeData) {
-    //   //   Swal.fire("แจ้งเตือน", "กรุณาทำการสแกน qr code ก่อน", "warning");
-    //   //   return;
-    //   // }
-
-    //   // if (payQuick) {
-    //   //   Swal.fire({
-    //   //     title: "ยืนยันการออกใบเสร็จ",
-    //   //     icon: "warning",
-    //   //     showCancelButton: true,
-    //   //     confirmButtonText: "ตกลง",
-    //   //     cancelButtonText: "ยกเลิก",
-    //   //   }).then((result) => {
-    //   //     if (result.isConfirmed) {
-    //   //       navigate("/firstBill/receipt", { state: item });
-    //   //     }
-    //   //   });
-    //   //   return;
-    //   // }
-
-    //   // ต้องมีวันเมื่อ "นัดชำระ" หรือ "ชำระบางส่วน/เกินจำนวน"
-    //   const mustHaveDueDate = (!payQuick) || (payQuick && !payFullAmount);
-
-    //   if (mustHaveDueDate && !valueCalendarInstall) {
-    //     setDateError("กรุณาเลือกวันที่");
-    //     // โฟกัสช่องวันที่ (ตัวใดตัวหนึ่งที่กำลังแสดงอยู่)
-    //     dueDateRef.current?.focus();
-    //     return; // หยุดก่อน ส่ง API ยังไม่ได้
-    //   } else {
-    //     setDateError("");
-    //   }
-
-    //   try {
-    //     const response = await axios.post(POST_PAYMENT_TRANSACTION_URL, allData, {
-    //       headers: {
-    //         "Content-Type": "application/json",
-    //       },
-    //     });
-
-    //     if (response.status === 200) {
-    //       // ปักธงว่า REFNO นี้บันทึกการชำระ/นัดชำระแล้ว
-    //       localStorage.setItem(`paymentDone:${refno.toUpperCase().trim()}`, '1');
-
-    //       Swal.fire({
-    //         icon: "success",
-    //         title: "สำเร็จ!",
-    //         text: "บันทึกธุรกรรมการชำระเงินสำเร็จ",
-    //         timer: 2000,
-    //         showConfirmButton: false,
-    //       });
-    //       navigate("/");
-
-    //       // ถ้ามาจาก sale/contract หรือ sale/update/updatecontract
-    //       // และสถานะเป็น SCHEDULE (มี DUEDATE)
-    //       const saleRoutes = ["/sale/contract", "/sale/update/updatecontract"];
-    //       // if (saleRoutes.includes(from) && status === "SCHEDULE" && item?.STATUS === "DRAFT") {
-    //       if (item?.STATUS === "DRAFT" && payQuick) {
-    //         //   navigate("/sale/photo", { state: { data: item, fromStep: "true" } });
-    //         // navigate("/firstBill/receiptmock", { state: item });
-    //         navigate("/firstBill/receipt", { state: item });
-    //       } if (item?.STATUS === "DRAFT" && !payQuick) {
-    //         navigate("/sale/photo", { state: { data: item, fromStep: "true" } });
-    //       } if (item?.STATUS !== "DRAFT") {
-    //         navigate("/firstBill/receiptFromCreateFirstBill", { state: item });
-    //       }
-    //     } else {
-    //       Swal.fire(
-    //         "เกิดข้อผิดพลาด",
-    //         response.data.message || "ไม่สามารถบันทึกข้อมูลได้",
-    //         "error"
-    //       );
-    //     }
-    //   } catch (error) {
-    //     console.error("Error saving data:", error);
-    //     Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถส่งข้อมูลได้", "error");
-    //   }
-    // };
-
-    // const onSubmit = async (data: any) => {
-    //     // ตรวจสอบกรณีเลือก QR CODE แต่ยังไม่ได้สแกน
-    //     if (paymentChannel === "QR CODE" && qrCodeData) {
-    //         Swal.fire("แจ้งเตือน", "กรุณาทำการสแกน qr code ก่อน", "warning");
-    //         return;
-    //     }
-
-    //     try {
-    //         const response = await axios.post(POST_PAYMENT_TRANSACTION_URL, allData, {
-    //             headers: { "Content-Type": "application/json" },
-    //         });
-
-    //         if (response.status === 200) {
-    //             Swal.fire("สำเร็จ", "บันทึกธุรกรรมการชำระเงินสำเร็จ", "success");
-
-    //             // รอสักครู่ให้ SweetAlert แสดงก่อน แล้วค่อย navigate
-    //             setTimeout(() => {
-    //                 // ถ้ามาจาก sale/contract, updateSalesContract หรือ sale/step
-    //                 const saleRoutes = [
-    //                     '/sale/contract',
-    //                     '/sale/update/UpdateSalesContract',
-    //                     '/sale/step',
-    //                 ];
-    //                 if (saleRoutes.includes(from)) {
-    //                     // ไปหน้า photo ต่อ
-    //                     navigate('/sale/photo', {
-    //                         state: { item, from }
-    //                     });
-    //                 } else {
-    //                     // ปกติไปหน้า overview ของ firstBill
-    //                     navigate('/firstBill/overview', { state: item });
-    //                 }
-    //             }, 500);
-
-    //         } else {
-    //             Swal.fire("เกิดข้อผิดพลาด", response.data.message || "ไม่สามารถบันทึกข้อมูลได้", "error");
-    //         }
-
-    //     } catch (error) {
-    //         console.error("Error saving data:", error);
-    //         Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถส่งข้อมูลได้", "error");
-    //     }
-    // };
-
     const handleBack = () => {
         const saleRoutes = [
             "/sale/contract",
@@ -2173,7 +1974,6 @@ const CreateFirstBill: React.FC = () => {
         }
     };
 
-    // const FINISH_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=FINISH&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`;
     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
     const GET_PAYMENT_URL = `${API_URL_MONGO}/Payment/GetPaymentPeriod`;
 
@@ -2223,10 +2023,6 @@ const CreateFirstBill: React.FC = () => {
     const hasRedirectedRef = useRef(false)
     const countdownIdRef = useRef<number | null>(null)
     const secondsLeftRef = useRef<number>(0)
-    // console.log(`paidBaselineCountRef`, paidBaselineCountRef);
-    // console.log(`hasRedirectedRef`, hasRedirectedRef);
-    // console.log(`countdownIdRef`, countdownIdRef);
-    // console.log(`secondsLeftRef`, secondsLeftRef);
 
     // sync ค่า countdown เข้ากับ ref เสมอ
     useEffect(() => {
@@ -2319,7 +2115,11 @@ const CreateFirstBill: React.FC = () => {
                         setQrCodeData("")
                         paidBaselineCountRef.current = null
                         localStorage.setItem(`paymentDone:${refno.toUpperCase().trim()}`, "1")
-                        navigate("/firstBill/receiptFromCreateFirstBill", { state: item })
+
+                        navigate("/firstBill/receiptFromCreateFirstBill", {
+                            state: { REFNO: refno }
+                        });
+                        
                         return
                     }
                 }

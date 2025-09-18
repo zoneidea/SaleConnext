@@ -97,9 +97,8 @@ const ReceiptFirstBillFromCreateFirstBill: FC = () => {
 
   const REFNO = item?.REFNO;
 
-  const API_URL_GET_RECEIPT = import.meta.env.VITE_APP_API_PDPA_LETTER;
   const POST_RECEIPT_URL = (r: string) =>
-    `${API_URL_GET_RECEIPT}/Electronic/Receipt?RefNo=${encodeURIComponent(r)}`;
+    `https://salecommerce.zonedevnode.com/Electronic/Receipt?RefNo=${encodeURIComponent(r)}`;
 
   return (
     <div

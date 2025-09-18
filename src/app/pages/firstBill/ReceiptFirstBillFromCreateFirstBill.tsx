@@ -92,14 +92,18 @@ const ReceiptFirstBillFromCreateFirstBill: FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const item = location.state as ItemProps;
-  // console.log(`item`, item);
+  const state = location.state as any;
+  const REFNO: string | undefined = state?.REFNO ?? state?.item?.REFNO;
 
-  const REFNO = item?.REFNO;
-
-  const API_URL_GET_RECEIPT = import.meta.env.VITE_APP_API_PDPA_LETTER;
   const POST_RECEIPT_URL = (r: string) =>
-    `${API_URL_GET_RECEIPT}/Electronic/Receipt?RefNo=${encodeURIComponent(r)}`;
+    `https://salecommerce.zonedevnode.com/Electronic/Receipt?RefNo=${encodeURIComponent(r)}`;
+
+  // ถ้าไม่มี REFNO ให้พากลับหน้า overview
+  useEffect(() => {
+    if (!REFNO) navigate("/firstBill/overview");
+  }, [REFNO, navigate]);
+
+  if (!REFNO) return null; // กัน render ระหว่าง redirect
 
   return (
     <div
