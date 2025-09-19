@@ -7,6 +7,7 @@ import dayjs from "dayjs";
 type Row = {
   RECEIPTCODE?: string;
   DATEPAYMENT?: string;            // "03-08-2025 10:45"
+  DAYPAY?: string;            // "03-08-2025 10:45"
   PAYMENTPERIODNUMBER?: number;
   CONTNO?: string;
   CUSTOMERNAME?: string;
@@ -37,16 +38,16 @@ const ReportSalePayment: React.FC = () => {
   const BASE_URL = `${API_URL_SALECONNEXT}/GetListPayments`;
 
   // helper: แปลงวันที่ใบเสร็จเป็น พ.ศ.
-  const formatToBE = (datePayment?: string) => {
-    if (!datePayment) return "";
-    // DATEPAYMENT = "DD-MM-YYYY HH:mm"
-    const m = dayjs(datePayment, "DD-MM-YYYY HH:mm");
-    if (!m.isValid()) return datePayment;
-    const dd = m.date().toString().padStart(2, "0");
-    const mm = (m.month() + 1).toString().padStart(2, "0");
-    const yyyyBE = m.year() + 543;
-    return `${dd}/${mm}/${yyyyBE}`;
-  };
+  // const formatToBE = (datePayment?: string) => {
+  //   if (!datePayment) return "";
+  //   // DATEPAYMENT = "DD-MM-YYYY HH:mm"
+  //   const m = dayjs(datePayment, "DD-MM-YYYY HH:mm");
+  //   if (!m.isValid()) return datePayment;
+  //   const dd = m.date().toString().padStart(2, "0");
+  //   const mm = (m.month() + 1).toString().padStart(2, "0");
+  //   const yyyyBE = m.year() + 543;
+  //   return `${dd}/${mm}/${yyyyBE}`;
+  // };
 
   const num = (v: unknown) =>
     typeof v === "number" ? v : Number(String(v ?? "0").replace(/[^0-9.-]/g, "")) || 0;
@@ -183,7 +184,7 @@ const ReportSalePayment: React.FC = () => {
                         <tr key={`${r.RECEIPTCODE}-${i}`}>
                           <td>{i + 1}</td>
                           <td>{r.RECEIPTCODE || "-"}</td>
-                          <td>{formatToBE(r.DATEPAYMENT)}</td>
+                          <td>{r.DAYPAY ? r.DAYPAY.split(" ")[0] : "-"}</td>
                           <td>{r.PAYMENTPERIODNUMBER ?? "-"}</td>
                           <td>{r.CONTNO || "-"}</td>
                           <td>{r.CUSTOMERNAME || "-"}</td>
