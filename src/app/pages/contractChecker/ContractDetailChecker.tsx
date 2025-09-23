@@ -142,6 +142,7 @@ const SalesPackage: React.FC = () => {
 
             // POST Contract/updateContractValidate
             let obj = {
+                EMPID: EmpId,
                 REFNO: refno,
                 DATA: UpdateCheckerCommentData
             }
