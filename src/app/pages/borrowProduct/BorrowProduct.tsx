@@ -416,7 +416,7 @@ const BorrowProduct: React.FC = () => {
                 })
             }
             // รีเฟรชลิสต์ waiting approval
-            getWaitingApprovals();
+            // getWaitingApprovals();
 
         } catch (error) {
             console.error('Error fetching GET_REQUEST_BORROW:', error);

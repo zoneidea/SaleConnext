@@ -238,6 +238,7 @@ const FirstBillOverview: React.FC = () => {
 
   const filteredFinish = search
     ? finish.filter((item) =>
+      (item.CONTNO || '').includes(searchLower) ||
       (item.CUSTOMERNAME || "").toLowerCase().includes(searchLower) ||
       (item.PACKAGETITLE || "").toLowerCase().includes(searchLower) ||
       (item.PRODUCTNAME || "").toLowerCase().includes(searchLower) ||
@@ -272,7 +273,7 @@ const FirstBillOverview: React.FC = () => {
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="S/N, ชื่อลูกค้า"
+                  placeholder='เลขที่สัญญา, S/N, ชื่อลูกค้า'
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
