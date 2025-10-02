@@ -95,8 +95,10 @@ const ReceiptFirstBillFromCreateFirstBill: FC = () => {
   const state = location.state as any;
   const REFNO: string | undefined = state?.REFNO ?? state?.item?.REFNO;
 
+  const API_URL_PHP = import.meta.env.VITE_APP_API_PDPA_LETTER;
+
   const POST_RECEIPT_URL = (r: string) =>
-    `https://salecommerce.zonedevnode.com/Electronic/Receipt?RefNo=${encodeURIComponent(r)}`;
+    `${API_URL_PHP}/Electronic/Receipt?RefNo=${encodeURIComponent(r)}`;
 
   // ถ้าไม่มี REFNO ให้พากลับหน้า overview
   useEffect(() => {

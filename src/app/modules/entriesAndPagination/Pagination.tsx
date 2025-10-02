@@ -62,7 +62,7 @@ export const PaginationTable: React.FC<PaginationTableProps> = ({
         disabled={currentPage === 1}
       >
         <span className={`${styles.fontSize}`}>
-          Previous
+          ก่อนหน้า
         </span>
       </button>
 
@@ -88,7 +88,7 @@ export const PaginationTable: React.FC<PaginationTableProps> = ({
         disabled={currentPage === totalPages}
       >
         <span className={`${styles.fontSize}`}>
-          Next
+          ถัดไป
         </span>
       </button>
     </div>

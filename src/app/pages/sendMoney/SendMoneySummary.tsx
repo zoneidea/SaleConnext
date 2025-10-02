@@ -72,7 +72,7 @@ const SendMoneySummary: React.FC = () => {
     const qrText = itemData.QRBASE64 || ''
     const barcodeSend = barcodeType === "BARCODE" ? barcodeText : qrText;
     // console.log(`barcodeSend`, barcodeSend);
-    
+
     const ref1 = itemData.REFERENCE1 || ''
     const ref2 = itemData.REFERENCE2 || ''
     const amount = itemData.AMOUNT || 0
@@ -88,10 +88,26 @@ const SendMoneySummary: React.FC = () => {
                 </div>
 
                 <div className='d-flex justify-content-center align-items-center mb-10'>
-                    <Barcode
-                        value={barcodeSend}
-                        format='CODE128'
-                    />
+                    {barcodeType === 'BARCODE' ? (
+                        <Barcode
+                            value={barcodeSend}
+                            format='CODE128'
+                            // ปรับขนาดหลัก ๆ ตรงนี้
+                            width={3}          // ความกว้างของแท่ง (เดิมเล็กไป ลอง 2–3)
+                            height={140}       // ความสูงบาร์โค้ด
+                            displayValue       // แสดงตัวอักษรใต้บาร์โค้ด
+                            fontSize={18}      // ขนาดตัวอักษรใต้บาร์โค้ด
+                            textMargin={8}     // ระยะห่างตัวอักษรกับบาร์โค้ด
+                            margin={0}         // ระยะขอบรวม
+                        />
+                    ) : (
+                        // ถ้าเป็น QR (base64) ให้แสดงรูปแทน
+                        <img
+                            src={`data:image/png;base64,${qrText}`}
+                            alt='QR'
+                            style={{ width: '360px', maxWidth: '90%', height: 'auto' }}
+                        />
+                    )}
                 </div>
 
                 <div className='p-4 fs-5 flex justify-content-center align-items-center'>
