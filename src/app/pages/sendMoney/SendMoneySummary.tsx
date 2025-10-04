@@ -63,7 +63,6 @@ const SendMoneySummary: React.FC = () => {
 
     // console.log(`itemData`, itemData);
 
-    // 4) ดึงค่าไปใช้งาน
     const channelName = itemData.CHANNELNAME || ''
     const channelItemName = itemData.CHANNELITEMNAME || ''
     const sendDate = itemData.SENDDATE || ''
@@ -80,6 +79,11 @@ const SendMoneySummary: React.FC = () => {
     const formattedSendDate = dayjs(sendDate).format('DD/MM/YYYY')
     const formattedAmount = amount.toLocaleString('en-US')
 
+    const getQrSrc = (qr: string) => {
+        if (!qr) return ''
+        return qr.startsWith('data:image') ? qr : `data:image/png;base64,${qr}`
+    }
+
     return (
         <div className='d-flex justify-content-center'>
             <div className='container mt-10 mb-5' style={{ maxWidth: '800px' }}>
@@ -92,18 +96,16 @@ const SendMoneySummary: React.FC = () => {
                         <Barcode
                             value={barcodeSend}
                             format='CODE128'
-                            // ปรับขนาดหลัก ๆ ตรงนี้
-                            width={3}          // ความกว้างของแท่ง (เดิมเล็กไป ลอง 2–3)
-                            height={140}       // ความสูงบาร์โค้ด
+                            width={3}
+                            height={140}
                             displayValue       // แสดงตัวอักษรใต้บาร์โค้ด
-                            fontSize={18}      // ขนาดตัวอักษรใต้บาร์โค้ด
-                            textMargin={8}     // ระยะห่างตัวอักษรกับบาร์โค้ด
-                            margin={0}         // ระยะขอบรวม
+                            fontSize={18}
+                            textMargin={8}
+                            margin={0}
                         />
                     ) : (
-                        // ถ้าเป็น QR (base64) ให้แสดงรูปแทน
                         <img
-                            src={`data:image/png;base64,${qrText}`}
+                            src={getQrSrc(qrText)}
                             alt='QR'
                             style={{ width: '360px', maxWidth: '90%', height: 'auto' }}
                         />
