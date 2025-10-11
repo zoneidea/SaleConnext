@@ -55,14 +55,10 @@ const SuspensedView: FC<WithChildren> = ({ children }) => {
 const PrivateRoutes = () => {
   //หัวข้อ ระบบขาย
   const SalesSatusCust = lazy(() => import("../pages/sales/SalesSatusCust"));
-  const SalesProduct = lazy(() => import("../pages/sales/SalesProduct"));
   const SalesCreateCust = lazy(() => import("../pages/sales/SalesCreateCust"));
-  const SalesWaterMeas = lazy(() => import("../pages/sales/SalesWaterMeas"));
   const SalesContract = lazy(() => import("../pages/sales/SalesContract"));
   const SalesReceipt = lazy(() => import("../pages/sales/SalesReceipt"));
-  const SalesAddCustInfo = lazy(
-    () => import("../pages/sales/SalesAddCustInfo")
-  );
+
   const Step = lazy(() => import("../pages/sales/components/step/Step"));
   const SalesDiscount = lazy(() => import("../pages/sales/SalesDiscount"));
   const SalesPackage = lazy(() => import("../pages/sales/SalesPackage"));
@@ -324,14 +320,6 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path="sale/product"
-          element={
-            <SuspensedView>
-              <SalesProduct />
-            </SuspensedView>
-          }
-        />
-        <Route
           path="sale/createcust"
           element={
             <SuspensedView>
@@ -356,14 +344,6 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path="sale/watermeas"
-          element={
-            <SuspensedView>
-              <SalesWaterMeas />
-            </SuspensedView>
-          }
-        />
-        <Route
           path="sale/contract"
           element={
             <SuspensedView>
@@ -376,14 +356,6 @@ const PrivateRoutes = () => {
           element={
             <SuspensedView>
               <SalesReceipt />
-            </SuspensedView>
-          }
-        />
-        <Route
-          path="sale/addcustinfo"
-          element={
-            <SuspensedView>
-              <SalesAddCustInfo />
             </SuspensedView>
           }
         />

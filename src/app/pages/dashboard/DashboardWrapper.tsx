@@ -457,13 +457,30 @@ import { Content } from '../../../_metronic/layout/components/content'
 
 import ReportDailyTable from './components/ReportDailyTable'
 import ReportDailyPaymentTable from './components/ReportDailyPaymentTable'
+import { log } from "node:console";
+
+type Summary = {
+  all_contract: number
+  all_payment_complete: number
+  all_payment_partial: number
+  day_contract: number
+  day_payment: number
+  day_paid: number
+  day_paiddetail?: { cash: number; qrcode: number; credit: number }
+} | null
 
 const DashboardWrapper: FC = () => {
   const { auth } = useAuth()
 
-  const EmpId = auth?.data?.[0]?.EmpId || ''
-  const TeamSale = auth?.data?.[0]?.TeamSale || ''
-  const SaleCode = auth?.data?.[0]?.SaleCode || ''
+  const EmpId = auth?.data?.[0]?.EmpId;
+  const TeamSale = auth?.data?.[0]?.TeamSale;
+  const SaleCode = auth?.data?.[0]?.SaleCode;
+  const PosId = auth?.data?.[0]?.PosID;
+  const ProcessType = auth?.processtype;
+
+  console.log(`auth`, auth);
+  console.log(`PosId`, PosId);
+  console.log(`ProcessType`, ProcessType);
 
   const [draft, setDraft] = useState<any[]>([])
   const [finish, setFinish] = useState<any[]>([])
@@ -487,71 +504,119 @@ const DashboardWrapper: FC = () => {
 
   const FIRST_PAYMENTS_URL = `${API_URL_SALECONNEXT}/GetListFirstPayments`
 
-  const fetchAllContracts = async () => {
+  // const fetchAllContracts = async () => {
+  //   try {
+  //     const [draftRes, finishRes, pendingRes, editRes] = await Promise.all([
+  //       axios.get(DRAFT_ALLCONTRACT_URL, { headers }),
+  //       axios.get(FINISH_ALLCONTRACT_URL, { headers }),
+  //       axios.get(PENDING_ALLCONTRACT_URL, { headers }),
+  //       axios.get(EDIT_ALLCONTRACT_URL, { headers }),
+  //     ])
+
+  //     setDraft(Array.isArray(draftRes?.data?.data) ? draftRes.data.data : [])
+  //     setFinish(Array.isArray(finishRes?.data?.data) ? finishRes.data.data : [])
+  //     setPending(Array.isArray(pendingRes?.data?.data) ? pendingRes.data.data : [])
+  //     setEdit(Array.isArray(editRes?.data?.data) ? editRes.data.data : [])
+  //   } catch (err) {
+  //     console.error('Error fetching contracts:', err)
+  //     setDraft([]); setFinish([]); setPending([]); setEdit([])
+  //   }
+  // }
+
+  // useEffect(() => {
+  //   if (!EmpId && !TeamSale && !SaleCode) return
+  //   fetchAllContracts()
+  // }, [EmpId, TeamSale, SaleCode])
+
+  // useEffect(() => {
+  //   const total = draft.length + finish.length + pending.length + edit.length
+  //   setDraftP(total === 0 ? 0 : Math.round((draft.length / total) * 100))
+  //   setPendingP(total === 0 ? 0 : Math.round((pending.length / total) * 100))
+  //   setEditP(total === 0 ? 0 : Math.round((edit.length / total) * 100))
+  //   setFinishP(total === 0 ? 0 : Math.round((finish.length / total) * 100))
+  // }, [draft, finish, pending, edit])
+
+  // const allContract = draft.length + finish.length
+
+  const [summary, setSummary] = useState<Summary>(null)
+  console.log(`summary`, summary);
+
+  const DASHBOARD_SUMMARY_URL = `${API_URL_SALECONNEXT}/GetDataDashboard`
+
+  const toNum = (v: any) => (v === null || v === undefined ? 0 : Number(v) || 0);
+
+  const fetchSummary = async () => {
+    if (!EmpId || !TeamSale || !PosId || !ProcessType) return;
     try {
-      const [draftRes, finishRes, pendingRes, editRes] = await Promise.all([
-        axios.get(DRAFT_ALLCONTRACT_URL, { headers }),
-        axios.get(FINISH_ALLCONTRACT_URL, { headers }),
-        axios.get(PENDING_ALLCONTRACT_URL, { headers }),
-        axios.get(EDIT_ALLCONTRACT_URL, { headers }),
-      ])
+      const res = await axios.get(DASHBOARD_SUMMARY_URL, {
+        params: { EmpId, TeamSale, PosId, ProcessType },
+        headers,
+      });
 
-      setDraft(Array.isArray(draftRes?.data?.data) ? draftRes.data.data : [])
-      setFinish(Array.isArray(finishRes?.data?.data) ? finishRes.data.data : [])
-      setPending(Array.isArray(pendingRes?.data?.data) ? pendingRes.data.data : [])
-      setEdit(Array.isArray(editRes?.data?.data) ? editRes.data.data : [])
-    } catch (err) {
-      console.error('Error fetching contracts:', err)
-      setDraft([]); setFinish([]); setPending([]); setEdit([])
+      // รองรับทั้งรูปแบบ {data:{...}} และ {...}
+      const raw = res?.data?.data ?? res?.data ?? null;
+      if (!raw) return setSummary(null);
+
+      const normalized = {
+        all_contract: toNum(raw.all_contract),
+        all_payment_complete: toNum(raw.all_payment_complete),
+        all_payment_partial: toNum(raw.all_payment_partial),
+        day_contract: toNum(raw.day_contract),
+        day_payment: toNum(raw.day_payment),
+        day_paid: toNum(raw.day_paid),
+        day_paiddetail: {
+          cash: toNum(raw?.day_paiddetail?.cash),
+          qrcode: toNum(raw?.day_paiddetail?.qrcode),
+          credit: toNum(raw?.day_paiddetail?.credit),
+        },
+      };
+      setSummary(normalized);
+    } catch (e) {
+      console.error("Error fetching summary:", e);
+      setSummary(null);
     }
-  }
-
-  useEffect(() => {
-    if (!EmpId && !TeamSale && !SaleCode) return
-    fetchAllContracts()
-  }, [EmpId, TeamSale, SaleCode])
-
-  useEffect(() => {
-    const total = draft.length + finish.length + pending.length + edit.length
-    setDraftP(total === 0 ? 0 : Math.round((draft.length / total) * 100))
-    setPendingP(total === 0 ? 0 : Math.round((pending.length / total) * 100))
-    setEditP(total === 0 ? 0 : Math.round((edit.length / total) * 100))
-    setFinishP(total === 0 ? 0 : Math.round((finish.length / total) * 100))
-  }, [draft, finish, pending, edit])
-
-  const allContract = draft.length + finish.length
+  };
 
   // ////////////// Payments ///////////////
-  const [rows, setRows] = useState<any[]>([])
-  const [loading, setLoading] = useState(false)
+  const [rows, setRows] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const fetchPayments = async () => {
-    if (!EmpId || !TeamSale) return
-    setLoading(true)
+    if (!EmpId || !TeamSale || !ProcessType) return;
+    setLoading(true);
     try {
       const res = await axios.get(FIRST_PAYMENTS_URL, {
-        params: {
-          EmpId: EmpId,                
-          TeamSale: TeamSale,
-          ProcessType: auth.processtype 
-        },
-      })
-     
-      const data =
-        Array.isArray(res?.data) ? res.data :
-          Array.isArray(res?.data?.data) ? res.data.data : []
-      setRows(data)
+        params: { EmpId, TeamSale, ProcessType },
+        headers,
+      });
+      const data = Array.isArray(res?.data)
+        ? res.data
+        : Array.isArray(res?.data?.data)
+          ? res.data.data
+          : [];
+      setRows(data);
     } catch (err) {
-      console.error('Error fetching first payments:', err)
-      setRows([])
+      console.error("Error fetching first payments:", err);
+      setRows([]);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchPayments()
-  }, [EmpId, TeamSale, auth?.processtype])
+    fetchSummary();
+    fetchPayments();
+  }, [EmpId, TeamSale, PosId, ProcessType]);
+
+  const allContractShown = summary?.all_contract ?? 0;
+  const allPaymentShown = summary?.all_payment_complete ?? 0;
+  const allPaymentPartialShown = summary?.all_payment_partial ?? 0;
+  const DayPaidCashShown = summary?.day_paiddetail?.cash ?? 0;
+
+  console.log(`allContractShown`, allContractShown);
+  console.log(`allPaymentShown`, allPaymentShown);
+  console.log(`allPaymentPartialShown`, allPaymentPartialShown);
+  console.log(`DayPaidCashShown`, DayPaidCashShown);
 
   return (
     <>
@@ -567,7 +632,7 @@ const DashboardWrapper: FC = () => {
             >
               <div className='card-body d-flex flex-column align-items-center justify-content-center text-center p-4'>
                 <span className='fs-1 fw-bold me-2 lh-1 ls-n2 mt-2' style={{ color: '#002B49' }}>สัญญาทั้งหมด</span>
-                <div className='fw-bold text-white lh-1 mt-5' style={{ fontSize: 50 }}>{allContract}</div>
+                <div className='fw-bold text-white lh-1 mt-5' style={{ fontSize: 50 }}>{allContractShown}</div>
               </div>
             </div>
           </div>
@@ -578,8 +643,8 @@ const DashboardWrapper: FC = () => {
               style={{ backgroundColor: '#FADA5E', height: 140 }}
             >
               <div className='card-body d-flex flex-column align-items-center justify-content-center text-center p-4'>
-                <span className='fs-1 fw-bold me-2 lh-1 ls-n2 mt-2' style={{ color: '#002B49' }}>สัญญาคงค้าง</span>
-                <div className='fw-bold text-white lh-1 mt-5' style={{ fontSize: 50 }}>{draft.length}</div>
+                <span className='fs-1 fw-bold me-2 lh-1 ls-n2 mt-2' style={{ color: '#002B49' }}>เก็บเงินทั้งหมด</span>
+                <div className='fw-bold text-white lh-1 mt-5' style={{ fontSize: 50 }}>{allPaymentShown}</div>
               </div>
             </div>
           </div>
@@ -590,25 +655,23 @@ const DashboardWrapper: FC = () => {
               style={{ backgroundColor: '#50C878', height: 140 }}
             >
               <div className='card-body d-flex flex-column align-items-center justify-content-center text-center p-4'>
-                <span className='fs-1 fw-bold me-2 lh-1 ls-n2 mt-2' style={{ color: '#002B49' }}>รายการเก็บเงิน</span>
-                <div className='fw-bold text-white lh-1 mt-5' style={{ fontSize: 50 }}>{rows.length}</div>
+                <span className='fs-1 fw-bold me-2 lh-1 ls-n2 mt-2' style={{ color: '#002B49' }}>เก็บเงินบางส่วน</span>
+                <div className='fw-bold text-white lh-1 mt-5' style={{ fontSize: 50 }}>{allPaymentPartialShown}</div>
               </div>
             </div>
           </div>
 
-          {/* <div className='col-12 col-md-6 col-xl-6 col-xxl-3 align-self-start'>
+          <div className='col-12 col-md-6 col-xl-6 col-xxl-3 align-self-start'>
             <div
               className='card card-flush w-100 h-auto'
               style={{ backgroundColor: '#F88379', height: 140 }}
             >
               <div className='card-body d-flex flex-column align-items-center justify-content-center text-center p-4'>
                 <span className='fs-1 fw-bold me-2 lh-1 ls-n2 mt-2' style={{ color: '#002B49' }}>เงินสด On Hand</span>
-                <div className='fw-bold text-white lh-1 mt-5' style={{ fontSize: 50 }}>
-                  {cashOnHandTotal.toLocaleString()}
-                </div>
+                <div className='fw-bold text-white lh-1 mt-5' style={{ fontSize: 50 }}>{DayPaidCashShown}</div>
               </div>
             </div>
-          </div> */}
+          </div>
 
         </div>
 

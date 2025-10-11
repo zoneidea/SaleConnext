@@ -107,7 +107,7 @@ const SendMoneySummary: React.FC = () => {
                         <img
                             src={getQrSrc(qrText)}
                             alt='QR'
-                            style={{ width: '360px', maxWidth: '90%', height: 'auto' }}
+                            style={{ maxWidth: 200, height: 'auto' }}
                         />
                     )}
                 </div>

@@ -163,6 +163,14 @@ const SalesPhoto: React.FC = () => {
 
     // ฟังก์ชัน ส่งตรวจสอบ (กรณีไม่ได้มาจาก step)
     const handleCheckerClick = async () => {
+        if (!isDataComplete) {
+            MySwal.fire({
+                icon: "warning",
+                title: "ข้อมูลยังไม่ครบ",
+                text: "กรุณากรอกข้อมูลให้ครบก่อนจบการทำงาน",
+            });
+            return;
+        }
         MySwal.fire({
             title: "โปรดรอสักครู่...",
             text: "กำลังส่งข้อมูล",
@@ -173,7 +181,6 @@ const SalesPhoto: React.FC = () => {
         });
 
         const finishRefno = refno ? refno : matchedItem.REFNO;
-        // console.log(`finishRefno`, finishRefno);
 
         try {
             const response = await axios.post(
@@ -192,18 +199,6 @@ const SalesPhoto: React.FC = () => {
                     headers: { "Content-Type": "application/json" },
                 }
             );
-
-            // const payload = response.data.data;
-            // const jsonString = JSON.stringify(payload, null, 2);
-
-            // MySwal.fire({
-            //     icon: "error",
-            //     title: "ดู response",
-            //     html: `<pre style="text-align:left;white-space:pre-wrap;">${jsonString}</pre>`,
-            // });
-
-            // เมื่อสำเร็จ ปิด Loading ก่อน
-            // Swal.close()
 
             // ตรวจสอบ status
             if (response.status === 200) {
@@ -227,15 +222,6 @@ const SalesPhoto: React.FC = () => {
                         icon: "error",
                         title: "เกิดข้อผิดพลาด",
                         text: "ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา",
-                        // html: `
-                        //   <b>HTTP status:</b> ${response.status}<br/>
-                        //   <b>response.data:</b><br/>
-                        //   <pre style="text-align:left;white-space:pre-wrap;">${JSON.stringify(
-                        //     response.data,
-                        //     null,
-                        //     2
-                        // )}</pre>
-                        // `,
                     });
                 } else {
                     MySwal.fire({
@@ -253,30 +239,29 @@ const SalesPhoto: React.FC = () => {
                     icon: "error",
                     title: "เกิดข้อผิดพลาด",
                     text: "ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา",
-                    // html: `
-                    //     <b>HTTP status:</b> ${response.status}<br/>
-                    //     <b>response.data.message:</b><br/>
-                    //     <pre style="text-align:left;white-space:pre-wrap;">${response.data.message}</pre>
-                    //   `,
                 });
             }
         } catch (error) {
             // กรณีเกิด Error ให้ปิด Loading ก่อน แล้วแจ้ง
             Swal.close();
-            // MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถส่งข้อมูลได้', 'error')
             MySwal.fire({
                 icon: "error",
                 title: "เกิดข้อผิดพลาด",
                 text: "ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา",
-                // html: `
-                //   ${error}
-                // `,
             });
         }
     };
 
     // ฟังก์ชัน ส่งตรวจสอบ (กรณีมาจาก step)
     const handleUpdateCheckerClick = async () => {
+        if (!isDataComplete) {
+            MySwal.fire({
+                icon: "warning",
+                title: "ข้อมูลยังไม่ครบ",
+                text: "กรุณากรอกข้อมูลให้ครบก่อนจบการทำงาน",
+            });
+            return;
+        }
         // เรียก SweetAlert2 loading
         MySwal.fire({
             title: "โปรดรอสักครู่...",
@@ -302,18 +287,6 @@ const SalesPhoto: React.FC = () => {
                 }
             );
 
-            // const payload = response.data.data;
-            // const jsonString = JSON.stringify(payload, null, 2);
-
-            // MySwal.fire({
-            //     icon: "error",
-            //     title: "เกิดข้อผิดพลาด",
-            //     html: `<pre style="text-align:left;white-space:pre-wrap;">${jsonString}</pre>`,
-            // });
-
-            // เมื่อสำเร็จ ปิด Loading ก่อน
-            // Swal.close();
-
             if (response.status === 200) {
                 if (!response.data.data) {
                     MySwal.fire(
@@ -332,14 +305,6 @@ const SalesPhoto: React.FC = () => {
             // กรณีเกิด Error ให้ปิด Loading ก่อน แล้วแจ้ง
             Swal.close();
             MySwal.fire("เกิดข้อผิดพลาด", "ไม่สามารถส่งข้อมูลได้", "error");
-
-            // MySwal.fire({
-            //     icon: 'error',
-            //     title: 'เกิดข้อผิดพลาด',
-            //     html: `
-            //               ${error}
-            //             `
-            // })
         }
     };
 
@@ -367,13 +332,7 @@ const SalesPhoto: React.FC = () => {
         );
     }, [fromStep, item, matchedItem]);
 
-    // console.log(`isDataComplete`, isDataComplete);
-
     const whereRefno = fromStep ? refno : matchedItem?.REFNO ?? "";
-
-    // console.log(`refno`, refno);
-    // console.log(`matchedItem.REFNO`, matchedItem.REFNO);
-    // console.log(`item.REFNO`, item.REFNO);
 
     return (
         <>
@@ -775,38 +734,13 @@ const SalesPhoto: React.FC = () => {
 
                     {/* แสดงปุ่มเมื่อมาจาก Step */}
                     <div className="d-none d-xl-flex justify-content-start align-items-center mt-5 mb-10">
-                        {/* {hideFinish && (
-                            <button
-                                className={`${styles.btnSecondary}`}
-                                onClick={() =>
-                                    navigate('/sale/editFinishInDay', { state: item })
-                                }
-                            >
-                                ย้อนกลับ
-                            </button>
-                        )} */}
-                        {/* <button
-                            className={`${styles.btnPrimary}`}
-                            onClick={() =>
-                                navigate('/sale/overview', { state: matchedItem })
-                            }
-                        >
-                            จบการทำงาน
-                        </button> */}
                         <div
                             className="ms-auto"
                         >
-                            {/* {!hideFinish && isDataComplete && (
-                                <button
-                                    className={`${styles.btnPrimary}`}
-                                    onClick={handleCheckerClick}
-                                >
-                                    จบการทำงาน
-                                </button>
-                            )} */}
                             <button
                                 className={`${styles.btnPrimary}`}
                                 onClick={handleCheckerClick}
+                                disabled={!isDataComplete}
                             >
                                 จบการทำงาน
                             </button>
@@ -825,38 +759,13 @@ const SalesPhoto: React.FC = () => {
                             zIndex: 1050,
                         }}
                     >
-                        {/* {hideFinish && (
-                            <button
-                                className={`${styles.btnSecondary}`}
-                                onClick={() =>
-                                    navigate('/sale/editFinishInDay', { state: item })
-                                }
-                            >
-                                ย้อนกลับ
-                            </button>
-                        )} */}
-                        {/* <button
-                            className={`${styles.btnPrimary}`}
-                            onClick={() =>
-                                navigate('/sale/overview', { state: matchedItem })
-                            }
-                        >
-                            จบการทำงาน
-                        </button> */}
                         <div
                             className="ms-auto"
                         >
-                            {/* {!hideFinish && isDataComplete && (
-                                <button
-                                    className={`${styles.btnPrimary}`}
-                                    onClick={handleCheckerClick}
-                                >
-                                    จบการทำงาน
-                                </button>
-                            )} */}
                             <button
                                 className={`${styles.btnPrimary}`}
                                 onClick={handleCheckerClick}
+                                disabled={!isDataComplete}
                             >
                                 จบการทำงาน
                             </button>
