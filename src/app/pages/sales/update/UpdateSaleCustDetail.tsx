@@ -1487,7 +1487,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                                       onBlur={field.onBlur}
                                       ref={field.ref}
                                     />
-                                    {/* {selectedCardType === "1" && (
+                                    {selectedCardType === "1" && (
                                       <span
                                         className="input-group-text"
                                         style={{ cursor: "pointer" }}
@@ -1495,7 +1495,7 @@ const UpdateSaleCustDetail: React.FC = () => {
                                       >
                                         <FontAwesomeIcon icon={faBarcode} />
                                       </span>
-                                    )} */}
+                                    )}
                                   </div>
                                 )}
                               />

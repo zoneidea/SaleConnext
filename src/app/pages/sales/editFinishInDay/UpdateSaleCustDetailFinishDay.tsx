@@ -1298,7 +1298,7 @@ const UpdateSaleCustDetailFinishDay: React.FC = () => {
                                         backgroundColor: "#f1f1f4",
                                       }}
                                     />
-                                    {/* {selectedCardType === "1" && (
+                                    {selectedCardType === "1" && (
                                       <span
                                         className="input-group-text"
                                         style={{ cursor: "pointer" }}
@@ -1306,7 +1306,7 @@ const UpdateSaleCustDetailFinishDay: React.FC = () => {
                                       >
                                         <FontAwesomeIcon icon={faBarcode} />
                                       </span>
-                                    )} */}
+                                    )}
                                   </div>
                                 )}
                               />

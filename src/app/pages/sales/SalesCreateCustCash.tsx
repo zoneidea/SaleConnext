@@ -1197,7 +1197,7 @@ const SalesCreateCustCash: React.FC = () => {
                                           onBlur={field.onBlur}
                                           ref={field.ref}
                                         />
-                                        {/* {selectedCardType === "1" && (
+                                        {selectedCardType === "1" && (
                                           <span
                                             className="input-group-text"
                                             style={{ cursor: "pointer" }}
@@ -1205,7 +1205,7 @@ const SalesCreateCustCash: React.FC = () => {
                                           >
                                             <FontAwesomeIcon icon={faBarcode} />
                                           </span>
-                                        )} */}
+                                        )}
                                       </div>
                                     )}
                                   />
@@ -1320,18 +1320,16 @@ const SalesCreateCustCash: React.FC = () => {
                                     name="lastName"
                                     control={control}
                                     render={({ field }) => (
-                                      <div className="col-lg-6 my-3">
-                                        <input
-                                          {...field}
-                                          type="text"
-                                          className={`form-control mb-3 mb-lg-0 ${styles.label}`}
-                                          value={field.value ?? lastName}            // กันค่าเริ่มต้น
-                                          onChange={(e) => {
-                                            field.onChange(e.target.value);
-                                            setLastName(e.target.value);            // sync กับ state ที่ส่งขึ้น API
-                                          }}
-                                        />
-                                      </div>
+                                      <input
+                                        {...field}
+                                        type="text"
+                                        className={`form-control mb-3 mb-lg-0 ${styles.label}`}
+                                        value={field.value ?? lastName}            // กันค่าเริ่มต้น
+                                        onChange={(e) => {
+                                          field.onChange(e.target.value);
+                                          setLastName(e.target.value);            // sync กับ state ที่ส่งขึ้น API
+                                        }}
+                                      />
                                     )}
                                   />
                                 </div>
