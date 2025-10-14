@@ -640,10 +640,10 @@ const DashboardWrapper: FC = () => {
           <div className='col-12 col-md-6 col-xl-6 col-xxl-3 align-self-start'>
             <div
               className='card card-flush w-100 h-auto'
-              style={{ backgroundColor: '#FADA5E', height: 140 }}
+              style={{ backgroundColor: '#9379C2', height: 140 }}
             >
               <div className='card-body d-flex flex-column align-items-center justify-content-center text-center p-4'>
-                <span className='fs-1 fw-bold me-2 lh-1 ls-n2 mt-2' style={{ color: '#002B49' }}>เก็บเงินทั้งหมด</span>
+                <span className='fs-1 fw-bold me-2 lh-1 ls-n2 mt-2' style={{ color: '#002B49' }}>สัญญาเก็บเงินทั้งหมด</span>
                 <div className='fw-bold text-white lh-1 mt-5' style={{ fontSize: 50 }}>{allPaymentShown}</div>
               </div>
             </div>
@@ -655,7 +655,7 @@ const DashboardWrapper: FC = () => {
               style={{ backgroundColor: '#50C878', height: 140 }}
             >
               <div className='card-body d-flex flex-column align-items-center justify-content-center text-center p-4'>
-                <span className='fs-1 fw-bold me-2 lh-1 ls-n2 mt-2' style={{ color: '#002B49' }}>เก็บเงินบางส่วน</span>
+                <span className='fs-1 fw-bold me-2 lh-1 ls-n2 mt-2' style={{ color: '#002B49' }}>สัญญาเก็บเงินบางส่วน</span>
                 <div className='fw-bold text-white lh-1 mt-5' style={{ fontSize: 50 }}>{allPaymentPartialShown}</div>
               </div>
             </div>
@@ -667,7 +667,7 @@ const DashboardWrapper: FC = () => {
               style={{ backgroundColor: '#F88379', height: 140 }}
             >
               <div className='card-body d-flex flex-column align-items-center justify-content-center text-center p-4'>
-                <span className='fs-1 fw-bold me-2 lh-1 ls-n2 mt-2' style={{ color: '#002B49' }}>เงินสด On Hand</span>
+                <span className='fs-1 fw-bold me-2 lh-1 ls-n2 mt-2' style={{ color: '#002B49' }}>เงินสดในมือ</span>
                 <div className='fw-bold text-white lh-1 mt-5' style={{ fontSize: 50 }}>{DayPaidCashShown}</div>
               </div>
             </div>
