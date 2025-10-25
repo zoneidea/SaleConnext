@@ -88,7 +88,6 @@ const UpdateSalesSatusCust: React.FC = () => {
   const API_MONGO = import.meta.env.VITE_APP_API_MONGO;
   const GET_CONTRACT = `${API_MONGO}/Contract/GetContractSummary?refno=${refno}`;
   const UPDATECONTACT = `${API_MONGO}/Contract/updateContract`;
-  const GET_IMAGES_API = `${API_MONGO}/Contract/GetContractImage`;
 
   const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
   const PROVINCE_URL = `${API_SALECONNEXT}/GetAddress/Province`;
@@ -240,41 +239,6 @@ const UpdateSalesSatusCust: React.FC = () => {
     };
     getData();
   }, []);
-
-  // fetch collection ContractImage
-  useEffect(() => {
-    const fetchImages = async () => {
-      try {
-        const response = await axios.get(GET_IMAGES_API, {
-          params: refno,
-        });
-
-        // ตรวจสอบว่า response.data เป็นไปตามโครงสร้างของ ImagesType
-        const data = response.data;
-
-        if (
-          data &&
-          typeof data === 'object' &&
-          'IMAGECARD' in data &&
-          'IMAGEGPS' in data &&
-          'IMAGEMAP' in data &&
-          'IMAGECUSTOMERHOME' in data &&
-          'IMAGEINSTALLATION' in data &&
-          'IMAGETDS' in data &&
-          'IMAGETRADEIN' in data
-        ) {
-          setImages(data as ImagesType);
-        } else {
-          setImages(null);
-        }
-      } catch (err) {
-        console.error('Error fetching images:', err);
-        setImages(null); // ตั้งค่าเป็น null หากมีข้อผิดพลาด
-      }
-    };
-
-    fetchImages();
-  }, [refno]);
 
   const handleConfirmClick = () => {
     // ซ่อนโมดาล

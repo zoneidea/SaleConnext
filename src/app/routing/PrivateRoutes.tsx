@@ -133,8 +133,8 @@ const PrivateRoutes = () => {
   const HomeCustomerPhoto = lazy(
     () => import("../pages/sales/components/photo/HomeCustomerPhoto")
   );
-  const CustomerPhoto = lazy(
-    () => import("../pages/sales/components/photo/CustomerPhoto")
+  const TransferSlipPhoto = lazy(
+    () => import("../pages/sales/components/photo/TransferSlipPhoto")
   );
   const EquipmentPhoto = lazy(
     () => import("../pages/sales/components/photo/EquipmentPhoto")
@@ -143,8 +143,8 @@ const PrivateRoutes = () => {
   const IdCardPhotoGallery = lazy(
     () => import("../pages/sales/components/photo/gallery/IdCardPhotoGallery")
   );
-  const CustomerPhotoGallery = lazy(
-    () => import("../pages/sales/components/photo/gallery/CustomerPhotoGallery")
+  const TransferSlipPhotoGallery = lazy(
+    () => import("../pages/sales/components/photo/gallery/TransferSlipPhotoGallery")
   );
   const DrawingMapPhotoGallery = lazy(
     () =>
@@ -511,10 +511,10 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path="sale/photo/customer"
+          path="sale/photo/transferslip"
           element={
             <SuspensedView>
-              <CustomerPhoto />
+              <TransferSlipPhoto />
             </SuspensedView>
           }
         />
@@ -536,10 +536,10 @@ const PrivateRoutes = () => {
           }
         />
         <Route
-          path="sale/photo/gallery/customer"
+          path="sale/photo/gallery/transferslip"
           element={
             <SuspensedView>
-              <CustomerPhotoGallery />
+              <TransferSlipPhotoGallery />
             </SuspensedView>
           }
         />

@@ -39,7 +39,7 @@ interface ItemProps {
     CHECKERCOMMENT: [any]
 }
 
-const CustomerPhoto: React.FC = () => {
+const TransferSlipPhoto: React.FC = () => {
     // สร้างใหม่
     const { REFNO } = useUUIDStore();
 
@@ -247,7 +247,7 @@ const CustomerPhoto: React.FC = () => {
                 showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
             });
 
-            navigate('/sale/photo/gallery/customer', { state: { data: item, fromStep } });
+            navigate('/sale/photo/gallery/transferslip', { state: { data: item, fromStep } });
 
         } catch (error) {
             console.error('Upload error:', error);
@@ -265,7 +265,7 @@ const CustomerPhoto: React.FC = () => {
         const updatedItem = {
             ...item,
         };
-        navigate("/sale/photo/gallery/customer", { state: { data: updatedItem, fromStep } });
+        navigate("/sale/photo/gallery/transferslip", { state: { data: updatedItem, fromStep } });
     };
 
     return (
@@ -389,7 +389,7 @@ const CustomerPhoto: React.FC = () => {
                     <div className='d-none d-xl-flex justify-content-between align-items-center my-5 mx-7'>
                         <button
                             className={`${styles.btnSecondary}`}
-                            onClick={() => navigate('/sale/photo/gallery/customer', { state: { data: item, fromStep } })}
+                            onClick={() => navigate('/sale/photo/gallery/transferslip', { state: { data: item, fromStep } })}
                             disabled={isLoading}
                         >
                             ย้อนกลับ
@@ -407,7 +407,7 @@ const CustomerPhoto: React.FC = () => {
                     <div className='d-none d-xl-flex justify-content-between align-items-center my-5 mx-7'>
                         <button
                             className={`${styles.btnSecondary}`}
-                            onClick={() => navigate('/sale/photo/gallery/customer', { state: { data: item, fromStep } })}
+                            onClick={() => navigate('/sale/photo/gallery/transferslip', { state: { data: item, fromStep } })}
                             disabled={isLoading}
                         >
                             ย้อนกลับ
@@ -438,7 +438,7 @@ const CustomerPhoto: React.FC = () => {
                     >
                         <button
                             className={`${styles.btnSecondary}`}
-                            onClick={() => navigate('/sale/photo/gallery/customer', { state: { data: item, fromStep } })}
+                            onClick={() => navigate('/sale/photo/gallery/transferslip', { state: { data: item, fromStep } })}
                             disabled={isLoading}
                         >
                             ย้อนกลับ
@@ -464,7 +464,7 @@ const CustomerPhoto: React.FC = () => {
                     >
                         <button
                             className={`${styles.btnSecondary}`}
-                            onClick={() => navigate('/sale/photo/gallery/customer', { state: { data: item, fromStep } })}
+                            onClick={() => navigate('/sale/photo/gallery/transferslip', { state: { data: item, fromStep } })}
                             disabled={isLoading}
                         >
                             ย้อนกลับ
@@ -483,4 +483,4 @@ const CustomerPhoto: React.FC = () => {
     );
 };
 
-export default CustomerPhoto;
+export default TransferSlipPhoto;

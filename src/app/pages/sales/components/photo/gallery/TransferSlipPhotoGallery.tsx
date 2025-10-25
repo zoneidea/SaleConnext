@@ -32,9 +32,12 @@ interface LocationState {
     fromStep?: boolean;
 }
 
-const CustomerPhotoGallery: React.FC = () => {
+const TransferSlipPhotoGallery: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
+    const { auth } = useAuth();
+    const EmpId = auth?.data?.[0]?.EmpId || "";
+
     const { data: item, fromStep = false } = (location.state as LocationState) || {};
 
     const [images, setImages] = useState<string[]>([]);
@@ -47,40 +50,74 @@ const CustomerPhotoGallery: React.FC = () => {
     const { REFNO } = useUUIDStore();
     const refno = fromStep ? item?.REFNO : REFNO;
 
-    const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
-    const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage?REFNO=${refno}`;
+    // const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
+    // const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage?REFNO=${refno}`;
+    const API_URL_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
+    const GET_IMAGES_API = `${API_URL_SALECONNEXT}/GetContractImages?RefNo=${refno}&EmpId=${EmpId}`;
 
     const isIOS: boolean = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isAndroid: boolean = /Android/.test(navigator.userAgent);
     const isTablet: boolean = /Tablet|iPad/.test(navigator.userAgent);
     const isPC: boolean = !isIOS && !isAndroid && !isTablet;
 
+    // useEffect(() => {
+    //     const fetchImages = async () => {
+    //         setLoading(true);
+    //         setError(null);
+
+    //         try {
+    //             const response = await axios.get(GET_IMAGES_API);
+
+    //             const data = response.data;
+    //             // console.log(data); // ตรวจสอบข้อมูล
+
+    //             if (data?.IMAGECUSTOMER) {
+    //                 // ใช้ข้อมูล Base64 ที่ได้โดยตรง
+    //                 setImages(data.IMAGECUSTOMER);
+    //             } else {
+    //                 setImages([]);
+    //             }
+    //         } catch (err) {
+    //             console.error('Error fetching images:', err);
+    //         } finally {
+    //             setLoading(false);
+    //         }
+    //     };
+
+    //     fetchImages();
+    // }, [refno]);
+
     useEffect(() => {
         const fetchImages = async () => {
             setLoading(true);
             setError(null);
-
             try {
-                const response = await axios.get(GET_IMAGES_API);
+                const resp = await axios.get(GET_IMAGES_API);
+                const groups = Array.isArray(resp.data?.data) ? resp.data.data : [];
 
-                const data = response.data;
-                // console.log(data); // ตรวจสอบข้อมูล
+                const tranferSlipGroup = groups.find(
+                    (g: any) => g?.IMAGETYPECODE === "TRANSFERSLIP"
+                );
 
-                if (data?.IMAGECUSTOMER) {
-                    // ใช้ข้อมูล Base64 ที่ได้โดยตรง
-                    setImages(data.IMAGECUSTOMER);
-                } else {
-                    setImages([]);
-                }
+                const imgs = Array.isArray(tranferSlipGroup?.IMAGES) ? tranferSlipGroup.IMAGES : [];
+
+                // map เอา URL (FULLURL > FULLPATH) และกรองค่าว่างออก
+                const urls: string[] = imgs
+                    .map((it: any) => it?.FULLURL || it?.FULLPATH || "")
+                    .filter(Boolean);
+
+                setImages(urls);
             } catch (err) {
-                console.error('Error fetching images:', err);
+                console.error("Error fetching images:", err);
+                setError("ไม่สามารถโหลดรูปภาพได้");
+                setImages([]);
             } finally {
                 setLoading(false);
             }
         };
 
         fetchImages();
-    }, [refno]);
+    }, [GET_IMAGES_API, refno, EmpId]);
 
     return (
         <>
@@ -95,27 +132,27 @@ const CustomerPhotoGallery: React.FC = () => {
                         <h3>{error}</h3>
                     </div>
                 ) : images.length > 0 ? (
-                    images.map((base64Image, index) => (
-                        <div className="col-6 col-xl-4 mb-3" key={index}>
+                    images.map((url, index) => (
+                        <div className="col-6 col-xl-4 mb-3 mt-3" key={index}>
                             <div className="border border-gray-500 position-relative">
                                 <img
-                                    src={`data:image/jpeg;base64,${base64Image}`} // ใช้ Base64
+                                    src={url}
                                     alt={`Captured ${index + 1}`}
                                     style={{
                                         width: '100%',
                                         height: '200px',
                                         objectFit: 'cover',
-                                        cursor: 'pointer',
+                                        cursor: 'pointer'
                                     }}
-                                    onClick={() => setSelectedImage(`data:image/jpeg;base64,${base64Image}`)}
+                                    onClick={() => setSelectedImage(url)}
                                 />
-                                {/* Overlay */}
+
                                 <div
                                     className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
                                     style={{
                                         backgroundColor: 'rgba(0, 0, 0, 0.8)',
                                         opacity: 0,
-                                        transition: 'opacity 0.3s ease-in-out',
+                                        transition: 'opacity 0.3s ease-in-out'
                                     }}
                                     onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
                                     onMouseLeave={(e) => (e.currentTarget.style.opacity = '0')}
@@ -123,8 +160,8 @@ const CustomerPhotoGallery: React.FC = () => {
                                     <img
                                         src={toAbsoluteUrl('media/settings/eye-svgrepo-com.png')}
                                         alt="ดูภาพ"
-                                        style={{ width: '30px', height: '30px', cursor: 'pointer' }}
-                                        onClick={() => setSelectedImage(`data:image/jpeg;base64,${base64Image}`)}
+                                        style={{ width: 30, height: 30, cursor: 'pointer' }}
+                                        onClick={() => setSelectedImage(url)}
                                     />
                                 </div>
                             </div>
@@ -207,4 +244,4 @@ const CustomerPhotoGallery: React.FC = () => {
     );
 };
 
-export default CustomerPhotoGallery;
+export default TransferSlipPhotoGallery;

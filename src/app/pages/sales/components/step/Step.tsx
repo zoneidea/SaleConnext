@@ -89,18 +89,6 @@ const Step: React.FC = () => {
   const [adviserList, setAdviserList] = useState<any[]>([])
   const [installerList, setInstallerList] = useState<any[]>([])
 
-  const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO || ""
-  const GET_CONTRACT_URL = `${API_URL_MONGO}/Contract/GetContractSummary`
-  const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`
-  const GET_PAYMENT_URL = `${API_URL_MONGO}/Payment/GetPaymentPeriod`;
-
-  const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT || ""
-  const API_URL_POST_CONDITIONSCHECKHISTORY = `${API_SALECONNEXT}/ConditionsCheckHistory`
-
-  const API_URL_TSR = import.meta.env.VITE_APP_API_THIENSURAT || ""
-  const EMP_IN_TEAM_URL = `${API_URL_TSR}/Employee_Structure`
-  const ADVISER_URL = `${API_URL_TSR}/Employee_Structure/Emp_All`
-
   const { auth } = useAuth()
 
   const {
@@ -113,6 +101,21 @@ const Step: React.FC = () => {
     DepartId, setDepartId,
     DepartGroup, setDepartGroup,
   } = useCategoryStore()
+
+  const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO || ""
+  const GET_CONTRACT_URL = `${API_URL_MONGO}/Contract/GetContractSummary`
+  const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`
+  const GET_PAYMENT_URL = `${API_URL_MONGO}/Payment/GetPaymentPeriod`;
+
+  const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT || ""
+  const API_URL_POST_CONDITIONSCHECKHISTORY = `${API_SALECONNEXT}/ConditionsCheckHistory`
+
+  const API_URL_TSR = import.meta.env.VITE_APP_API_THIENSURAT || ""
+  const EMP_IN_TEAM_URL = `${API_URL_TSR}/Employee_Structure`
+  const ADVISER_URL = `${API_URL_TSR}/Employee_Structure/Emp_All`
+
+  const API_URL_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
+  const GET_IMAGES_API = `${API_URL_SALECONNEXT}/GetContractImages?RefNo=${refno}&EmpId=${EmpId}`;
 
   // ดึงข้อมูล contract summary ตาม refno
   const getData = async () => {
@@ -131,37 +134,106 @@ const Step: React.FC = () => {
   }
 
   // ดึงภาพต่าง ๆ ของ contract
+  // useEffect(() => {
+  //   const fetchImages = async () => {
+  //     try {
+  //       const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage?REFNO=${refno}`
+  //       const response = await axios.get(GET_IMAGES_API)
+  //       const resp = response.data
+  //       // ตรวจสอบว่ามี key ครบตาม ImagesType
+  //       if (
+  //         resp &&
+  //         typeof resp === 'object' &&
+  //         'IMAGECARD' in resp &&
+  //         'IMAGEGPS' in resp &&
+  //         'IMAGEMAP' in resp &&
+  //         'IMAGECUSTOMERHOME' in resp &&
+  //         'IMAGEINSTALLATION' in resp &&
+  //         'IMAGETDS' in resp &&
+  //         'IMAGETRADEIN' in resp
+  //       ) {
+  //         setImages(resp as ImagesType)
+  //       } else {
+  //         setImages(null)
+  //       }
+  //     } catch (err) {
+  //       console.error('Error fetching images:', err)
+  //       setImages(null)
+  //     }
+  //   }
+  //   if (refno) {
+  //     fetchImages()
+  //   }
+  // }, [refno])
+
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage?REFNO=${refno}`
-        const response = await axios.get(GET_IMAGES_API)
-        const resp = response.data
-        // ตรวจสอบว่ามี key ครบตาม ImagesType
-        if (
-          resp &&
-          typeof resp === 'object' &&
-          'IMAGECARD' in resp &&
-          'IMAGEGPS' in resp &&
-          'IMAGEMAP' in resp &&
-          'IMAGECUSTOMERHOME' in resp &&
-          'IMAGEINSTALLATION' in resp &&
-          'IMAGETDS' in resp &&
-          'IMAGETRADEIN' in resp
-        ) {
-          setImages(resp as ImagesType)
-        } else {
-          setImages(null)
+        const resp = await axios.get(GET_IMAGES_API);
+        const groups = Array.isArray(resp.data?.data) ? resp.data.data : [];
+
+        // เตรียม object ตาม ImagesType เดิม
+        const nextImages: ImagesType = {
+          IMAGECARD: [],
+          IMAGEGPS: [],
+          IMAGEMAP: [],
+          IMAGECUSTOMERHOME: [],
+          IMAGEINSTALLATION: [],
+          IMAGETDS: [],
+          IMAGECUSTOMER: [],     // จะใช้เก็บ TRANSFERSLIP
+          IMAGETRADEIN: [],      // จะใช้เก็บ CUSTOMER (เครื่องเทิร์น)
+        };
+
+        // helper: ดึง URL จากแต่ละรายการรูป
+        const pickUrls = (arr: any[]) =>
+          (Array.isArray(arr) ? arr : [])
+            .map((it: any) => it?.FULLURL || it?.FULLPATH || "")
+            .filter(Boolean);
+
+        // แม็พ IMAGETYPECODE → ช่องใน state
+        for (const g of groups) {
+          const code = g?.IMAGETYPECODE;
+          const urls = pickUrls(g?.IMAGES);
+
+          switch (code) {
+            case "MAP":
+              nextImages.IMAGEGPS = urls;
+              break;
+            case "IDCARD":
+              nextImages.IMAGECARD = urls;
+              break;
+            case "TDS":
+              nextImages.IMAGETDS = urls;
+              break;
+            case "PAYMENTCARD":
+              nextImages.IMAGEMAP = urls; // รูปวาดแผนที่
+              break;
+            case "ADDRESS":
+              nextImages.IMAGECUSTOMERHOME = urls;
+              break;
+            case "INSTALLATION":
+              nextImages.IMAGEINSTALLATION = urls;
+              break;
+            case "CUSTOMER":
+              nextImages.IMAGETRADEIN = urls; // รูปเครื่องเทิร์น
+              break;
+            case "TRANSFERSLIP":
+              nextImages.IMAGECUSTOMER = urls; // สลิปโอนเงิน
+              break;
+            default:
+              break;
+          }
         }
+
+        setImages(nextImages);
       } catch (err) {
-        console.error('Error fetching images:', err)
-        setImages(null)
+        console.error("Error fetching images:", err);
+        setImages(null);
       }
-    }
-    if (refno) {
-      fetchImages()
-    }
-  }, [refno])
+    };
+
+    fetchImages();
+  }, [GET_IMAGES_API, refno, EmpId]);
 
   // เรียก getData ครั้งแรกเมื่อโหลด refno เสร็จ
   useEffect(() => {
@@ -419,164 +491,6 @@ const Step: React.FC = () => {
 
     return true
   }
-
-  // ฟังก์ชันเลือกพนักงานขาย / ผู้แนะนำ / ช่างติดตั้ง
-  // const handleCheckEmpSale = async () => {
-  //   try {
-  //     // เตรียม options สำหรับพนักงานขาย
-  //     const empOptions = empInTeam.reduce((options: Record<string, string>, emp) => {
-  //       const fullName = `${emp.FName} ${emp.LName}`
-  //       options[emp.SaleEmp] = fullName
-  //       return options
-  //     }, {})
-
-  //     // options สำหรับผู้แนะนำ
-  //     const adviserOptions = adviserList.reduce((options: Record<string, string>, adv) => {
-  //       const fullName = `${adv.FName} ${adv.LName}`
-  //       options[adv.SaleEmp] = fullName
-  //       return options
-  //     }, {})
-
-  //     // options สำหรับช่างติดตั้ง
-  //     const installerOptions = installerList.reduce((options: Record<string, string>, ins) => {
-  //       const fullName = `${ins.FName} ${ins.LName}`
-  //       options[ins.SaleEmp] = fullName
-  //       return options
-  //     }, {})
-
-  //     // ดึงข้อมูล “พนักงานขาย” ปัจจุบัน (ถ้ามี)
-  //     const currentEmployeeObj = data?.[0]?.SALEEMPLOYEE?.[0]?.SALEEMPLOYEE
-  //     const currentEmployeeId = currentEmployeeObj?.SaleEmp || ""
-
-  //     // ดึงข้อมูล “ผู้แนะนำ” ปัจจุบัน (ถ้ามี)
-  //     const currentAdviserObj = data?.[0]?.SALEEMPLOYEE?.[0]?.ADVISER
-  //     const currentAdviserId = currentAdviserObj?.SaleEmp || ""
-
-  //     // ดึงข้อมูล “ช่างติดตั้ง” ปัจจุบัน (ถ้ามี)
-  //     const currentInstallerObj = data?.[0]?.SALEEMPLOYEE?.[0]?.INSTALLER
-  //     const currentInstallerId = currentInstallerObj?.SaleEmp || ""
-
-  //     // เรียก SweetAlert ให้เลือกพนักงานขาย / ผู้แนะนำ / ช่างติดตั้ง
-  //     const { value: formValues } = await MySwal.fire({
-  //       title: 'เลือกพนักงานขาย',
-  //       html: `
-  //         <select id="swal-employee" class="swal2-input" style="width: 100%; margin-bottom: 1rem;">
-  //           <option value="">เลือกพนักงานขาย...</option>
-  //           ${Object.entries(empOptions).map(([key, value]) => `<option value="${key}">${value}</option>`).join('')}
-  //         </select>
-  //         <select id="swal-adviser" class="swal2-input" style="width: 100%; margin-bottom: 1rem;">
-  //           <option value="">เลือกผู้แนะนำ (ถ้ามี)...</option>
-  //           ${Object.entries(adviserOptions).map(([key, value]) => `<option value="${key}">${value}</option>`).join('')}
-  //         </select>
-  //         <select id="swal-installer" class="swal2-input" style="width: 100%;">
-  //           <option value="">เลือกช่างติดตั้ง (ถ้ามี)...</option>
-  //           ${Object.entries(installerOptions).map(([key, value]) => `<option value="${key}">${value}</option>`).join('')}
-  //         </select>
-  //       `,
-  //       focusConfirm: false,
-  //       showCancelButton: true,
-  //       confirmButtonText: 'ตกลง',
-  //       cancelButtonText: 'ยกเลิก',
-
-  //       didOpen: () => {
-  //         // ตั้งค่า default ให้ select แต่ละตัวตามข้อมูลปัจจุบัน (ถ้ามี)
-  //         const empSelect = document.getElementById('swal-employee') as HTMLSelectElement
-  //         if (empSelect && currentEmployeeId) {
-  //           empSelect.value = currentEmployeeId
-  //         }
-
-  //         const advSelect = document.getElementById('swal-adviser') as HTMLSelectElement
-  //         if (advSelect && currentAdviserId) {
-  //           advSelect.value = currentAdviserId
-  //         }
-
-  //         const insSelect = document.getElementById('swal-installer') as HTMLSelectElement
-  //         if (insSelect && currentInstallerId) {
-  //           insSelect.value = currentInstallerId
-  //         }
-  //       },
-
-  //       preConfirm: () => {
-  //         const employee = (document.getElementById('swal-employee') as HTMLSelectElement).value
-  //         const adviser = (document.getElementById('swal-adviser') as HTMLSelectElement).value
-  //         const installer = (document.getElementById('swal-installer') as HTMLSelectElement).value
-
-  //         if (!employee) {
-  //           Swal.showValidationMessage('กรุณาเลือกพนักงานขาย')
-  //           return
-  //         }
-
-  //         return { employee, adviser, installer }
-  //       }
-  //     })
-
-  //     if (!formValues) {
-  //       // กด Cancel หรือไม่กรอกอะไรเลย
-  //       return
-  //     }
-
-  //     const { employee, adviser, installer } = formValues
-
-  //     // หา object พนักงานขายที่เลือก
-  //     const selectedEmployeeObj = empInTeam.find(emp => emp.SaleEmp === employee)
-
-  //     // หา object ผู้แนะนำถ้ามีเลือก
-  //     let selectedAdviserObj: any = null
-  //     if (adviser) {
-  //       selectedAdviserObj = adviserList.find(adv => adv.SaleEmp === adviser)
-  //     }
-
-  //     // หา object ช่างติดตั้งถ้ามีเลือก
-  //     let selectedInstallerObj: any = null
-  //     if (installer) {
-  //       selectedInstallerObj = installerList.find(ins => ins.SaleEmp === installer)
-  //     }
-
-  //     // เตรียม payload สำหรับส่งไปบันทึก
-  //     const payload: any = {
-  //       SALEEMPLOYEE: selectedEmployeeObj
-  //     }
-  //     if (selectedAdviserObj) {
-  //       payload.ADVISER = selectedAdviserObj
-  //     }
-  //     if (selectedInstallerObj) {
-  //       payload.INSTALLER = selectedInstallerObj
-  //     }
-
-  //     // เรียก API POST เพื่อบันทึกข้อมูล "พนักงานขาย / ผู้แนะนำ / ช่างติดตั้ง"
-  //     await axios.post(
-  //       UPDATECONTACT,
-  //       {
-  //         REFNO: data[0].REFNO,
-  //         EMPID: EmpId,
-  //         TEAMSALE: TeamSale,
-  //         FIELD: 'SALEEMPLOYEE',
-  //         DATA: [payload]
-  //       },
-  //       { headers: { 'Content-Type': 'application/json' } }
-  //     )
-
-  //     // แสดง popup สำเร็จ
-  //     await MySwal.fire({
-  //       icon: 'success',
-  //       title: 'บันทึกสำเร็จ!',
-  //       text: 'ข้อมูลพนักงานขายถูกบันทึกเรียบร้อยแล้ว',
-  //       timer: 2000,
-  //       showConfirmButton: false,
-  //     })
-
-  //     // อัปเดต state data ให้มี SALEEMPLOYEE ใหม่ทันที (เพื่อแสดงใน UI)
-  //     const updatedObj = {
-  //       ...data[0],
-  //       SALEEMPLOYEE: [{ SALEEMPLOYEE: selectedEmployeeObj, ADVISER: selectedAdviserObj, INSTALLER: selectedInstallerObj }]
-  //     }
-  //     setData([updatedObj])
-
-  //   } catch (error) {
-  //     console.error('Error updating contract:', error)
-  //     MySwal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถอัปเดตข้อมูลได้', 'error')
-  //   }
-  // }
 
   // แปลงวันที่เป็นรูปแบบไทย
   const formatToBE = (isoDate?: string) => {
@@ -1084,8 +998,6 @@ const Step: React.FC = () => {
                         <div className={`${styles.label}`}>9. การชำระเงิน / นัดชำระ</div>
                         {data[0].CONTRACT.length !== 0 && (
                           <span className={`text-gray-700 d-block ${styles.label}`}>
-                            {/* {`วันที่ทำสัญญา: ${data[0].CONTRACT[0].createdAt && formatThaiDate(data[0].CONTRACT[0].createdAt)}`} */}
-                            {/* {`วันที่ทำสัญญา: ${data[0].CONTRACT[0].createdAt && (data[0].CONTRACT[0].createdAt)}`} */}
                           </span>
                         )}
                       </div>

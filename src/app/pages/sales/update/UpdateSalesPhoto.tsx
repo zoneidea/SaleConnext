@@ -90,7 +90,10 @@ const UpdateSalesPhoto: React.FC = () => {
     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
     const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
     const DRAFT_ALLCONTRACT_URL = `${API_URL_MONGO}/Contract/GetAllContract?status=DRAFT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}&ProcessType=${auth.processtype}`;
-    const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage?REFNO=${refno}`;
+    // const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage?REFNO=${refno}`;
+
+    const API_URL_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
+    const GET_IMAGES_API = `${API_URL_SALECONNEXT}/GetContractImages?RefNo=${refno}&EmpId=${EmpId}`;
     {
         /****** matchedItem *******/
     }
@@ -116,41 +119,112 @@ const UpdateSalesPhoto: React.FC = () => {
     }, []);
 
     // เลือก item ที่ REFNO ตรงกัน (find สำหรับ 1 item หรือ filter สำหรับหลาย item)
-    const matchedItem = draft.find((item) => item.REFNO === item.REFNO);
+    // const matchedItem = draft.find((item) => item.REFNO === item.REFNO);
+    const matchedItem = draft.find((d) => d.REFNO === refno);
     // console.log(`matchedItem`, matchedItem);
 
     // fetch collection ContractImage
+    // useEffect(() => {
+    //     const fetchImages = async () => {
+    //         try {
+    //             const response = await axios.get(GET_IMAGES_API);
+
+    //             // ตรวจสอบว่า response.data เป็นไปตามโครงสร้างของ ImagesType
+    //             const data = response.data;
+
+    //             if (
+    //                 data &&
+    //                 typeof data === "object" &&
+    //                 "IMAGECARD" in data &&
+    //                 "IMAGEGPS" in data &&
+    //                 "IMAGEMAP" in data &&
+    //                 "IMAGECUSTOMERHOME" in data &&
+    //                 "IMAGEINSTALLATION" in data &&
+    //                 "IMAGETDS" in data &&
+    //                 "IMAGETRADEIN" in data
+    //             ) {
+    //                 setImages(data as ImagesType);
+    //             } else {
+    //                 setImages(null);
+    //             }
+    //         } catch (err) {
+    //             console.error("Error fetching images:", err);
+    //             setImages(null); // ตั้งค่าเป็น null หากมีข้อผิดพลาด
+    //         }
+    //     };
+
+    //     fetchImages();
+    // }, [refno]);
+
+
     useEffect(() => {
         const fetchImages = async () => {
             try {
-                const response = await axios.get(GET_IMAGES_API);
+                const resp = await axios.get(GET_IMAGES_API);
+                const groups = Array.isArray(resp.data?.data) ? resp.data.data : [];
 
-                // ตรวจสอบว่า response.data เป็นไปตามโครงสร้างของ ImagesType
-                const data = response.data;
+                // เตรียม object ตาม ImagesType เดิม
+                const nextImages: ImagesType = {
+                    IMAGECARD: [],
+                    IMAGEGPS: [],
+                    IMAGEMAP: [],
+                    IMAGECUSTOMERHOME: [],
+                    IMAGEINSTALLATION: [],
+                    IMAGETDS: [],
+                    IMAGECUSTOMER: [],     // จะใช้เก็บ TRANSFERSLIP
+                    IMAGETRADEIN: [],      // จะใช้เก็บ CUSTOMER (เครื่องเทิร์น)
+                };
 
-                if (
-                    data &&
-                    typeof data === "object" &&
-                    "IMAGECARD" in data &&
-                    "IMAGEGPS" in data &&
-                    "IMAGEMAP" in data &&
-                    "IMAGECUSTOMERHOME" in data &&
-                    "IMAGEINSTALLATION" in data &&
-                    "IMAGETDS" in data &&
-                    "IMAGETRADEIN" in data
-                ) {
-                    setImages(data as ImagesType);
-                } else {
-                    setImages(null);
+                // helper: ดึง URL จากแต่ละรายการรูป
+                const pickUrls = (arr: any[]) =>
+                    (Array.isArray(arr) ? arr : [])
+                        .map((it: any) => it?.FULLURL || it?.FULLPATH || "")
+                        .filter(Boolean);
+
+                // แม็พ IMAGETYPECODE → ช่องใน state
+                for (const g of groups) {
+                    const code = g?.IMAGETYPECODE;
+                    const urls = pickUrls(g?.IMAGES);
+
+                    switch (code) {
+                        case "MAP":
+                            nextImages.IMAGEGPS = urls;
+                            break;
+                        case "IDCARD":
+                            nextImages.IMAGECARD = urls;
+                            break;
+                        case "TDS":
+                            nextImages.IMAGETDS = urls;
+                            break;
+                        case "PAYMENTCARD":
+                            nextImages.IMAGEMAP = urls; // รูปวาดแผนที่
+                            break;
+                        case "ADDRESS":
+                            nextImages.IMAGECUSTOMERHOME = urls;
+                            break;
+                        case "INSTALLATION":
+                            nextImages.IMAGEINSTALLATION = urls;
+                            break;
+                        case "CUSTOMER":
+                            nextImages.IMAGETRADEIN = urls; // รูปเครื่องเทิร์น
+                            break;
+                        case "TRANSFERSLIP":
+                            nextImages.IMAGECUSTOMER = urls; // สลิปโอนเงิน
+                            break;
+                        default:
+                            break;
+                    }
                 }
+
+                setImages(nextImages);
             } catch (err) {
                 console.error("Error fetching images:", err);
-                setImages(null); // ตั้งค่าเป็น null หากมีข้อผิดพลาด
+                setImages(null);
             }
         };
 
         fetchImages();
-    }, [refno]);
+    }, [GET_IMAGES_API, refno, EmpId]);
 
     // โหลดก่อน 2 วิจึงโชว์ ui ทั้งหน้า
     useEffect(() => {
@@ -706,7 +780,7 @@ const UpdateSalesPhoto: React.FC = () => {
                                     fontSize: "inherit",
                                 }}
                                 onClick={() =>
-                                    navigate("/sale/photo/gallery/customer", {
+                                    navigate("/sale/photo/gallery/transferslip", {
                                         state: { fromStep, data: item },
                                     })
                                 }

@@ -215,15 +215,37 @@ const BorrowProduct: React.FC = () => {
         return () => clearTimeout(timer);
     }, [location.state?.barCode, masterStockAllProductCompany, MySwal, navigate, TeamSale]);
 
+    // const getWaitingApprovals = async () => {
+    //     setLoadingWatingProductAprrove(true);
+    //     try {
+    //         const { data } = await axios.post(GET_REQUEST_BORROW, {
+    //             TEAMSALE: TeamSale, SALECODE: SaleCode, EMPID: EmpId
+    //         }, { headers: { 'Content-Type': 'application/json' } });
+    //         setWatingProductAprrove(data.data || []);
+    //     } catch (err) {
+    //         console.error(err);
+    //     } finally {
+    //         setLoadingWatingProductAprrove(false);
+    //     }
+    // };
+
     const getWaitingApprovals = async () => {
         setLoadingWatingProductAprrove(true);
         try {
-            const { data } = await axios.post(GET_REQUEST_BORROW, {
-                TEAMSALE: TeamSale, SALECODE: SaleCode, EMPID: EmpId
-            }, { headers: { 'Content-Type': 'application/json' } });
-            setWatingProductAprrove(data.data || []);
-        } catch (err) {
-            console.error(err);
+            const { data } = await axios.post(
+                GET_REQUEST_BORROW,
+                {
+                    TEAMSALE: TeamSale,
+                    SALECODE: SaleCode,
+                    EMPID: EmpId,
+                    ProcessType: auth.processtype,
+                },
+                { headers: { 'Content-Type': 'application/json', Accept: 'application/json' } }
+            );
+            const list = Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []);
+            setWatingProductAprrove(list);
+        } catch (e) {
+            console.error('Error fetching GET_REQUEST_BORROW:', e);
         } finally {
             setLoadingWatingProductAprrove(false);
         }
@@ -392,6 +414,37 @@ const BorrowProduct: React.FC = () => {
         }
     };
 
+    // const handleApprove = async (refno: string, SerialNo: string) => {
+    //     try {
+    //         const response = await axios.post(UPDATE_BORROW_STATUS, {
+    //             REFNO: refno,
+    //             EMPID: EmpId,
+    //             EMPNAME: EmpName,
+    //             TEAMSALE: TeamSale,
+    //             SALECODE: SaleCode,
+    //             ProcessType: auth.processtype,
+    //             STATUS: "APPROVE"
+    //         }, {
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //                 Accept: 'application/json',
+    //             },
+    //         })
+    //         if (response) {
+    //             MySwal.fire({
+    //                 icon: 'success',
+    //                 title: `อนุมัติสำเร็จ`,
+    //                 text: `รหัสสินค้า ${SerialNo} อนุมัติ`,
+    //             })
+    //         }
+    //         // รีเฟรชลิสต์ waiting approval
+    //         // getWaitingApprovals();
+
+    //     } catch (error) {
+    //         console.error('Error fetching GET_REQUEST_BORROW:', error);
+    //     }
+    // };
+
     const handleApprove = async (refno: string, SerialNo: string) => {
         try {
             const response = await axios.post(UPDATE_BORROW_STATUS, {
@@ -401,58 +454,83 @@ const BorrowProduct: React.FC = () => {
                 TEAMSALE: TeamSale,
                 SALECODE: SaleCode,
                 ProcessType: auth.processtype,
-                STATUS: "APPROVE"
-            }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json',
-                },
-            })
-            if (response) {
-                MySwal.fire({
-                    icon: 'success',
-                    title: `อนุมัติสำเร็จ`,
-                    text: `รหัสสินค้า ${SerialNo} อนุมัติ`,
-                })
-            }
-            // รีเฟรชลิสต์ waiting approval
-            // getWaitingApprovals();
+                STATUS: "APPROVE",
+            }, { headers: { 'Content-Type': 'application/json', Accept: 'application/json' } });
 
+            if (response.status === 200) {
+                await MySwal.fire({ icon: 'success', title: 'อนุมัติสำเร็จ', text: `รหัสสินค้า ${SerialNo} อนุมัติ` });
+
+                // ตัดออกจากจอทันที
+                setWatingProductAprrove(prev => prev.filter(req => req.REFNO !== refno));
+                setWatingProductAprroveBorrower(prev => prev.filter(req => req.REFNO !== refno));
+
+                // sync กับเซิร์ฟเวอร์
+                await getWaitingApprovals();
+                await getBorrowerList();
+            }
         } catch (error) {
-            console.error('Error fetching GET_REQUEST_BORROW:', error);
+            console.error('Error approving:', error);
+            MySwal.fire('ผิดพลาด', 'ไม่สามารถอนุมัติรายการได้', 'error');
         }
     };
 
+    // const handleReject = async (refno: string, SerialNo: string) => {
+    //     try {
+    //         const payload = {
+    //             REFNO: refno,
+    //             EMPID: EmpId,
+    //             EMPNAME: EmpName,
+    //             TEAMSALE: TeamSale,
+    //             SALECODE: SaleCode,
+    //             ProcessType: auth.processtype,
+    //             STATUS: "REJECT"
+    //         };
+    //         const res = await axios.post(UPDATE_BORROW_STATUS, payload, {
+    //             headers: { 'Content-Type': 'application/json' },
+    //         });
+
+    //         if (res.status === 200) {
+    //             await MySwal.fire({
+    //                 icon: 'success',
+    //                 title: 'ไม่อนุมัติเรียบร้อย',
+    //                 text: `รหัสสินค้า ${SerialNo} ถูกปฏิเสธแล้ว`,
+    //             });
+
+    //             // 1) ลบจากลิสต์รออนุมัติ
+    //             setWatingProductAprrove(prev =>
+    //                 prev.filter(req => req.REFNO !== refno)
+    //             );
+    //             // 2) ลบจากลิสต์ borrower (ถ้ามี)
+    //             setWatingProductAprroveBorrower(prev =>
+    //                 prev.filter(req => req.REFNO !== refno)
+    //             );
+    //         }
+    //     } catch (err) {
+    //         console.error(err);
+    //         MySwal.fire('ผิดพลาด', 'ไม่สามารถปฏิเสธรายการได้', 'error');
+    //     }
+    // };
+
     const handleReject = async (refno: string, SerialNo: string) => {
         try {
-            const payload = {
+            const res = await axios.post(UPDATE_BORROW_STATUS, {
                 REFNO: refno,
                 EMPID: EmpId,
                 EMPNAME: EmpName,
                 TEAMSALE: TeamSale,
                 SALECODE: SaleCode,
                 ProcessType: auth.processtype,
-                STATUS: "REJECT"
-            };
-            const res = await axios.post(UPDATE_BORROW_STATUS, payload, {
-                headers: { 'Content-Type': 'application/json' },
-            });
+                STATUS: "REJECT",
+            }, { headers: { 'Content-Type': 'application/json' } });
 
             if (res.status === 200) {
-                await MySwal.fire({
-                    icon: 'success',
-                    title: 'ไม่อนุมัติเรียบร้อย',
-                    text: `รหัสสินค้า ${SerialNo} ถูกปฏิเสธแล้ว`,
-                });
+                await MySwal.fire({ icon: 'success', title: 'ไม่อนุมัติเรียบร้อย', text: `รหัสสินค้า ${SerialNo} ถูกปฏิเสธแล้ว` });
 
-                // 1) ลบจากลิสต์รออนุมัติ
-                setWatingProductAprrove(prev =>
-                    prev.filter(req => req.REFNO !== refno)
-                );
-                // 2) ลบจากลิสต์ borrower (ถ้ามี)
-                setWatingProductAprroveBorrower(prev =>
-                    prev.filter(req => req.REFNO !== refno)
-                );
+                setWatingProductAprrove(prev => prev.filter(req => req.REFNO !== refno));
+                setWatingProductAprroveBorrower(prev => prev.filter(req => req.REFNO !== refno));
+
+                await getWaitingApprovals();
+                await getBorrowerList();
             }
         } catch (err) {
             console.error(err);

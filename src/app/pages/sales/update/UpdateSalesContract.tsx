@@ -109,34 +109,6 @@ const UpdateSalesContract: React.FC = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    const fetchImages = async () => {
-      try {
-        const response = await axios.get(GET_IMAGES_API, { params: { REFNO: refno } });
-        const data = response.data;
-        if (
-          data &&
-          typeof data === "object" &&
-          "IMAGECARD" in data &&
-          "IMAGEGPS" in data &&
-          "IMAGEMAP" in data &&
-          "IMAGECUSTOMERHOME" in data &&
-          "IMAGEINSTALLATION" in data &&
-          "IMAGETDS" in data &&
-          "IMAGETRADEIN" in data
-        ) {
-          setImages(data as ImagesType);
-        } else {
-          setImages(null);
-        }
-      } catch (err) {
-        console.error("Error fetching images:", err);
-        setImages(null);
-      }
-    };
-    if (refno) fetchImages();
-  }, [refno]);
-
   const clearSignature = () => {
     signaturePadRef.current?.clear();
     setSignatureDataURL(null);

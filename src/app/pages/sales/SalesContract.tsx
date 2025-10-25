@@ -132,63 +132,6 @@ const SalesContract: React.FC = () => {
     }
   };
 
-  // const handleNextClick = async () => {
-  //   try {
-  //     // ใช้ REFNO ตัวเดียวกับที่แสดงผล
-  //     const payloadBase = {
-  //       REFNO: refNoToUse,
-  //       EMPID: EmpId,
-  //       TEAMSALE: TeamSale,
-  //       SALECODE: SaleCode,
-  //       SUPEMPID: SupEmpId,
-  //       SECEMPID: SecEmpId,
-  //     };
-
-  //     const updateContract = await axios.post(
-  //       UPDATECONTACT,
-  //       {
-  //         ...payloadBase,
-  //         FIELD: "CONTRACT",
-  //         DATA: { createdAt: formattedDate, signature: signatureDataURL },
-  //       },
-  //       { headers: { "Content-Type": "application/json" } }
-  //     );
-
-  //     if (updateContract.status === 200) {
-  //       const finishResponse = await axios.post(
-  //         UPDATECONTACT,
-  //         { ...payloadBase, FIELD: "PAYMENT", DATA: "DRAFT" },
-  //         { headers: { "Content-Type": "application/json" } }
-  //       );
-
-  //       if (finishResponse.status === 200) {
-  //         Swal.fire({
-  //           icon: "success",
-  //           title: "สำเร็จ!",
-  //           text: "บันทึกสัญญาเรียบร้อยแล้ว",
-  //           timer: 2000,
-  //           showConfirmButton: false,
-  //         }).then(() => {
-  //           // ส่ง item ที่เรนเดอร์อยู่ (ผูก REFNO เดียวกัน)
-  //           navigate("/firstBill/CreateFirstBill", { state: { item: data, from: location.pathname } });
-  //         });
-  //       } else {
-  //         throw new Error("ไม่สามารถอัปเดตสถานะ PAYMENT ได้");
-  //       }
-  //     } else {
-  //       throw new Error("ไม่สามารถอัปเดตสัญญาได้");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error updating contract or status:", error);
-  //     Swal.fire({
-  //       icon: "error",
-  //       title: "เกิดข้อผิดพลาด!",
-  //       text: "ไม่สามารถบันทึกสัญญาหรืออัปเดตสถานะได้ กรุณาลองใหม่อีกครั้ง",
-  //       confirmButtonText: "ตกลง",
-  //     });
-  //   }
-  // };
-
   const handleNextClick = async () => {
     if (isSubmitting) return;
     setIsSubmitting(true);

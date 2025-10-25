@@ -976,41 +976,6 @@ const UpdateSaleAddress: React.FC = () => {
         addressPhoneForBilling,
     ]);
 
-    // fetch collection ContractImage
-    useEffect(() => {
-        const fetchImages = async () => {
-            try {
-                const response = await axios.get(GET_IMAGES_API, {
-                    params: { REFNO: refno },
-                });
-
-                // ตรวจสอบว่า response.data เป็นไปตามโครงสร้างของ ImagesType
-                const data = response.data;
-
-                if (
-                    data &&
-                    typeof data === "object" &&
-                    "IMAGECARD" in data &&
-                    "IMAGEGPS" in data &&
-                    "IMAGEMAP" in data &&
-                    "IMAGECUSTOMERHOME" in data &&
-                    "IMAGEINSTALLATION" in data &&
-                    "IMAGETDS" in data &&
-                    "IMAGETRADEIN" in data
-                ) {
-                    setImages(data as ImagesType);
-                } else {
-                    setImages(null);
-                }
-            } catch (err) {
-                console.error("Error fetching images:", err);
-                setImages(null); // ตั้งค่าเป็น null หากมีข้อผิดพลาด
-            }
-        };
-
-        fetchImages();
-    }, [refno]);
-
     // ที่อยู่ลูกค้า (ตามบัตร)
     const handleProvinceChange = (e: ChangeEvent<HTMLSelectElement>) => {
         const value = Number(e.target.value);

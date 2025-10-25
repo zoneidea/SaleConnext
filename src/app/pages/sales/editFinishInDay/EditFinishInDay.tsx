@@ -88,17 +88,6 @@ const EditFinishInDay: React.FC = () => {
   const [adviserList, setAdviserList] = useState<any[]>([])
   const [installerList, setInstallerList] = useState<any[]>([])
 
-  const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO || ""
-  const GET_CONTRACT_URL = `${API_URL_MONGO}/Contract/GetContractSummary`
-  const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`
-
-  const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT || ""
-  const API_URL_POST_CONDITIONSCHECKHISTORY = `${API_SALECONNEXT}/ConditionsCheckHistory`
-
-  const API_URL_TSR = import.meta.env.VITE_APP_API_THIENSURAT || ""
-  const EMP_IN_TEAM_URL = `${API_URL_TSR}/Employee_Structure`
-  const ADVISER_URL = `${API_URL_TSR}/Employee_Structure/Emp_All`
-
   const { auth } = useAuth()
 
   const {
@@ -111,6 +100,20 @@ const EditFinishInDay: React.FC = () => {
     DepartId, setDepartId,
     DepartGroup, setDepartGroup,
   } = useCategoryStore()
+
+  const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO || ""
+  const GET_CONTRACT_URL = `${API_URL_MONGO}/Contract/GetContractSummary`
+  const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`
+
+  const API_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT || ""
+  const API_URL_POST_CONDITIONSCHECKHISTORY = `${API_SALECONNEXT}/ConditionsCheckHistory`
+
+  const API_URL_TSR = import.meta.env.VITE_APP_API_THIENSURAT || ""
+  const EMP_IN_TEAM_URL = `${API_URL_TSR}/Employee_Structure`
+  const ADVISER_URL = `${API_URL_TSR}/Employee_Structure/Emp_All`
+
+  const API_URL_SALECONNEXT = import.meta.env.VITE_APP_API_SALECONNEXT;
+  const GET_IMAGES_API = `${API_URL_SALECONNEXT}/GetContractImages?RefNo=${refno}&EmpId=${EmpId}`;
 
   // ดึงข้อมูล contract summary ตาม refno
   const getData = async () => {
@@ -129,37 +132,106 @@ const EditFinishInDay: React.FC = () => {
   }
 
   // ดึงภาพต่าง ๆ ของ contract
+  // useEffect(() => {
+  //   const fetchImages = async () => {
+  //     try {
+  //       const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage?REFNO=${refno}`
+  //       const response = await axios.get(GET_IMAGES_API)
+  //       const resp = response.data
+  //       // ตรวจสอบว่ามี key ครบตาม ImagesType
+  //       if (
+  //         resp &&
+  //         typeof resp === 'object' &&
+  //         'IMAGECARD' in resp &&
+  //         'IMAGEGPS' in resp &&
+  //         'IMAGEMAP' in resp &&
+  //         'IMAGECUSTOMERHOME' in resp &&
+  //         'IMAGEINSTALLATION' in resp &&
+  //         'IMAGETDS' in resp &&
+  //         'IMAGETRADEIN' in resp
+  //       ) {
+  //         setImages(resp as ImagesType)
+  //       } else {
+  //         setImages(null)
+  //       }
+  //     } catch (err) {
+  //       console.error('Error fetching images:', err)
+  //       setImages(null)
+  //     }
+  //   }
+  //   if (refno) {
+  //     fetchImages()
+  //   }
+  // }, [refno])
+
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage?REFNO=${refno}`
-        const response = await axios.get(GET_IMAGES_API)
-        const resp = response.data
-        // ตรวจสอบว่ามี key ครบตาม ImagesType
-        if (
-          resp &&
-          typeof resp === 'object' &&
-          'IMAGECARD' in resp &&
-          'IMAGEGPS' in resp &&
-          'IMAGEMAP' in resp &&
-          'IMAGECUSTOMERHOME' in resp &&
-          'IMAGEINSTALLATION' in resp &&
-          'IMAGETDS' in resp &&
-          'IMAGETRADEIN' in resp
-        ) {
-          setImages(resp as ImagesType)
-        } else {
-          setImages(null)
+        const resp = await axios.get(GET_IMAGES_API);
+        const groups = Array.isArray(resp.data?.data) ? resp.data.data : [];
+
+        // เตรียม object ตาม ImagesType เดิม
+        const nextImages: ImagesType = {
+          IMAGECARD: [],
+          IMAGEGPS: [],
+          IMAGEMAP: [],
+          IMAGECUSTOMERHOME: [],
+          IMAGEINSTALLATION: [],
+          IMAGETDS: [],
+          IMAGECUSTOMER: [],     // จะใช้เก็บ TRANSFERSLIP
+          IMAGETRADEIN: [],      // จะใช้เก็บ CUSTOMER (เครื่องเทิร์น)
+        };
+
+        // helper: ดึง URL จากแต่ละรายการรูป
+        const pickUrls = (arr: any[]) =>
+          (Array.isArray(arr) ? arr : [])
+            .map((it: any) => it?.FULLURL || it?.FULLPATH || "")
+            .filter(Boolean);
+
+        // แม็พ IMAGETYPECODE → ช่องใน state
+        for (const g of groups) {
+          const code = g?.IMAGETYPECODE;
+          const urls = pickUrls(g?.IMAGES);
+
+          switch (code) {
+            case "MAP":
+              nextImages.IMAGEGPS = urls;
+              break;
+            case "IDCARD":
+              nextImages.IMAGECARD = urls;
+              break;
+            case "TDS":
+              nextImages.IMAGETDS = urls;
+              break;
+            case "PAYMENTCARD":
+              nextImages.IMAGEMAP = urls; // รูปวาดแผนที่
+              break;
+            case "ADDRESS":
+              nextImages.IMAGECUSTOMERHOME = urls;
+              break;
+            case "INSTALLATION":
+              nextImages.IMAGEINSTALLATION = urls;
+              break;
+            case "CUSTOMER":
+              nextImages.IMAGETRADEIN = urls; // รูปเครื่องเทิร์น
+              break;
+            case "TRANSFERSLIP":
+              nextImages.IMAGECUSTOMER = urls; // สลิปโอนเงิน
+              break;
+            default:
+              break;
+          }
         }
+
+        setImages(nextImages);
       } catch (err) {
-        console.error('Error fetching images:', err)
-        setImages(null)
+        console.error("Error fetching images:", err);
+        setImages(null);
       }
-    }
-    if (refno) {
-      fetchImages()
-    }
-  }, [refno])
+    };
+
+    fetchImages();
+  }, [GET_IMAGES_API, refno, EmpId]);
 
   // เรียก getData ครั้งแรกเมื่อโหลด refno เสร็จ
   useEffect(() => {

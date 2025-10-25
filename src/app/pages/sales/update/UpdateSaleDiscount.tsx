@@ -108,22 +108,6 @@ const UpdateSalesDiscount: React.FC = () => {
   const refno = REFNO;
   const productContract = item.PRODUCT;
 
-  // useEffect(() => {
-  //     if (!matchedItem?.DISCOUNT?.length) return;
-  //     const d = matchedItem.DISCOUNT[0];
-
-  //     // พรีฟิลด์ trade-in
-  //     if (d.TRADEIN?.HASTRADEIN !== 0) {
-  //         setSelectedTurnId(d.TRADEIN.TRADEINBRANDID);
-  //         setSelectedTradeInBrandName(d.TRADEIN.TRADEINBRANDNAME);
-  //         setTradeInModel(d.TRADEIN.TRADEINMODEL);
-  //         setTradeInSerial(d.TRADEIN.TRADEINSERIAL);
-  //     }
-  //     // พรีฟิลด์ discount / gift
-  //     setDiscountInput(d.DISCOUNTAMOUNT);
-  //     setSelectedGiftId(d.GIFT?.GIFTID ?? '');
-  // }, [matchedItem]);
-
   // Pre-fill จาก matchedItem.DISCOUNT[0]
   useEffect(() => {
     const d = item.DISCOUNT?.[0];
@@ -181,7 +165,7 @@ const UpdateSalesDiscount: React.FC = () => {
   const hasTradeIn = SaveProductData?.[0]?.Package?.[0]?.HASTRADEIN ?? null;
   const totalPrice = SaveProductData?.[0]?.Package?.[0]?.TOTALPRICE ?? 0;
   // console.log(`totalPrice`, totalPrice);
-  
+
   const discountPrice = SaveProductData?.[0]?.Package?.[0]?.DISCOUNTPRICE ?? 0;
   const sequence = SaveProductData?.[0]?.Package?.[0]?.SEQUENCE ?? 0;
   const freeGift = SaveProductData?.[0]?.Package?.[0]?.FREEGIFT ?? [];
@@ -286,11 +270,11 @@ const UpdateSalesDiscount: React.FC = () => {
         TRADEIN: {
           HASTRADEIN: SaveProductData[0].Package[0].HASTRADEIN,
           TRADEINBRANDID: selectedTurnId,
-          TRADEINBRANDNAME: selectedTradeInBrandName, // ใช้ selectedTradeInBrandName ที่อัปเดตจาก useEffect
+          TRADEINBRANDNAME: selectedTradeInBrandName,
           TRADEINMODEL: tradeInModel,
           TRADEINSERIAL: tradeInSerial,
         },
-        DISCOUNTAMOUNT: discountInput,
+        DISCOUNTAMOUNT: discountInput ?? 0,
         GIFT: {
           GIFTID: selectedGiftId,
           GIFTCODE: freeGift[selectedGiftId - 1]?.GIFTCODE,
@@ -362,41 +346,6 @@ const UpdateSalesDiscount: React.FC = () => {
       setSelectedGiftId(d.GIFT.GIFTID);
     }
   }, [discount]);
-
-  // fetch collection ContractImage
-  useEffect(() => {
-    const fetchImages = async () => {
-      try {
-        const response = await axios.get(GET_IMAGES_API, {
-          params: { REFNO },
-        });
-
-        // ตรวจสอบว่า response.data เป็นไปตามโครงสร้างของ ImagesType
-        const data = response.data;
-
-        if (
-          data &&
-          typeof data === "object" &&
-          "IMAGECARD" in data &&
-          "IMAGEGPS" in data &&
-          "IMAGEMAP" in data &&
-          "IMAGECUSTOMERHOME" in data &&
-          "IMAGEINSTALLATION" in data &&
-          "IMAGETDS" in data &&
-          "IMAGETRADEIN" in data
-        ) {
-          setImages(data as ImagesType);
-        } else {
-          setImages(null);
-        }
-      } catch (err) {
-        console.error("Error fetching images:", err);
-        setImages(null); // ตั้งค่าเป็น null หากมีข้อผิดพลาด
-      }
-    };
-
-    fetchImages();
-  }, [REFNO]);
 
   // POST Contract/updateContract
   const handleNextClick = async () => {
@@ -585,7 +534,7 @@ const UpdateSalesDiscount: React.FC = () => {
   // console.log(`matchedFromDraft`, matchedFromDraft);
 
   // console.log(`เทส`, productContract[0].Package[0].TOTALPRICE);
-  
+
   return (
     <>
       <Content>

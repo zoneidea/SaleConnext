@@ -101,13 +101,6 @@ const UpdateSaleDiscountFinishDay: React.FC = () => {
     const MySwal = withReactContent(Swal);
     const location = useLocation();
 
-    // const { item, SaveProductData, REFNO } = location.state as UpdatePackageState;
-    // console.log(`item`, item);
-
-    // // ให้ item อ้างอิง matchedItem เพื่อไม่ต้องแก้ส่วนอื่นเยอะ
-    // const refno = REFNO;
-    // const productContract = item.PRODUCT;
-
     const incoming = (location.state ?? {}) as Partial<UpdatePackageState> | ItemProps;
     const item = ('item' in incoming ? (incoming as UpdatePackageState).item : (incoming as ItemProps));
     const SaveProductData = ('SaveProductData' in (incoming as any) ? (incoming as UpdatePackageState).SaveProductData : []);
@@ -115,24 +108,6 @@ const UpdateSaleDiscountFinishDay: React.FC = () => {
 
     // 👉 ใช้ข้อมูลใหม่ก่อน ถ้าไม่มีค่อย fallback ไปของเดิม
     const productContract = (SaveProductData?.length ? SaveProductData : (item as any)?.PRODUCT) ?? [];
-
-    // console.log(`productContract`, productContract);
-
-    // useEffect(() => {
-    //     if (!matchedItem?.DISCOUNT?.length) return;
-    //     const d = matchedItem.DISCOUNT[0];
-
-    //     // พรีฟิลด์ trade-in
-    //     if (d.TRADEIN?.HASTRADEIN !== 0) {
-    //         setSelectedTurnId(d.TRADEIN.TRADEINBRANDID);
-    //         setSelectedTradeInBrandName(d.TRADEIN.TRADEINBRANDNAME);
-    //         setTradeInModel(d.TRADEIN.TRADEINMODEL);
-    //         setTradeInSerial(d.TRADEIN.TRADEINSERIAL);
-    //     }
-    //     // พรีฟิลด์ discount / gift
-    //     setDiscountInput(d.DISCOUNTAMOUNT);
-    //     setSelectedGiftId(d.GIFT?.GIFTID ?? '');
-    // }, [matchedItem]);
 
     // Pre-fill จาก matchedItem.DISCOUNT[0]
     useEffect(() => {
@@ -165,8 +140,6 @@ const UpdateSaleDiscountFinishDay: React.FC = () => {
     const DRAFT_ALLCONTRACT_URL = `${API_URL_MONGO}/Contract/GetAllContract?status=DRAFT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}&ProcessType=${auth.processtype}`;
     const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage`;
 
-    // const { REFNO } = useUUIDStore();
-    // const { PRODUCT } = useSaveProductStore();
     const { DISCOUNT, SETDISCOUNT } = useSaveDiscountStore();
 
     const [tradeInBrand, setTradeInBrand] = useState<any[]>([]);
@@ -294,11 +267,11 @@ const UpdateSaleDiscountFinishDay: React.FC = () => {
                 TRADEIN: {
                     HASTRADEIN: SaveProductData[0].Package[0].HASTRADEIN,
                     TRADEINBRANDID: selectedTurnId,
-                    TRADEINBRANDNAME: selectedTradeInBrandName, // ใช้ selectedTradeInBrandName ที่อัปเดตจาก useEffect
+                    TRADEINBRANDNAME: selectedTradeInBrandName, 
                     TRADEINMODEL: tradeInModel,
                     TRADEINSERIAL: tradeInSerial,
                 },
-                DISCOUNTAMOUNT: discountInput,
+                DISCOUNTAMOUNT: discountInput ?? 0,
                 GIFT: {
                     GIFTID: selectedGiftId,
                     GIFTCODE: freeGift[selectedGiftId - 1]?.GIFTCODE,
@@ -409,7 +382,6 @@ const UpdateSaleDiscountFinishDay: React.FC = () => {
     //POST Contract/updateContract
     const handleNextClick = async () => {
         try {
-            // POST Contract/updateContract
             const updateContract = await axios.post(
                 UPDATECONTACT,
                 {
@@ -867,9 +839,6 @@ const UpdateSaleDiscountFinishDay: React.FC = () => {
                                 className={`${styles.btnSecondary}`}
                                 onClick={() =>
                                     navigate("/sale/editFinishInDay", {
-                                        // state: {
-                                        //     ...matchedItem,
-                                        // }
                                         state: {
                                             ...item,
                                         },
@@ -898,9 +867,6 @@ const UpdateSaleDiscountFinishDay: React.FC = () => {
                                 className={`${styles.btnSecondary}`}
                                 onClick={() =>
                                     navigate("/sale/editFinishInDay", {
-                                        // state: {
-                                        //     ...matchedItem,
-                                        // }
                                         state: {
                                             ...item,
                                         },

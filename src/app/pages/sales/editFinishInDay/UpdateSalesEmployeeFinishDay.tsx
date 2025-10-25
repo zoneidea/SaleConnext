@@ -1,4 +1,3 @@
-// src/pages/UpdateSalesEmployeeFinishDay.tsx
 import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import styles from '@/styles/style.module.css'
@@ -137,6 +136,8 @@ const UpdateSalesEmployeeFinishDay: React.FC = () => {
         }
     }
 
+    const canSave = Boolean(values.employee && values.installer);
+
     return (
         <Content>
             <div className="d-flex justify-content-between align-items-center my-5">
@@ -239,7 +240,13 @@ const UpdateSalesEmployeeFinishDay: React.FC = () => {
                     >
                         ย้อนกลับ
                     </button>
-                    <button className={styles.btnPrimary} onClick={handleNextClick}>
+                    <button
+                        className={`${styles.btnPrimary}`}
+                        onClick={handleNextClick}
+                        disabled={!canSave}
+                        aria-disabled={!canSave}
+                        title={!canSave ? "กรุณาเลือกพนักงานขายและพนักงานติดตั้ง" : ""}
+                    >
                         บันทึก
                     </button>
                 </div>
@@ -254,7 +261,13 @@ const UpdateSalesEmployeeFinishDay: React.FC = () => {
                     >
                         ย้อนกลับ
                     </button>
-                    <button className={styles.btnPrimary} onClick={handleNextClick}>
+                    <button
+                        className={`${styles.btnPrimary}`}
+                        onClick={handleNextClick}
+                        disabled={!canSave}
+                        aria-disabled={!canSave}
+                        title={!canSave ? "กรุณาเลือกพนักงานขายและพนักงานติดตั้ง" : ""}
+                    >
                         บันทึก
                     </button>
                 </div>

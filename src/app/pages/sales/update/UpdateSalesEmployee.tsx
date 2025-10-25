@@ -1,4 +1,3 @@
-// src/pages/UpdateSalesEmployee.tsx
 import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import styles from '@/styles/style.module.css'
@@ -86,7 +85,6 @@ const UpdateSalesEmployee: React.FC = () => {
     const [isLoadingDraft, setIsLoadingDraft] = useState(false)
     const [draft, setDraft] = useState<ItemProps[]>([])
 
-    // ───────────────────────────────────────────────────────────────────────────
     // โหลด draft ทั้งหมด แล้วตั้งค่า default values ให้ select แสดงค่าจาก DB ทันที
     useEffect(() => {
         if (!refno) return
@@ -198,14 +196,14 @@ const UpdateSalesEmployee: React.FC = () => {
                 showConfirmButton: false,
             })
 
-            // navigate('/sale/update/updateCustDetail', { state: item })
             navigate('/sale/update/updateCustDetail', { state: matchedItem })
         } catch {
             MySwal.fire('Error', 'ไม่สามารถบันทึกข้อมูลได้', 'error')
         }
     }
 
-    // ───────────────────────────────────────────────────────────────────────────
+    const canSave = Boolean(values.employee && values.installer);
+
     return (
         <Content>
             <div className="d-flex justify-content-between align-items-center my-5">
@@ -311,7 +309,6 @@ const UpdateSalesEmployee: React.FC = () => {
                     <button
                         className={styles.btnSecondary}
                         onClick={() =>
-                            // navigate('/sale/update/updateSalePackage', { state: item })
                             navigate('/sale/update/updateSalePackage', {
                                 state: matchedItem
                             })
@@ -319,7 +316,13 @@ const UpdateSalesEmployee: React.FC = () => {
                     >
                         แก้ไขแพ็คเกจ
                     </button>
-                    <button className={styles.btnPrimary} onClick={handleNextClick}>
+                    <button
+                        className={`${styles.btnPrimary}`}
+                        onClick={handleNextClick}
+                        disabled={!canSave}
+                        aria-disabled={!canSave}
+                        title={!canSave ? "กรุณาเลือกพนักงานขายและพนักงานติดตั้ง" : ""}
+                    >
                         ถัดไป
                     </button>
                 </div>
@@ -345,7 +348,13 @@ const UpdateSalesEmployee: React.FC = () => {
                     >
                         แก้ไขแพ็คเกจ
                     </button>
-                    <button className={styles.btnPrimary} onClick={handleNextClick}>
+                    <button
+                        className={`${styles.btnPrimary}`}
+                        onClick={handleNextClick}
+                        disabled={!canSave}
+                        aria-disabled={!canSave}
+                        title={!canSave ? "กรุณาเลือกพนักงานขายและพนักงานติดตั้ง" : ""}
+                    >
                         ถัดไป
                     </button>
                 </div>
