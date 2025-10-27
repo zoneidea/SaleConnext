@@ -6,13 +6,13 @@ type Props = {
     ItemCode: string;
     SerialNo: string;
     isSelected: boolean;
-    EmpNameReq: string;
-    TeamSaleReq: string;
+    EmpName: string;
+    TeamSale: string;
     onCancelBorrow: () => void;
 }
 
 const CardWatingAprroveBorrower: FC<Props> = ({
-    DescriptionTH, ItemDescription, ItemCode, SerialNo, isSelected, EmpNameReq, TeamSaleReq, onCancelBorrow,
+    DescriptionTH, ItemDescription, ItemCode, SerialNo, isSelected, EmpName, TeamSale, onCancelBorrow,
 }) => {
     return (
         <>
@@ -55,14 +55,14 @@ const CardWatingAprroveBorrower: FC<Props> = ({
                         <div className="d-flex align-items-center">
                             <div className="flex-grow-1">
                                 <span className={`fw-regular fs-7 d-block`}>
-                                    พนักงานที่เบิก: {EmpNameReq}
+                                    พนักงานที่เบิก: {EmpName}
                                 </span>
                             </div>
                         </div>
                         <div className="d-flex align-items-center">
                             <div className="flex-grow-1">
                                 <span className={`fw-regular fs-7 d-block`}>
-                                    ทีมที่เบิก: {TeamSaleReq}
+                                    ทีมที่เบิก: {TeamSale}
                                 </span>
                             </div>
                         </div>

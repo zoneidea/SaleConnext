@@ -738,8 +738,8 @@ const BorrowProduct: React.FC = () => {
                                                                                         ItemDescription={prod.ItemDescription}
                                                                                         ItemCode={prod.ItemCode}
                                                                                         SerialNo={prod.SerialNo}
-                                                                                        EmpNameReq={req.EmpName}
-                                                                                        TeamSaleReq={req.TeamSale}
+                                                                                        EmpName={req.EmpName}
+                                                                                        TeamSale={req.TeamSale}
                                                                                         onCancelBorrow={() => handleCancelBorrow(req.REFNO, prod.SerialNo)}
                                                                                     />
                                                                                 ))
