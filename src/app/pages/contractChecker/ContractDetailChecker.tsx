@@ -940,7 +940,7 @@ const SalesPackage: React.FC = () => {
                     </div>
                 </div>
 
-                {images?.IMAGECARD && images.IMAGECARD.length > 0 && (
+                {images?.IMAGEGPS && images.IMAGEGPS.length > 0 && (
                     <h5 className='my-8 mx-8' style={{ color: 'red' }}>* กดที่รูป หากต้องการดูภาพขนาดใหญ่</h5>
                 )}
 
@@ -1029,7 +1029,7 @@ const SalesPackage: React.FC = () => {
                             </div>
                         </div>
 
-                        {images?.IMAGECARD && images.IMAGECARD.length > 0 && (
+                        {images?.IMAGETDS && images.IMAGETDS.length > 0 && (
                             <h5 className='my-8 mx-8' style={{ color: 'red' }}>* กดที่รูป หากต้องการดูภาพขนาดใหญ่</h5>
                         )}
 
@@ -1067,7 +1067,7 @@ const SalesPackage: React.FC = () => {
                             </div>
                         </div>
 
-                        {images?.IMAGECARD && images.IMAGECARD.length > 0 && (
+                        {images?.IMAGEMAP && images.IMAGEMAP.length > 0 && (
                             <h5 className='my-8 mx-8' style={{ color: 'red' }}>* กดที่รูป หากต้องการดูภาพขนาดใหญ่</h5>
                         )}
 
@@ -1105,7 +1105,7 @@ const SalesPackage: React.FC = () => {
                             </div>
                         </div>
 
-                        {images?.IMAGECARD && images.IMAGECARD.length > 0 && (
+                        {images?.IMAGECUSTOMERHOME && images.IMAGECUSTOMERHOME.length > 0 && (
                             <h5 className='my-8 mx-8' style={{ color: 'red' }}>* กดที่รูป หากต้องการดูภาพขนาดใหญ่</h5>
                         )}
 
@@ -1143,7 +1143,7 @@ const SalesPackage: React.FC = () => {
                             </div>
                         </div>
 
-                        {images?.IMAGECARD && images.IMAGECARD.length > 0 && (
+                        {images?.IMAGEINSTALLATION && images.IMAGEINSTALLATION.length > 0 && (
                             <h5 className='my-8 mx-8' style={{ color: 'red' }}>* กดที่รูป หากต้องการดูภาพขนาดใหญ่</h5>
                         )}
 
@@ -1181,7 +1181,7 @@ const SalesPackage: React.FC = () => {
                             </div>
                         </div>
 
-                        {images?.IMAGECARD && images.IMAGECARD.length > 0 && (
+                        {images?.IMAGETRADEIN && images.IMAGETRADEIN.length > 0 && (
                             <h5 className='my-8 mx-8' style={{ color: 'red' }}>* กดที่รูป หากต้องการดูภาพขนาดใหญ่</h5>
                         )}
 
@@ -1219,7 +1219,7 @@ const SalesPackage: React.FC = () => {
                             </div>
                         </div>
 
-                        {images?.IMAGECARD && images.IMAGECARD.length > 0 && (
+                        {images?.IMAGECUSTOMER && images.IMAGECUSTOMER.length > 0 && (
                             <h5 className='my-8 mx-8' style={{ color: 'red' }}>* กดที่รูป หากต้องการดูภาพขนาดใหญ่</h5>
                         )}
 
