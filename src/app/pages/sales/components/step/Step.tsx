@@ -133,39 +133,6 @@ const Step: React.FC = () => {
     }
   }
 
-  // ดึงภาพต่าง ๆ ของ contract
-  // useEffect(() => {
-  //   const fetchImages = async () => {
-  //     try {
-  //       const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage?REFNO=${refno}`
-  //       const response = await axios.get(GET_IMAGES_API)
-  //       const resp = response.data
-  //       // ตรวจสอบว่ามี key ครบตาม ImagesType
-  //       if (
-  //         resp &&
-  //         typeof resp === 'object' &&
-  //         'IMAGECARD' in resp &&
-  //         'IMAGEGPS' in resp &&
-  //         'IMAGEMAP' in resp &&
-  //         'IMAGECUSTOMERHOME' in resp &&
-  //         'IMAGEINSTALLATION' in resp &&
-  //         'IMAGETDS' in resp &&
-  //         'IMAGETRADEIN' in resp
-  //       ) {
-  //         setImages(resp as ImagesType)
-  //       } else {
-  //         setImages(null)
-  //       }
-  //     } catch (err) {
-  //       console.error('Error fetching images:', err)
-  //       setImages(null)
-  //     }
-  //   }
-  //   if (refno) {
-  //     fetchImages()
-  //   }
-  // }, [refno])
-
   useEffect(() => {
     const fetchImages = async () => {
       try {
@@ -180,8 +147,8 @@ const Step: React.FC = () => {
           IMAGECUSTOMERHOME: [],
           IMAGEINSTALLATION: [],
           IMAGETDS: [],
-          IMAGECUSTOMER: [],     // จะใช้เก็บ TRANSFERSLIP
-          IMAGETRADEIN: [],      // จะใช้เก็บ CUSTOMER (เครื่องเทิร์น)
+          IMAGECUSTOMER: [],    
+          IMAGETRADEIN: [],    
         };
 
         // helper: ดึง URL จากแต่ละรายการรูป

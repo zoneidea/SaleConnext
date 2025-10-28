@@ -39,15 +39,35 @@ interface ItemProps {
     IMAGE: [any]
 }
 
+interface ImageItem {
+    IMAGEID: string;
+    IMAGENAME: string;
+    CREATEDATE?: string;
+    FULLPATH?: string;
+    FULLURL?: string;
+}
+
+interface ApiGroup {
+    IMAGETYPECODE: string;
+    IMAGETYPENAME?: string;
+    IMAGES: ImageItem[];
+}
+
+interface GetImagesApiResponse {
+    status: number;
+    message: string;
+    data: ApiGroup[];
+}
+
 interface ImagesType {
-    IMAGECARD: string[];
-    IMAGEGPS: string[];
-    IMAGEMAP: string[];
-    IMAGECUSTOMERHOME: string[];
-    IMAGEINSTALLATION: string[];
-    IMAGETDS: string[];
-    IMAGECUSTOMER: string[];
-    IMAGETRADEIN: string[];
+    IMAGECARD: string[];           // IDCARD
+    IMAGEGPS: string[];            // MAP
+    IMAGEMAP: string[];            // PAYMENTCARD
+    IMAGECUSTOMERHOME: string[];   // ADDRESS
+    IMAGEINSTALLATION: string[];   // INSTALLATION
+    IMAGETDS: string[];            // TDS
+    IMAGECUSTOMER: string[];       // TRANSFERSLIP
+    IMAGETRADEIN: string[];        // CUSTOMER
 }
 
 const SalesPackage: React.FC = () => {
@@ -69,12 +89,13 @@ const SalesPackage: React.FC = () => {
     const customer = item?.CUSTOMERDETAIL
     const address = item?.ADDRESS
     const image = item?.IMAGE
-    // console.log(`item`, item);
-    // console.log(`image`, image[0].IMAGEGPS);
 
     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
     const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContractValidate`;
-    const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage?REFNO=${refno}`;
+    // const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage?REFNO=${refno}`;
+
+    const API_URL_PHP = import.meta.env.VITE_APP_API_SALECONNEXT;
+    const GET_IMAGES_API = `${API_URL_PHP}/GetContractImages?RefNo=${refno}&EmpId=${EmpId}`;
 
     const [comment, setComment] = useState('')
     const [cbxApproveSelected, setApproveSelected] = useState(true);
@@ -85,38 +106,105 @@ const SalesPackage: React.FC = () => {
 
     const [images, setImages] = useState<ImagesType | null>(null);
 
-    // fetch collection ContractImage
+    // ==== helper: ตรวจจับ base64 / url ====
+    const toRenderableSrc = (s: string) => {
+        if (!s) return '';
+        if (s.startsWith('http://') || s.startsWith('https://')) return s;
+        if (s.startsWith('data:image/')) return s;
+        // เผื่อกรณี API ส่งมาเป็น base64 ล้วน
+        return `data:image/jpeg;base64,${s}`;
+    };
+
+    // ==== helper: map IMAGETYPECODE -> key ใน state ====
+    const mapCodeToKey: Record<string, keyof ImagesType> = {
+        MAP: 'IMAGEGPS',
+        IDCARD: 'IMAGECARD',
+        TDS: 'IMAGETDS',
+        PAYMENTCARD: 'IMAGEMAP',
+        ADDRESS: 'IMAGECUSTOMERHOME',
+        INSTALLATION: 'IMAGEINSTALLATION',
+        CUSTOMER: 'IMAGETRADEIN',
+        TRANSFERSLIP: 'IMAGECUSTOMER',
+    };
+
+    // ==== useEffect: ดึงและ map ====
     useEffect(() => {
         const fetchImages = async () => {
             try {
-                const response = await axios.get(GET_IMAGES_API);
+                const { data } = await axios.get<GetImagesApiResponse>(GET_IMAGES_API);
 
-                // ตรวจสอบว่า response.data เป็นไปตามโครงสร้างของ ImagesType
-                const data = response.data;
-
-                if (
-                    data &&
-                    typeof data === 'object' &&
-                    'IMAGECARD' in data &&
-                    'IMAGEGPS' in data &&
-                    'IMAGEMAP' in data &&
-                    'IMAGECUSTOMERHOME' in data &&
-                    'IMAGEINSTALLATION' in data &&
-                    'IMAGETDS' in data &&
-                    'IMAGETRADEIN' in data
-                ) {
-                    setImages(data as ImagesType);
-                } else {
+                if (data?.status !== 200 || !Array.isArray(data?.data)) {
                     setImages(null);
+                    return;
                 }
+
+                // เตรียมโครงว่าง
+                const nextImages: ImagesType = {
+                    IMAGECARD: [],
+                    IMAGEGPS: [],
+                    IMAGEMAP: [],
+                    IMAGECUSTOMERHOME: [],
+                    IMAGEINSTALLATION: [],
+                    IMAGETDS: [],
+                    IMAGECUSTOMER: [],
+                    IMAGETRADEIN: [],
+                };
+
+                // loop กลุ่มรูปตาม IMAGETYPECODE
+                for (const grp of data.data) {
+                    const key = mapCodeToKey[grp.IMAGETYPECODE];
+                    if (!key) continue;
+
+                    const urls = (grp.IMAGES || [])
+                        .map((it) => it.FULLURL?.trim() || it.FULLPATH?.trim() || '')
+                        .filter(Boolean)
+                        .map(toRenderableSrc);
+
+                    nextImages[key].push(...urls);
+                }
+
+                setImages(nextImages);
             } catch (err) {
                 console.error('Error fetching images:', err);
-                setImages(null); // ตั้งค่าเป็น null หากมีข้อผิดพลาด
+                setImages(null);
             }
         };
 
-        fetchImages();
-    }, [refno]);
+        if (refno && EmpId) fetchImages();
+    }, [refno, EmpId]);
+
+    // fetch collection ContractImage
+    // useEffect(() => {
+    //     const fetchImages = async () => {
+    //         try {
+    //             const response = await axios.get(GET_IMAGES_API);
+
+    //             // ตรวจสอบว่า response.data เป็นไปตามโครงสร้างของ ImagesType
+    //             const data = response.data;
+
+    //             if (
+    //                 data &&
+    //                 typeof data === 'object' &&
+    //                 'IMAGECARD' in data &&
+    //                 'IMAGEGPS' in data &&
+    //                 'IMAGEMAP' in data &&
+    //                 'IMAGECUSTOMERHOME' in data &&
+    //                 'IMAGEINSTALLATION' in data &&
+    //                 'IMAGETDS' in data &&
+    //                 'IMAGETRADEIN' in data
+    //             ) {
+    //                 setImages(data as ImagesType);
+    //             } else {
+    //                 setImages(null);
+    //             }
+    //         } catch (err) {
+    //             console.error('Error fetching images:', err);
+    //             setImages(null); // ตั้งค่าเป็น null หากมีข้อผิดพลาด
+    //         }
+    //     };
+
+    //     fetchImages();
+    // }, [refno]);
 
     // เก็บข้อมูลส่วนลดใน state และ store
     const UpdateCheckerCommentData = useMemo(() => {
@@ -844,6 +932,44 @@ const SalesPackage: React.FC = () => {
                         </div>
                     </div>
                 </div>
+                <div className='card-body d-flex align-items-center mb-4 mx-7'>
+                    <div className='flex-grow-1'>
+                        <div className='text-gray-800 fw-bold fs-4'>
+                            รูปแผนที่ GPS
+                        </div>
+                    </div>
+                </div>
+
+                {images?.IMAGECARD && images.IMAGECARD.length > 0 && (
+                    <h5 className='my-8 mx-8' style={{ color: 'red' }}>* กดที่รูป หากต้องการดูภาพขนาดใหญ่</h5>
+                )}
+
+                <div className='d-flex flex-column flex-md-row mx-5 mb-5'>
+                    {
+                        images?.IMAGEGPS && images.IMAGEGPS.length > 0 ? (
+                            images.IMAGEGPS.map((img: string, index: number) => {
+                                return (
+                                    <div className='m-5' key={index}>
+                                        <div className='d-flex justify-content-between mb-3'>
+                                            <img
+                                                src={img}
+                                                style={{ width: '200px', height: 'auto', cursor: 'pointer' }}
+                                                alt={`Image ${index + 1}`}
+                                                onClick={() => setSelectedImage(img)}
+                                            />
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        ) : (
+                            <div className='text-center my-7 mx-10'>
+                                <h5>ไม่มีรูปแผนที่ GPS</h5>
+                            </div>
+                        )
+                    }
+                </div>
+                <hr />
+
                 <div className='accordion mb-10' id='kt_accordion_1'>
                     <div className='accordion-item mb-10'>
                         <h2 className='accordion-header' id='kt_accordion_1_header_1'>
@@ -860,7 +986,7 @@ const SalesPackage: React.FC = () => {
                         <div className='card-body d-flex align-items-center mb-4 mt-10 mx-7'>
                             <div className='flex-grow-1'>
                                 <div className='text-gray-800 fw-bold fs-4'>
-                                    ภาพถ่ายบัตรประชาชน
+                                    รูปบัตรประชาชน
                                 </div>
                             </div>
                         </div>
@@ -873,23 +999,14 @@ const SalesPackage: React.FC = () => {
                             {
                                 images?.IMAGECARD && images.IMAGECARD.length > 0 ? (
                                     images.IMAGECARD.map((img: string, index: number) => {
-                                        // ตรวจสอบและเพิ่ม prefix หากจำเป็น
-                                        const prefixedImage = img.startsWith('data:image/')
-                                            ? img
-                                            : `data:image/jpeg;base64,${img}`;
-
                                         return (
                                             <div className='m-5' key={index}>
                                                 <div className='d-flex justify-content-between mb-3'>
                                                     <img
-                                                        src={prefixedImage}
-                                                        style={{
-                                                            width: '200px',
-                                                            height: 'auto',
-                                                            cursor: 'pointer',
-                                                        }}
-                                                        alt={`Image Card ${index + 1}`}
-                                                        onClick={() => setSelectedImage(prefixedImage)}
+                                                        src={img}
+                                                        style={{ width: '200px', height: 'auto', cursor: 'pointer' }}
+                                                        alt={`Image ${index + 1}`}
+                                                        onClick={() => setSelectedImage(img)}
                                                     />
                                                 </div>
                                             </div>
@@ -897,289 +1014,7 @@ const SalesPackage: React.FC = () => {
                                     })
                                 ) : (
                                     <div className='text-center my-7 mx-10'>
-                                        <h5>ไม่มีรูปภาพบัตรประชาชน</h5>
-                                    </div>
-                                )
-                            }
-                        </div>
-                        <hr />
-
-                        <div className='card-body d-flex align-items-center mb-4 mx-7'>
-                            <div className='flex-grow-1'>
-                                <div className='text-gray-800 fw-bold fs-4'>
-                                    รูปแผนที่ GPS
-                                </div>
-                            </div>
-                        </div>
-
-                        {images?.IMAGECARD && images.IMAGECARD.length > 0 && (
-                            <h5 className='my-8 mx-8' style={{ color: 'red' }}>* กดที่รูป หากต้องการดูภาพขนาดใหญ่</h5>
-                        )}
-
-                        <div className='d-flex flex-column flex-md-row mx-5 mb-5'>
-                            {
-                                images?.IMAGEGPS && images.IMAGEGPS.length > 0 ? (
-                                    images.IMAGEGPS.map((img: string, index: number) => {
-                                        // ตรวจสอบและเพิ่ม prefix หากจำเป็น
-                                        const prefixedImage = img.startsWith('data:image/')
-                                            ? img
-                                            : `data:image/jpeg;base64,${img}`;
-
-                                        return (
-                                            <div className='m-5' key={index}>
-                                                <div className='d-flex justify-content-between mb-3'>
-                                                    <img
-                                                        src={prefixedImage}
-                                                        style={{
-                                                            width: '200px',
-                                                            height: 'auto',
-                                                            cursor: 'pointer',
-                                                        }}
-                                                        alt={`Image Card ${index + 1}`}
-                                                        onClick={() => setSelectedImage(prefixedImage)}
-                                                    />
-                                                </div>
-                                            </div>
-                                        );
-                                    })
-                                ) : (
-                                    <div className='text-center my-7 mx-10'>
-                                        <h5>ไม่มีรูปแผนที่ GPS</h5>
-                                    </div>
-                                )
-                            }
-                        </div>
-                        <hr />
-
-                        <div className='card-body d-flex align-items-center mb-4 mx-7'>
-                            <div className='flex-grow-1'>
-                                <div className='text-gray-800 fw-bold fs-4'>
-                                    รูปวาดแผนที่
-                                </div>
-                            </div>
-                        </div>
-
-                        {images?.IMAGECARD && images.IMAGECARD.length > 0 && (
-                            <h5 className='my-8 mx-8' style={{ color: 'red' }}>* กดที่รูป หากต้องการดูภาพขนาดใหญ่</h5>
-                        )}
-
-                        <div className='d-flex flex-column flex-md-row mx-5 mb-5'>
-                            {
-                                images?.IMAGEMAP && images.IMAGEMAP.length > 0 ? (
-                                    images.IMAGEMAP.map((img: string, index: number) => {
-                                        // ตรวจสอบและเพิ่ม prefix หากจำเป็น
-                                        const prefixedImage = img.startsWith('data:image/')
-                                            ? img
-                                            : `data:image/jpeg;base64,${img}`;
-
-                                        return (
-                                            <div className='m-5' key={index}>
-                                                <div className='d-flex justify-content-between mb-3'>
-                                                    <img
-                                                        src={prefixedImage}
-                                                        style={{
-                                                            width: '200px',
-                                                            height: 'auto',
-                                                            cursor: 'pointer',
-                                                        }}
-                                                        alt={`Image Card ${index + 1}`}
-                                                        onClick={() => setSelectedImage(prefixedImage)}
-                                                    />
-                                                </div>
-                                            </div>
-                                        );
-                                    })
-                                ) : (
-                                    <div className='text-center my-7 mx-10'>
-                                        <h5>ไม่มีรูปวาดแผนที่</h5>
-                                    </div>
-                                )
-                            }
-                        </div>
-                        <hr />
-
-                        <div className='card-body d-flex align-items-center mb-4 mx-7'>
-                            <div className='flex-grow-1'>
-                                <div className='text-gray-800 fw-bold fs-4'>
-                                    รูปเครื่องเทิร์น
-                                </div>
-                            </div>
-                        </div>
-
-                        {images?.IMAGECARD && images.IMAGECARD.length > 0 && (
-                            <h5 className='my-8 mx-8' style={{ color: 'red' }}>* กดที่รูป หากต้องการดูภาพขนาดใหญ่</h5>
-                        )}
-
-                        <div className='d-flex flex-column flex-md-row mx-5 mb-5'>
-                            {
-                                images?.IMAGETRADEIN && images.IMAGETRADEIN.length > 0 ? (
-                                    images.IMAGETRADEIN.map((img: string, index: number) => {
-                                        // ตรวจสอบและเพิ่ม prefix หากจำเป็น
-                                        const prefixedImage = img.startsWith('data:image/')
-                                            ? img
-                                            : `data:image/jpeg;base64,${img}`;
-
-                                        return (
-                                            <div className='m-5' key={index}>
-                                                <div className='d-flex justify-content-between mb-3'>
-                                                    <img
-                                                        src={prefixedImage}
-                                                        style={{
-                                                            width: '200px',
-                                                            height: 'auto',
-                                                            cursor: 'pointer',
-                                                        }}
-                                                        alt={`Image Card ${index + 1}`}
-                                                        onClick={() => setSelectedImage(prefixedImage)}
-                                                    />
-                                                </div>
-                                            </div>
-                                        );
-                                    })
-                                ) : (
-                                    <div className='text-center my-7 mx-10'>
-                                        <h5>ไม่มีรูปภาพบัตรประชาชน</h5>
-                                    </div>
-                                )
-                            }
-                        </div>
-                        <hr />
-
-                        <div className='card-body d-flex align-items-center mb-4 mx-7'>
-                            <div className='flex-grow-1'>
-                                <div className='text-gray-800 fw-bold fs-4'>
-                                    รูปติดตั้งเครื่อง
-                                </div>
-                            </div>
-                        </div>
-
-                        {images?.IMAGECARD && images.IMAGECARD.length > 0 && (
-                            <h5 className='my-8 mx-8' style={{ color: 'red' }}>* กดที่รูป หากต้องการดูภาพขนาดใหญ่</h5>
-                        )}
-
-                        <div className='d-flex flex-column flex-md-row mx-5 mb-5'>
-                            {
-                                images?.IMAGEINSTALLATION && images.IMAGEINSTALLATION.length > 0 ? (
-                                    images.IMAGEINSTALLATION.map((img: string, index: number) => {
-                                        // ตรวจสอบและเพิ่ม prefix หากจำเป็น
-                                        const prefixedImage = img.startsWith('data:image/')
-                                            ? img
-                                            : `data:image/jpeg;base64,${img}`;
-
-                                        return (
-                                            <div className='m-5' key={index}>
-                                                <div className='d-flex justify-content-between mb-3'>
-                                                    <img
-                                                        src={prefixedImage}
-                                                        style={{
-                                                            width: '200px',
-                                                            height: 'auto',
-                                                            cursor: 'pointer',
-                                                        }}
-                                                        alt={`Image Card ${index + 1}`}
-                                                        onClick={() => setSelectedImage(prefixedImage)}
-                                                    />
-                                                </div>
-                                            </div>
-                                        );
-                                    })
-                                ) : (
-                                    <div className='text-center my-7 mx-10'>
-                                        <h5>ไม่มีรูปติดตั้งเครื่อง</h5>
-                                    </div>
-                                )
-                            }
-                        </div>
-                        <hr />
-
-                        <div className='card-body d-flex align-items-center mb-4 mx-7'>
-                            <div className='flex-grow-1'>
-                                <div className='text-gray-800 fw-bold fs-4'>
-                                    รูปบ้านลูกค้า
-                                </div>
-                            </div>
-                        </div>
-
-                        {images?.IMAGECARD && images.IMAGECARD.length > 0 && (
-                            <h5 className='my-8 mx-8' style={{ color: 'red' }}>* กดที่รูป หากต้องการดูภาพขนาดใหญ่</h5>
-                        )}
-
-                        <div className='d-flex flex-column flex-md-row mx-5 mb-5'>
-                            {
-                                images?.IMAGECUSTOMERHOME && images.IMAGECUSTOMERHOME.length > 0 ? (
-                                    images.IMAGECUSTOMERHOME.map((img: string, index: number) => {
-                                        // ตรวจสอบและเพิ่ม prefix หากจำเป็น
-                                        const prefixedImage = img.startsWith('data:image/')
-                                            ? img
-                                            : `data:image/jpeg;base64,${img}`;
-
-                                        return (
-                                            <div className='m-5' key={index}>
-                                                <div className='d-flex justify-content-between mb-3'>
-                                                    <img
-                                                        src={prefixedImage}
-                                                        style={{
-                                                            width: '200px',
-                                                            height: 'auto',
-                                                            cursor: 'pointer',
-                                                        }}
-                                                        alt={`Image Card ${index + 1}`}
-                                                        onClick={() => setSelectedImage(prefixedImage)}
-                                                    />
-                                                </div>
-                                            </div>
-                                        );
-                                    })
-                                ) : (
-                                    <div className='text-center my-7 mx-10'>
-                                        <h5>ไม่มีรูปบ้านลูกค้า</h5>
-                                    </div>
-                                )
-                            }
-                        </div>
-                        <hr />
-
-                        <div className='card-body d-flex align-items-center mb-4 mx-7'>
-                            <div className='flex-grow-1'>
-                                <div className='text-gray-800 fw-bold fs-4'>
-                                    รูปลูกค้า
-                                </div>
-                            </div>
-                        </div>
-
-                        {images?.IMAGECARD && images.IMAGECARD.length > 0 && (
-                            <h5 className='my-8 mx-8' style={{ color: 'red' }}>* กดที่รูป หากต้องการดูภาพขนาดใหญ่</h5>
-                        )}
-
-                        <div className='d-flex flex-column flex-md-row mx-5 mb-5'>
-                            {
-                                images?.IMAGECUSTOMER && images.IMAGECUSTOMER.length > 0 ? (
-                                    images.IMAGECUSTOMER.map((img: string, index: number) => {
-                                        // ตรวจสอบและเพิ่ม prefix หากจำเป็น
-                                        const prefixedImage = img.startsWith('data:image/')
-                                            ? img
-                                            : `data:image/jpeg;base64,${img}`;
-
-                                        return (
-                                            <div className='m-5' key={index}>
-                                                <div className='d-flex justify-content-between mb-3'>
-                                                    <img
-                                                        src={prefixedImage}
-                                                        style={{
-                                                            width: '200px',
-                                                            height: 'auto',
-                                                            cursor: 'pointer',
-                                                        }}
-                                                        alt={`Image Card ${index + 1}`}
-                                                        onClick={() => setSelectedImage(prefixedImage)}
-                                                    />
-                                                </div>
-                                            </div>
-                                        );
-                                    })
-                                ) : (
-                                    <div className='text-center my-7 mx-10'>
-                                        <h5>ไม่มีรูปลูกค้า</h5>
+                                        <h5>ไม่มีรูปบัตรประชาชน</h5>
                                     </div>
                                 )
                             }
@@ -1202,23 +1037,14 @@ const SalesPackage: React.FC = () => {
                             {
                                 images?.IMAGETDS && images.IMAGETDS.length > 0 ? (
                                     images.IMAGETDS.map((img: string, index: number) => {
-                                        // ตรวจสอบและเพิ่ม prefix หากจำเป็น
-                                        const prefixedImage = img.startsWith('data:image/')
-                                            ? img
-                                            : `data:image/jpeg;base64,${img}`;
-
                                         return (
                                             <div className='m-5' key={index}>
                                                 <div className='d-flex justify-content-between mb-3'>
                                                     <img
-                                                        src={prefixedImage}
-                                                        style={{
-                                                            width: '200px',
-                                                            height: 'auto',
-                                                            cursor: 'pointer',
-                                                        }}
-                                                        alt={`Image Card ${index + 1}`}
-                                                        onClick={() => setSelectedImage(prefixedImage)}
+                                                        src={img}
+                                                        style={{ width: '200px', height: 'auto', cursor: 'pointer' }}
+                                                        alt={`Image ${index + 1}`}
+                                                        onClick={() => setSelectedImage(img)}
                                                     />
                                                 </div>
                                             </div>
@@ -1227,6 +1053,196 @@ const SalesPackage: React.FC = () => {
                                 ) : (
                                     <div className='text-center my-7 mx-10'>
                                         <h5>ไม่มีรูปอุปกรณ์วัดค่าน้ำ</h5>
+                                    </div>
+                                )
+                            }
+                        </div>
+                        <hr />
+
+                        <div className='card-body d-flex align-items-center mb-4 mx-7'>
+                            <div className='flex-grow-1'>
+                                <div className='text-gray-800 fw-bold fs-4'>
+                                    รูปวาดแผนที่
+                                </div>
+                            </div>
+                        </div>
+
+                        {images?.IMAGECARD && images.IMAGECARD.length > 0 && (
+                            <h5 className='my-8 mx-8' style={{ color: 'red' }}>* กดที่รูป หากต้องการดูภาพขนาดใหญ่</h5>
+                        )}
+
+                        <div className='d-flex flex-column flex-md-row mx-5 mb-5'>
+                            {
+                                images?.IMAGEMAP && images.IMAGEMAP.length > 0 ? (
+                                    images.IMAGEMAP.map((img: string, index: number) => {
+                                        return (
+                                            <div className='m-5' key={index}>
+                                                <div className='d-flex justify-content-between mb-3'>
+                                                    <img
+                                                        src={img}
+                                                        style={{ width: '200px', height: 'auto', cursor: 'pointer' }}
+                                                        alt={`Image ${index + 1}`}
+                                                        onClick={() => setSelectedImage(img)}
+                                                    />
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                ) : (
+                                    <div className='text-center my-7 mx-10'>
+                                        <h5>ไม่มีรูปวาดแผนที่</h5>
+                                    </div>
+                                )
+                            }
+                        </div>
+                        <hr />
+
+                        <div className='card-body d-flex align-items-center mb-4 mx-7'>
+                            <div className='flex-grow-1'>
+                                <div className='text-gray-800 fw-bold fs-4'>
+                                    รูปบ้านลูกค้า
+                                </div>
+                            </div>
+                        </div>
+
+                        {images?.IMAGECARD && images.IMAGECARD.length > 0 && (
+                            <h5 className='my-8 mx-8' style={{ color: 'red' }}>* กดที่รูป หากต้องการดูภาพขนาดใหญ่</h5>
+                        )}
+
+                        <div className='d-flex flex-column flex-md-row mx-5 mb-5'>
+                            {
+                                images?.IMAGECUSTOMERHOME && images.IMAGECUSTOMERHOME.length > 0 ? (
+                                    images.IMAGECUSTOMERHOME.map((img: string, index: number) => {
+                                        return (
+                                            <div className='m-5' key={index}>
+                                                <div className='d-flex justify-content-between mb-3'>
+                                                    <img
+                                                        src={img}
+                                                        style={{ width: '200px', height: 'auto', cursor: 'pointer' }}
+                                                        alt={`Image ${index + 1}`}
+                                                        onClick={() => setSelectedImage(img)}
+                                                    />
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                ) : (
+                                    <div className='text-center my-7 mx-10'>
+                                        <h5>ไม่มีรูปบ้านลูกค้า</h5>
+                                    </div>
+                                )
+                            }
+                        </div>
+                        <hr />
+
+                        <div className='card-body d-flex align-items-center mb-4 mx-7'>
+                            <div className='flex-grow-1'>
+                                <div className='text-gray-800 fw-bold fs-4'>
+                                    รูปติดตั้งเครื่อง/ลูกค้า
+                                </div>
+                            </div>
+                        </div>
+
+                        {images?.IMAGECARD && images.IMAGECARD.length > 0 && (
+                            <h5 className='my-8 mx-8' style={{ color: 'red' }}>* กดที่รูป หากต้องการดูภาพขนาดใหญ่</h5>
+                        )}
+
+                        <div className='d-flex flex-column flex-md-row mx-5 mb-5'>
+                            {
+                                images?.IMAGEINSTALLATION && images.IMAGEINSTALLATION.length > 0 ? (
+                                    images.IMAGEINSTALLATION.map((img: string, index: number) => {
+                                        return (
+                                            <div className='m-5' key={index}>
+                                                <div className='d-flex justify-content-between mb-3'>
+                                                    <img
+                                                        src={img}
+                                                        style={{ width: '200px', height: 'auto', cursor: 'pointer' }}
+                                                        alt={`Image ${index + 1}`}
+                                                        onClick={() => setSelectedImage(img)}
+                                                    />
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                ) : (
+                                    <div className='text-center my-7 mx-10'>
+                                        <h5>ไม่มีรูปติดตั้งเครื่อง/ลูกค้า</h5>
+                                    </div>
+                                )
+                            }
+                        </div>
+                        <hr />
+
+                        <div className='card-body d-flex align-items-center mb-4 mx-7'>
+                            <div className='flex-grow-1'>
+                                <div className='text-gray-800 fw-bold fs-4'>
+                                    รูปเครื่องเทิร์นหรือโปรโมชั่น
+                                </div>
+                            </div>
+                        </div>
+
+                        {images?.IMAGECARD && images.IMAGECARD.length > 0 && (
+                            <h5 className='my-8 mx-8' style={{ color: 'red' }}>* กดที่รูป หากต้องการดูภาพขนาดใหญ่</h5>
+                        )}
+
+                        <div className='d-flex flex-column flex-md-row mx-5 mb-5'>
+                            {
+                                images?.IMAGETRADEIN && images.IMAGETRADEIN.length > 0 ? (
+                                    images.IMAGETRADEIN.map((img: string, index: number) => {
+                                        return (
+                                            <div className='m-5' key={index}>
+                                                <div className='d-flex justify-content-between mb-3'>
+                                                    <img
+                                                        src={img}
+                                                        style={{ width: '200px', height: 'auto', cursor: 'pointer' }}
+                                                        alt={`Image ${index + 1}`}
+                                                        onClick={() => setSelectedImage(img)}
+                                                    />
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                ) : (
+                                    <div className='text-center my-7 mx-10'>
+                                        <h5>ไม่มีรูปเครื่องเทิร์นหรือโปรโมชั่น</h5>
+                                    </div>
+                                )
+                            }
+                        </div>
+                        <hr />
+
+                        <div className='card-body d-flex align-items-center mb-4 mx-7'>
+                            <div className='flex-grow-1'>
+                                <div className='text-gray-800 fw-bold fs-4'>
+                                    รูปสลิปโอนเงิน
+                                </div>
+                            </div>
+                        </div>
+
+                        {images?.IMAGECARD && images.IMAGECARD.length > 0 && (
+                            <h5 className='my-8 mx-8' style={{ color: 'red' }}>* กดที่รูป หากต้องการดูภาพขนาดใหญ่</h5>
+                        )}
+
+                        <div className='d-flex flex-column flex-md-row mx-5 mb-5'>
+                            {
+                                images?.IMAGECUSTOMER && images.IMAGECUSTOMER.length > 0 ? (
+                                    images.IMAGECUSTOMER.map((img: string, index: number) => {
+                                        return (
+                                            <div className='m-5' key={index}>
+                                                <div className='d-flex justify-content-between mb-3'>
+                                                    <img
+                                                        src={img}
+                                                        style={{ width: '200px', height: 'auto', cursor: 'pointer' }}
+                                                        alt={`Image ${index + 1}`}
+                                                        onClick={() => setSelectedImage(img)}
+                                                    />
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                ) : (
+                                    <div className='text-center my-7 mx-10'>
+                                        <h5>ไม่มีรูปสลิปโอนเงิน</h5>
                                     </div>
                                 )
                             }
