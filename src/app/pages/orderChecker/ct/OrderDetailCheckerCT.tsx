@@ -137,7 +137,6 @@ const OrderDetailCheckerCT: React.FC = () => {
     // POST พนักงานขาย
     const [employee, setEmployee] = useState<any[]>([]);
     const [selectedEmployee, setSelectedEmployee] = useState<any>('');
-    console.log(`selectedEmployee`, selectedEmployee);
 
     const [channelSale, setChannelSale] = useState<any[]>([]);
     const [selectedChannelSale, setSelectedChannelSale] = useState<any>('');

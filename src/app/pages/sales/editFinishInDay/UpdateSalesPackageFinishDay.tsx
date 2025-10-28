@@ -1501,7 +1501,6 @@ const UpdateSalesPackageFinishDay: React.FC = () => {
             const refresh = await axios.get(DRAFT_ALLCONTRACT_URL);
             const list: any[] = Array.isArray(refresh.data?.data) ? refresh.data.data : [];
             const updatedItem = list.find(c => c.REFNO === (item?.REFNO ?? refno)) ?? item;
-            console.log(`updatedItem`, updatedItem);
 
             navigate("/sale/editFinishInDay/UpdateSaleDiscountFinishDay", {
                 state: {

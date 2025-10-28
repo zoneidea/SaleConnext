@@ -478,10 +478,6 @@ const DashboardWrapper: FC = () => {
   const PosId = auth?.data?.[0]?.PosID;
   const ProcessType = auth?.processtype;
 
-  console.log(`auth`, auth);
-  console.log(`PosId`, PosId);
-  console.log(`ProcessType`, ProcessType);
-
   const [draft, setDraft] = useState<any[]>([])
   const [finish, setFinish] = useState<any[]>([])
   const [pending, setPending] = useState<any[]>([])
@@ -539,7 +535,6 @@ const DashboardWrapper: FC = () => {
   // const allContract = draft.length + finish.length
 
   const [summary, setSummary] = useState<Summary>(null)
-  console.log(`summary`, summary);
 
   const DASHBOARD_SUMMARY_URL = `${API_URL_SALECONNEXT}/GetDataDashboard`
 
@@ -612,12 +607,7 @@ const DashboardWrapper: FC = () => {
   const allPaymentShown = summary?.all_payment_complete ?? 0;
   const allPaymentPartialShown = summary?.all_payment_partial ?? 0;
   const DayPaidCashShown = summary?.day_paiddetail?.cash ?? 0;
-
-  console.log(`allContractShown`, allContractShown);
-  console.log(`allPaymentShown`, allPaymentShown);
-  console.log(`allPaymentPartialShown`, allPaymentPartialShown);
-  console.log(`DayPaidCashShown`, DayPaidCashShown);
-
+  
   return (
     <>
       <ToolbarWrapper />

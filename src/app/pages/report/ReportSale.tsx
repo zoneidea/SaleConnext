@@ -19,7 +19,6 @@ const ReportSale: React.FC = () => {
   const [valueCalendarStart, setValueCalendarStart] = useState<string>(today);
   const [valueCalendarEnd, setValueCalendarEnd] = useState<string>(today);
   const [tableData, setTableData] = useState<any[]>([]);
-  console.log(`tableData`, tableData);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [hasSearched, setHasSearched] = useState<boolean>(false);
 
