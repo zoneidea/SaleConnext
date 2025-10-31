@@ -67,6 +67,7 @@ const ContractChecker: React.FC = () => {
 
     const filteredPending = search
         ? pending.filter((item) =>
+            (item.CONTNO || "").toLowerCase().includes(searchLower) ||
             (item.CUSTOMERDETAIL?.[0]?.CUSTOMERNAME || "").toLowerCase().includes(searchLower) ||
             (item.PRODUCT?.[0]?.Package?.[0]?.PACKAGETITLE || "").toLowerCase().includes(searchLower) ||
             (item.PRODUCT?.[0]?.ItemDescription || "").toLowerCase().includes(searchLower) ||
@@ -111,7 +112,7 @@ const ContractChecker: React.FC = () => {
                                 <input
                                     type="text"
                                     className="form-control"
-                                    placeholder="ค้นหาจาก ชื่อสินค้า, แพ็คเกจ, Serial Number, ชื่อลูกค้า"
+                                    placeholder="ค้นหาจาก เลขที่สัญญา, ชื่อสินค้า, แพ็คเกจ, Serial Number, ชื่อลูกค้า"
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                 />

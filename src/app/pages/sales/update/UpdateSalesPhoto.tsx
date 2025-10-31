@@ -205,7 +205,7 @@ const UpdateSalesPhoto: React.FC = () => {
                         case "INSTALLATION":
                             nextImages.IMAGEINSTALLATION = urls;
                             break;
-                        case "CUSTOMER":
+                        case "TRADEINPRODUCT":
                             nextImages.IMAGETRADEIN = urls; // รูปเครื่องเทิร์น
                             break;
                         case "TRANSFERSLIP":

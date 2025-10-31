@@ -751,7 +751,7 @@ const EditFinishInDay: React.FC = () => {
                       <div className='flex-grow-1'>
                         <div className={styles.label}>3. ส่วนลด / เครื่องเทิร์น / ของแถม</div>
 
-                        {packageChanged ? (
+                        {/* {packageChanged ? (
                           <span className={`text-gray-700 d-block ${styles.label}`}>
                             แพ็คเกจมีการเปลี่ยนแปลง กรุณาเลือก ส่วนลด / เครื่องเทิร์น / ของแถม ใหม่
                           </span>
@@ -780,7 +780,31 @@ const EditFinishInDay: React.FC = () => {
                               </span>
                             )}
                           </>
-                        )}
+                        )} */}
+                        <>
+                          {hasDiscPrice && (
+                            <span className={`text-gray-700 d-block ${styles.label}`}>
+                              {`ส่วนลด: ${discount.DISCOUNTAMOUNT}`}
+                            </span>
+                          )}
+                          {hasDiscGift && (
+                            <span className={`text-gray-700 d-block ${styles.label}`}>
+                              {`ของแถม: ${discount.GIFT.GIFTDESCRIPTION}`}
+                            </span>
+                          )}
+                          {hasDiscTradeIn && (
+                            <span className={`text-gray-700 d-block ${styles.label}`}>
+                              {`เครื่องเทิร์น: ${discount.TRADEIN.TRADEINBRANDNAME}`}
+                              {` รุ่น: ${discount.TRADEIN.TRADEINMODEL}`}
+                              {` S/N: ${discount.TRADEIN.TRADEINSERIAL}`}
+                            </span>
+                          )}
+                          {!(hasDiscPrice || hasDiscGift || hasDiscTradeIn) || (data[0].PRODUCT.length === 0) && (
+                            <span className={`text-gray-700 d-block ${styles.label}`}>
+                              ไม่มี ส่วนลด / เครื่องเทิร์น / ของแถม
+                            </span>
+                          )}
+                        </>
                       </div>
                     </div>
                   </a>

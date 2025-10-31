@@ -96,7 +96,7 @@ const TurnPhotoGallery: React.FC = () => {
                 const groups = Array.isArray(resp.data?.data) ? resp.data.data : [];
 
                 const turnGroup = groups.find(
-                    (g: any) => g?.IMAGETYPECODE === "CUSTOMER"
+                    (g: any) => g?.IMAGETYPECODE === "TRADEINPRODUCT"
                 );
 
                 const imgs = Array.isArray(turnGroup?.IMAGES) ? turnGroup.IMAGES : [];

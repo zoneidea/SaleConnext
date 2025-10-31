@@ -210,7 +210,7 @@ const TransferSlipPhotoGallery: React.FC = () => {
                     </button>
                     <button
                         className={`${styles.btnPrimary}`}
-                        onClick={() => navigate('/sale/photo/customer', { state: { data: item, fromStep } })}
+                        onClick={() => navigate('/sale/photo/transferslip', { state: { data: item, fromStep } })}
                     >
                         {isPC ? "เพิ่มรูปภาพ" : "แกลอรี่ / ถ่ายรูป"}
                     </button>
@@ -234,7 +234,7 @@ const TransferSlipPhotoGallery: React.FC = () => {
                     </button>
                     <button
                         className={`${styles.btnPrimary}`}
-                        onClick={() => navigate('/sale/photo/customer', { state: { data: item, fromStep } })}
+                        onClick={() => navigate('/sale/photo/transferslip', { state: { data: item, fromStep } })}
                     >
                         {isPC ? "เพิ่มรูปภาพ" : "แกลอรี่ / ถ่ายรูป"}
                     </button>
