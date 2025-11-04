@@ -498,16 +498,13 @@ const Step: React.FC = () => {
   )
 
   // 3) ส่วนลด/ของแถม/เทิร์น: ต้องมีค่าอย่างน้อยหนึ่ง และแพ็คเกจไม่ถูกเปลี่ยน
-  const step3Complete =
-    step2Complete &&
-    hasAny(s.DISCOUNT, (d: any) =>
-      d?.DISCOUNTAMOUNT != null ||
-      isNonEmptyStr(d?.GIFT?.GIFTDESCRIPTION) ||
-      d?.TRADEIN?.HASTRADEIN === 1 ||
-      isNonEmptyStr(d?.TRADEIN?.TRADEINMODEL) ||
-      isNonEmptyStr(d?.TRADEIN?.TRADEINBRANDNAME)
-    ) &&
-    !packageChanged
+  const step3Complete = hasAny(s.DISCOUNT, (d: any) =>
+    d?.DISCOUNTAMOUNT != null ||
+    isNonEmptyStr(d?.GIFT?.GIFTDESCRIPTION) ||
+    d?.TRADEIN?.HASTRADEIN === 1 ||
+    isNonEmptyStr(d?.TRADEIN?.TRADEINMODEL) ||
+    isNonEmptyStr(d?.TRADEIN?.TRADEINBRANDNAME)
+  )
 
   // 4) พนักงานขาย: ต้องมี SALEEMPLOYEE พร้อมชื่อ/รหัสจริง
   const step4Complete = hasAny(s.SALEEMPLOYEE, (e: any) =>
