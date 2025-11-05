@@ -474,7 +474,7 @@ const SalesCreateFirstBill: React.FC = () => {
     const onSubmit = async () => {
         saveNextClick();
 
-        // บังคับเลือกวันที่ในเคสที่ต้องมีวัน
+        // ต้องมีวันที่ในโหมดที่ต้องการวัน
         const mustHaveDueDate = (!payQuick) || (payQuick && !payFullAmount);
         if (mustHaveDueDate && !valueCalendarInstall) {
             setDateError("กรุณาเลือกวันที่");
@@ -484,7 +484,13 @@ const SalesCreateFirstBill: React.FC = () => {
             setDateError("");
         }
 
-        // ถ้าเลือก "เงินสด" ให้ยืนยันก่อน
+        // ✅ ถ้าเลือก "นัดชำระ" ให้ไปหน้าอัปโหลดรูปทันที
+        if (!payQuick) {
+            navigate("/sale/photo", { state: { fromStep: true, data: item, from: "/sale/createFirstBill" } });
+            return;
+        }
+
+        // ด้านล่างเป็นโหมด "ชำระทันที"
         if (paymentChannel === "CASH") {
             const { isConfirmed } = await Swal.fire({
                 title: "ต้องการออกใบรับเงินหรือไม่?",
@@ -494,159 +500,12 @@ const SalesCreateFirstBill: React.FC = () => {
                 cancelButtonText: "ยกเลิก",
                 reverseButtons: true,
             });
-
-            if (!isConfirmed) return; // กดยกเลิก → ไม่ยิง API
+            if (!isConfirmed) return;
         }
 
-        // กรณีอื่น ๆ (เช่น นัดชำระ/ชำระบางส่วน/เลือกช่องทางอื่น) → ยิงตามปกติ
         await submitPayment();
     };
 
-    // const onSubmit = async (data: any) => {
-    //   // ตรวจสอบการมี qrCodeData เมื่อเลือกช่องทาง QR CODE
-    //   // if (paymentChannel === "QR CODE" && qrCodeData) {
-    //   //   Swal.fire("แจ้งเตือน", "กรุณาทำการสแกน qr code ก่อน", "warning");
-    //   //   return;
-    //   // }
-
-    //   // if (payQuick) {
-    //   //   Swal.fire({
-    //   //     title: "ยืนยันการออกใบเสร็จ",
-    //   //     icon: "warning",
-    //   //     showCancelButton: true,
-    //   //     confirmButtonText: "ตกลง",
-    //   //     cancelButtonText: "ยกเลิก",
-    //   //   }).then((result) => {
-    //   //     if (result.isConfirmed) {
-    //   //       navigate("/firstBill/receipt", { state: item });
-    //   //     }
-    //   //   });
-    //   //   return;
-    //   // }
-
-    //   // ต้องมีวันเมื่อ "นัดชำระ" หรือ "ชำระบางส่วน/เกินจำนวน"
-    //   const mustHaveDueDate = (!payQuick) || (payQuick && !payFullAmount);
-
-    //   if (mustHaveDueDate && !valueCalendarInstall) {
-    //     setDateError("กรุณาเลือกวันที่");
-    //     // โฟกัสช่องวันที่ (ตัวใดตัวหนึ่งที่กำลังแสดงอยู่)
-    //     dueDateRef.current?.focus();
-    //     return; // หยุดก่อน ส่ง API ยังไม่ได้
-    //   } else {
-    //     setDateError("");
-    //   }
-
-    //   try {
-    //     const response = await axios.post(POST_PAYMENT_TRANSACTION_URL, allData, {
-    //       headers: {
-    //         "Content-Type": "application/json",
-    //       },
-    //     });
-
-    //     if (response.status === 200) {
-    //       // ปักธงว่า REFNO นี้บันทึกการชำระ/นัดชำระแล้ว
-    //       localStorage.setItem(`paymentDone:${refno.toUpperCase().trim()}`, '1');
-
-    //       Swal.fire({
-    //         icon: "success",
-    //         title: "สำเร็จ!",
-    //         text: "บันทึกธุรกรรมการชำระเงินสำเร็จ",
-    //         timer: 2000,
-    //         showConfirmButton: false,
-    //       });
-    //       navigate("/");
-
-    //       // ถ้ามาจาก sale/contract หรือ sale/update/updatecontract
-    //       // และสถานะเป็น SCHEDULE (มี DUEDATE)
-    //       const saleRoutes = ["/sale/contract", "/sale/update/updatecontract"];
-    //       // if (saleRoutes.includes(from) && status === "SCHEDULE" && item?.STATUS === "DRAFT") {
-    //       if (item?.STATUS === "DRAFT" && payQuick) {
-    //         //   navigate("/sale/photo", { state: { data: item, fromStep: "true" } });
-    //         // navigate("/firstBill/receiptmock", { state: item });
-    //         navigate("/firstBill/receipt", { state: item });
-    //       } if (item?.STATUS === "DRAFT" && !payQuick) {
-    //         navigate("/sale/photo", { state: { data: item, fromStep: "true" } });
-    //       } if (item?.STATUS !== "DRAFT") {
-    //         navigate("/firstBill/receiptFromCreateFirstBill", { state: item });
-    //       }
-    //     } else {
-    //       Swal.fire(
-    //         "เกิดข้อผิดพลาด",
-    //         response.data.message || "ไม่สามารถบันทึกข้อมูลได้",
-    //         "error"
-    //       );
-    //     }
-    //   } catch (error) {
-    //     console.error("Error saving data:", error);
-    //     Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถส่งข้อมูลได้", "error");
-    //   }
-    // };
-
-    // const onSubmit = async (data: any) => {
-    //     // ตรวจสอบกรณีเลือก QR CODE แต่ยังไม่ได้สแกน
-    //     if (paymentChannel === "QR CODE" && qrCodeData) {
-    //         Swal.fire("แจ้งเตือน", "กรุณาทำการสแกน qr code ก่อน", "warning");
-    //         return;
-    //     }
-
-    //     try {
-    //         const response = await axios.post(POST_PAYMENT_TRANSACTION_URL, allData, {
-    //             headers: { "Content-Type": "application/json" },
-    //         });
-
-    //         if (response.status === 200) {
-    //             Swal.fire("สำเร็จ", "บันทึกธุรกรรมการชำระเงินสำเร็จ", "success");
-
-    //             // รอสักครู่ให้ SweetAlert แสดงก่อน แล้วค่อย navigate
-    //             setTimeout(() => {
-    //                 // ถ้ามาจาก sale/contract, updateSalesContract หรือ sale/step
-    //                 const saleRoutes = [
-    //                     '/sale/contract',
-    //                     '/sale/update/UpdateSalesContract',
-    //                     '/sale/step',
-    //                 ];
-    //                 if (saleRoutes.includes(from)) {
-    //                     // ไปหน้า photo ต่อ
-    //                     navigate('/sale/photo', {
-    //                         state: { item, from }
-    //                     });
-    //                 } else {
-    //                     // ปกติไปหน้า overview ของ firstBill
-    //                     navigate('/firstBill/overview', { state: item });
-    //                 }
-    //             }, 500);
-
-    //         } else {
-    //             Swal.fire("เกิดข้อผิดพลาด", response.data.message || "ไม่สามารถบันทึกข้อมูลได้", "error");
-    //         }
-
-    //     } catch (error) {
-    //         console.error("Error saving data:", error);
-    //         Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถส่งข้อมูลได้", "error");
-    //     }
-    // };
-
-    // const handleBack = () => {
-    //     const saleRoutes = [
-    //         "/sale/contract",
-    //         "/sale/update/UpdateSalesContract",
-    //         "/sale/step",
-    //     ];
-
-    //     if (saleRoutes.includes(from)) {
-    //         navigate("/sale/step", { state: item });
-    //     }
-
-    //     const saleRoutesEditFinishInDay = ["/sale/editFinishInDay"];
-
-    //     if (saleRoutesEditFinishInDay.includes(from)) {
-    //         navigate("/sale/editFinishInDay", { state: item });
-    //     } else {
-    //         navigate("/firstBill/overview", { state: item });
-    //     }
-    // };
-
-    // const FINISH_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=FINISH&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}`;
     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
     const GET_PAYMENT_URL = `${API_URL_MONGO}/Payment/GetPaymentPeriod`;
 
@@ -696,7 +555,7 @@ const SalesCreateFirstBill: React.FC = () => {
     const hasRedirectedRef = useRef(false)
     const countdownIdRef = useRef<number | null>(null)
     const secondsLeftRef = useRef<number>(0)
-    
+
     // sync ค่า countdown เข้ากับ ref เสมอ
     useEffect(() => {
         secondsLeftRef.current = secondsLeft
@@ -1015,20 +874,6 @@ const SalesCreateFirstBill: React.FC = () => {
                                                             {/* Start ชำระบางส่วน / เกินจำนวน */}
                                                             {!payFullAmount && (
                                                                 <>
-                                                                    {/* {product[0]?.Package[0]?.PACKAGETYPEID !== 1 && (
-                                                                        <div className="mb-6">
-                                                                            <label className={`${styles.label} me-2`}>ราคาสุทธิ</label>
-                                                                            <input
-                                                                                type="text"
-                                                                                className="form-control"
-                                                                                readOnly
-                                                                                style={{
-                                                                                    backgroundColor: '#d7dbde',
-                                                                                }}
-                                                                                value={netPrice}
-                                                                            />
-                                                                        </div>
-                                                                    )} */}
                                                                     <div className="mb-6">
                                                                         {product[0]?.Package[0]?.PACKAGETYPEID !==
                                                                             1 ? (
@@ -1045,9 +890,7 @@ const SalesCreateFirstBill: React.FC = () => {
                                                                                     style={{
                                                                                         backgroundColor: "#d7dbde",
                                                                                     }}
-                                                                                    // value={paymentAmount - discountAmount}
                                                                                     value={paymentAmount}
-                                                                                // value={transaction[0]?.AMOUNT}
                                                                                 />
                                                                             </>
                                                                         ) : (
@@ -1114,7 +957,7 @@ const SalesCreateFirstBill: React.FC = () => {
                                                                                         paySomeAmount === 0
                                                                                             ? "0"
                                                                                             : paySomeAmount
-                                                                                    } // ใช้ "0" เพื่อให้พิมพ์ได้
+                                                                                    } 
                                                                                     min="0" // ป้องกันค่าติดลบ
                                                                                     inputMode="numeric"
                                                                                     pattern="[0-9]*"
@@ -1145,26 +988,6 @@ const SalesCreateFirstBill: React.FC = () => {
                                                                             }
                                                                         />
                                                                     </div>
-                                                                    {/* ถ้าชำระมากกว่าหรือเท่ากับ ไม่ต้องโชว์ */}
-                                                                    {/* {paySomeAmount < transaction[0]?.AMOUNT && ( */}
-                                                                    {/* {paySomeAmount < paymentAmount - discountAmount && (
-                                                                        <div className="col-lg-12 mb-6">
-                                                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                                                <label className={`${styles.label} me-2`}>วันที่สะดวกชำระส่วนที่เหลือ</label>
-                                                                                <DatePicker
-                                                                                    selected={valueCalendarInstall}
-                                                                                    onChange={handleDateChangeInstall}
-                                                                                    className="form-control mb-3 mb-lg-0"
-                                                                                    showYearDropdown
-                                                                                    showMonthDropdown
-                                                                                    dropdownMode="select"
-                                                                                    isClearable
-                                                                                    dateFormat="yyyy/MM/dd"
-                                                                                    withPortal
-                                                                                />
-                                                                            </div>
-                                                                        </div>
-                                                                    )} */}
 
                                                                     <div className="col-lg-12 mb-6">
                                                                         <label className={`${styles.label} mb-2`}>
@@ -1232,24 +1055,6 @@ const SalesCreateFirstBill: React.FC = () => {
                                                     {/* End ชำระเงินทันที */}
 
                                                     {/* Start นัดชำระ */}
-                                                    {/* {!payQuick && (
-                                                        <div className="col-lg-12 mb-6">
-                                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                                <label className={`${styles.label} me-2`}>วันที่สะดวกชำระ</label>
-                                                                <DatePicker
-                                                                    selected={valueCalendarInstall}
-                                                                    onChange={handleDateChangeInstall}
-                                                                    className="form-control mb-3 mb-lg-0"
-                                                                    showYearDropdown
-                                                                    showMonthDropdown
-                                                                    dropdownMode="select"
-                                                                    isClearable
-                                                                    dateFormat="yyyy/MM/dd"
-                                                                    withPortal
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                    )} */}
                                                     {!payQuick && (
                                                         <div className="col-lg-12 mb-6">
                                                             {/* ไม่ต้องใช้ flex-column แล้ว แค่ label กับ input */}

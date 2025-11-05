@@ -118,43 +118,7 @@ const SalesPhoto: React.FC = () => {
         getDataDraft();
     }, []);
 
-    // เลือก item ที่ REFNO ตรงกัน (find สำหรับ 1 item หรือ filter สำหรับหลาย item)
-    // const matchedItem = draft.find((item) => item.REFNO === item.REFNO);
     const matchedItem = draft.find((d) => d.REFNO === refno);
-    // console.log(`matchedItem`, matchedItem);
-
-    // fetch collection ContractImage
-    // useEffect(() => {
-    //     const fetchImages = async () => {
-    //         try {
-    //             const response = await axios.get(GET_IMAGES_API);
-
-    //             // ตรวจสอบว่า response.data เป็นไปตามโครงสร้างของ ImagesType
-    //             const data = response.data;
-
-    //             if (
-    //                 data &&
-    //                 typeof data === "object" &&
-    //                 "IMAGECARD" in data &&
-    //                 "IMAGEGPS" in data &&
-    //                 "IMAGEMAP" in data &&
-    //                 "IMAGECUSTOMERHOME" in data &&
-    //                 "IMAGEINSTALLATION" in data &&
-    //                 "IMAGETDS" in data &&
-    //                 "IMAGETRADEIN" in data
-    //             ) {
-    //                 setImages(data as ImagesType);
-    //             } else {
-    //                 setImages(null);
-    //             }
-    //         } catch (err) {
-    //             console.error("Error fetching images:", err);
-    //             setImages(null); // ตั้งค่าเป็น null หากมีข้อผิดพลาด
-    //         }
-    //     };
-
-    //     fetchImages();
-    // }, [refno]);
 
     useEffect(() => {
         const fetchImages = async () => {
