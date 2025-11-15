@@ -60,6 +60,9 @@ const SalesCreateCustCash: React.FC = () => {
   const DRAFT_ALLCONTRACT_URL = `${API_URL_MONGO}/Contract/GetAllContract?status=DRAFT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}&ProcessType=${auth.processtype}`;
   const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
 
+  const API_URL_THIENSURAT = import.meta.env.VITE_APP_API_THIENSURAT;
+  const CHECKDATACUSTOMER = `${API_URL_THIENSURAT}/CheckDataCustomer`;
+
   {
     /************ สแกนบัตร ************/
   }
@@ -302,15 +305,6 @@ const SalesCreateCustCash: React.FC = () => {
     workPhone,
   ]);
 
-  // อัปเดตข้อมูลส่วน customer ลง store
-  // useEffect(() => {
-  //   if (
-  //     JSON.stringify(SaveCustomertData) !== JSON.stringify(saveCustomerTypes)
-  //   ) {
-  //     setSaveCustomerTypes(SaveCustomertData); // อัปเดตข้อมูลลง store
-  //   }
-  // }, [SaveCustomertData, saveCustomerTypes, setSaveCustomerTypes]);
-
   // GET Customertype
   useEffect(() => {
     const getData = async () => {
@@ -339,36 +333,6 @@ const SalesCreateCustCash: React.FC = () => {
     setsSelectedCustomerType(value);
     setSelectedCardType("");
   };
-
-  // const handleDateChange = (date: Date | null) => {
-  //     if (date) {
-  //         const calculatedAge = dayjs().diff(dayjs(date), 'year');
-  //         if (calculatedAge <= 20) {
-  //             MySwal.fire({
-  //                 icon: 'warning',
-  //                 title: 'อายุไม่ถึงเกณฑ์',
-  //                 text: 'อายุต้องมากกว่า 20 ปีขึ้นไปจึงทำรายการได้',
-  //                 customClass: {
-  //                     title: styles.fontSize,
-  //                     htmlContainer: styles.fontSize,
-  //                     confirmButton: styles.fontSize,
-  //                     inputLabel: styles.fontSize,
-  //                 }
-  //             })
-  //             // เคลียร์ค่าใน DatePicker และอายุ
-  //             setValueCalendar(null);
-  //             setValueAge(null);
-  //             return; // ยกเลิกการ set ค่าอื่น ๆ ต่อ
-  //         }
-  //         // ถ้าอายุมากกว่า 20 ก็ set ค่าให้ปกติ
-  //         setValueCalendar(date);
-  //         setValueAge(calculatedAge);
-  //     } else {
-  //         // กรณีลบวันที่ทิ้ง
-  //         setValueCalendar(null);
-  //         setValueAge(null);
-  //     }
-  // };
 
   const handleDateChange = (date: Date | null) => {
     if (date) {
@@ -516,20 +480,6 @@ const SalesCreateCustCash: React.FC = () => {
           : schema
       ),
 
-    // 10) เบอร์ที่ติดต่อได้ 1
-    // telNo: yup
-    //   .string()
-    //   .when(["selectedCustomerType"] as const, ([custType], schema) =>
-    //     custType === "0" ||
-    //       custType === "1" ||
-    //       custType === "2" ||
-    //       custType === "3"
-    //       ? schema
-    //         .required("กรุณากรอกเบอร์ที่ติดต่อได้ 1")
-    //         .matches(/^[0-9]{10}$/, "เบอร์โทรต้องเป็นตัวเลข 10 หลัก")
-    //       : schema.notRequired()
-    //   ),
-
     telNo: yup.string().required("กรุณากรอกเบอร์ที่ติดต่อได้ 1"),
 
     // 11) อีเมล ไม่บังคับ
@@ -631,14 +581,6 @@ const SalesCreateCustCash: React.FC = () => {
     setIdCard(newIdCard);
     setValue('idCard', newIdCard);
 
-    // — ชื่อ–นามสกุล จาก contract.CustomerName —
-    // trim() + split ด้วย whitespace แล้วเอาตัวแรกเป็นชื่อ
-    // ส่วนที่เหลือ join กลับเป็นนามสกุล
-    // const rawName = (contract as any).CustomerName ?? '';
-    // const parts = rawName.trim().split(/\s+/);
-    // const first = parts.shift() || '';
-    // const last = parts.join(' ') || '';
-
     setFullName(matchedItem?.CUSTOMERDETAIL?.[0].CUSTOMERNAME);
     setLastName(matchedItem?.CUSTOMERDETAIL?.[0].CUSTOMERLASTNAME);
 
@@ -647,9 +589,6 @@ const SalesCreateCustCash: React.FC = () => {
     // ถ้ามี lastName ใน form ก็เรียก setValue('lastName', last) ด้วย
 
     // — เบอร์โทร เหมือนเดิม —
-    // const address = Array.isArray(contract.Address)
-    //   ? contract.Address[0]
-    //   : {};
     const rawMobile = matchedItem?.CUSTOMERDETAIL?.[0].CUSTOMERMOBILE ?? '';
     const cleanedMobile = rawMobile.replace(/-/g, '');
     setMobile(cleanedMobile);
@@ -687,9 +626,6 @@ const SalesCreateCustCash: React.FC = () => {
 
   }, [matchedItem?.CUSTOMERDETAIL?.[0]]);
 
-  // const searchText = matchedItem?.CUSTOMERDETAIL?.[0]?.CUSTOMERID?.toString().trim() ?? '';
-  // const disableIdCard = /^\d{13}$/.test(searchText);
-
   const hasSearchtext =
     !!matchedItem?.CUSTOMERSTATUS?.[0]?.Searchtext;
   // console.log(`hasSearchtext`, hasSearchtext);
@@ -704,8 +640,6 @@ const SalesCreateCustCash: React.FC = () => {
   const hasCustomerName =
     !!matchedItem?.CUSTOMERSTATUS?.[0]?.CustomerName;
 
-  // ถ้ามี Searchtext: disable เฉพาะ ลูกค้าบุคคล (0) + บัตรประชาชน (0)
-  // ถ้าไม่มี Searchtext: กลับไปใช้เงื่อนไขเดิม (13 หลัก)
   const disableIdCard =
     hasCustomerName
       ? true
@@ -720,9 +654,74 @@ const SalesCreateCustCash: React.FC = () => {
   {
     /*-------------------- Start บันทึกข้อมูลลงระบบ และไปขั้นตอนต่อไป --------------------*/
   }
+  // const onSubmit = async (data: any) => {
+  //   try {
+  //     // เรียก API บันทึกข้อมูล
+  //     const response = await axios.post(
+  //       UPDATECONTACT,
+  //       {
+  //         REFNO,
+  //         EMPID: EmpId,
+  //         TEAMSALE: TeamSale,
+  //         SALECODE: SaleCode,
+  //         SUPEMPID: SupEmpId,
+  //         SECEMPID: SecEmpId,
+  //         FIELD: "CUSTOMERDETAIL",
+  //         DATA: SaveCustomertData,
+  //       },
+  //       {
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //       }
+  //     );
+  //     // console.log(`updateContract DISCOUNT: `, response.data);
+  //     MySwal.fire({
+  //       icon: "success",
+  //       title: "สำเร็จ!",
+  //       text: "บันทึกข้อมูลลูกค้าเรียบร้อยแล้ว",
+  //       timer: 2000, // แสดงผล 3 วินาที
+  //       showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
+  //     });
+  //     navigate("/sale/createaddress-cash");
+  //   } catch (error) {
+  //     console.error("Error saving data:", error);
+  //     MySwal.fire("เกิดข้อผิดพลาด", "ไม่สามารถบันทึกข้อมูลได้", "error");
+  //   }
+  // };
+
   const onSubmit = async (data: any) => {
     try {
-      // เรียก API บันทึกข้อมูล
+      const checkPayload = {
+        EmpID: EmpId,
+        Tel_Mobile: (mobile || "").replace(/-/g, ""),
+        Tel_Work: (workPhone || "").replace(/-/g, ""),
+        Tel_Home: (phone || "").replace(/-/g, ""),
+        Cus_FName: fullName,
+        Cus_LName: lastName,
+        Cus_IDCard: idCard,
+      };
+
+      const checkRes = await axios.post(
+        CHECKDATACUSTOMER,
+        checkPayload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const { status, message } = checkRes.data || {};
+
+      if (status !== 200) {
+        await MySwal.fire({
+          icon: "warning",
+          text: message,
+        });
+        return;
+      }
+
       const response = await axios.post(
         UPDATECONTACT,
         {
@@ -741,20 +740,22 @@ const SalesCreateCustCash: React.FC = () => {
           },
         }
       );
-      // console.log(`updateContract DISCOUNT: `, response.data);
+
       MySwal.fire({
         icon: "success",
         title: "สำเร็จ!",
         text: "บันทึกข้อมูลลูกค้าเรียบร้อยแล้ว",
-        timer: 2000, // แสดงผล 3 วินาที
-        showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
+        timer: 2000,
+        showConfirmButton: false,
       });
+
       navigate("/sale/createaddress-cash");
     } catch (error) {
       console.error("Error saving data:", error);
       MySwal.fire("เกิดข้อผิดพลาด", "ไม่สามารถบันทึกข้อมูลได้", "error");
     }
   };
+
   {
     /*-------------------- End บันทึกข้อมูล --------------------*/
   }
@@ -1336,63 +1337,6 @@ const SalesCreateCustCash: React.FC = () => {
                               </div>
 
                               <div className="row mb-6">
-                                {/* <div className="col-lg-4 my-3">
-                                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                                <label className={`${styles.label} `}>วันเดือนปีเกิด</label>
-                                                                <input
-                                                                    type="date"
-                                                                    value={valueCalendar ? formatLocalDate(valueCalendar) : ''}
-                                                                    onChange={e => {
-                                                                        // แยกปี เดือน วัน แล้วสร้างเป็น Date ท้องถิ่น
-                                                                        const [yy, mm, dd] = e.target.value.split('-').map(Number);
-                                                                        const newDate = new Date(yy, mm - 1, dd);
-                                                                        setValueCalendar(newDate);
-                                                                        handleDateChange(newDate);
-                                                                    }}
-                                                                    className={`form-control ${styles.label}`}
-                                                                />
-                                                            </div>
-                                                        </div> */}
-
-                                {/* <div className="col-lg-4 my-3">
-                                                            <label className={`${styles.label}`}>วันเดือนปีเกิด</label>
-                                                            <div className="d-flex gap-2">
-
-                                                                <select
-                                                                    className={`form-select ${styles.label}`}
-                                                                    value={selectedDay}
-                                                                    onChange={e => setSelectedDay(Number(e.target.value) || '')}
-                                                                >
-                                                                    <option value="">วัน</option>
-                                                                    {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
-                                                                        <option key={day} value={day}>{day}</option>
-                                                                    ))}
-                                                                </select>
-
-                                                                <select
-                                                                    className={`form-select ${styles.label}`}
-                                                                    value={selectedMonth}
-                                                                    onChange={e => setSelectedMonth(Number(e.target.value) || '')}
-                                                                >
-                                                                    <option value="">เดือน</option>
-                                                                    {thaiMonths.map(m => (
-                                                                        <option key={m.value} value={m.value}>{m.label}</option>
-                                                                    ))}
-                                                                </select>
-
-                                                                <select
-                                                                    className={`form-select ${styles.label}`}
-                                                                    value={selectedYearBE}
-                                                                    onChange={e => setSelectedYearBE(Number(e.target.value) || '')}
-                                                                >
-                                                                    <option value="">ปี</option>
-                                                                    {yearsBE.map(year => (
-                                                                        <option key={year} value={year}>{year}</option>
-                                                                    ))}
-                                                                </select>
-                                                            </div>
-                                                        </div> */}
-
                                 <div className="col-lg-4 my-3">
                                   <label
                                     className={`${styles.label} ${styles.required}`}
@@ -1798,25 +1742,6 @@ const SalesCreateCustCash: React.FC = () => {
                               <div className="">
                                 <div className="row mb-6">
                                   <div className="col-lg-4">
-                                    {/* <label className={`form-label ${styles.required} ${styles.label}`}>เลขประจำตัวผู้เสียภาษี</label>
-                                                                <Controller
-                                                                    name="idCard"
-                                                                    control={control}
-                                                                    render={({ field }) => (
-                                                                        <input
-                                                                            {...field}
-                                                                            className={`form-control ${styles.label} ${errors.idCard ? "is-invalid" : ""}`}
-                                                                            value={idCard}
-                                                                            onChange={(e) => {
-                                                                                field.onChange(e)
-                                                                                setIdCard(e.target.value)
-                                                                                trigger("idCard");
-                                                                            }}
-                                                                            type='text'
-                                                                        />
-                                                                    )}
-                                                                />
-                                                                {errors.idCard && <p className="text-danger">{errors.idCard.message}</p>} */}
                                     <label
                                       className={`form-label ${styles.required} ${styles.label}`}
                                     >
@@ -1891,17 +1816,6 @@ const SalesCreateCustCash: React.FC = () => {
                                     )}
                                   </div>
                                   <div className="col-lg-4 mb-3">
-                                    {/* <select
-                                                                    className={`form-select ${styles.label}`}
-                                                                    onChange={(e) => setSelectedPrefixId(Number(e.target.value))}
-                                                                    value={selectedPrefixId}
-                                                                    disabled={!selectedCustomerType}
-                                                                >
-                                                                    <option value=''>เลือกคำนำหน้า...</option>
-                                                                    {selectedCustomer.PREFIX.map((prefix: any) => (
-                                                                        <option key={prefix.PREFIXID} value={prefix.PREFIXID}>{prefix.PREFIXNAME}</option>
-                                                                    ))}
-                                                                </select> */}
                                     <Controller
                                       name="selectedPrefixId"
                                       control={control}
@@ -1976,27 +1890,7 @@ const SalesCreateCustCash: React.FC = () => {
                                       >
                                         เบอร์ที่ติดต่อได้ 1
                                       </label>
-                                      {/* <Controller
-                                                                        name="telNo"
-                                                                        control={control}
-                                                                        render={({ field }) => (
-                                                                            <input
-                                                                                {...field}
-                                                                                className={`form-control ${styles.label} ${errors.telNo ? "is-invalid" : ""}`}
-                                                                                value={(mobile || '').replace(/-/g, '')}
-                                                                                maxLength={10}
-                                                                                type='text'
-                                                                                inputMode='numeric'
-                                                                                pattern='[0-9]*'
-                                                                                onChange={(e) => {
-                                                                                    field.onChange(e)
-                                                                                    setMobile(e.target.value)
-                                                                                    trigger("telNo")
-                                                                                }}
-                                                                            />
-                                                                        )}
-                                                                    />
-                                                                    {errors.telNo && <p className="text-danger">{errors.telNo.message}</p>} */}
+
                                       <Controller
                                         name="telNo"
                                         control={control}

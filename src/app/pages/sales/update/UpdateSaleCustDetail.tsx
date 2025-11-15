@@ -114,6 +114,9 @@ const UpdateSaleCustDetail: React.FC = () => {
   const DRAFT_ALLCONTRACT_URL = `${API_URL_MONGO}/Contract/GetAllContract?status=DRAFT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}&ProcessType=${auth.processtype}`;
   const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage`;
 
+  const API_URL_THIENSURAT = import.meta.env.VITE_APP_API_THIENSURAT;
+  const CHECKDATACUSTOMER = `${API_URL_THIENSURAT}/CheckDataCustomer`;
+
   const [Model, setModel] = useState<string>("");
   const [checktype, setChecktype] = useState<number | null>(null);
 
@@ -445,9 +448,89 @@ const UpdateSaleCustDetail: React.FC = () => {
     }
   }, [selectedDay, selectedMonth, selectedYearBE]);
 
-  const onSubmit = async () => {
-    // ถ้าไม่มีข้อผิดพลาดให้ทำการอัพเดทข้อมูล
+  // const onSubmit = async () => {
+  //   try {
+  //     const updateContract = await axios.post(
+  //       UPDATECONTACT,
+  //       {
+  //         REFNO: refno,
+  //         EMPID: EmpId,
+  //         TEAMSALE: TeamSale,
+  //         SALECODE: SaleCode,
+  //         SUPEMPID: SupEmpId,
+  //         SECEMPID: SecEmpId,
+  //         FIELD: "CUSTOMERDETAIL",
+  //         DATA: SaveCustomertData,
+  //       },
+  //       {
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //       }
+  //     );
+
+  //     if (updateContract.status === 200 && updateContract.data.data) {
+  //       Swal.fire({
+  //         icon: "success",
+  //         title: "สำเร็จ!",
+  //         text: "ปรับปรุงข้อมูลลูกค้าแล้ว",
+  //         timer: 2000,
+  //         showConfirmButton: false,
+  //       });
+  //       navigate("/sale/update/updateAddress", {
+  //         state: {
+  //           ...matchedItem,
+  //         },
+  //       });
+  //     } else {
+  //       Swal.fire({
+  //         icon: "error",
+  //         title: "เกิดข้อผิดพลาด!",
+  //         text: updateContract.data.message || "ไม่สามารถอัปเดตข้อมูลได้",
+  //       });
+  //     }
+  //   } catch (error) {
+  //     console.error("Error updating data:", error);
+  //     Swal.fire({
+  //       icon: "error",
+  //       title: "เกิดข้อผิดพลาด!",
+  //       text: "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง",
+  //     });
+  //   }
+  // };
+
+  const onSubmit = async (data: any) => {
     try {
+      const checkPayload = {
+        EmpID: EmpId,
+        Tel_Mobile: (mobile || "").replace(/-/g, ""),
+        Tel_Work: (workPhone || "").replace(/-/g, ""),
+        Tel_Home: (phone || "").replace(/-/g, ""),
+        Cus_FName: fullName,
+        Cus_LName: lastName,
+        Cus_IDCard: idCard,
+      };
+
+      const checkRes = await axios.post(
+        CHECKDATACUSTOMER,
+        checkPayload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const { status, message } = checkRes.data || {};
+
+      if (status !== 200) {
+        await MySwal.fire({
+          icon: "warning",
+          text: message,
+        });
+        return;
+      }
+
       const updateContract = await axios.post(
         UPDATECONTACT,
         {
@@ -493,7 +576,7 @@ const UpdateSaleCustDetail: React.FC = () => {
         icon: "error",
         title: "เกิดข้อผิดพลาด!",
         text: "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง",
-      });
+      }); Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถบันทึกข้อมูลได้", "error");
     }
   };
 
@@ -513,8 +596,6 @@ const UpdateSaleCustDetail: React.FC = () => {
         },
       }
     );
-
-    // console.log(response)
 
     if (response.status === 200) {
       if (!response.data.data) {
@@ -662,20 +743,6 @@ const UpdateSaleCustDetail: React.FC = () => {
         then: (schema) => schema.required("กรุณาเลือกเพศ"),
         otherwise: (schema) => schema,
       }),
-
-    // 10) เบอร์ที่ติดต่อได้ 1
-    // telNo: yup
-    //   .string()
-    //   .when(["selectedCustomerType"] as const, ([custType], schema) =>
-    //     custType === "0" ||
-    //       custType === "1" ||
-    //       custType === "2" ||
-    //       custType === "3"
-    //       ? schema
-    //         .required("กรุณากรอกเบอร์ที่ติดต่อได้ 1")
-    //         .matches(/^[0-9]{10}$/, "เบอร์โทรต้องเป็นตัวเลข 10 หลัก")
-    //       : schema.notRequired()
-    //   ),
 
     telNo: yup.string().required("กรุณากรอกเบอร์ที่ติดต่อได้ 1"),
 
