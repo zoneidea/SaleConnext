@@ -60,8 +60,7 @@ const SalesCreateCustCash: React.FC = () => {
   const DRAFT_ALLCONTRACT_URL = `${API_URL_MONGO}/Contract/GetAllContract?status=DRAFT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}&ProcessType=${auth.processtype}`;
   const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContract`;
 
-  const API_URL_THIENSURAT = import.meta.env.VITE_APP_API_THIENSURAT;
-  const CHECKDATACUSTOMER = `${API_URL_THIENSURAT}/CheckDataCustomer`;
+  const CHECKDATACUSTOMER = `${API_SALECONNEXT}/CheckDataCustomer`;
 
   {
     /************ สแกนบัตร ************/
@@ -654,6 +653,7 @@ const SalesCreateCustCash: React.FC = () => {
   {
     /*-------------------- Start บันทึกข้อมูลลงระบบ และไปขั้นตอนต่อไป --------------------*/
   }
+  
   // const onSubmit = async (data: any) => {
   //   try {
   //     // เรียก API บันทึกข้อมูล

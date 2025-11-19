@@ -114,9 +114,8 @@ const UpdateSaleCustDetail: React.FC = () => {
   const DRAFT_ALLCONTRACT_URL = `${API_URL_MONGO}/Contract/GetAllContract?status=DRAFT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}&ProcessType=${auth.processtype}`;
   const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage`;
 
-  const API_URL_THIENSURAT = import.meta.env.VITE_APP_API_THIENSURAT;
-  const CHECKDATACUSTOMER = `${API_URL_THIENSURAT}/CheckDataCustomer`;
-
+  const CHECKDATACUSTOMER = `${API_SALECONNEXT}/CheckDataCustomer`;
+  
   const [Model, setModel] = useState<string>("");
   const [checktype, setChecktype] = useState<number | null>(null);
 
@@ -499,8 +498,11 @@ const UpdateSaleCustDetail: React.FC = () => {
   //   }
   // };
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async () => {
     try {
+      //-------------------------------
+      // 1) เตรียม Payload สำหรับเช็คเบอร์/ลูกค้า
+      //-------------------------------
       const checkPayload = {
         EmpID: EmpId,
         Tel_Mobile: (mobile || "").replace(/-/g, ""),
@@ -511,18 +513,21 @@ const UpdateSaleCustDetail: React.FC = () => {
         Cus_IDCard: idCard,
       };
 
-      const checkRes = await axios.post(
-        CHECKDATACUSTOMER,
-        checkPayload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      //-------------------------------
+      // 2) เรียก CHECKDATACUSTOMER
+      //-------------------------------
+      const checkRes = await axios.post(CHECKDATACUSTOMER, checkPayload, {
+        validateStatus: () => true, // สำคัญมาก ทำให้ status 400 ไม่เข้า catch
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log("CHECKDATACUSTOMER:", checkRes.data);
 
       const { statustext, message } = checkRes.data || {};
 
+      // ❌ ไม่ผ่าน → โชว์ alert แล้วหยุด
       if (statustext !== "success") {
         await MySwal.fire({
           icon: "warning",
@@ -531,6 +536,9 @@ const UpdateSaleCustDetail: React.FC = () => {
         return;
       }
 
+      //-------------------------------
+      // 3) ผ่าน → เรียก UPDATECONTACT
+      //-------------------------------
       const updateContract = await axios.post(
         UPDATECONTACT,
         {
@@ -544,11 +552,14 @@ const UpdateSaleCustDetail: React.FC = () => {
           DATA: SaveCustomertData,
         },
         {
+          validateStatus: () => true,
           headers: {
             "Content-Type": "application/json",
           },
         }
       );
+
+      console.log("UPDATECONTACT:", updateContract.data);
 
       if (updateContract.status === 200 && updateContract.data.data) {
         Swal.fire({
@@ -558,6 +569,7 @@ const UpdateSaleCustDetail: React.FC = () => {
           timer: 2000,
           showConfirmButton: false,
         });
+
         navigate("/sale/update/updateAddress", {
           state: {
             ...matchedItem,
@@ -571,12 +583,8 @@ const UpdateSaleCustDetail: React.FC = () => {
         });
       }
     } catch (error) {
-      console.error("Error updating data:", error);
-      Swal.fire({
-        icon: "error",
-        title: "เกิดข้อผิดพลาด!",
-        text: "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง",
-      });
+      console.error("Error saving data:", error);
+      MySwal.fire("เกิดข้อผิดพลาด", "ไม่สามารถบันทึกข้อมูลได้", "error");
     }
   };
 
