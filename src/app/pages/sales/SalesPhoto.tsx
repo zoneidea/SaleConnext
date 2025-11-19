@@ -345,11 +345,6 @@ const SalesPhoto: React.FC = () => {
         }
     };
 
-    const isNonEmptyStr = (v: any) => typeof v === 'string' && v.trim() !== ''
-
-    const hasAny = <T,>(arr: T[], pred: (x: T) => boolean) =>
-        Array.isArray(arr) && arr.some(pred)
-
     // const isDataComplete = useMemo(() => {
     //     const isNotEmptyArray = (arr: any): boolean =>
     //         Array.isArray(arr) && arr.length > 0;
@@ -373,6 +368,12 @@ const SalesPhoto: React.FC = () => {
     //         isNotEmptyArray(source.CONTRACT)
     //     );
     // }, [fromStep, item, matchedItem]);
+
+    const isNonEmptyStr = (v: any) => typeof v === 'string' && v.trim() !== ''
+
+    const hasAny = <T,>(arr: T[], pred: (x: T) => boolean) =>
+        Array.isArray(arr) && arr.some(pred)
+
 
     const isDataComplete = useMemo(() => {
         const source = fromStep ? item : matchedItem

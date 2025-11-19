@@ -521,9 +521,9 @@ const UpdateSaleCustDetail: React.FC = () => {
         }
       );
 
-      const { status, message } = checkRes.data || {};
+      const { statustext, message } = checkRes.data || {};
 
-      if (status !== 200) {
+      if (statustext !== "success") {
         await MySwal.fire({
           icon: "warning",
           text: message,
@@ -576,7 +576,7 @@ const UpdateSaleCustDetail: React.FC = () => {
         icon: "error",
         title: "เกิดข้อผิดพลาด!",
         text: "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง",
-      }); Swal.fire("เกิดข้อผิดพลาด", "ไม่สามารถบันทึกข้อมูลได้", "error");
+      });
     }
   };
 

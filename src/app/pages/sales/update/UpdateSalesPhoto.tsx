@@ -382,29 +382,105 @@ const UpdateSalesPhoto: React.FC = () => {
         }
     };
 
+    // const isDataComplete = useMemo(() => {
+    //     const isNotEmptyArray = (arr: any): boolean =>
+    //         Array.isArray(arr) && arr.length > 0;
+
+    //     // เลือกแหล่งข้อมูลตาม fromStep
+    //     const source = fromStep
+    //         ? item // ถ้ามาจาก step เริ่มแรก
+    //         : matchedItem; // ถ้าเป็น draft
+    //     // console.log(`source`, source);
+
+    //     if (!source) return false;
+
+    //     return (
+    //         isNotEmptyArray(source.CUSTOMERSTATUS) &&
+    //         isNotEmptyArray(source.PRODUCT) &&
+    //         isNotEmptyArray(source.DISCOUNT) &&
+    //         isNotEmptyArray(source.SALEEMPLOYEE) &&
+    //         isNotEmptyArray(source.CUSTOMERDETAIL) &&
+    //         isNotEmptyArray(source.ADDRESS) &&
+    //         isNotEmptyArray(source.PDPA) &&
+    //         isNotEmptyArray(source.CONTRACT)
+    //     );
+    // }, [fromStep, item, matchedItem]);
+
+    const isNonEmptyStr = (v: any) => typeof v === 'string' && v.trim() !== ''
+
+    const hasAny = <T,>(arr: T[], pred: (x: T) => boolean) =>
+        Array.isArray(arr) && arr.some(pred)
+
     const isDataComplete = useMemo(() => {
-        const isNotEmptyArray = (arr: any): boolean =>
-            Array.isArray(arr) && arr.length > 0;
+        const source = fromStep ? item : matchedItem
+        if (!source) return false
 
-        // เลือกแหล่งข้อมูลตาม fromStep
-        const source = fromStep
-            ? item // ถ้ามาจาก step เริ่มแรก
-            : matchedItem; // ถ้าเป็น draft
-        // console.log(`source`, source);
+        // 1) สถานะลูกค้า: ต้องมีอย่างน้อยหนึ่งฟิลด์ที่ใช้จริง
+        const okCustomerStatus = hasAny(source.CUSTOMERSTATUS, (o: any) =>
+            isNonEmptyStr(o.CustomerName) ||
+            isNonEmptyStr(o.message) ||
+            isNonEmptyStr(o.Message) ||
+            isNonEmptyStr(o.Searchtext)
+        )
 
-        if (!source) return false;
+        // 2) แพ็คเกจ/สินค้า: ต้องมีคำอธิบาย/โค้ด หรือมี Package จริง
+        const okProduct = hasAny(source.PRODUCT, (p: any) =>
+            isNonEmptyStr(p.ItemDescription) ||
+            isNonEmptyStr(p.ItemCode) ||
+            (Array.isArray(p.Package) && p.Package.length > 0)
+        )
+
+        // 3) ส่วนลด/ของแถม/เทิร์น: ต้องมีค่าใดค่าหนึ่งจริง
+        const okDiscount = hasAny(source.DISCOUNT, (d: any) =>
+            d?.DISCOUNTAMOUNT != null ||
+            isNonEmptyStr(d?.GIFT?.GIFTDESCRIPTION) ||
+            isNonEmptyStr(d?.TRADEIN?.TRADEINMODEL) ||
+            d?.TRADEIN?.HASTRADEIN === 1
+        )
+
+        // 4) พนักงานขาย/ผู้แนะนำ/ช่าง: ต้องมี SALEEMPLOYEE ที่มีชื่อ/รหัส
+        const okSaleEmp = hasAny(source.SALEEMPLOYEE, (s: any) =>
+            !!s?.SALEEMPLOYEE &&
+            (
+                isNonEmptyStr(s.SALEEMPLOYEE.FName) ||
+                isNonEmptyStr(s.SALEEMPLOYEE.SaleEmp) ||
+                isNonEmptyStr(s.SALEEMPLOYEE.EmpId)
+            )
+        )
+
+        // 5) ข้อมูลลูกค้า: ตามเกณฑ์ bullet เดิมของคุณ
+        const cd = source.CUSTOMERDETAIL?.[0] ?? {}
+        const okCustDetail =
+            !!cd?.CUSTOMERTYPE ||
+            isNonEmptyStr(cd?.CUSTOMERNAME) ||
+            isNonEmptyStr(cd?.CUSTOMERMOBILE) ||
+            (Array.isArray(cd?.PREFIX) && cd.PREFIX.length > 0)
+
+        // 6) ที่อยู่: มีข้อมูล address ใดๆ ที่เป็นรูปธรรม (จังหวัด/รหัสไปรษณีย์อย่างใดอย่างหนึ่ง)
+        const okAddress = hasAny(source.ADDRESS, (a: any) => {
+            const c = a?.ADDRESSCARD ?? a?.ADDRESSINSTALLATION ?? a?.ADDRESSPAYMENT
+            return isNonEmptyStr(c?.ADDRESSPROVINCENAME) || isNonEmptyStr(c?.ADDRESSZIPCODE)
+        })
+
+        // 7) PDPA: ต้องมี record ที่มี CONSENTGIVEN (boolean)
+        const okPdpa = hasAny(source.PDPA, (p: any) => typeof p?.CONSENTGIVEN === 'boolean')
+
+        // 8) สัญญา: ต้องมี createdAt หรือเลขที่สัญญา
+        const okContract = hasAny(source.CONTRACT, (c: any) =>
+            isNonEmptyStr(c?.createdAt) || isNonEmptyStr(c?.CONTNO)
+        )
 
         return (
-            isNotEmptyArray(source.CUSTOMERSTATUS) &&
-            isNotEmptyArray(source.PRODUCT) &&
-            isNotEmptyArray(source.DISCOUNT) &&
-            isNotEmptyArray(source.SALEEMPLOYEE) &&
-            isNotEmptyArray(source.CUSTOMERDETAIL) &&
-            isNotEmptyArray(source.ADDRESS) &&
-            isNotEmptyArray(source.PDPA) &&
-            isNotEmptyArray(source.CONTRACT)
-        );
-    }, [fromStep, item, matchedItem]);
+            okCustomerStatus &&
+            okProduct &&
+            okDiscount &&
+            okSaleEmp &&
+            okCustDetail &&
+            okAddress &&
+            okPdpa &&
+            okContract
+        )
+    }, [fromStep, item, matchedItem])
 
     const whereRefno = fromStep ? refno : matchedItem?.REFNO ?? "";
 

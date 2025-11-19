@@ -564,24 +564,24 @@ const Step: React.FC = () => {
   }
 
   // ใช้กับปุ่ม/ลิงก์เพื่อปิดคลิกและลด opacity
-  const disabledProps = (stepNumber: number) =>
-    isBlocked(stepNumber)
-      ? { disabled: true as const, style: { cursor: 'not-allowed', opacity: 0.6 } }
-      : {}
+  // const disabledProps = (stepNumber: number) =>
+  //   isBlocked(stepNumber)
+  //     ? { disabled: true as const, style: { cursor: 'not-allowed', opacity: 0.6 } }
+  //     : {}
 
-  // guard เรียกก่อน navigate
-  const guard = (stepNumber: number) => {
-    if (isBlocked(stepNumber)) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'ขั้นตอนไม่ครบ',
-        text: 'กรุณาทำให้ขั้นตอนก่อนหน้าเป็นสีเขียวก่อน',
-        confirmButtonText: 'ตกลง',
-      })
-      return false
-    }
-    return true
-  }
+  // // guard เรียกก่อน navigate
+  // const guard = (stepNumber: number) => {
+  //   if (isBlocked(stepNumber)) {
+  //     Swal.fire({
+  //       icon: 'warning',
+  //       title: 'ขั้นตอนไม่ครบ',
+  //       text: 'กรุณาทำให้ขั้นตอนก่อนหน้าเป็นสีเขียวก่อน',
+  //       confirmButtonText: 'ตกลง',
+  //     })
+  //     return false
+  //   }
+  //   return true
+  // }
 
   return (
     <>
@@ -630,7 +630,7 @@ const Step: React.FC = () => {
                 <div className='col-12'>
 
                   {/* 1. ตรวจสอบสถานะลูกค้า */}
-                  <button
+                  {/* <button
                     {...disabledProps(1)}
                     onClick={async () => {
                       if (!guard(1)) return
@@ -642,10 +642,21 @@ const Step: React.FC = () => {
                       if (ok) navigate('/sale/update/updateSalesSatusCust', { state: s })
                     }}
                     className="w-100 text-start border-0 bg-transparent p-0"
+                  > */}
+                  <button
+                    onClick={async () => {
+                      if (s?.CUSTOMERSTATUS?.length > 0) {
+                        await Swal.fire({ icon: 'info', title: 'ไม่สามารถแก้ไขได้', confirmButtonText: 'ตกลง' })
+                        return
+                      }
+                      const ok = await handleClick('updateSalesSatusCust')
+                      if (ok) navigate('/sale/update/updateSalesSatusCust', { state: s })
+                    }}
+                    className="w-100 text-start border-0 bg-transparent p-0"
                   >
                     <div className='d-flex align-items-center pb-8'>
-                      {/* <span className={`bullet bullet-vertical h-40px ${data[0].CUSTOMERSTATUS.length === 0 ? 'bg-danger' : 'bg-success'}`}></span> */}
-                      <span className={`bullet bullet-vertical h-40px ${step1Complete ? 'bg-success' : 'bg-danger'}`}></span>
+                      <span className={`bullet bullet-vertical h-40px ${data[0].CUSTOMERSTATUS.length === 0 ? 'bg-danger' : 'bg-success'}`}></span>
+                      {/* <span className={`bullet bullet-vertical h-40px ${step1Complete ? 'bg-success' : 'bg-danger'}`}></span> */}
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className={`${styles.label}`}>1. ตรวจสอบสถานะลูกค้า</div>
@@ -669,7 +680,7 @@ const Step: React.FC = () => {
                   </button>
 
                   {/* 2. เลือกแพ็คเกจ */}
-                  <button
+                  {/* <button
                     {...disabledProps(2)}
                     onClick={() => {
                       if (!guard(2)) return
@@ -680,10 +691,20 @@ const Step: React.FC = () => {
                       navigate('/sale/update/updateSalePackage', { state: s })
                     }}
                     className="w-100 text-start border-0 bg-transparent p-0"
+                  > */}
+                  <button
+                    onClick={() => {
+                      if (s?.NEWREFNO?.length > 0) {
+                        Swal.fire({ icon: 'info', title: 'ไม่สามารถแก้ไขได้', confirmButtonText: 'ตกลง' })
+                        return
+                      }
+                      navigate('/sale/update/updateSalePackage', { state: s })
+                    }}
+                    className="w-100 text-start border-0 bg-transparent p-0"
                   >
                     <div className='d-flex align-items-center pb-8'>
-                      {/* <span className={`bullet bullet-vertical h-40px ${data[0]?.PRODUCT.length === 0 ? 'bg-danger' : 'bg-success'}`}></span> */}
-                      <span className={`bullet bullet-vertical h-40px ${step2Complete ? 'bg-success' : 'bg-danger'}`}></span>
+                      <span className={`bullet bullet-vertical h-40px ${data[0]?.PRODUCT.length === 0 ? 'bg-danger' : 'bg-success'}`}></span>
+                      {/* <span className={`bullet bullet-vertical h-40px ${step2Complete ? 'bg-success' : 'bg-danger'}`}></span> */}
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className={`${styles.label}`}>2. เลือกแพ็คเกจ</div>
@@ -707,7 +728,7 @@ const Step: React.FC = () => {
                   </button>
 
                   {/* 3. ส่วนลด / เครื่องเทิร์น / ของแถม */}
-                  <button
+                  {/* <button
                     {...disabledProps(3)}
                     onClick={() => {
                       if (!guard(3)) return
@@ -732,13 +753,37 @@ const Step: React.FC = () => {
                       })
                     }}
                     className="w-100 text-start border-0 bg-transparent p-0"
+                  > */}
+                  <button
+                    onClick={() => {
+                      if (s.CUSTOMERSTATUS.length === 0) {
+                        Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'กรุณาตรวจสอบข้อมูลลูกค้าก่อน' })
+                        return
+                      }
+                      if (s.PRODUCT.length === 0) {
+                        Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'กรุณาเลือกแพ็คเกจก่อน' })
+                        return
+                      }
+                      if (s.PRODUCT.length > 0) {
+                        Swal.fire({ icon: 'info', title: 'แก้ไขได้จากขั้นตอน เลือกแพ็คเกจ เท่านั้น' })
+                        return
+                      }
+                      if (s?.NEWREFNO?.length > 0) {
+                        Swal.fire({ icon: 'info', title: 'ไม่สามารถแก้ไขได้' })
+                        return
+                      }
+                      handleClick('updateSaleDiscount').then(ok => {
+                        if (ok) navigate('/sale/update/updateSaleDiscount', { state: s })
+                      })
+                    }}
+                    className="w-100 text-start border-0 bg-transparent p-0"
                   >
                     <div className='d-flex align-items-center pb-8'>
-                      {/* <span
+                      <span
                         className={`bullet bullet-vertical h-40px ${packageChanged || !discount || data[0].PRODUCT.length === 0 ? 'bg-danger' : 'bg-success'
                           }`}
-                      ></span> */}
-                      <span className={`bullet bullet-vertical h-40px ${step3Complete ? 'bg-success' : 'bg-danger'}`}></span>
+                      ></span>
+                      {/* <span className={`bullet bullet-vertical h-40px ${step3Complete ? 'bg-success' : 'bg-danger'}`}></span> */}
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className={styles.label}>3. ส่วนลด / เครื่องเทิร์น / ของแถม</div>
@@ -802,7 +847,7 @@ const Step: React.FC = () => {
                   </button>
 
                   {/* 4. พนักงานขาย */}
-                  <button
+                  {/* <button
                     {...disabledProps(4)}
                     onClick={() => {
                       if (!guard(4)) return
@@ -817,10 +862,24 @@ const Step: React.FC = () => {
                       navigate('/sale/update/UpdateSalesEmployee', { state: s })
                     }}
                     className="w-100 text-start border-0 bg-transparent p-0"
+                  > */}
+                  <button
+                    onClick={() => {
+                      if (s?.PRODUCT.length === 0 || s?.DISCOUNT.length === 0) {
+                        Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'กรุณาบันทึกแพ็คเกจให้ครบถ้วนก่อน' })
+                        return
+                      }
+                      if (s?.NEWREFNO?.length > 0) {
+                        Swal.fire({ icon: 'info', title: 'ไม่สามารถแก้ไขได้' })
+                        return
+                      }
+                      navigate('/sale/update/UpdateSalesEmployee', { state: s })
+                    }}
+                    className="w-100 text-start border-0 bg-transparent p-0"
                   >
                     <div className='d-flex align-items-center pb-8'>
-                      {/* <span className={`bullet bullet-vertical h-40px ${data[0].SALEEMPLOYEE.length > 0 ? 'bg-success' : 'bg-danger'}`}></span> */}
-                      <span className={`bullet bullet-vertical h-40px ${step4Complete ? 'bg-success' : 'bg-danger'}`}></span>
+                      <span className={`bullet bullet-vertical h-40px ${data[0].SALEEMPLOYEE.length > 0 ? 'bg-success' : 'bg-danger'}`}></span>
+                      {/* <span className={`bullet bullet-vertical h-40px ${step4Complete ? 'bg-success' : 'bg-danger'}`}></span> */}
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className={`${styles.label}`}>4. เลือกพนักงานขาย</div>
@@ -859,7 +918,7 @@ const Step: React.FC = () => {
 
 
                   {/* 5. บันทึกข้อมูลลูกค้า */}
-                  <button
+                  {/* <button
                     {...disabledProps(5)}
                     onClick={() => {
                       if (!guard(5)) return
@@ -872,9 +931,21 @@ const Step: React.FC = () => {
                       })
                     }}
                     className="w-100 text-start border-0 bg-transparent p-0"
+                  > */}
+                  <button
+                    onClick={() => {
+                      if (s?.NEWREFNO?.length > 0) {
+                        Swal.fire({ icon: 'info', title: 'ไม่สามารถแก้ไขได้' })
+                        return
+                      }
+                      handleClick('updateCustDetail').then(ok => {
+                        if (ok) navigate('/sale/update/updateCustDetail', { state: s })
+                      })
+                    }}
+                    className="w-100 text-start border-0 bg-transparent p-0"
                   >
                     <div className='d-flex align-items-center pb-8'>
-                      {/* <span
+                      <span
                         className={`bullet bullet-vertical h-40px ${!data[0]?.CUSTOMERDETAIL?.[0]?.CUSTOMERTYPE &&
                           !data[0]?.CUSTOMERDETAIL?.[0]?.CUSTOMERNAME &&
                           !data[0]?.CUSTOMERDETAIL?.[0]?.CUSTOMERMOBILE &&
@@ -882,8 +953,8 @@ const Step: React.FC = () => {
                           ? 'bg-danger'
                           : 'bg-success'
                           }`}
-                      /> */}
-                      <span className={`bullet bullet-vertical h-40px ${step5Complete ? 'bg-success' : 'bg-danger'}`}></span>
+                      />
+                      {/* <span className={`bullet bullet-vertical h-40px ${step5Complete ? 'bg-success' : 'bg-danger'}`}></span> */}
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className={`${styles.label}`}>5. บันทึกข้อมูลลูกค้า</div>
@@ -904,7 +975,7 @@ const Step: React.FC = () => {
                   </button>
 
                   {/* 6. บันทึกที่อยู่ลูกค้า */}
-                  <button
+                  {/* <button
                     {...disabledProps(6)}
                     onClick={() => {
                       if (!guard(6)) return
@@ -921,10 +992,26 @@ const Step: React.FC = () => {
                       })
                     }}
                     className="w-100 text-start border-0 bg-transparent p-0"
+                  > */}
+                  <button
+                    onClick={() => {
+                      if (s?.NEWREFNO?.length > 0) {
+                        Swal.fire({ icon: 'info', title: 'ไม่สามารถแก้ไขได้' })
+                        return
+                      }
+                      if ((s?.CUSTOMERDETAIL?.length ?? 0) <= 0) {
+                        Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'กรุณาบันทึกข้อมูลลูกค้าก่อน' })
+                        return
+                      }
+                      handleClick('updateAddress').then(ok => {
+                        if (ok) navigate('/sale/update/updateAddress', { state: s })
+                      })
+                    }}
+                    className="w-100 text-start border-0 bg-transparent p-0"
                   >
                     <div className='d-flex align-items-center pb-8'>
-                      {/* <span className={`bullet bullet-vertical h-40px ${data[0].ADDRESS.length === 0 ? 'bg-danger' : 'bg-success'}`}></span> */}
-                      <span className={`bullet bullet-vertical h-40px ${step6Complete ? 'bg-success' : 'bg-danger'}`}></span>
+                      <span className={`bullet bullet-vertical h-40px ${data[0].ADDRESS.length === 0 ? 'bg-danger' : 'bg-success'}`}></span>
+                      {/* <span className={`bullet bullet-vertical h-40px ${step6Complete ? 'bg-success' : 'bg-danger'}`}></span> */}
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className={`${styles.label}`}>6. บันทึกที่อยู่ลูกค้า</div>
@@ -946,7 +1033,7 @@ const Step: React.FC = () => {
                   </button>
 
                   {/* 7. PDPA */}
-                  <button
+                  {/* <button
                     {...disabledProps(7)}
                     onClick={() => {
                       if (!guard(7)) return
@@ -965,10 +1052,28 @@ const Step: React.FC = () => {
                       navigate('/sale/pdpa', { state: { ...s, from: '/sale/step' } })
                     }}
                     className="w-100 text-start border-0 bg-transparent p-0"
+                  > */}
+                  <button
+                    onClick={() => {
+                      if ((s?.ADDRESS?.length ?? 0) === 0) {
+                        Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'กรุณาบันทึกข้อมูลให้ครบทุกส่วน' })
+                        return
+                      }
+                      if ((s?.PDPA?.length ?? 0) > 0) {
+                        Swal.fire({ icon: 'info', title: 'ไม่สามารถแก้ไขได้' })
+                        return
+                      }
+                      if (s?.NEWREFNO?.length > 0) {
+                        Swal.fire({ icon: 'info', title: 'ไม่สามารถแก้ไขได้' })
+                        return
+                      }
+                      navigate('/sale/pdpa', { state: { ...s, from: '/sale/step' } })
+                    }}
+                    className="w-100 text-start border-0 bg-transparent p-0"
                   >
                     <div className='d-flex align-items-center pb-8'>
-                      {/* <span className={`bullet bullet-vertical h-40px ${data[0].PDPA.length === 0 ? 'bg-danger' : 'bg-success'}`}></span> */}
-                      <span className={`bullet bullet-vertical h-40px ${step7Complete ? 'bg-success' : 'bg-danger'}`}></span>
+                      <span className={`bullet bullet-vertical h-40px ${data[0].PDPA.length === 0 ? 'bg-danger' : 'bg-success'}`}></span>
+                      {/* <span className={`bullet bullet-vertical h-40px ${step7Complete ? 'bg-success' : 'bg-danger'}`}></span> */}
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className={`${styles.label}`}>7. PDPA</div>
@@ -982,7 +1087,7 @@ const Step: React.FC = () => {
                   </button>
 
                   {/* 8. รายละเอียดสัญญา */}
-                  <button
+                  {/* <button
                     {...disabledProps(8)}
                     onClick={() => {
                       if (!guard(8)) return
@@ -991,10 +1096,18 @@ const Step: React.FC = () => {
                       })
                     }}
                     className="w-100 text-start border-0 bg-transparent p-0"
+                  > */}
+                  <button
+                    onClick={() => {
+                      handleClick('UpdateSalesContract').then(ok => {
+                        if (ok) navigate('/sale/contract', { state: s })
+                      })
+                    }}
+                    className="w-100 text-start border-0 bg-transparent p-0"
                   >
                     <div className='d-flex align-items-center pb-8'>
-                      {/* <span className={`bullet bullet-vertical h-40px ${data[0].CONTRACT.length === 0 ? 'bg-danger' : 'bg-success'}`}></span> */}
-                      <span className={`bullet bullet-vertical h-40px ${step8Complete ? 'bg-success' : 'bg-danger'}`}></span>
+                      <span className={`bullet bullet-vertical h-40px ${data[0].CONTRACT.length === 0 ? 'bg-danger' : 'bg-success'}`}></span>
+                      {/* <span className={`bullet bullet-vertical h-40px ${step8Complete ? 'bg-success' : 'bg-danger'}`}></span> */}
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className={`${styles.label}`}>8. รายละเอียดสัญญา</div>
@@ -1009,7 +1122,7 @@ const Step: React.FC = () => {
                   </button>
 
                   {/* 9. การชำระเงิน / นัดชำระ */}
-                  <button
+                  {/* <button
                     {...disabledProps(9)}
                     onClick={() => {
                       if (!guard(9)) return
@@ -1028,10 +1141,28 @@ const Step: React.FC = () => {
                       })
                     }}
                     className="w-100 text-start border-0 bg-transparent p-0"
+                  > */}
+                  <button
+                    onClick={() => {
+                      if ((s?.CONTRACT?.length ?? 0) === 0) {
+                        Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'กรุณาบันทึกรายละเอียดสัญญาก่อน' })
+                        return
+                      }
+                      if (hasPaymentPeriod || paidFromLocal) {
+                        Swal.fire({ icon: 'info', title: 'ไม่สามารถแก้ไขได้' })
+                        return
+                      }
+                      handleClick('UpdateSalesContract').then(ok => {
+                        if (ok) {
+                          navigate('/firstBill/CreateFirstBill', { state: { item: s, from: location.pathname } })
+                        }
+                      })
+                    }}
+                    className="w-100 text-start border-0 bg-transparent p-0"
                   >
                     <div className='d-flex align-items-center pb-8'>
-                      {/* <span className={`bullet bullet-vertical h-40px ${data[0].CONTRACT.length === 0 ? 'bg-danger' : 'bg-success'}`}></span> */}
-                      <span className={`bullet bullet-vertical h-40px ${step9Complete ? 'bg-success' : 'bg-danger'}`}></span>
+                      <span className={`bullet bullet-vertical h-40px ${data[0].CONTRACT.length === 0 ? 'bg-danger' : 'bg-success'}`}></span>
+                      {/* <span className={`bullet bullet-vertical h-40px ${step9Complete ? 'bg-success' : 'bg-danger'}`}></span> */}
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className={`${styles.label}`}>9. การชำระเงิน / นัดชำระ</div>
@@ -1044,7 +1175,7 @@ const Step: React.FC = () => {
                   </button>
 
                   {/* 10. ถ่ายรูป */}
-                  <button
+                  {/* <button
                     {...disabledProps(10)}
                     onClick={() => {
                       if (!guard(10)) return
@@ -1066,13 +1197,34 @@ const Step: React.FC = () => {
                       })
                     }}
                     className="w-100 text-start border-0 bg-transparent p-0"
+                  > */}
+                  <button
+                    onClick={() => {
+                      if (
+                        (s?.CUSTOMERSTATUS?.length ?? 0) === 0 &&
+                        (s?.PRODUCT?.length ?? 0) === 0 &&
+                        (s?.DISCOUNT?.length ?? 0) === 0 &&
+                        (s?.SALEEMPLOYEE?.length ?? 0) === 0 &&
+                        (s?.CUSTOMERDETAIL?.length ?? 0) === 0 &&
+                        (s?.ADDRESS?.length ?? 0) === 0 &&
+                        (s?.PDPA?.length ?? 0) === 0 &&
+                        (s?.CONTRACT?.length ?? 0) === 0
+                      ) {
+                        Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'กรุณาบันทึกขั้นตอนก่อนหน้าให้ครบก่อน' })
+                        return
+                      }
+                      handleClick('photo').then(ok => {
+                        if (ok) navigate('/sale/update/UpdateSalesPhoto', { state: { fromStep: true, data: s } })
+                      })
+                    }}
+                    className="w-100 text-start border-0 bg-transparent p-0"
                   >
                     <div className='d-flex align-items-center pb-8'>
-                      {/* <span className={`bullet bullet-vertical h-40px ${images && Object.values(images).some(field => Array.isArray(field) && field.length > 0)
+                      <span className={`bullet bullet-vertical h-40px ${images && Object.values(images).some(field => Array.isArray(field) && field.length > 0)
                         ? 'bg-success'
                         : 'bg-danger'
-                        }`}></span> */}
-                      <span className={`bullet bullet-vertical h-40px ${step10Complete ? 'bg-success' : 'bg-danger'}`}></span>
+                        }`}></span>
+                      {/* <span className={`bullet bullet-vertical h-40px ${step10Complete ? 'bg-success' : 'bg-danger'}`}></span> */}
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className={`${styles.label}`}>10. ถ่ายรูป</div>

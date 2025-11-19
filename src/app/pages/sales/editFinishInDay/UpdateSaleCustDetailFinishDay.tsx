@@ -444,85 +444,8 @@ const UpdateSaleCustDetailFinishDay: React.FC = () => {
     }
   }, [selectedDay, selectedMonth, selectedYearBE]);
 
-  // const onSubmit = async () => {
-  //   try {
-  //     const updateContract = await axios.post(
-  //       UPDATECONTACT,
-  //       {
-  //         REFNO: refno,
-  //         EMPID: EmpId,
-  //         TEAMSALE: TeamSale,
-  //         SALECODE: SaleCode,
-  //         SUPEMPID: SupEmpId,
-  //         SECEMPID: SecEmpId,
-  //         FIELD: "CUSTOMERDETAIL",
-  //         DATA: SaveCustomertData,
-  //       },
-  //       {
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //       }
-  //     );
-
-  //     if (updateContract.status === 200 && updateContract.data.data) {
-  //       Swal.fire({
-  //         icon: "success",
-  //         title: "สำเร็จ!",
-  //         text: "ปรับปรุงข้อมูลลูกค้าแล้ว",
-  //         timer: 2000,
-  //         showConfirmButton: false,
-  //       });
-  //       navigate("/sale/editFinishInDay", { state: item });
-  //     } else {
-  //       Swal.fire({
-  //         icon: "error",
-  //         title: "เกิดข้อผิดพลาด!",
-  //         text: updateContract.data.message || "ไม่สามารถอัปเดตข้อมูลได้",
-  //       });
-  //     }
-  //   } catch (error) {
-  //     console.error("Error updating data:", error);
-  //     Swal.fire({
-  //       icon: "error",
-  //       title: "เกิดข้อผิดพลาด!",
-  //       text: "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง",
-  //     });
-  //   }
-  // };
-
-  const onSubmit = async (data: any) => {
+  const onSubmit = async () => {
     try {
-      const checkPayload = {
-        EmpID: EmpId,
-        Tel_Mobile: (mobile || "").replace(/-/g, ""),
-        Tel_Work: (workPhone || "").replace(/-/g, ""),
-        Tel_Home: (phone || "").replace(/-/g, ""),
-        Cus_FName: fullName,
-        Cus_LName: lastName,
-        Cus_IDCard: idCard,
-      };
-
-      const checkRes = await axios.post(
-        CHECKDATACUSTOMER,
-        checkPayload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const { status, message } = checkRes.data || {};
-
-      if (status !== 200) {
-        await MySwal.fire({
-          icon: "warning",
-          text: message,
-        });
-        return;
-      }
-
       const updateContract = await axios.post(
         UPDATECONTACT,
         {
@@ -567,6 +490,83 @@ const UpdateSaleCustDetailFinishDay: React.FC = () => {
       });
     }
   };
+
+  // const onSubmit = async (data: any) => {
+  //   try {
+  //     const checkPayload = {
+  //       EmpID: EmpId,
+  //       Tel_Mobile: (mobile || "").replace(/-/g, ""),
+  //       Tel_Work: (workPhone || "").replace(/-/g, ""),
+  //       Tel_Home: (phone || "").replace(/-/g, ""),
+  //       Cus_FName: fullName,
+  //       Cus_LName: lastName,
+  //       Cus_IDCard: idCard,
+  //     };
+
+  //     const checkRes = await axios.post(
+  //       CHECKDATACUSTOMER,
+  //       checkPayload,
+  //       {
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //       }
+  //     );
+
+  //     const { status, message } = checkRes.data || {};
+
+  //     if (status !== 200) {
+  //       await MySwal.fire({
+  //         icon: "warning",
+  //         text: message,
+  //       });
+  //       return;
+  //     }
+
+  //     const updateContract = await axios.post(
+  //       UPDATECONTACT,
+  //       {
+  //         REFNO: refno,
+  //         EMPID: EmpId,
+  //         TEAMSALE: TeamSale,
+  //         SALECODE: SaleCode,
+  //         SUPEMPID: SupEmpId,
+  //         SECEMPID: SecEmpId,
+  //         FIELD: "CUSTOMERDETAIL",
+  //         DATA: SaveCustomertData,
+  //       },
+  //       {
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //       }
+  //     );
+
+  //     if (updateContract.status === 200 && updateContract.data.data) {
+  //       Swal.fire({
+  //         icon: "success",
+  //         title: "สำเร็จ!",
+  //         text: "ปรับปรุงข้อมูลลูกค้าแล้ว",
+  //         timer: 2000,
+  //         showConfirmButton: false,
+  //       });
+  //       navigate("/sale/editFinishInDay", { state: item });
+  //     } else {
+  //       Swal.fire({
+  //         icon: "error",
+  //         title: "เกิดข้อผิดพลาด!",
+  //         text: updateContract.data.message || "ไม่สามารถอัปเดตข้อมูลได้",
+  //       });
+  //     }
+  //   } catch (error) {
+  //     console.error("Error updating data:", error);
+  //     Swal.fire({
+  //       icon: "error",
+  //       title: "เกิดข้อผิดพลาด!",
+  //       text: "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง",
+  //     });
+  //   }
+  // };
 
   const handleCheckerClick = async () => {
     const response = await axios.post(
