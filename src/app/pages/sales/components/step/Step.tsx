@@ -64,7 +64,7 @@ const Step: React.FC = () => {
 
   // ตรงบนสุดของ component (ก่อน return) ให้ดึง pkg กับ discount ออกมา
   const pkg = data[0]?.PRODUCT?.[0]?.Package?.[0] || {};
-  const discount = data[0]?.DISCOUNT?.[0] || {};
+  const discount = data[0]?.DISCOUNT?.[0]?.DISCOUNTAMOUNT || {};
 
   // แปลงเป็น boolean flags
   const hasPkgTradeIn = pkg.HASTRADEIN === 1;
@@ -583,6 +583,11 @@ const Step: React.FC = () => {
   //   return true
   // }
 
+  const hasSaleEmployee =
+    !!data?.[0]?.SALEEMPLOYEE &&
+    data[0].SALEEMPLOYEE.length > 0 &&
+    !!data[0].SALEEMPLOYEE[0]?.SALEEMPLOYEE?.FName
+
   return (
     <>
       <Content>
@@ -819,26 +824,41 @@ const Step: React.FC = () => {
                           </>
                         )} */}
                         <>
-                          {hasDiscPrice && (
+                          {/* {hasDiscPrice && (
                             <span className={`text-gray-700 d-block ${styles.label}`}>
-                              {`ส่วนลด: ${discount.DISCOUNTAMOUNT}`}
+                              {`ส่วนลด: ${data?.[0]?.DISCOUNT?.[0]?.DISCOUNTAMOUNT}`}
                             </span>
                           )}
                           {hasDiscGift && (
                             <span className={`text-gray-700 d-block ${styles.label}`}>
-                              {`ของแถม: ${discount.GIFT.GIFTDESCRIPTION}`}
+                              {`ของแถม: ${data?.[0]?.DISCOUNT?.[0]?.GIFT.GIFTDESCRIPTION}`}
                             </span>
                           )}
                           {hasDiscTradeIn && (
                             <span className={`text-gray-700 d-block ${styles.label}`}>
-                              {`เครื่องเทิร์น: ${discount.TRADEIN.TRADEINBRANDNAME}`}
-                              {` รุ่น: ${discount.TRADEIN.TRADEINMODEL}`}
-                              {` S/N: ${discount.TRADEIN.TRADEINSERIAL}`}
+                              {`เครื่องเทิร์น: ${data?.[0]?.DISCOUNT?.[0]?.TRADEIN.TRADEINBRANDNAME}`}
+                              {` รุ่น: ${data?.[0]?.DISCOUNT?.[0]?.TRADEIN.TRADEINMODEL}`}
+                              {` S/N: ${data?.[0]?.DISCOUNT?.[0]?.TRADEIN.TRADEINSERIAL}`}
                             </span>
                           )}
                           {!(hasDiscPrice || hasDiscGift || hasDiscTradeIn) || (data[0].PRODUCT.length === 0) && (
                             <span className={`text-gray-700 d-block ${styles.label}`}>
                               ไม่มี ส่วนลด / เครื่องเทิร์น / ของแถม
+                            </span>
+                          )} */}
+                          <span className={`text-gray-700 d-block ${styles.label}`}>
+                            {`ส่วนลด: ${data?.[0]?.DISCOUNT?.[0]?.DISCOUNTAMOUNT}`}
+                          </span>
+                          {data?.[0]?.DISCOUNT?.[0]?.GIFT.GIFTDESCRIPTION && (
+                            <span className={`text-gray-700 d-block ${styles.label}`}>
+                              {`ของแถม: ${data?.[0]?.DISCOUNT?.[0]?.GIFT.GIFTDESCRIPTION}`}
+                            </span>
+                          )}
+                          {data?.[0]?.DISCOUNT?.[0]?.TRADEIN.TRADEINBRANDNAME && (
+                            <span className={`text-gray-700 d-block ${styles.label}`}>
+                              {`เครื่องเทิร์น: ${data?.[0]?.DISCOUNT?.[0]?.TRADEIN.TRADEINBRANDNAME}`}
+                              {` รุ่น: ${data?.[0]?.DISCOUNT?.[0]?.TRADEIN.TRADEINMODEL}`}
+                              {` S/N: ${data?.[0]?.DISCOUNT?.[0]?.TRADEIN.TRADEINSERIAL}`}
                             </span>
                           )}
                         </>
@@ -878,40 +898,36 @@ const Step: React.FC = () => {
                     className="w-100 text-start border-0 bg-transparent p-0"
                   >
                     <div className='d-flex align-items-center pb-8'>
-                      <span className={`bullet bullet-vertical h-40px ${data[0].SALEEMPLOYEE.length > 0 ? 'bg-success' : 'bg-danger'}`}></span>
+                      <span
+                        className={`bullet bullet-vertical h-40px ${hasSaleEmployee ? "bg-success" : "bg-danger"
+                          }`}
+                      />
                       {/* <span className={`bullet bullet-vertical h-40px ${step4Complete ? 'bg-success' : 'bg-danger'}`}></span> */}
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className={`${styles.label}`}>4. เลือกพนักงานขาย</div>
-                        {data[0].SALEEMPLOYEE.length > 0 && (
+                        {(data?.[0]?.SALEEMPLOYEE?.length ?? 0) > 0 && (
                           <>
-                            {/* พนักงานขาย */}
                             {data[0].SALEEMPLOYEE[0]?.SALEEMPLOYEE?.FName && (
                               <span className={`text-gray-700 d-block ${styles.label}`}>
-                                {`พนักงานขาย: ${data[0].SALEEMPLOYEE[0].SALEEMPLOYEE.FName
-                                  } ${data[0].SALEEMPLOYEE[0].SALEEMPLOYEE.LName ?? ''
+                                {`พนักงานขาย: ${data[0].SALEEMPLOYEE[0].SALEEMPLOYEE.FName} ${data[0].SALEEMPLOYEE[0].SALEEMPLOYEE.LName ?? ""
                                   }`}
                               </span>
                             )}
-                            {/* ผู้แนะนำ */}
                             {data[0].SALEEMPLOYEE[0]?.ADVISER && (
                               <span className={`text-gray-700 d-block ${styles.label}`}>
-                                {`ผู้แนะนำ: ${data[0].SALEEMPLOYEE[0].ADVISER.FName
-                                  } ${data[0].SALEEMPLOYEE[0].ADVISER.LName ?? ''
+                                {`ผู้แนะนำ: ${data[0].SALEEMPLOYEE[0].ADVISER.FName} ${data[0].SALEEMPLOYEE[0].ADVISER.LName ?? ""
                                   }`}
                               </span>
                             )}
-                            {/* พนักงานติดตั้ง */}
                             {data[0].SALEEMPLOYEE[0]?.INSTALLER && (
                               <span className={`text-gray-700 d-block ${styles.label}`}>
                                 {`พนักงานติดตั้ง: ${data[0].SALEEMPLOYEE[0].INSTALLER.FName
-                                  } ${data[0].SALEEMPLOYEE[0].INSTALLER.LName ?? ''
-                                  }`}
+                                  } ${data[0].SALEEMPLOYEE[0].INSTALLER.LName ?? ""}`}
                               </span>
                             )}
                           </>
                         )}
-
                       </div>
                     </div>
                   </button>

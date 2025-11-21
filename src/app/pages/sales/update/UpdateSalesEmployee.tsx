@@ -202,8 +202,6 @@ const UpdateSalesEmployee: React.FC = () => {
         }
     }
 
-    const canSave = Boolean(values.employee && values.installer);
-
     return (
         <Content>
             <div className="d-flex justify-content-between align-items-center my-5">
@@ -319,9 +317,6 @@ const UpdateSalesEmployee: React.FC = () => {
                     <button
                         className={`${styles.btnPrimary}`}
                         onClick={handleNextClick}
-                        disabled={!canSave}
-                        aria-disabled={!canSave}
-                        title={!canSave ? "กรุณาเลือกพนักงานขายและพนักงานติดตั้ง" : ""}
                     >
                         ถัดไป
                     </button>
@@ -351,9 +346,6 @@ const UpdateSalesEmployee: React.FC = () => {
                     <button
                         className={`${styles.btnPrimary}`}
                         onClick={handleNextClick}
-                        disabled={!canSave}
-                        aria-disabled={!canSave}
-                        title={!canSave ? "กรุณาเลือกพนักงานขายและพนักงานติดตั้ง" : ""}
                     >
                         ถัดไป
                     </button>

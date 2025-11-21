@@ -237,11 +237,13 @@ const UpdateSalesPhoto: React.FC = () => {
 
     // ฟังก์ชัน ส่งตรวจสอบ (กรณีไม่ได้มาจาก step)
     const handleCheckerClick = async () => {
-        if (!isDataComplete) {
+        const missing = getIncompleteStep();
+
+        if (missing) {
             MySwal.fire({
                 icon: "warning",
                 title: "ข้อมูลยังไม่ครบ",
-                text: "กรุณากรอกข้อมูลให้ครบก่อนจบการทำงาน",
+                text: `กรุณากรอกข้อมูลขั้นตอนที่ ${missing}`,
             });
             return;
         }
@@ -328,11 +330,13 @@ const UpdateSalesPhoto: React.FC = () => {
 
     // ฟังก์ชัน ส่งตรวจสอบ (กรณีมาจาก step)
     const handleUpdateCheckerClick = async () => {
-        if (!isDataComplete) {
+        const missing = getIncompleteStep();
+
+        if (missing) {
             MySwal.fire({
                 icon: "warning",
                 title: "ข้อมูลยังไม่ครบ",
-                text: "กรุณากรอกข้อมูลให้ครบก่อนจบการทำงาน",
+                text: `กรุณากรอกข้อมูลขั้นตอนที่ ${missing}`,
             });
             return;
         }
@@ -411,34 +415,112 @@ const UpdateSalesPhoto: React.FC = () => {
     const hasAny = <T,>(arr: T[], pred: (x: T) => boolean) =>
         Array.isArray(arr) && arr.some(pred)
 
-    const isDataComplete = useMemo(() => {
-        const source = fromStep ? item : matchedItem
-        if (!source) return false
+    // const isDataComplete = useMemo(() => {
+    //     const source = fromStep ? item : matchedItem
+    //     if (!source) return false
 
-        // 1) สถานะลูกค้า: ต้องมีอย่างน้อยหนึ่งฟิลด์ที่ใช้จริง
+    //     // 1) สถานะลูกค้า: ต้องมีอย่างน้อยหนึ่งฟิลด์ที่ใช้จริง
+    //     const okCustomerStatus = hasAny(source.CUSTOMERSTATUS, (o: any) =>
+    //         isNonEmptyStr(o.CustomerName) ||
+    //         isNonEmptyStr(o.message) ||
+    //         isNonEmptyStr(o.Message) ||
+    //         isNonEmptyStr(o.Searchtext)
+    //     )
+
+    //     // 2) แพ็คเกจ/สินค้า: ต้องมีคำอธิบาย/โค้ด หรือมี Package จริง
+    //     const okProduct = hasAny(source.PRODUCT, (p: any) =>
+    //         isNonEmptyStr(p.ItemDescription) ||
+    //         isNonEmptyStr(p.ItemCode) ||
+    //         (Array.isArray(p.Package) && p.Package.length > 0)
+    //     )
+
+    //     // 3) ส่วนลด/ของแถม/เทิร์น: ต้องมีค่าใดค่าหนึ่งจริง
+    //     const okDiscount = hasAny(source.DISCOUNT, (d: any) =>
+    //         d?.DISCOUNTAMOUNT != null ||
+    //         isNonEmptyStr(d?.GIFT?.GIFTDESCRIPTION) ||
+    //         isNonEmptyStr(d?.TRADEIN?.TRADEINMODEL) ||
+    //         d?.TRADEIN?.HASTRADEIN === 1
+    //     )
+
+    //     // 4) พนักงานขาย/ผู้แนะนำ/ช่าง: ต้องมี SALEEMPLOYEE ที่มีชื่อ/รหัส
+    //     const okSaleEmp = hasAny(source.SALEEMPLOYEE, (s: any) =>
+    //         !!s?.SALEEMPLOYEE &&
+    //         (
+    //             isNonEmptyStr(s.SALEEMPLOYEE.FName) ||
+    //             isNonEmptyStr(s.SALEEMPLOYEE.SaleEmp) ||
+    //             isNonEmptyStr(s.SALEEMPLOYEE.EmpId)
+    //         )
+    //     )
+
+    //     // 5) ข้อมูลลูกค้า: ตามเกณฑ์ bullet เดิมของคุณ
+    //     const cd = source.CUSTOMERDETAIL?.[0] ?? {}
+    //     const okCustDetail =
+    //         !!cd?.CUSTOMERTYPE ||
+    //         isNonEmptyStr(cd?.CUSTOMERNAME) ||
+    //         isNonEmptyStr(cd?.CUSTOMERMOBILE) ||
+    //         (Array.isArray(cd?.PREFIX) && cd.PREFIX.length > 0)
+
+    //     // 6) ที่อยู่: มีข้อมูล address ใดๆ ที่เป็นรูปธรรม (จังหวัด/รหัสไปรษณีย์อย่างใดอย่างหนึ่ง)
+    //     const okAddress = hasAny(source.ADDRESS, (a: any) => {
+    //         const c = a?.ADDRESSCARD ?? a?.ADDRESSINSTALLATION ?? a?.ADDRESSPAYMENT
+    //         return isNonEmptyStr(c?.ADDRESSPROVINCENAME) || isNonEmptyStr(c?.ADDRESSZIPCODE)
+    //     })
+
+    //     // 7) PDPA: ต้องมี record ที่มี CONSENTGIVEN (boolean)
+    //     const okPdpa = hasAny(source.PDPA, (p: any) => typeof p?.CONSENTGIVEN === 'boolean')
+
+    //     // 8) สัญญา: ต้องมี createdAt หรือเลขที่สัญญา
+    //     const okContract = hasAny(source.CONTRACT, (c: any) =>
+    //         isNonEmptyStr(c?.createdAt) || isNonEmptyStr(c?.CONTNO)
+    //     )
+
+    //     return (
+    //         okCustomerStatus &&
+    //         okProduct &&
+    //         okDiscount &&
+    //         okSaleEmp &&
+    //         okCustDetail &&
+    //         okAddress &&
+    //         okPdpa &&
+    //         okContract
+    //     )
+    // }, [fromStep, item, matchedItem])
+
+    const stepsCheck = useMemo(() => {
+        const source = fromStep ? item : matchedItem;
+        if (!source) {
+            return {
+                okCustomerStatus: false,
+                okProduct: false,
+                okDiscount: false,
+                okSaleEmp: false,
+                okCustDetail: false,
+                okAddress: false,
+                okPdpa: false,
+                okContract: false,
+            };
+        }
+
         const okCustomerStatus = hasAny(source.CUSTOMERSTATUS, (o: any) =>
             isNonEmptyStr(o.CustomerName) ||
             isNonEmptyStr(o.message) ||
             isNonEmptyStr(o.Message) ||
             isNonEmptyStr(o.Searchtext)
-        )
+        );
 
-        // 2) แพ็คเกจ/สินค้า: ต้องมีคำอธิบาย/โค้ด หรือมี Package จริง
         const okProduct = hasAny(source.PRODUCT, (p: any) =>
             isNonEmptyStr(p.ItemDescription) ||
             isNonEmptyStr(p.ItemCode) ||
             (Array.isArray(p.Package) && p.Package.length > 0)
-        )
+        );
 
-        // 3) ส่วนลด/ของแถม/เทิร์น: ต้องมีค่าใดค่าหนึ่งจริง
         const okDiscount = hasAny(source.DISCOUNT, (d: any) =>
             d?.DISCOUNTAMOUNT != null ||
             isNonEmptyStr(d?.GIFT?.GIFTDESCRIPTION) ||
             isNonEmptyStr(d?.TRADEIN?.TRADEINMODEL) ||
             d?.TRADEIN?.HASTRADEIN === 1
-        )
+        );
 
-        // 4) พนักงานขาย/ผู้แนะนำ/ช่าง: ต้องมี SALEEMPLOYEE ที่มีชื่อ/รหัส
         const okSaleEmp = hasAny(source.SALEEMPLOYEE, (s: any) =>
             !!s?.SALEEMPLOYEE &&
             (
@@ -446,41 +528,58 @@ const UpdateSalesPhoto: React.FC = () => {
                 isNonEmptyStr(s.SALEEMPLOYEE.SaleEmp) ||
                 isNonEmptyStr(s.SALEEMPLOYEE.EmpId)
             )
-        )
+        );
 
-        // 5) ข้อมูลลูกค้า: ตามเกณฑ์ bullet เดิมของคุณ
-        const cd = source.CUSTOMERDETAIL?.[0] ?? {}
+        const cd = source.CUSTOMERDETAIL?.[0] ?? {};
         const okCustDetail =
             !!cd?.CUSTOMERTYPE ||
             isNonEmptyStr(cd?.CUSTOMERNAME) ||
             isNonEmptyStr(cd?.CUSTOMERMOBILE) ||
-            (Array.isArray(cd?.PREFIX) && cd.PREFIX.length > 0)
+            (Array.isArray(cd?.PREFIX) && cd.PREFIX.length > 0);
 
-        // 6) ที่อยู่: มีข้อมูล address ใดๆ ที่เป็นรูปธรรม (จังหวัด/รหัสไปรษณีย์อย่างใดอย่างหนึ่ง)
         const okAddress = hasAny(source.ADDRESS, (a: any) => {
-            const c = a?.ADDRESSCARD ?? a?.ADDRESSINSTALLATION ?? a?.ADDRESSPAYMENT
-            return isNonEmptyStr(c?.ADDRESSPROVINCENAME) || isNonEmptyStr(c?.ADDRESSZIPCODE)
-        })
+            const c = a?.ADDRESSCARD ?? a?.ADDRESSINSTALLATION ?? a?.ADDRESSPAYMENT;
+            return isNonEmptyStr(c?.ADDRESSPROVINCENAME) || isNonEmptyStr(c?.ADDRESSZIPCODE);
+        });
 
-        // 7) PDPA: ต้องมี record ที่มี CONSENTGIVEN (boolean)
-        const okPdpa = hasAny(source.PDPA, (p: any) => typeof p?.CONSENTGIVEN === 'boolean')
+        const okPdpa = hasAny(source.PDPA, (p: any) => typeof p?.CONSENTGIVEN === "boolean");
 
-        // 8) สัญญา: ต้องมี createdAt หรือเลขที่สัญญา
         const okContract = hasAny(source.CONTRACT, (c: any) =>
             isNonEmptyStr(c?.createdAt) || isNonEmptyStr(c?.CONTNO)
-        )
+        );
 
-        return (
-            okCustomerStatus &&
-            okProduct &&
-            okDiscount &&
-            okSaleEmp &&
-            okCustDetail &&
-            okAddress &&
-            okPdpa &&
-            okContract
-        )
-    }, [fromStep, item, matchedItem])
+        return {
+            okCustomerStatus,
+            okProduct,
+            okDiscount,
+            okSaleEmp,
+            okCustDetail,
+            okAddress,
+            okPdpa,
+            okContract,
+        };
+    }, [fromStep, item, matchedItem]);
+
+    const getIncompleteStep = () => {
+        const mapping: Record<string, string> = {
+            okCustomerStatus: "1. ตรวจสอบสถานะลูกค้า",
+            okProduct: "2. เลือกแพ็คเกจ",
+            okDiscount: "3. ส่วนลด / เครื่องเทิร์น / ของแถม",
+            okSaleEmp: "4. เลือกพนักงานขาย",
+            okCustDetail: "5. บันทึกข้อมูลลูกค้า",
+            okAddress: "6. บันทึกที่อยู่ลูกค้า",
+            okPdpa: "7. PDPA",
+            okContract: "8. รายละเอียดสัญญา",
+        };
+
+        for (const key of Object.keys(stepsCheck)) {
+            if (!stepsCheck[key as keyof typeof stepsCheck]) {
+                return mapping[key];
+            }
+        }
+
+        return null; // ครบทุกขั้นตอน
+    };
 
     const whereRefno = fromStep ? refno : matchedItem?.REFNO ?? "";
 
@@ -890,7 +989,6 @@ const UpdateSalesPhoto: React.FC = () => {
                             <button
                                 className={`${styles.btnPrimary}`}
                                 onClick={handleCheckerClick}
-                                disabled={!isDataComplete}
                             >
                                 จบการทำงาน
                             </button>
@@ -915,7 +1013,6 @@ const UpdateSalesPhoto: React.FC = () => {
                             <button
                                 className={`${styles.btnPrimary}`}
                                 onClick={handleCheckerClick}
-                                disabled={!isDataComplete}
                             >
                                 จบการทำงาน
                             </button>

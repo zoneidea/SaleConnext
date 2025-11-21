@@ -165,8 +165,6 @@ const SalesEmployee: React.FC = () => {
     }
   };
 
-  const canSave = Boolean(values.employee && values.installer);
-
   return (
     <>
       {/* แสดง Loading */}
@@ -308,9 +306,6 @@ const SalesEmployee: React.FC = () => {
               <button
                 className={`${styles.btnPrimary}`}
                 onClick={handleNextClick}
-                disabled={!canSave}
-                aria-disabled={!canSave}
-                title={!canSave ? "กรุณาเลือกพนักงานขายและพนักงานติดตั้ง" : ""}
               >
                 บันทึก
               </button>
@@ -342,9 +337,6 @@ const SalesEmployee: React.FC = () => {
               <button
                 className={`${styles.btnPrimary}`}
                 onClick={handleNextClick}
-                disabled={!canSave}
-                aria-disabled={!canSave}
-                title={!canSave ? "กรุณาเลือกพนักงานขายและพนักงานติดตั้ง" : ""}
               >
                 บันทึก
               </button>
