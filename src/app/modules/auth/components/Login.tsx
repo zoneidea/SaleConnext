@@ -22,11 +22,6 @@ const loginSchema = Yup.object().shape({
   password: Yup.string().required("กรุณากรอก Password"),
 });
 
-// const initialValues = {
-//   username: '058488',
-//   password: 'Bb1234567',
-// }
-
 const initialValues = {
   username: "",
   password: "",
@@ -106,17 +101,13 @@ export function Login() {
     }
   }, [setFetchCategory]);
 
-  // set permission GPS
   const [locationAccess, setLocationAccess] = useState<boolean>(false);
-  // console.log(`locationAccess`, locationAccess);
 
   function success(pos: any) {
     const crd = pos.coords;
 
-    // เก็บลง localStorage
     localStorage.setItem("latitude", crd.latitude.toString());
     localStorage.setItem("longitude", crd.longitude.toString());
-    // console.log("ตำแหน่งถูกบันทึก:", crd.latitude, crd.longitude);
   }
 
   function errors(err: any) {
@@ -130,7 +121,6 @@ export function Login() {
       const locationPermission = navigator.permissions.query({
         name: "geolocation",
       });
-      // console.log(`locationPermission`, locationPermission);
       requestPermissions();
       navigate("chrome://settings/content/location");
     });
@@ -142,27 +132,10 @@ export function Login() {
     maximumAge: 0,
   };
 
-  // useEffect(() => {
-  //   navigator.permissions
-  //     .query({ name: "geolocation" })
-  //     .then((permissionStatus) => {
-  //       setLocationAccess(permissionStatus.state === "granted");
-  //     });
-  // }, [locationAccess]);
-
-  // useEffect(() => {
-  //   navigator.permissions.query({ name: "geolocation" }).then((ps) => {
-  //     if (ps.state === "prompt" || ps.state === "granted") {
-  //       navigator.geolocation.getCurrentPosition(success, errors, options);
-  //     }
-  //   });
-  // }, []);
-
   useEffect(() => {
     if (navigator.permissions) {
       navigator.permissions.query({ name: "geolocation" }).then((ps) => {
         if (ps.state === "prompt") {
-          // จะเรียกให้แสดง dialog ขออนุญาต
           navigator.geolocation.getCurrentPosition(
             () => { },
             () => { }
@@ -174,11 +147,9 @@ export function Login() {
 
   const requestPermissions = async () => {
     try {
-      // await navigator.mediaDevices.getUserMedia({ video: true })
       const locationPermission = await navigator.permissions.query({
         name: "geolocation",
       });
-      // console.log(`locationPermission`, locationPermission);
 
       if (locationPermission.state === "granted") {
         navigator.geolocation.watchPosition(success, errors, options);
@@ -214,7 +185,6 @@ export function Login() {
       setLoading(true);
       try {
         const response = await login(values.username, values.password);
-        // console.log(`response`, response);
 
         if (response.data.status === 500) {
           setErrors({
@@ -247,15 +217,12 @@ export function Login() {
           };
           setCurrentUser(user);
 
-          // await requestPermissions();
-
           navigator.geolocation.getCurrentPosition(
             (pos) => {
               const { latitude, longitude } = pos.coords;
-              // 2) เก็บลง localStorage
+
               localStorage.setItem("latitude", latitude.toString());
               localStorage.setItem("longitude", longitude.toString());
-              // console.log("ตำแหน่งถูกบันทึก:", latitude, longitude);
             },
             (err) => {
               console.warn("ไม่สามารถดึงตำแหน่งได้:", err);
@@ -289,10 +256,10 @@ export function Login() {
         position: "fixed",
         top: 0,
         left: 0,
-        width: "100vw", // ให้เต็มความกว้าง viewport
-        height: "100vh", // ให้เต็มความสูง viewport
+        width: "100vw", 
+        height: "100vh", 
         backgroundImage: `url(${toAbsoluteUrl("media/logos/bg3.png")})`,
-        backgroundSize: "cover", // ยืดภาพให้เต็มทั้งหน้าจอ
+        backgroundSize: "cover", 
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
       }}
@@ -312,11 +279,6 @@ export function Login() {
         </div>
 
         <div className="fv-row mb-3 w-lg-500px w-300px w-md-500px">
-          {/* <label
-            className={`d-flex form-label fw-bolder text-gray-900 mb-0 ${styles.fontSize}`}
-          >
-            Username
-          </label> */}
           <input
             type="text"
             autoComplete="off"
@@ -340,11 +302,6 @@ export function Login() {
         </div>
 
         <div className="fv-row mb-3 w-lg-500px w-300px w-md-500px">
-          {/* <label
-            className={`d-flex form-label fw-bolder text-gray-900 mb-0 ${styles.fontSize}`}
-          >
-            Password
-          </label> */}
           <input
             style={{ color: "white" }}
             type="password"
@@ -352,8 +309,8 @@ export function Login() {
             autoComplete="off"
             {...formik.getFieldProps("password")}
             className={clsx(
-              "form-control bg-transparent", // ต้องมี form-control อยู่ด้วย
-              styles.fontSize, // เอาคลาส .fontSize มาด้วย
+              "form-control bg-transparent",
+              styles.fontSize, 
               {
                 "is-invalid": formik.touched.password && formik.errors.password,
                 "is-valid": formik.touched.password && !formik.errors.password,
@@ -363,7 +320,6 @@ export function Login() {
           {formik.touched.password && formik.errors.password && (
             <div className="fv-plugins-message-container">
               <div className="fv-help-block d-flex">
-                {/* ห้ามใส่ role ผสมกับ className นะ */}
                 <span role="alert" className={styles.fontSize}>
                   {formik.errors.password}
                 </span>
@@ -392,7 +348,6 @@ export function Login() {
             ) : (
               <span
                 className={`${styles.fontSize}`}
-              // style={{ fontSize: 16 }}
               >
                 เข้าสู่ระบบ
               </span>
