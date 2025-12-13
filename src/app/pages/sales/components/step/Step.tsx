@@ -583,10 +583,16 @@ const Step: React.FC = () => {
   //   return true
   // }
 
-  const hasSaleEmployee =
-    !!data?.[0]?.SALEEMPLOYEE &&
-    data[0].SALEEMPLOYEE.length > 0 &&
-    !!data[0].SALEEMPLOYEE[0]?.SALEEMPLOYEE?.FName
+  const getSaleEmployee = () => data?.[0]?.SALEEMPLOYEE?.[0]?.SALEEMPLOYEE ?? null;
+
+  const isSaleEmployeeGreen = () => {
+    const se = getSaleEmployee();
+    const saleEmp = String(se?.SaleEmp ?? "").trim();
+    const fname = String(se?.FName ?? "").trim();
+    return saleEmp !== "" && fname !== "";
+  };
+
+  const hasSaleEmployee = isSaleEmployeeGreen();
 
   return (
     <>
@@ -889,10 +895,10 @@ const Step: React.FC = () => {
                         Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'กรุณาบันทึกแพ็คเกจให้ครบถ้วนก่อน' })
                         return
                       }
-                      // if (s?.NEWREFNO?.length > 0) {
-                      //   Swal.fire({ icon: 'info', title: 'ไม่สามารถแก้ไขได้' })
-                      //   return
-                      // }
+                      if (s?.NEWREFNO?.length > 0) {
+                        Swal.fire({ icon: 'info', title: 'ไม่สามารถแก้ไขได้' })
+                        return
+                      }
                       navigate('/sale/update/UpdateSalesEmployee', { state: s })
                     }}
                     className="w-100 text-start border-0 bg-transparent p-0"
@@ -949,14 +955,23 @@ const Step: React.FC = () => {
                     className="w-100 text-start border-0 bg-transparent p-0"
                   > */}
                   <button
-                    onClick={() => {
-                      if (s?.NEWREFNO?.length > 0) {
-                        Swal.fire({ icon: 'info', title: 'ไม่สามารถแก้ไขได้' })
-                        return
+                    onClick={async () => {
+                      if (!isSaleEmployeeGreen()) {
+                        await Swal.fire({
+                          icon: "warning",
+                          title: "กรุณาเลือกพนักงานขายก่อน",
+                          confirmButtonText: "ตกลง",
+                        });
+                        return;
                       }
-                      handleClick('updateCustDetail').then(ok => {
-                        if (ok) navigate('/sale/update/updateCustDetail', { state: s })
-                      })
+
+                      if (s?.NEWREFNO?.length > 0) {
+                        await Swal.fire({ icon: "info", title: "ไม่สามารถแก้ไขได้", confirmButtonText: "ตกลง" });
+                        return;
+                      }
+
+                      const ok = await handleClick("updateCustDetail");
+                      if (ok) navigate("/sale/update/updateCustDetail", { state: s });
                     }}
                     className="w-100 text-start border-0 bg-transparent p-0"
                   >
