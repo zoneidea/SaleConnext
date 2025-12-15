@@ -59,7 +59,7 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item }) => {
   }
 
   const teamSaleText = item?.TEAMSALE ? (
-    <span className='text-gray-700 fw-semibold d-block'>{`TEAMSALE: ${item.TEAMSALE}`}</span>
+    <span className='text-gray-700 fw-semibold d-block'>{`Team Sale: ${item.TEAMSALE}`}</span>
   ) : null;
 
   return (
@@ -75,12 +75,14 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item }) => {
                 <div className='fw-bold text-gray-800 text-hover-primary fs-6'>
                   {`เลขที่สัญญา: ${item.CONTNO ?? ""}`}
                 </div>
+                <div className='fw-bold text-gray-800 text-hover-primary fs-6'>
+                  {teamSaleText}
+                </div>
                 {customer}
                 {product}
                 {productPackage}
                 {serialNumber}
                 {createdAt}
-                {teamSaleText}
                 สถานะตรวจสอบ:{" "}
                 {checkerStatusText && (
                   <span className={checkerStatusClass[rawCheckerStatus] ?? "badge badge-light"}>
@@ -101,12 +103,14 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item }) => {
                 <div className='fw-bold text-gray-800 text-hover-primary fs-6'>
                   {`เลขที่สัญญา: ${item.CONTNO ?? ""}`}
                 </div>
+                <div className='fw-bold text-gray-800 text-hover-primary fs-6'>
+                  {teamSaleText}
+                </div>
                 {customer}
                 {product}
                 {productPackage}
                 {serialNumber}
                 {createdAt}
-                {teamSaleText}
                 สถานะตรวจสอบ:{" "}
                 {checkerStatusText && (
                   <span className={checkerStatusClass[rawCheckerStatus] ?? "badge badge-light"}>
@@ -125,12 +129,14 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({ status, item }) => {
                   <div className='fw-bold text-gray-800 text-hover-primary fs-6'>
                     {`เลขที่สัญญา: ${item.CONTNO ?? ""}`}
                   </div>
+                  <div className='fw-bold text-gray-800 text-hover-primary fs-6'>
+                    {teamSaleText}
+                  </div>
                   {customer}
                   {product}
                   {productPackage}
                   {serialNumber}
                   {createdAt}
-                  {teamSaleText}
                   สถานะตรวจสอบ:{" "}
                   {checkerStatusText && (
                     <span className={checkerStatusClass[rawCheckerStatus] ?? "badge badge-light"}>

@@ -296,7 +296,7 @@ const ContractDetailChecker: React.FC = () => {
                                         <div className='card-body d-flex align-items-center'>
                                             <div className='flex-grow-1'>
                                                 <div className='text-gray-800 fw-bold fs-4'>
-                                                    {`REFNO: ${item?.REFNO}`}
+                                                    {`REFNO: ${item?.REFNO}`}<br />
                                                     {`พนักงานขาย: ${saleEmployeeFullName}`}
                                                 </div>
                                             </div>
