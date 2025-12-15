@@ -37,6 +37,7 @@ interface ItemProps {
     PDPA: [any],
     CONTRACT: [any],
     IMAGE: [any]
+    SALEEMPLOYEE: [any]
 }
 
 interface ImageItem {
@@ -70,7 +71,7 @@ interface ImagesType {
     IMAGETRADEIN: string[];        // CUSTOMER
 }
 
-const SalesPackage: React.FC = () => {
+const ContractDetailChecker: React.FC = () => {
     const navigate = useNavigate();
     const MySwal = withReactContent(Swal);
 
@@ -89,10 +90,15 @@ const SalesPackage: React.FC = () => {
     const customer = item?.CUSTOMERDETAIL
     const address = item?.ADDRESS
     const image = item?.IMAGE
+    const saleEmployeeFName = item?.SALEEMPLOYEE?.[0]?.SALEEMPLOYEE?.FName ?? "";
+    const saleEmployeeLName = item?.SALEEMPLOYEE?.[0]?.SALEEMPLOYEE?.LName ?? "";
+    const saleEmployeeFullName = [
+        saleEmployeeFName,
+        saleEmployeeLName
+    ].filter(Boolean).join(" ");
 
     const API_URL_MONGO = import.meta.env.VITE_APP_API_MONGO;
     const UPDATECONTACT = `${API_URL_MONGO}/Contract/updateContractValidate`;
-    // const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage?REFNO=${refno}`;
 
     const API_URL_PHP = import.meta.env.VITE_APP_API_SALECONNEXT;
     const GET_IMAGES_API = `${API_URL_PHP}/GetContractImages?RefNo=${refno}&EmpId=${EmpId}`;
@@ -173,39 +179,6 @@ const SalesPackage: React.FC = () => {
         if (refno && EmpId) fetchImages();
     }, [refno, EmpId]);
 
-    // fetch collection ContractImage
-    // useEffect(() => {
-    //     const fetchImages = async () => {
-    //         try {
-    //             const response = await axios.get(GET_IMAGES_API);
-
-    //             // ตรวจสอบว่า response.data เป็นไปตามโครงสร้างของ ImagesType
-    //             const data = response.data;
-
-    //             if (
-    //                 data &&
-    //                 typeof data === 'object' &&
-    //                 'IMAGECARD' in data &&
-    //                 'IMAGEGPS' in data &&
-    //                 'IMAGEMAP' in data &&
-    //                 'IMAGECUSTOMERHOME' in data &&
-    //                 'IMAGEINSTALLATION' in data &&
-    //                 'IMAGETDS' in data &&
-    //                 'IMAGETRADEIN' in data
-    //             ) {
-    //                 setImages(data as ImagesType);
-    //             } else {
-    //                 setImages(null);
-    //             }
-    //         } catch (err) {
-    //             console.error('Error fetching images:', err);
-    //             setImages(null); // ตั้งค่าเป็น null หากมีข้อผิดพลาด
-    //         }
-    //     };
-
-    //     fetchImages();
-    // }, [refno]);
-
     // เก็บข้อมูลส่วนลดใน state และ store
     const UpdateCheckerCommentData = useMemo(() => {
         return {
@@ -241,11 +214,7 @@ const SalesPackage: React.FC = () => {
                 },
             });
 
-            // เมื่อสำเร็จ ปิด Loading ก่อน
             Swal.close()
-            // console.log(`Checker Contract: `, obj);
-            // หลังจากทำการส่งข้อมูลสำเร็จ นำทางไปยังหน้า /sale/createcust
-
             if (updateContract.status === 200) {
                 await MySwal.fire({
                     text: "ตรวจสอบ " + refno + " แล้ว",
@@ -253,7 +222,6 @@ const SalesPackage: React.FC = () => {
                     confirmButtonText: 'ตกลง'
                 }).then(() => {
                     navigate('/contract-checker');
-                    // console.log('บันทึก checker สำเร็จ');
                 });
             } else {
                 await MySwal.fire({
@@ -329,6 +297,7 @@ const SalesPackage: React.FC = () => {
                                             <div className='flex-grow-1'>
                                                 <div className='text-gray-800 fw-bold fs-4'>
                                                     {`REFNO: ${item?.REFNO}`}
+                                                    {`พนักงานขาย: ${saleEmployeeFullName}`}
                                                 </div>
                                             </div>
                                         </div>
@@ -1371,4 +1340,4 @@ const SalesPackage: React.FC = () => {
     );
 }
 
-export default SalesPackage;
+export default ContractDetailChecker;

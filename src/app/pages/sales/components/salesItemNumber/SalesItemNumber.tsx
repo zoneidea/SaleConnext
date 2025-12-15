@@ -9,7 +9,7 @@ import Swal from "sweetalert2";
 interface StatusLabelProps {
   status: string;
   item: any;
-  onDelete: () => void; //Callback สำหรับแจ้งการลบสำเร็จ
+  onDelete: () => void;
 }
 
 const SalesItemNumber: React.FC<StatusLabelProps> = ({
@@ -17,7 +17,6 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({
   item,
   onDelete,
 }) => {
-  // console.log(`item`, item);
 
   const API_URL_GET_ALLCONTRACT = import.meta.env.VITE_APP_API_MONGO;
   const DEL_CONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/DelContract`;
@@ -87,17 +86,6 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({
     );
   }
 
-  // if (item.STATUS === 'DRAFT') {
-  //   statusTxt = <span className='text-warning fw-semibold d-block'>{`ร่าง`}</span>
-  // } else if (item.STATUS === 'EDIT') {
-  //   statusTxt = <span className='text-danger fw-semibold d-block'>{`แก้ไข`}</span>
-  //   // checkerComment = <span className='text-danger fw-semibold d-block'>{`Comment: ${item.CHECKKERCOMMENT[0]?.COMMENT}`}</span>
-  // } else if (item.STATUS === 'FINISH') {
-  //   statusTxt = <span className='text-danger fw-semibold d-block'>{`เสร็จสมบูรณ์`}</span>
-  // } else if (item.STATUS === 'PENDING') {
-  //   statusTxt = <span className='text-danger fw-semibold d-block'>{`รอตรวจสอบ`}</span>
-  // }
-
   const deleteDataDraft = async (e: React.MouseEvent, refno: string) => {
     e.stopPropagation();
     e.preventDefault();
@@ -115,14 +103,13 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({
       if (result.isConfirmed) {
         try {
           const response = await axios.post(DEL_CONTRACT_URL, { REFNO: refno });
-          // console.log("ลบข้อมูลสำเร็จ:", response.data);
           Swal.fire({
             text: "ข้อมูลถูกลบเรียบร้อยแล้ว",
             icon: "success",
             timer: 2000,
             showConfirmButton: false,
           });
-          onDelete(); // ✅ รีเฟรชข้อมูลใหม่หลังลบสำเร็จ
+          onDelete();
         } catch (error) {
           console.error("เกิดข้อผิดพลาดในการลบข้อมูล:", error);
           Swal.fire("เกิดข้อผิดพลาด!", "ไม่สามารถลบข้อมูลได้", "error");
@@ -134,12 +121,6 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({
   // เช็คว่า data ใน item มีไม่ครบทุกขั้นตอน จึงจะสามารถลบได้
   const isDataIncomplete = useMemo(() => {
     return (
-      // (Array.isArray(item.ADDRESS) && item.ADDRESS.length === 0) ||
-      // (Array.isArray(item.CUSTOMERDETAIL) && item.CUSTOMERDETAIL.length === 0) ||
-      // (Array.isArray(item.CUSTOMERSTATUS) && item.CUSTOMERSTATUS.length === 0) ||
-      // (Array.isArray(item.DISCOUNT) && item.DISCOUNT.length === 0) ||
-      // (Array.isArray(item.PDPA) && item.PDPA.length === 0) ||
-      // (Array.isArray(item.PRODUCT) && item.PRODUCT.length === 0) ||
       !item.CONTNO
     );
   }, [item]);
@@ -153,6 +134,15 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({
     const yyyy = d.getFullYear() + 543;
     return `${dd}/${mm}/${yyyy}`;
   };
+
+  const checkerCommentText = useMemo(() => {
+    const arr = (item?.CHECKERCOMMENT ?? item?.CHECKKERCOMMENT ?? []) as any[];
+    return (
+      arr
+        .map((x) => String(x?.COMMENT ?? "").trim())
+        .find((t) => t.length > 0) || ""
+    );
+  }, [item]);
 
   return (
     <>
@@ -250,24 +240,6 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({
           </div>
         </Link>
       )}
-
-      {/* {status === 'PENDING' && (
-        <div className='d-flex flex-column flex-md-row align-items-center bg-light-secondary rounded p-5 mb-3 col-12'>
-          <span className='text-warning me-5 d-none d-md-inline'>
-            <KTIcon iconName='abstract-26' className='text-primary fs-1 me-5' />
-          </span>
-
-          <div className='flex-grow-1 me-2'>
-            <div className='fw-bold text-gray-800 text-hover-black fs-6'>
-              {`REFNO: ${item.REFNO}`}
-            </div>
-            {customerRow}
-            {serialRow}
-            {dateRow}
-            {statusTxt}
-          </div>
-        </div>
-      )} */}
 
       {status === "EDIT" && (
         <Link to="/sale/step" state={item}>
@@ -424,6 +396,16 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({
                     {checkerStatusText}
                   </span>
                 </div>
+                {checkerCommentText && (
+                  <>
+                    <div className={`col-5 col-md-3 fw-semibold text-gray-700 ${styles.fontSize}`}>
+                      หมายเหตุ:
+                    </div>
+                    <div className={`col-7 col-md-9 fw-bold text-gray-800 ${styles.fontSize}`}>
+                      <span className="text-danger">{checkerCommentText}</span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>

@@ -895,10 +895,10 @@ const Step: React.FC = () => {
                         Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'กรุณาบันทึกแพ็คเกจให้ครบถ้วนก่อน' })
                         return
                       }
-                      if (s?.NEWREFNO?.length > 0) {
-                        Swal.fire({ icon: 'info', title: 'ไม่สามารถแก้ไขได้' })
-                        return
-                      }
+                      // if (s?.NEWREFNO?.length > 0) {
+                      //   Swal.fire({ icon: 'info', title: 'ไม่สามารถแก้ไขได้' })
+                      //   return
+                      // }
                       navigate('/sale/update/UpdateSalesEmployee', { state: s })
                     }}
                     className="w-100 text-start border-0 bg-transparent p-0"

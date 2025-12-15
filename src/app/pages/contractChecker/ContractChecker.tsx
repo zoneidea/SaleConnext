@@ -112,7 +112,7 @@ const ContractChecker: React.FC = () => {
                                 <input
                                     type="text"
                                     className="form-control"
-                                    placeholder="ค้นหาจาก เลขที่สัญญา, ชื่อสินค้า, Serial Number, ชื่อลูกค้า"
+                                    placeholder="ค้นหาจาก เลขที่สัญญา, ชื่อสินค้า, S/N, ชื่อลูกค้า"
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                 />
