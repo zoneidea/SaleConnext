@@ -572,20 +572,24 @@ const SalesCreateCustCash: React.FC = () => {
   }, [contractPrefixName, selectedCustomerType, customerTypes]);
 
   useEffect(() => {
-    // — IDCard ตามเดิม —
-    const newIdCard = matchedItem?.CUSTOMERDETAIL?.[0].CUSTOMERID ?
-      matchedItem?.CUSTOMERDETAIL?.[0].CUSTOMERID :
-      matchedItem?.CUSTOMERSTATUS?.[0].Searchtext ??
-      '';
+    const initFirst =
+      matchedItem?.CUSTOMERDETAIL?.[0]?.CUSTOMERNAME ?? "";
+    const initLast =
+      matchedItem?.CUSTOMERDETAIL?.[0]?.CUSTOMERLASTNAME ?? "";
+
+    const newIdCard =
+      matchedItem?.CUSTOMERDETAIL?.[0]?.CUSTOMERID ??
+      matchedItem?.CUSTOMERSTATUS?.[0]?.Searchtext ??
+      "";
+
     setIdCard(newIdCard);
-    setValue('idCard', newIdCard);
+    setValue("idCard", newIdCard, { shouldDirty: false });
 
-    setFullName(matchedItem?.CUSTOMERDETAIL?.[0].CUSTOMERNAME);
-    setLastName(matchedItem?.CUSTOMERDETAIL?.[0].CUSTOMERLASTNAME);
+    setFullName(initFirst);
+    setLastName(initLast);
 
-    // ถ้าคุณใช้ react-hook-form เก็บ fullName ก็ setValue ด้วย
-    setValue('fullName', matchedItem?.CUSTOMERDETAIL?.[0].CUSTOMERNAME);
-    // ถ้ามี lastName ใน form ก็เรียก setValue('lastName', last) ด้วย
+    setValue("fullName", initFirst, { shouldDirty: false });
+    setValue("lastName", initLast, { shouldDirty: false });
 
     // — เบอร์โทร เหมือนเดิม —
     const rawMobile = matchedItem?.CUSTOMERDETAIL?.[0].CUSTOMERMOBILE ?? '';
@@ -653,42 +657,6 @@ const SalesCreateCustCash: React.FC = () => {
   {
     /*-------------------- Start บันทึกข้อมูลลงระบบ และไปขั้นตอนต่อไป --------------------*/
   }
-  
-  // const onSubmit = async (data: any) => {
-  //   try {
-  //     // เรียก API บันทึกข้อมูล
-  //     const response = await axios.post(
-  //       UPDATECONTACT,
-  //       {
-  //         REFNO,
-  //         EMPID: EmpId,
-  //         TEAMSALE: TeamSale,
-  //         SALECODE: SaleCode,
-  //         SUPEMPID: SupEmpId,
-  //         SECEMPID: SecEmpId,
-  //         FIELD: "CUSTOMERDETAIL",
-  //         DATA: SaveCustomertData,
-  //       },
-  //       {
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //       }
-  //     );
-  //     // console.log(`updateContract DISCOUNT: `, response.data);
-  //     MySwal.fire({
-  //       icon: "success",
-  //       title: "สำเร็จ!",
-  //       text: "บันทึกข้อมูลลูกค้าเรียบร้อยแล้ว",
-  //       timer: 2000, // แสดงผล 3 วินาที
-  //       showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
-  //     });
-  //     navigate("/sale/createaddress-cash");
-  //   } catch (error) {
-  //     console.error("Error saving data:", error);
-  //     MySwal.fire("เกิดข้อผิดพลาด", "ไม่สามารถบันทึกข้อมูลได้", "error");
-  //   }
-  // };
 
   const onSubmit = async (data: any) => {
     try {
@@ -1016,18 +984,6 @@ const SalesCreateCustCash: React.FC = () => {
                               <div>
                                 <div className="row mb-6">
                                   <div className="col-lg-6 my-3">
-                                    {/* <select
-                                                                    className={`form-select ${styles.label}`}
-                                                                    value={selectedCustomerType}
-                                                                    onChange={(e) => handleCustTypeOptionChange(e)}
-                                                                >
-                                                                    <option value="">เลือกประเภทลูกค้า</option>
-                                                                    {customerTypes.map((item: any) => (
-                                                                        <option key={item.CUSTOMERTYPE} value={item.CUSTOMERTYPE}>
-                                                                            {item.CUSTOMERTYPENAME}
-                                                                        </option>
-                                                                    ))}
-                                                                </select> */}
                                     <Controller
                                       name="selectedCustomerType"
                                       control={control}
@@ -1080,20 +1036,6 @@ const SalesCreateCustCash: React.FC = () => {
                                   </div>
 
                                   <div className="col-lg-6 my-3">
-                                    {/* <label className={`${styles.label} `}>ประเภทบัตร</label>
-                                                                <select
-                                                                    className={`form-select ${styles.label}`}
-                                                                    value={selectedCardType}
-                                                                    onChange={(e) => setSelectedCardType(e.target.value)}
-                                                                    disabled={!selectedCustomerType}
-                                                                >
-                                                                    <option value=''>เลือกประเภทบัตร</option>
-                                                                    {selectedCustomer.CARDTYPE.map((cardType: any) => (
-                                                                        <option key={cardType.CARDTYPE} value={cardType.CARDTYPE}>
-                                                                            {cardType.CARDTYPENAME}
-                                                                        </option>
-                                                                    ))}
-                                                                </select> */}
                                     <Controller
                                       name="selectedCardType"
                                       control={control}
@@ -1325,10 +1267,10 @@ const SalesCreateCustCash: React.FC = () => {
                                         {...field}
                                         type="text"
                                         className={`form-control mb-3 mb-lg-0 ${styles.label}`}
-                                        value={field.value ?? lastName}            // กันค่าเริ่มต้น
+                                        value={field.value ?? ""}
                                         onChange={(e) => {
                                           field.onChange(e.target.value);
-                                          setLastName(e.target.value);            // sync กับ state ที่ส่งขึ้น API
+                                          setLastName(e.target.value);
                                         }}
                                       />
                                     )}
@@ -1470,17 +1412,6 @@ const SalesCreateCustCash: React.FC = () => {
                                 </div>
                                 {selectedCustomerType !== "1" && (
                                   <div className="col-lg-4 my-3">
-                                    {/* <label className={`${styles.label} `}>เพศ</label>
-                                                                <select
-                                                                    className={`form-select mb-3 mb-lg-0 ${styles.label}`}
-                                                                    onChange={(e) => setSelectedSexId(Number(e.target.value))}
-                                                                    disabled={!selectedCustomerType}
-                                                                >
-                                                                    <option value=''>เลือกเพศ</option>
-                                                                    {selectedCustomer.SEX.map((sex: any) => (
-                                                                        <option key={sex.SEXID} value={sex.SEXID}>{sex.SEXNAME}</option>
-                                                                    ))}
-                                                                </select> */}
                                     <Controller
                                       name="selectedSexId"
                                       control={control}
@@ -1701,12 +1632,6 @@ const SalesCreateCustCash: React.FC = () => {
                                     >
                                       ชื่อบริษัท
                                     </label>
-                                    {/* <input
-                                                                    type="text"
-                                                                    className={`form-control mb-3 mb-lg-0 ${styles.label}`}
-                                                                    value={fullName}
-                                                                    onChange={e => setFullName(e.target.value)}
-                                                                /> */}
                                     <Controller
                                       name="fullName"
                                       control={control}

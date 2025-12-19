@@ -292,12 +292,17 @@ const SalesSatusCust: React.FC = () => {
         ? allData.filter((i) => {
           const id = i.Contract?.IDCard || "";
           if (id.includes(txt)) return true;
+
+          const addr = i.Contract?.Address?.[0];
+
           const phones = [
-            i.Contract.Address[0]?.TelMobile,
-            i.Contract.Address[0]?.TelHome,
-            i.Contract.Address[0]?.TelOffice,
+            addr?.TelMobile,
+            addr?.TelHome,
+            addr?.TelOffice,
           ].filter(Boolean) as string[];
+
           return phones.some((t) => t.includes(txt));
+
         })
         : allData.filter((i) =>
           i.Contract?.CustomerName?.trim()
@@ -477,32 +482,30 @@ const SalesSatusCust: React.FC = () => {
     }
   }, [selectedDistrict, customerStatus]);
 
-  // map การ์ดที่เลือก -> โครง `CUSTOMERDETAIL`
   function buildCustomerDetailFromCard(card: any) {
     const c = card?.Contract ?? {};
+    const addr = c?.Address?.[0] ?? {};
 
     return {
-      // ปรับตามที่ต้องการ/มีข้อมูล
-      CUSTOMERTYPE: "",                 // ยังไม่มี mapping → ใส่ค่าว่างไว้ก่อน
+      CUSTOMERTYPE: "",
       CUSTOMERTYPENAME: "",
 
       CUSTOMERID: String(c.IDCard ?? "").replace(/\D/g, ""),
       CUSTOMERNAME: c.CustomerFirstName ?? "",
       CUSTOMERLASTNAME: c.CustomerLastName ?? "",
-      CUSTOMERMD: "",                   // กรรมการ (นิติบุคคล) ถ้ายังไม่รู้ ปล่อยว่าง
+      CUSTOMERMD: "",
 
       CUSTOMERDOB: "",
       CUSTOMERRAGE: "",
 
-      CUSTOMERMOBILE: String(c.Address[0].TelMobile ?? "").replace(/\D/g, ""),
-      CUSTOMERWORKPHONE: String(c.Address[0].TelOffice ?? "").replace(/\D/g, ""),
-      CUSTOMERPHONE: String(c.Address[0].TelHome ?? "").replace(/\D/g, ""),
-      CUSTOMEREMAIL: String(c.Address[0].EMail ?? "").replace(/\D/g, ""),
+      CUSTOMERMOBILE: String(addr.TelMobile ?? "").replace(/\D/g, ""),
+      CUSTOMERWORKPHONE: String(addr.TelOffice ?? "").replace(/\D/g, ""),
+      CUSTOMERPHONE: String(addr.TelHome ?? "").replace(/\D/g, ""),
+      CUSTOMEREMAIL: String(addr.EMail ?? ""),
 
-      // ถ้าต้องการบังคับเป็น array ตาม schema แต่ยังไม่มีรหัสที่ระบบใช้ ให้เว้นไว้ก่อน
-      CARDTYPE: [],  // หรือ map เองถ้ารู้ code: [{ CARDTYPE, CARDTYPECODE, CARDTYPENAME }]
-      PREFIX: [],   // หรือ [{ PREFIXID, PREFIXCODE, PREFIXNAME: c.PrefixName }]
-      SEX: [],   // หรือ [{ SEXID, SEXCODE, SEXNAME }]
+      CARDTYPE: [],
+      PREFIX: [],
+      SEX: [],
     };
   }
 
@@ -526,69 +529,6 @@ const SalesSatusCust: React.FC = () => {
       SEX: [],
     };
   }
-
-  // const handleNextClick = async () => {
-  //   let cust: any = null;
-
-  //   if (noHistoryData) {
-  //     cust = { ...noHistoryData.payload, Searchtext: noHistoryData.Searchtext };
-  //   } else if (visibleMatched.length === 1) {
-  //     cust = { ...visibleMatched[0], Searchtext: idCard.trim() };
-  //   } else if (selectedIdx !== null) {
-  //     cust = { ...visibleMatched[selectedIdx], Searchtext: idCard.trim() };
-  //   }
-  //   if (!cust) {
-  //     return Swal.fire("Warning", "กรุณาเลือกการ์ดก่อน", "warning");
-  //   }
-  //   console.log(`การ์ดที่เลือก`, [cust]);
-
-  //   try {
-  //     await axios.post(
-  //       SAVEPRODUCTPACKAGE,
-  //       {
-  //         REFNO,
-  //         EMPID: EmpId,
-  //         TEAMSALE: TeamSale,
-  //         SALECODE: SaleCode,
-  //         SUPEMPID: SupEmpId,
-  //         SECEMPID: SecEmpId,
-  //         STATUS: "DRAFT",
-  //         LATITUDE: localStorage.getItem("latitude") || "",
-  //         LONGITUDE: localStorage.getItem("longitude") || "",
-  //         DATA: [cust],
-  //       },
-  //       { headers: { "Content-Type": "application/json" } }
-  //     );
-
-  //     // >>> บันทึก CUSTOMERDETAIL จากการ์ดที่เลือก <<<
-  //     const customerDetailPayload = buildCustomerDetailFromCard(cust);
-  //     await axios.post(
-  //       UPDATECONTACT,
-  //       {
-  //         REFNO,
-  //         EMPID: EmpId,
-  //         TEAMSALE: TeamSale,
-  //         SALECODE: SaleCode,
-  //         SUPEMPID: SupEmpId,
-  //         SECEMPID: SecEmpId,
-  //         FIELD: "CUSTOMERDETAIL",
-  //         DATA: [customerDetailPayload],   // *** สำคัญ: ต้องเป็น array ***
-  //       },
-  //       { headers: { "Content-Type": "application/json" } }
-  //     );
-
-  //     await Swal.fire({
-  //       icon: "success",
-  //       title: "บันทึกเรียบร้อยแล้ว",
-  //       timer: 1500,
-  //       showConfirmButton: false,
-  //     });
-  //     navigate("/sale/package");
-  //   } catch (err) {
-  //     console.error(err);
-  //     Swal.fire("Error", "ไม่สามารถบันทึกข้อมูลได้", "error");
-  //   }
-  // };
 
   const handleNextClick = async () => {
     let picked: any = null;
