@@ -54,10 +54,22 @@ interface ApiGroup {
     IMAGES: ImageItem[];
 }
 
+interface EmpItem {
+    EMPLOYEETYPE: string;        // Sale | Leader | Supervisor | ...
+    EMPLOYEETYPENAME: string;    // ชื่อไทยของประเภท
+    EMPLOYEECODE: string;
+    SALECODE: string;
+    EMPPRENAME: string;
+    EMPFIRSTNAME: string;
+    EMPLASTNAME: string;
+    EMPTEAMNAME: string;
+}
+
 interface GetImagesApiResponse {
     status: number;
     message: string;
     data: ApiGroup[];
+    data_emp?: EmpItem[];
 }
 
 interface ImagesType {
@@ -112,6 +124,8 @@ const ContractDetailChecker: React.FC = () => {
 
     const [images, setImages] = useState<ImagesType | null>(null);
 
+    const [empList, setEmpList] = useState<EmpItem[]>([]); //state เก็บข้อมูลพนักงาน
+
     // ==== helper: ตรวจจับ base64 / url ====
     const toRenderableSrc = (s: string) => {
         if (!s) return '';
@@ -141,8 +155,11 @@ const ContractDetailChecker: React.FC = () => {
 
                 if (data?.status !== 200 || !Array.isArray(data?.data)) {
                     setImages(null);
+                    setEmpList([]);
                     return;
                 }
+
+                setEmpList(Array.isArray(data?.data_emp) ? data.data_emp : []);
 
                 // เตรียมโครงว่าง
                 const nextImages: ImagesType = {
@@ -254,6 +271,23 @@ const ContractDetailChecker: React.FC = () => {
         }
     };
 
+    //helper หาแต่ละ role + ชื่อเต็ม
+    const getEmpByType = (type: string) =>
+        empList.find((e) => (e.EMPLOYEETYPE || "").toLowerCase() === type.toLowerCase());
+
+    const formatEmpName = (e?: EmpItem) => {
+        if (!e) return "-";
+        return [e.EMPPRENAME, e.EMPFIRSTNAME, e.EMPLASTNAME].filter(Boolean).join(" ");
+    };
+
+    const saleEmp = getEmpByType("Sale");
+    const leaderEmp = getEmpByType("Leader");
+    const supervisorEmp = getEmpByType("Supervisor");
+    const lineManagerEmp = getEmpByType("LineManager");
+    const managerEmp = getEmpByType("Manager");
+    const referrerEmp = getEmpByType("Referrer");
+    const installEmp = getEmpByType("Install");
+
     return (
         <>
             <Content>
@@ -296,8 +330,23 @@ const ContractDetailChecker: React.FC = () => {
                                         <div className='card-body d-flex align-items-center'>
                                             <div className='flex-grow-1'>
                                                 <div className='text-gray-800 fw-bold fs-4'>
-                                                    {`REFNO: ${item?.REFNO}`}<br />
-                                                    {`พนักงานขาย: ${saleEmployeeFullName}`}
+                                                    <div>{`เลขที่สัญญา (REFNO): ${refno || "-"}`}</div>
+                                                    <div className="mt-3">
+                                                        <div className="fw-bold">{`พนักงานขาย: ${formatEmpName(saleEmp)}`}</div>
+                                                        {saleEmp && (
+                                                            <div className="text-muted fs-6">
+                                                                {`รหัส: ${saleEmp.EMPLOYEECODE || "-"} | SaleCode: ${saleEmp.SALECODE || "-"} | ทีม: ${saleEmp.EMPTEAMNAME || "-"}`}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="mt-3 text-muted fs-6">
+                                                        {leaderEmp && <div>{`หัวหน้าทีม: ${formatEmpName(leaderEmp)} (${leaderEmp.EMPLOYEECODE})`}</div>}
+                                                        {supervisorEmp && <div>{`Supervisor: ${formatEmpName(supervisorEmp)} (${supervisorEmp.EMPLOYEECODE})`}</div>}
+                                                        {lineManagerEmp && <div>{`ผจก.สาย: ${formatEmpName(lineManagerEmp)} (${lineManagerEmp.EMPLOYEECODE})`}</div>}
+                                                        {managerEmp && <div>{`ผจก.ฝ่าย: ${formatEmpName(managerEmp)} (${managerEmp.EMPLOYEECODE})`}</div>}
+                                                        {referrerEmp && <div>{`ผู้แนะนำ: ${formatEmpName(referrerEmp)} (${referrerEmp.SALECODE || "-"})`}</div>}
+                                                        {installEmp && <div>{`พนักงานติดตั้ง: ${formatEmpName(installEmp)} (${installEmp.EMPLOYEECODE})`}</div>}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
