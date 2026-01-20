@@ -204,37 +204,42 @@ const UpdateSaleDiscountFinishDay: React.FC = () => {
     const validateDiscount = (inputNumber: number) => {
         if (discountPrice === 0) {
             setDiscountValidationMessage(null);
-            setIsDiscountValid(true); // ไม่มีส่วนลด ไม่ต้องแสดงข้อความ
+            setIsDiscountValid(true);
             return;
         }
 
         if (discountPrice !== undefined && sequence !== undefined) {
-            let validationMessage = "";
 
-            if (inputNumber <= discountPrice) {
-                if (inputNumber % sequence === 0) {
-                    validationMessage = "";
-                    setIsDiscountValid(true); // ส่วนลดถูกต้อง
-                    setDiscountValidationMessage({
-                        message: validationMessage,
-                        type: "success",
-                    });
-                } else {
-                    validationMessage = `กรอกส่วนลดผิด ต้องลดหรือเพิ่มได้ทีละ ${sequence} บาท`;
-                    setIsDiscountValid(false); // ส่วนลดไม่ถูกต้อง
-                    setDiscountValidationMessage({
-                        message: validationMessage,
-                        type: "danger",
-                    });
-                }
-            } else {
-                validationMessage = `ส่วนลดต้องไม่เกิน ${discountPrice} บาท`;
-                setIsDiscountValid(false); // ส่วนลดไม่ถูกต้อง
+            // ✅ กรณีกรอกเท่ากับ discountPrice → ผ่านทันที
+            if (inputNumber === discountPrice) {
+                setIsDiscountValid(true);
+                setDiscountValidationMessage(null);
+                return;
+            }
+
+            // ❌ เกิน max
+            if (inputNumber > discountPrice) {
+                setIsDiscountValid(false);
                 setDiscountValidationMessage({
-                    message: validationMessage,
+                    message: `ส่วนลดต้องไม่เกิน ${discountPrice} บาท`,
                     type: "danger",
                 });
+                return;
             }
+
+            // ❌ ไม่ตรง step
+            if (inputNumber % sequence !== 0) {
+                setIsDiscountValid(false);
+                setDiscountValidationMessage({
+                    message: `กรอกส่วนลดผิด ต้องลดหรือเพิ่มได้ทีละ ${sequence} บาท`,
+                    type: "danger",
+                });
+                return;
+            }
+
+            // ✅ ผ่านทุกเงื่อนไข
+            setIsDiscountValid(true);
+            setDiscountValidationMessage(null);
         }
     };
 
@@ -267,7 +272,7 @@ const UpdateSaleDiscountFinishDay: React.FC = () => {
                 TRADEIN: {
                     HASTRADEIN: SaveProductData[0].Package[0].HASTRADEIN,
                     TRADEINBRANDID: selectedTurnId,
-                    TRADEINBRANDNAME: selectedTradeInBrandName, 
+                    TRADEINBRANDNAME: selectedTradeInBrandName,
                     TRADEINMODEL: tradeInModel,
                     TRADEINSERIAL: tradeInSerial,
                 },
