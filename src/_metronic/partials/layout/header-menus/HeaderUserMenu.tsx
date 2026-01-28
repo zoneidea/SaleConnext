@@ -1,14 +1,71 @@
 import styles from '@/styles/style.module.css'
 import { FC } from 'react'
-import { Link } from 'react-router-dom'
 import { useAuth } from '../../../../app/modules/auth'
-import { Languages } from './Languages'
 import { toAbsoluteUrl } from '../../../helpers'
-import styled from 'styled-components'
+import CryptoJS from 'crypto-js'
+
+type AuthData = {
+  data?: Array<{ EmpId?: string; EmpName?: string; PositionName?: string;[k: string]: any }>
+  [k: string]: any
+}
+
+const getEmpIdFromLocalAuth = (secretKey: string) => {
+  const raw = localStorage.getItem('authData')
+  if (!raw) return ''
+
+  try {
+    const parsed = JSON.parse(raw) as AuthData
+    return parsed?.data?.[0]?.EmpId ?? ''
+  } catch { }
+
+  try {
+    const bytes = CryptoJS.AES.decrypt(raw, secretKey)
+    const decrypted = bytes.toString(CryptoJS.enc.Utf8)
+    const parsed = JSON.parse(decrypted) as AuthData
+    return parsed?.data?.[0]?.EmpId ?? ''
+  } catch {
+    return ''
+  }
+}
+
+const openDeepLink = (url: string) => {
+  window.location.assign(url)
+
+  const iframe = document.createElement('iframe')
+  iframe.style.display = 'none'
+  iframe.src = url
+  document.body.appendChild(iframe)
+  setTimeout(() => {
+    try {
+      document.body.removeChild(iframe)
+    } catch { }
+  }, 800)
+}
 
 const HeaderUserMenu: FC = () => {
-  const { currentUser, logout, auth } = useAuth()
-  // console.log(`auth`, auth);
+  const { logout, auth } = useAuth()
+
+  const handleLogout = () => {
+    const project = 'SalesCommerce'
+    const secretKey = import.meta.env.VITE_APP_SECRET_KEY as string
+
+    const empIdFromAuth = auth?.data?.[0]?.EmpId ?? ''
+
+    const empId = empIdFromAuth || getEmpIdFromLocalAuth(secretKey)
+
+    if (empId) {
+      const deeplink =
+        `tsr-tracker://track?action=stop` +
+        `&projectname=${encodeURIComponent(project)}` +
+        `&userid=${encodeURIComponent(empId)}`
+
+      openDeepLink(deeplink)
+    }
+
+    setTimeout(() => {
+      logout()
+    }, 600)
+  }
 
   return (
     <div
@@ -38,7 +95,7 @@ const HeaderUserMenu: FC = () => {
       <div className='separator my-2'></div>
 
       <div className='menu-item px-5'>
-        <a onClick={logout} className={`menu-link px-5 ${styles.fontSize}`}>
+        <a onClick={handleLogout} className={`menu-link px-5 ${styles.fontSize}`}>
           ออกจากระบบ
         </a>
       </div>
