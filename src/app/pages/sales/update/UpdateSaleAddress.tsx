@@ -2328,6 +2328,7 @@ const UpdateSaleAddress: React.FC = () => {
                                                                     value={field.value ?? ""}                 // ใช้ค่าจาก RHF
                                                                     onChange={(e) => {
                                                                         field.onChange(e.target.value);         // อัปเดต RHF
+                                                                        setAddressNumberForInstall(e.target.value);
                                                                         // ถ้าต้องรีเซ็ต checkbox อื่น ๆ ไว้ได้
                                                                         resetShowInstallAddress();
                                                                     }}
@@ -2442,18 +2443,27 @@ const UpdateSaleAddress: React.FC = () => {
                                                             name="districtForInstall"
                                                             control={control}
                                                             render={({ field }) => (
+                                                                // <select
+                                                                //     {...field}
+                                                                //     className={`${styles.label} form-select ${errors.districtForInstall
+                                                                //         ? "is-invalid"
+                                                                //         : ""
+                                                                //         }`}
+                                                                //     value={selectedDistrictForInstall}
+                                                                //     onChange={(e) => {
+                                                                //         field.onChange(e.target.value);
+                                                                //         setSelectedDistrictForInstall(
+                                                                //             Number(e.target.value)
+                                                                //         );
+                                                                //         resetShowInstallAddress();
+                                                                //     }}
+                                                                // >
                                                                 <select
                                                                     {...field}
-                                                                    className={`${styles.label} form-select ${errors.districtForInstall
-                                                                        ? "is-invalid"
-                                                                        : ""
-                                                                        }`}
-                                                                    value={selectedDistrictForInstall}
+                                                                    value={field.value || ""}
                                                                     onChange={(e) => {
                                                                         field.onChange(e.target.value);
-                                                                        setSelectedDistrictForInstall(
-                                                                            Number(e.target.value)
-                                                                        );
+                                                                        setSelectedDistrictForInstall(Number(e.target.value));
                                                                         resetShowInstallAddress();
                                                                     }}
                                                                 >
@@ -3323,7 +3333,7 @@ const UpdateSaleAddress: React.FC = () => {
                         <button
                             className={`${styles.btnPrimary}`}
                             onClick={handleSubmit(onSubmit)}
-                            type="button"
+                            type="submit"
                         >
                             ถัดไป
                         </button>
@@ -3362,7 +3372,7 @@ const UpdateSaleAddress: React.FC = () => {
                         <button
                             className={`${styles.btnPrimary}`}
                             onClick={handleSubmit(onSubmit)}
-                            type="button"
+                            type="submit"
                         >
                             ถัดไป
                         </button>
