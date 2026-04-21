@@ -64,15 +64,18 @@ const Step: React.FC = () => {
 
   // ตรงบนสุดของ component (ก่อน return) ให้ดึง pkg กับ discount ออกมา
   const pkg = data[0]?.PRODUCT?.[0]?.Package?.[0] || {};
-  const discount = data[0]?.DISCOUNT?.[0]?.DISCOUNTAMOUNT || {};
+  const discountRow = data?.[0]?.DISCOUNT?.[0] ?? {};
 
   // แปลงเป็น boolean flags
   const hasPkgTradeIn = pkg.HASTRADEIN === 1;
-  const hasDiscTradeIn = discount.TRADEIN?.HASTRADEIN === 1;
+  const hasDiscTradeIn = discountRow?.TRADEIN?.HASTRADEIN === 1;
   const hasPkgPrice = Array.isArray(pkg.DISCOUNTPRICE) ? pkg.DISCOUNTPRICE.length > 0 : pkg.DISCOUNTPRICE != null;
-  const hasDiscPrice = discount.DISCOUNTAMOUNT != null;
+  const hasDiscPrice =
+    discountRow?.DISCOUNTAMOUNT !== null &&
+    discountRow?.DISCOUNTAMOUNT !== undefined &&
+    String(discountRow?.DISCOUNTAMOUNT).trim() !== "";
   const hasPkgGift = Array.isArray(pkg.FREEGIFT) ? pkg.FREEGIFT.length > 0 : false;
-  const hasDiscGift = discount.GIFT?.GIFTDESCRIPTION != null;
+  const hasDiscGift = !!discountRow?.GIFT?.GIFTDESCRIPTION;
 
   // คำนวณว่า package เปลี่ยนหรือไม่
   const packageChanged = !(
@@ -496,15 +499,15 @@ const Step: React.FC = () => {
   );
 
   // 3) ส่วนลด / เครื่องเทิร์น / ของแถม
-  const step3Complete =
-    !packageChanged &&
-    hasAny(s.DISCOUNT, (d: any) =>
-      d?.DISCOUNTAMOUNT != null ||
-      isNonEmptyStr(d?.GIFT?.GIFTDESCRIPTION) ||
-      d?.TRADEIN?.HASTRADEIN === 1 ||
-      isNonEmptyStr(d?.TRADEIN?.TRADEINMODEL) ||
-      isNonEmptyStr(d?.TRADEIN?.TRADEINBRANDNAME)
-    );
+  const step3Complete = hasAny(s.DISCOUNT, (d: any) =>
+    d?.DISCOUNTAMOUNT !== null &&
+    d?.DISCOUNTAMOUNT !== undefined &&
+    String(d?.DISCOUNTAMOUNT).trim() !== "" ||
+    isNonEmptyStr(d?.GIFT?.GIFTDESCRIPTION) ||
+    d?.TRADEIN?.HASTRADEIN === 1 ||
+    isNonEmptyStr(d?.TRADEIN?.TRADEINMODEL) ||
+    isNonEmptyStr(d?.TRADEIN?.TRADEINBRANDNAME)
+  );
 
   // 4) พนักงานขาย: ต้องมีทั้ง SALEEMPLOYEE และ INSTALLER
   const saleEmployeeRecord = s?.SALEEMPLOYEE?.[0] ?? null;
@@ -756,20 +759,29 @@ const Step: React.FC = () => {
                   >
                     <div className='d-flex align-items-center pb-8'>
                       <span
-                        className={`bullet bullet-vertical h-40px ${packageChanged || !discount || data[0].PRODUCT.length === 0 ? 'bg-danger' : 'bg-success'
+                        className={`bullet bullet-vertical h-40px ${step3Complete ? "bg-success" : "bg-danger"
                           }`}
-                      ></span>
+                      />
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className={styles.label}>3. ส่วนลด / เครื่องเทิร์น / ของแถม</div>
+
+                        {packageChanged && (
+                          <span className={`text-danger d-block ${styles.label}`}>
+                            แพ็คเกจมีการเปลี่ยนแปลง กรุณาตรวจสอบส่วนลด / เครื่องเทิร์น / ของแถมอีกครั้ง
+                          </span>
+                        )}
+
                         <span className={`text-gray-700 d-block ${styles.label}`}>
                           {`ส่วนลด: ${data?.[0]?.DISCOUNT?.[0]?.DISCOUNTAMOUNT}`}
                         </span>
+
                         {data?.[0]?.DISCOUNT?.[0]?.GIFT.GIFTDESCRIPTION && (
                           <span className={`text-gray-700 d-block ${styles.label}`}>
                             {`ของแถม: ${data?.[0]?.DISCOUNT?.[0]?.GIFT.GIFTDESCRIPTION}`}
                           </span>
                         )}
+
                         {data?.[0]?.DISCOUNT?.[0]?.TRADEIN.TRADEINBRANDNAME && (
                           <span className={`text-gray-700 d-block ${styles.label}`}>
                             {`เครื่องเทิร์น: ${data?.[0]?.DISCOUNT?.[0]?.TRADEIN.TRADEINBRANDNAME}`}
