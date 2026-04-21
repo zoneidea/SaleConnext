@@ -1446,16 +1446,21 @@ const UpdateSaleAddress: React.FC = () => {
                         timer: 2000,
                         showConfirmButton: false,
                     });
+                    const nextState = {
+                        ...(matchedItem ?? item),
+                        ADDRESS: [SaveAddressData],
+                    };
+
                     if (item.PDPA?.length > 0) {
                         navigate("/sale/update/UpdateSalesContract", {
-                            state: { ...matchedItem },
+                            state: nextState,
                         });
                     } else {
-                        // navigate("/sale/pdpa", {
-                        //   state: { ...matchedItem }
-                        // });
-                        navigate('/sale/update/UpdateSalesPDPA', {
-                            state: { ...matchedItem, from: '/sale/update/updateAddress' },
+                        navigate("/sale/update/UpdateSalesPDPA", {
+                            state: {
+                                ...nextState,
+                                from: "/sale/update/updateAddress",
+                            },
                         });
                     }
                 }
@@ -1650,12 +1655,22 @@ const UpdateSaleAddress: React.FC = () => {
         setAddressPhone(card.ADDRESSPHONE);
     }, [custAddr, reset]);
 
+    const shouldUseCsFallback = useMemo(() => {
+        // ใช้ csAddress ก็ต่อเมื่อไม่มี ADDRESS เลย หรือ ADDRESSCARD ว่าง
+        const addr: any[] = Array.isArray(item?.ADDRESS) ? item.ADDRESS : [];
+        const card = addr?.[0]?.ADDRESSCARD;
+        return (
+            !Array.isArray(addr) || addr.length === 0 ||
+            !card || Object.keys(card).length === 0
+        );
+    }, [item]);
+
     const statusAddr = item?.CUSTOMERSTATUS?.[0]?.Contract?.Address ?? [];
 
     useEffect(() => {
+        if (!shouldUseCsFallback) return;
         if (statusAddr.length === 0) return;
 
-        // หาแต่ละ type ออกมา
         const card = statusAddr.find(
             (a: any) => a.AddressTypeCode === "AddressIDCard"
         );
@@ -1668,36 +1683,37 @@ const UpdateSaleAddress: React.FC = () => {
         const tax = statusAddr.find((a: any) => a.AddressTypeCode === "AddressTax");
 
         if (card) {
-            setValue("homeNoIdCard", card.AddressDetail);
-            setAddressNumber(card.AddressDetail);
-            // setSelectedProvince(Number(card.Province));
-            setAddressPhone(card.TelHome);
+            const phone = (card.TelHome || card.TelMobile || "").replace(/-/g, "");
+            setValue("homeNoIdCard", card.AddressDetail || "");
+            setAddressNumber(card.AddressDetail || "");
+            setValue("telNoIdCard", phone);
+            setAddressPhone(phone);
         }
 
         if (install) {
-            setValue("addressNumberForInstall", install.AddressDetail);
-            setAddressNumberForInstall(install.AddressDetail);
-            // setSelectedProvinceForInstall(Number(install.Province));
-            setAddressPhoneForInstall(install.TelHome);
+            const phone = (install.TelHome || install.TelMobile || "").replace(/-/g, "");
+            setValue("addressNumberForInstall", install.AddressDetail || "");
+            setAddressNumberForInstall(install.AddressDetail || "");
+            setValue("addressPhoneForInstall", phone);
+            setAddressPhoneForInstall(phone);
         }
 
-        // — เก็บเงิน —
         if (payment) {
-            setValue("addressNumberForPayment", payment.AddressDetail);
-            setAddressNumberForPayment(payment.AddressDetail);
-            // setSelectedProvinceForPayment(Number(payment.Province));
-            setAddressPhoneForPayment(payment.TelHome);
+            const phone = (payment.TelHome || payment.TelMobile || "").replace(/-/g, "");
+            setValue("addressNumberForPayment", payment.AddressDetail || "");
+            setAddressNumberForPayment(payment.AddressDetail || "");
+            setValue("addressPhoneForPayment", phone);
+            setAddressPhoneForPayment(phone);
         }
 
-        // — ใบกำกับภาษี —
         if (tax) {
-            setValue("addressNumberForBilling", tax.AddressDetail);
-            setAddressNumberForBilling(tax.AddressDetail);
-            // setSelectedProvinceForBilling(Number(tax.Province));
-            setAddressPhoneForBilling(tax.TelHome);
+            const phone = (tax.TelHome || tax.TelMobile || "").replace(/-/g, "");
+            setValue("addressNumberForBilling", tax.AddressDetail || "");
+            setAddressNumberForBilling(tax.AddressDetail || "");
+            setValue("addressPhoneForBilling", phone);
+            setAddressPhoneForBilling(phone);
         }
 
-        // รีเซ็ต checkbox
         setLikeAllAddr(false);
         setInstallLikeCardAddr(false);
         setPaymentLikeCardAddr(false);
@@ -1705,25 +1721,35 @@ const UpdateSaleAddress: React.FC = () => {
         setBillLikeCardAddr(false);
         setBillLikeInstallAddr(false);
         setBillLikePaymentAddr(false);
-    }, [statusAddr, setValue]);
+    }, [statusAddr, setValue, shouldUseCsFallback]);
 
     // 2. หลังจาก load district/sub ↓ ให้ seed โค้ดอำเภอ+ตำบล
     // — ตามบัตร —
     useEffect(() => {
         const addr0 = (item.ADDRESS ?? [])[0];
         if (!addr0 || getDistrict.length === 0) return;
-        const v = addr0.ADDRESSCARD.ADDRESSDISTRICT;
-        setValue("districtIdCard", v);
-        setSelectedDistrict(Number(v));
-    }, [getDistrict, item, setValue]);
+        if (shouldUseCsFallback) return;
+        if (selectedDistrict != null && selectedDistrict !== 0) return;
+
+        const v = addr0.ADDRESSCARD?.ADDRESSDISTRICT;
+        if (v) {
+            setValue("districtIdCard", String(v));
+            setSelectedDistrict(Number(v));
+        }
+    }, [getDistrict, item, setValue, shouldUseCsFallback, selectedDistrict]);
 
     useEffect(() => {
         const addr0 = (item.ADDRESS ?? [])[0];
         if (!addr0 || getSubDistrict.length === 0) return;
-        const v = addr0.ADDRESSCARD.ADDRESSSUBDISTRICT;
-        setValue("subDistrictIdCard", v);
-        setSelectedSubDistrict(Number(v));
-    }, [getSubDistrict, item, setValue]);
+        if (shouldUseCsFallback) return;
+        if (selectedSubDistrict != null && selectedSubDistrict !== 0) return;
+
+        const v = addr0.ADDRESSCARD?.ADDRESSSUBDISTRICT;
+        if (v) {
+            setValue("subDistrictIdCard", String(v));
+            setSelectedSubDistrict(Number(v));
+        }
+    }, [getSubDistrict, item, setValue, shouldUseCsFallback, selectedSubDistrict]);
 
     // — ติดตั้ง —
     useEffect(() => {
@@ -1813,18 +1839,26 @@ const UpdateSaleAddress: React.FC = () => {
     useEffect(() => {
         const addr0 = (item.ADDRESS ?? [])[0];
         if (!addr0 || getDistrictForBilling.length === 0) return;
-        const v = addr0.ADDRESSTAX.ADDRESSDISTRICT;
-        setValue("districtForBilling", v);
-        setSelectedDistrictForBilling(Number(v));
-    }, [getDistrictForBilling, item, setValue]);
+        if (selectedDistrictForBilling != null && selectedDistrictForBilling !== 0) return;
+
+        const v = addr0.ADDRESSTAX?.ADDRESSDISTRICT;
+        if (v) {
+            setValue("districtForBilling", String(v));
+            setSelectedDistrictForBilling(Number(v));
+        }
+    }, [getDistrictForBilling, item, setValue, selectedDistrictForBilling]);
 
     useEffect(() => {
         const addr0 = (item.ADDRESS ?? [])[0];
         if (!addr0 || getSubDistrictForBilling.length === 0) return;
-        const v = addr0.ADDRESSTAX.ADDRESSSUBDISTRICT;
-        setValue("subDistrictForBilling", v);
-        setSelectedSubDistrictForBilling(Number(v));
-    }, [getSubDistrictForBilling, item, setValue]);
+        if (selectedSubDistrictForBilling != null && selectedSubDistrictForBilling !== 0) return;
+
+        const v = addr0.ADDRESSTAX?.ADDRESSSUBDISTRICT;
+        if (v) {
+            setValue("subDistrictForBilling", String(v));
+            setSelectedSubDistrictForBilling(Number(v));
+        }
+    }, [getSubDistrictForBilling, item, setValue, selectedSubDistrictForBilling]);
 
     useEffect(() => {
         setShowBillTax(hasBillingAddr);
@@ -1835,16 +1869,6 @@ const UpdateSaleAddress: React.FC = () => {
         () => item?.CUSTOMERSTATUS?.[0]?.Contract?.Address?.[0] ?? null,
         [item]
     );
-
-    const shouldUseCsFallback = useMemo(() => {
-        // ใช้ csAddress ก็ต่อเมื่อไม่มี ADDRESS เลย หรือ ADDRESSCARD ว่าง
-        const addr: any[] = Array.isArray(item?.ADDRESS) ? item.ADDRESS : [];
-        const card = addr?.[0]?.ADDRESSCARD;
-        return (
-            !Array.isArray(addr) || addr.length === 0 ||
-            !card || Object.keys(card).length === 0
-        );
-    }, [item]);
 
     useEffect(() => {
         if (!shouldUseCsFallback || !csAddress || getProvince.length === 0) return;
@@ -2443,23 +2467,10 @@ const UpdateSaleAddress: React.FC = () => {
                                                             name="districtForInstall"
                                                             control={control}
                                                             render={({ field }) => (
-                                                                // <select
-                                                                //     {...field}
-                                                                //     className={`${styles.label} form-select ${errors.districtForInstall
-                                                                //         ? "is-invalid"
-                                                                //         : ""
-                                                                //         }`}
-                                                                //     value={selectedDistrictForInstall}
-                                                                //     onChange={(e) => {
-                                                                //         field.onChange(e.target.value);
-                                                                //         setSelectedDistrictForInstall(
-                                                                //             Number(e.target.value)
-                                                                //         );
-                                                                //         resetShowInstallAddress();
-                                                                //     }}
-                                                                // >
                                                                 <select
                                                                     {...field}
+                                                                    className={`${styles.label} form-select ${errors.districtForInstall ? "is-invalid" : ""
+                                                                        }`}
                                                                     value={field.value || ""}
                                                                     onChange={(e) => {
                                                                         field.onChange(e.target.value);
@@ -2651,15 +2662,6 @@ const UpdateSaleAddress: React.FC = () => {
                                                         <label className={`form-label required ${styles.label}`}>
                                                             บ้านเลขที่
                                                         </label>
-                                                        {/* <input
-                              value={addressNumberForPayment}
-                              onChange={(e) => {
-                                setAddressNumberForPayment(e.target.value);
-                                resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                              }}
-                              type="text"
-                              className={`form-control mb-3 mb-lg-0 ${styles.label}`}
-                            /> */}
                                                         <Controller
                                                             name="addressNumberForPayment"
                                                             control={control}
@@ -2735,26 +2737,6 @@ const UpdateSaleAddress: React.FC = () => {
                                                         <label className={`form-label required ${styles.label}`}>
                                                             จังหวัด
                                                         </label>
-                                                        {/* <select
-                              className={`form-select ${styles.label}`}
-                              value={selectedProvinceForPayment}
-                              onChange={(e) => {
-                                setSelectedProvinceForPayment(
-                                  Number(e.target.value)
-                                );
-                                resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                              }}
-                            >
-                              <option value="">เลือกจังหวัด...</option>
-                              {getProvinceForPayment.map((item: any) => (
-                                <option
-                                  key={item.PROVINCECODE}
-                                  value={item.PROVINCECODE}
-                                >
-                                  {item.PROVINCENAME}
-                                </option>
-                              ))}
-                            </select> */}
                                                         <Controller
                                                             name="provinceForPayment"
                                                             control={control}
@@ -2782,27 +2764,6 @@ const UpdateSaleAddress: React.FC = () => {
                                                         <label className={`form-label required ${styles.label}`}>
                                                             อำเภอ / เขต
                                                         </label>
-                                                        {/* <select
-                              className={`form-select ${styles.label}`}
-                              value={selectedDistrictForPayment}
-                              onChange={(e) => {
-                                setSelectedDistrictForPayment(
-                                  Number(e.target.value)
-                                );
-                                resetShowPaymentAddress(); // รีเซ็ตค่าการติ้กเมื่อฟิลด์มีการเปลี่ยนแปลง
-                              }}
-                            >
-                              <option value="">เลือกอำเภอ / เขต...</option>
-                              {Array.isArray(getDistrictForPayment) &&
-                                getDistrictForPayment.map((item: any) => (
-                                  <option
-                                    key={item.DISTRICTCODE}
-                                    value={item.DISTRICTCODE}
-                                  >
-                                    {item.DISTRICTNAME}
-                                  </option>
-                                ))}
-                            </select> */}
                                                         <Controller
                                                             name="districtForPayment"
                                                             control={control}
@@ -3323,7 +3284,8 @@ const UpdateSaleAddress: React.FC = () => {
                             onClick={() =>
                                 navigate("/sale/update/updateCustDetail", {
                                     state: {
-                                        ...matchedItem,
+                                        ...(matchedItem ?? item),
+                                        ADDRESS: [SaveAddressData],
                                     },
                                 })
                             }
@@ -3362,7 +3324,8 @@ const UpdateSaleAddress: React.FC = () => {
                             onClick={() =>
                                 navigate("/sale/update/updateCustDetail", {
                                     state: {
-                                        ...matchedItem,
+                                        ...(matchedItem ?? item),
+                                        ADDRESS: [SaveAddressData],
                                     },
                                 })
                             }

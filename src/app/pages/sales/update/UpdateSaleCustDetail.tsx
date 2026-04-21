@@ -115,7 +115,7 @@ const UpdateSaleCustDetail: React.FC = () => {
   const GET_IMAGES_API = `${API_URL_MONGO}/Contract/GetContractImage`;
 
   const CHECKDATACUSTOMER = `${API_SALECONNEXT}/CheckDataCustomer`;
-  
+
   const [Model, setModel] = useState<string>("");
   const [checktype, setChecktype] = useState<number | null>(null);
 
@@ -323,7 +323,7 @@ const UpdateSaleCustDetail: React.FC = () => {
           : "", // ตรวจสอบว่าข้อมูล customerTypeData มีหรือไม่
         CUSTOMERID: idCard,
         CUSTOMERNAME: fullName,
-        CUSTOMERLASTNAME: lastName,
+        CUSTOMERLASTNAME: lastName || "",
         CUSTOMERMD: nameMD,
         CUSTOMERDOB: valueCalendar
           ? dayjs(valueCalendar).format("YYYY-MM-DD")
@@ -447,58 +447,7 @@ const UpdateSaleCustDetail: React.FC = () => {
     }
   }, [selectedDay, selectedMonth, selectedYearBE]);
 
-  // const onSubmit = async () => {
-  //   try {
-  //     const updateContract = await axios.post(
-  //       UPDATECONTACT,
-  //       {
-  //         REFNO: refno,
-  //         EMPID: EmpId,
-  //         TEAMSALE: TeamSale,
-  //         SALECODE: SaleCode,
-  //         SUPEMPID: SupEmpId,
-  //         SECEMPID: SecEmpId,
-  //         FIELD: "CUSTOMERDETAIL",
-  //         DATA: SaveCustomertData,
-  //       },
-  //       {
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //       }
-  //     );
-
-  //     if (updateContract.status === 200 && updateContract.data.data) {
-  //       Swal.fire({
-  //         icon: "success",
-  //         title: "สำเร็จ!",
-  //         text: "ปรับปรุงข้อมูลลูกค้าแล้ว",
-  //         timer: 2000,
-  //         showConfirmButton: false,
-  //       });
-  //       navigate("/sale/update/updateAddress", {
-  //         state: {
-  //           ...matchedItem,
-  //         },
-  //       });
-  //     } else {
-  //       Swal.fire({
-  //         icon: "error",
-  //         title: "เกิดข้อผิดพลาด!",
-  //         text: updateContract.data.message || "ไม่สามารถอัปเดตข้อมูลได้",
-  //       });
-  //     }
-  //   } catch (error) {
-  //     console.error("Error updating data:", error);
-  //     Swal.fire({
-  //       icon: "error",
-  //       title: "เกิดข้อผิดพลาด!",
-  //       text: "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง",
-  //     });
-  //   }
-  // };
-
-  const onSubmit = async () => {
+  const onSubmit = async (formData: FormValues) => {
     try {
       //-------------------------------
       // 1) เตรียม Payload สำหรับเช็คเบอร์/ลูกค้า
@@ -508,9 +457,9 @@ const UpdateSaleCustDetail: React.FC = () => {
         Tel_Mobile: (mobile || "").replace(/-/g, ""),
         Tel_Work: (workPhone || "").replace(/-/g, ""),
         Tel_Home: (phone || "").replace(/-/g, ""),
-        Cus_FName: fullName,
-        Cus_LName: lastName,
-        Cus_IDCard: idCard,
+        Cus_FName: formData.fullName || "",
+        Cus_LName: formData.lastName || "",
+        Cus_IDCard: formData.idCard || "",
       };
 
       //-------------------------------
@@ -653,6 +602,12 @@ const UpdateSaleCustDetail: React.FC = () => {
     );
   }, [item, images]);
 
+  const idCardFromOutside = !!(
+    matchedItem?.CUSTOMERDETAIL?.[0]?.CUSTOMERID ||
+    matchedItem?.CUSTOMERSTATUS?.[0]?.Searchtext ||
+    customerDetail?.CUSTOMERID
+  );
+
   {
     /*-------------------- Start Validate --------------------*/
   }
@@ -674,24 +629,22 @@ const UpdateSaleCustDetail: React.FC = () => {
       .when(
         ["selectedCustomerType", "selectedCardType"] as const,
         ([custType, cardType], schema) => {
-          // บุคคลธรรมดา + ประเภทบัตร = 3 -> ไม่ต้องบังคับ 13 หลัก
           if (custType === "0" && cardType === "3") {
             return schema
               .required("กรุณากรอก")
               .matches(/^\d+$/, "กรุณากรอกเป็นตัวเลข");
           }
 
-          // เดิม: บุคคลธรรมดา(0) หรือ นิติบุคคล(1) -> บังคับ 13 หลัก + ตรวจเลขบัตร
           if (custType === "0" || custType === "1") {
             return schema
               .required("กรุณากรอก")
               .matches(/^[0-9]{13}$/, "กรุณากรอกเลข 13 หลัก")
-              .test("valid-thai-id", "เลขบัตรประชาชนไม่ถูกต้อง", (val) =>
-                isValidThaiId(val || "")
-              );
+              .test("valid-thai-id", "เลขบัตรประชาชนไม่ถูกต้อง", (val) => {
+                if (disableIdCard) return true;
+                return isValidThaiId(val || "");
+              });
           }
 
-          // อื่น ๆ ไม่บังคับ
           return schema;
         }
       ),
@@ -714,7 +667,7 @@ const UpdateSaleCustDetail: React.FC = () => {
 
     // 5) ชื่อ บังคับกรอกเสมอ
     fullName: yup.string().required("กรุณากรอกชื่อ"),
-    lastName: yup.string(),
+    lastName: yup.string().trim().required("กรุณากรอกนามสกุล"),
 
     // 6–8) วัน / เดือน / ปีเกิด (พ.ศ.) แยกสามฟิลด์
     selectedDay: yup
@@ -982,9 +935,6 @@ const UpdateSaleCustDetail: React.FC = () => {
     setHasInitialized(true);
   }, [matchedItem?.CUSTOMERDETAIL?.[0]]);
 
-  // const searchText = matchedItem?.CUSTOMERDETAIL?.[0]?.CUSTOMERID?.toString().trim() ?? '';
-  // const disableIdCard = /^\d{13}$/.test(searchText);
-
   const hasSearchtext =
     !!matchedItem?.CUSTOMERSTATUS?.[0]?.Searchtext;
   // console.log(`hasSearchtext`, hasSearchtext);
@@ -1001,6 +951,7 @@ const UpdateSaleCustDetail: React.FC = () => {
 
   // ถ้ามี Searchtext: disable เฉพาะ ลูกค้าบุคคล (0) + บัตรประชาชน (0)
   // ถ้าไม่มี Searchtext: กลับไปใช้เงื่อนไขเดิม (13 หลัก)
+
   const disableIdCard =
     hasCustomerName
       ? true
@@ -1587,16 +1538,24 @@ const UpdateSaleCustDetail: React.FC = () => {
                                 name="lastName"
                                 control={control}
                                 render={({ field }) => (
-                                  <input
-                                    {...field}
-                                    type="text"
-                                    className={`form-control mb-3 mb-lg-0 ${styles.label}`}
-                                    value={field.value ?? lastName}            // กันค่าเริ่มต้น
-                                    onChange={(e) => {
-                                      field.onChange(e.target.value);
-                                      setLastName(e.target.value);            // sync กับ state ที่ส่งขึ้น API
-                                    }}
-                                  />
+                                  <>
+                                    <input
+                                      {...field}
+                                      type="text"
+                                      className={`form-control mb-3 mb-lg-0 ${styles.label} ${errors.lastName ? "is-invalid" : ""
+                                        }`}
+                                      value={field.value ?? ""}
+                                      onChange={(e) => {
+                                        field.onChange(e.target.value);
+                                        setLastName(e.target.value);
+                                      }}
+                                    />
+                                    {errors.lastName && (
+                                      <p className={`text-danger ${styles.label}`}>
+                                        {errors.lastName.message}
+                                      </p>
+                                    )}
+                                  </>
                                 )}
                               />
                             </div>

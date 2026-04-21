@@ -474,77 +474,96 @@ const Step: React.FC = () => {
   }, [refnoFromUpdate]);
 
   // ----- STEP COMPLETIONS -----
-  // ---------- helpers ----------
-  const isNonEmptyStr = (v: any) => typeof v === 'string' && v.trim() !== ''
+  const isNonEmptyStr = (v: any) => typeof v === "string" && v.trim() !== "";
   const hasAny = <T,>(arr: T[] | undefined, pred: (x: T) => boolean) =>
-    Array.isArray(arr) && arr.some(pred)
+    Array.isArray(arr) && arr.some(pred);
 
-  // ---------- สั้นๆ ชี้ไป data[0] ----------
-  const s = data?.[0] ?? {}
+  const s = data?.[0] ?? {};
 
-  // 1) ตรวจสอบสถานะลูกค้า: ต้องมี field ใช้งานได้จริง
+  // 1) ตรวจสอบสถานะลูกค้า
   const step1Complete = hasAny(s.CUSTOMERSTATUS, (o: any) =>
     isNonEmptyStr(o.CustomerName) ||
     isNonEmptyStr(o.message) ||
     isNonEmptyStr(o.Message) ||
     isNonEmptyStr(o.Searchtext)
-  )
+  );
 
-  // 2) เลือกแพ็คเกจ: ต้องมีคำอธิบาย/โค้ด หรือ Package จริง
+  // 2) เลือกแพ็คเกจ
   const step2Complete = hasAny(s.PRODUCT, (p: any) =>
     isNonEmptyStr(p.ItemDescription) ||
     isNonEmptyStr(p.ItemCode) ||
     (Array.isArray(p.Package) && p.Package.length > 0)
-  )
+  );
 
-  // 3) ส่วนลด/ของแถม/เทิร์น: ต้องมีค่าอย่างน้อยหนึ่ง และแพ็คเกจไม่ถูกเปลี่ยน
-  const step3Complete = hasAny(s.DISCOUNT, (d: any) =>
-    d?.DISCOUNTAMOUNT != null ||
-    isNonEmptyStr(d?.GIFT?.GIFTDESCRIPTION) ||
-    d?.TRADEIN?.HASTRADEIN === 1 ||
-    isNonEmptyStr(d?.TRADEIN?.TRADEINMODEL) ||
-    isNonEmptyStr(d?.TRADEIN?.TRADEINBRANDNAME)
-  )
+  // 3) ส่วนลด / เครื่องเทิร์น / ของแถม
+  const step3Complete =
+    !packageChanged &&
+    hasAny(s.DISCOUNT, (d: any) =>
+      d?.DISCOUNTAMOUNT != null ||
+      isNonEmptyStr(d?.GIFT?.GIFTDESCRIPTION) ||
+      d?.TRADEIN?.HASTRADEIN === 1 ||
+      isNonEmptyStr(d?.TRADEIN?.TRADEINMODEL) ||
+      isNonEmptyStr(d?.TRADEIN?.TRADEINBRANDNAME)
+    );
 
-  // 4) พนักงานขาย: ต้องมี SALEEMPLOYEE พร้อมชื่อ/รหัสจริง
-  const step4Complete = hasAny(s.SALEEMPLOYEE, (e: any) =>
-    !!e?.SALEEMPLOYEE && (
-      isNonEmptyStr(e.SALEEMPLOYEE.FName) ||
-      isNonEmptyStr(e.SALEEMPLOYEE.EmpId) ||
-      isNonEmptyStr(e.SALEEMPLOYEE.SaleEmp)
-    )
-  )
+  // 4) พนักงานขาย: ต้องมีทั้ง SALEEMPLOYEE และ INSTALLER
+  const saleEmployeeRecord = s?.SALEEMPLOYEE?.[0] ?? null;
 
-  // 5) ข้อมูลลูกค้า: ตามเกณฑ์เดิม แต่เช็ค “มีค่า”
-  const cd = s.CUSTOMERDETAIL?.[0] ?? {}
+  const step4Complete = (() => {
+    const saleEmp = saleEmployeeRecord?.SALEEMPLOYEE;
+    const installer = saleEmployeeRecord?.INSTALLER;
+
+    const hasSeller =
+      isNonEmptyStr(saleEmp?.SaleEmp) ||
+      isNonEmptyStr(saleEmp?.EmpId) ||
+      isNonEmptyStr(saleEmp?.FName);
+
+    const hasInstaller =
+      isNonEmptyStr(installer?.SaleEmp) ||
+      isNonEmptyStr(installer?.EmpId) ||
+      isNonEmptyStr(installer?.FName);
+
+    return hasSeller && hasInstaller;
+  })();
+
+  // 5) ข้อมูลลูกค้า
+  const cd = s.CUSTOMERDETAIL?.[0] ?? {};
   const step5Complete =
     !!cd?.CUSTOMERTYPE ||
     isNonEmptyStr(cd?.CUSTOMERNAME) ||
     isNonEmptyStr(cd?.CUSTOMERMOBILE) ||
-    (Array.isArray(cd?.PREFIX) && cd.PREFIX.length > 0)
+    (Array.isArray(cd?.PREFIX) && cd.PREFIX.length > 0);
 
-  // 6) ที่อยู่: address ใดๆ ต้องมี province/zipcode อย่างน้อยหนึ่ง
+  // 6) ที่อยู่
   const step6Complete = hasAny(s.ADDRESS, (a: any) => {
-    const c = a?.ADDRESSCARD ?? a?.ADDRESSINSTALLATION ?? a?.ADDRESSPAYMENT
-    return isNonEmptyStr(c?.ADDRESSPROVINCENAME) || isNonEmptyStr(c?.ADDRESSZIPCODE)
-  })
+    const c = a?.ADDRESSCARD ?? a?.ADDRESSINSTALLATION ?? a?.ADDRESSPAYMENT;
+    return (
+      isNonEmptyStr(c?.ADDRESSPROVINCENAME) ||
+      isNonEmptyStr(c?.ADDRESSZIPCODE)
+    );
+  });
 
-  // 7) PDPA: ต้องมี CONSENTGIVEN (boolean)
-  const step7Complete = hasAny(s.PDPA, (p: any) => typeof p?.CONSENTGIVEN === 'boolean')
+  // 7) PDPA
+  const step7Complete = hasAny(
+    s.PDPA,
+    (p: any) => typeof p?.CONSENTGIVEN === "boolean"
+  );
 
-  // 8) สัญญา: ต้องมี createdAt หรือเลขที่สัญญา
+  // 8) สัญญา
   const step8Complete = hasAny(s.CONTRACT, (c: any) =>
     isNonEmptyStr(c?.createdAt) || isNonEmptyStr(c?.CONTNO)
-  )
+  );
 
-  // 9) การชำระเงิน/นัดชำระ: จาก API หรือทำเครื่องหมาย local
-  const step9Complete = !!(hasPaymentPeriod || paidFromLocal)
+  // 9) การชำระเงิน / นัดชำระ
+  const step9Complete = !!(hasPaymentPeriod || paidFromLocal);
 
-  // 10) ถ่ายรูป: มีรูปอย่างน้อย 1 หมวด
-  const step10Complete = !!images && Object.values(images).some(v => Array.isArray(v) && v.length > 0)
+  // 10) ถ่ายรูป
+  const step10Complete =
+    !!images &&
+    Object.values(images).some((v) => Array.isArray(v) && v.length > 0);
 
   const completeArr = [
-    step1Complete, // index 0 -> step 1
+    step1Complete,
     step2Complete,
     step3Complete,
     step4Complete,
@@ -554,45 +573,38 @@ const Step: React.FC = () => {
     step8Complete,
     step9Complete,
     step10Complete,
-  ]
+  ];
 
   // บล็อก step N ถ้ามี step ก่อนหน้าใดๆ ไม่ครบ
   const isBlocked = (stepNumber: number) => {
-    const prevEndIdx = stepNumber - 2
-    if (prevEndIdx < 0) return false
-    return completeArr.slice(0, prevEndIdx + 1).some(ok => !ok)
-  }
-
-  // ใช้กับปุ่ม/ลิงก์เพื่อปิดคลิกและลด opacity
-  // const disabledProps = (stepNumber: number) =>
-  //   isBlocked(stepNumber)
-  //     ? { disabled: true as const, style: { cursor: 'not-allowed', opacity: 0.6 } }
-  //     : {}
-
-  // // guard เรียกก่อน navigate
-  // const guard = (stepNumber: number) => {
-  //   if (isBlocked(stepNumber)) {
-  //     Swal.fire({
-  //       icon: 'warning',
-  //       title: 'ขั้นตอนไม่ครบ',
-  //       text: 'กรุณาทำให้ขั้นตอนก่อนหน้าเป็นสีเขียวก่อน',
-  //       confirmButtonText: 'ตกลง',
-  //     })
-  //     return false
-  //   }
-  //   return true
-  // }
-
-  const getSaleEmployee = () => data?.[0]?.SALEEMPLOYEE?.[0]?.SALEEMPLOYEE ?? null;
-
-  const isSaleEmployeeGreen = () => {
-    const se = getSaleEmployee();
-    const saleEmp = String(se?.SaleEmp ?? "").trim();
-    const fname = String(se?.FName ?? "").trim();
-    return saleEmp !== "" && fname !== "";
+    const prevEndIdx = stepNumber - 2;
+    if (prevEndIdx < 0) return false;
+    return completeArr.slice(0, prevEndIdx + 1).some((ok) => !ok);
   };
 
-  const hasSaleEmployee = isSaleEmployeeGreen();
+  const disabledProps = (stepNumber: number) =>
+    isBlocked(stepNumber)
+      ? {
+        disabled: true as const,
+        style: {
+          cursor: "not-allowed",
+          opacity: 0.6,
+        },
+      }
+      : {};
+
+  const guard = async (stepNumber: number) => {
+    if (isBlocked(stepNumber)) {
+      await Swal.fire({
+        icon: "warning",
+        title: "ขั้นตอนไม่ครบ",
+        text: "กรุณาทำขั้นตอนก่อนหน้าให้เสร็จก่อน",
+        confirmButtonText: "ตกลง",
+      });
+      return false;
+    }
+    return true;
+  };
 
   return (
     <>
@@ -641,19 +653,6 @@ const Step: React.FC = () => {
                 <div className='col-12'>
 
                   {/* 1. ตรวจสอบสถานะลูกค้า */}
-                  {/* <button
-                    {...disabledProps(1)}
-                    onClick={async () => {
-                      if (!guard(1)) return
-                      if (s?.CUSTOMERSTATUS?.length > 0) {
-                        await Swal.fire({ icon: 'info', title: 'ไม่สามารถแก้ไขได้', confirmButtonText: 'ตกลง' })
-                        return
-                      }
-                      const ok = await handleClick('updateSalesSatusCust')
-                      if (ok) navigate('/sale/update/updateSalesSatusCust', { state: s })
-                    }}
-                    className="w-100 text-start border-0 bg-transparent p-0"
-                  > */}
                   <button
                     onClick={async () => {
                       if (s?.CUSTOMERSTATUS?.length > 0) {
@@ -667,7 +666,6 @@ const Step: React.FC = () => {
                   >
                     <div className='d-flex align-items-center pb-8'>
                       <span className={`bullet bullet-vertical h-40px ${data[0].CUSTOMERSTATUS.length === 0 ? 'bg-danger' : 'bg-success'}`}></span>
-                      {/* <span className={`bullet bullet-vertical h-40px ${step1Complete ? 'bg-success' : 'bg-danger'}`}></span> */}
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className={`${styles.label}`}>1. ตรวจสอบสถานะลูกค้า</div>
@@ -691,20 +689,11 @@ const Step: React.FC = () => {
                   </button>
 
                   {/* 2. เลือกแพ็คเกจ */}
-                  {/* <button
-                    {...disabledProps(2)}
-                    onClick={() => {
-                      if (!guard(2)) return
-                      if (s?.NEWREFNO?.length > 0) {
-                        Swal.fire({ icon: 'info', title: 'ไม่สามารถแก้ไขได้', confirmButtonText: 'ตกลง' })
-                        return
-                      }
-                      navigate('/sale/update/updateSalePackage', { state: s })
-                    }}
-                    className="w-100 text-start border-0 bg-transparent p-0"
-                  > */}
                   <button
-                    onClick={() => {
+                    {...disabledProps(2)}
+                    onClick={async () => {
+                      if (!(await guard(2))) return;
+
                       if (s?.NEWREFNO?.length > 0) {
                         Swal.fire({ icon: 'info', title: 'ไม่สามารถแก้ไขได้', confirmButtonText: 'ตกลง' })
                         return
@@ -715,7 +704,6 @@ const Step: React.FC = () => {
                   >
                     <div className='d-flex align-items-center pb-8'>
                       <span className={`bullet bullet-vertical h-40px ${data[0]?.PRODUCT.length === 0 ? 'bg-danger' : 'bg-success'}`}></span>
-                      {/* <span className={`bullet bullet-vertical h-40px ${step2Complete ? 'bg-success' : 'bg-danger'}`}></span> */}
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className={`${styles.label}`}>2. เลือกแพ็คเกจ</div>
@@ -739,34 +727,11 @@ const Step: React.FC = () => {
                   </button>
 
                   {/* 3. ส่วนลด / เครื่องเทิร์น / ของแถม */}
-                  {/* <button
-                    {...disabledProps(3)}
-                    onClick={() => {
-                      if (!guard(3)) return
-                      if (s.CUSTOMERSTATUS.length === 0) {
-                        Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'กรุณาตรวจสอบข้อมูลลูกค้าก่อน' })
-                        return
-                      }
-                      if (s.PRODUCT.length === 0) {
-                        Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'กรุณาเลือกแพ็คเกจก่อน' })
-                        return
-                      }
-                      if (s.PRODUCT.length > 0) {
-                        Swal.fire({ icon: 'info', title: 'แก้ไขได้จากขั้นตอน เลือกแพ็คเกจ เท่านั้น' })
-                        return
-                      }
-                      if (s?.NEWREFNO?.length > 0) {
-                        Swal.fire({ icon: 'info', title: 'ไม่สามารถแก้ไขได้' })
-                        return
-                      }
-                      handleClick('updateSaleDiscount').then(ok => {
-                        if (ok) navigate('/sale/update/updateSaleDiscount', { state: s })
-                      })
-                    }}
-                    className="w-100 text-start border-0 bg-transparent p-0"
-                  > */}
                   <button
-                    onClick={() => {
+                    {...disabledProps(3)}
+                    onClick={async () => {
+                      if (!(await guard(3))) return;
+
                       if (s.CUSTOMERSTATUS.length === 0) {
                         Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'กรุณาตรวจสอบข้อมูลลูกค้าก่อน' })
                         return
@@ -794,121 +759,52 @@ const Step: React.FC = () => {
                         className={`bullet bullet-vertical h-40px ${packageChanged || !discount || data[0].PRODUCT.length === 0 ? 'bg-danger' : 'bg-success'
                           }`}
                       ></span>
-                      {/* <span className={`bullet bullet-vertical h-40px ${step3Complete ? 'bg-success' : 'bg-danger'}`}></span> */}
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className={styles.label}>3. ส่วนลด / เครื่องเทิร์น / ของแถม</div>
-
-                        {/* {packageChanged ? (
+                        <span className={`text-gray-700 d-block ${styles.label}`}>
+                          {`ส่วนลด: ${data?.[0]?.DISCOUNT?.[0]?.DISCOUNTAMOUNT}`}
+                        </span>
+                        {data?.[0]?.DISCOUNT?.[0]?.GIFT.GIFTDESCRIPTION && (
                           <span className={`text-gray-700 d-block ${styles.label}`}>
-                            แพ็คเกจมีการเปลี่ยนแปลง กรุณาเลือก ส่วนลด / เครื่องเทิร์น / ของแถม ใหม่
+                            {`ของแถม: ${data?.[0]?.DISCOUNT?.[0]?.GIFT.GIFTDESCRIPTION}`}
                           </span>
-                        ) : (
-                          <>
-                            {hasDiscPrice && (
-                              <span className={`text-gray-700 d-block ${styles.label}`}>
-                                {`ส่วนลด: ${discount.DISCOUNTAMOUNT}`}
-                              </span>
-                            )}
-                            {hasDiscGift && (
-                              <span className={`text-gray-700 d-block ${styles.label}`}>
-                                {`ของแถม: ${discount.GIFT.GIFTDESCRIPTION}`}
-                              </span>
-                            )}
-                            {hasDiscTradeIn && (
-                              <span className={`text-gray-700 d-block ${styles.label}`}>
-                                {`เครื่องเทิร์น: ${discount.TRADEIN.TRADEINBRANDNAME}`}
-                                {` รุ่น: ${discount.TRADEIN.TRADEINMODEL}`}
-                                {` S/N: ${discount.TRADEIN.TRADEINSERIAL}`}
-                              </span>
-                            )}
-                            {!(hasDiscPrice || hasDiscGift || hasDiscTradeIn) || (data[0].PRODUCT.length === 0) && (
-                              <span className={`text-gray-700 d-block ${styles.label}`}>
-                                ไม่มี ส่วนลด / เครื่องเทิร์น / ของแถม
-                              </span>
-                            )}
-                          </>
-                        )} */}
-                        <>
-                          {/* {hasDiscPrice && (
-                            <span className={`text-gray-700 d-block ${styles.label}`}>
-                              {`ส่วนลด: ${data?.[0]?.DISCOUNT?.[0]?.DISCOUNTAMOUNT}`}
-                            </span>
-                          )}
-                          {hasDiscGift && (
-                            <span className={`text-gray-700 d-block ${styles.label}`}>
-                              {`ของแถม: ${data?.[0]?.DISCOUNT?.[0]?.GIFT.GIFTDESCRIPTION}`}
-                            </span>
-                          )}
-                          {hasDiscTradeIn && (
-                            <span className={`text-gray-700 d-block ${styles.label}`}>
-                              {`เครื่องเทิร์น: ${data?.[0]?.DISCOUNT?.[0]?.TRADEIN.TRADEINBRANDNAME}`}
-                              {` รุ่น: ${data?.[0]?.DISCOUNT?.[0]?.TRADEIN.TRADEINMODEL}`}
-                              {` S/N: ${data?.[0]?.DISCOUNT?.[0]?.TRADEIN.TRADEINSERIAL}`}
-                            </span>
-                          )}
-                          {!(hasDiscPrice || hasDiscGift || hasDiscTradeIn) || (data[0].PRODUCT.length === 0) && (
-                            <span className={`text-gray-700 d-block ${styles.label}`}>
-                              ไม่มี ส่วนลด / เครื่องเทิร์น / ของแถม
-                            </span>
-                          )} */}
+                        )}
+                        {data?.[0]?.DISCOUNT?.[0]?.TRADEIN.TRADEINBRANDNAME && (
                           <span className={`text-gray-700 d-block ${styles.label}`}>
-                            {`ส่วนลด: ${data?.[0]?.DISCOUNT?.[0]?.DISCOUNTAMOUNT}`}
+                            {`เครื่องเทิร์น: ${data?.[0]?.DISCOUNT?.[0]?.TRADEIN.TRADEINBRANDNAME}`}
+                            {` รุ่น: ${data?.[0]?.DISCOUNT?.[0]?.TRADEIN.TRADEINMODEL}`}
+                            {` S/N: ${data?.[0]?.DISCOUNT?.[0]?.TRADEIN.TRADEINSERIAL}`}
                           </span>
-                          {data?.[0]?.DISCOUNT?.[0]?.GIFT.GIFTDESCRIPTION && (
-                            <span className={`text-gray-700 d-block ${styles.label}`}>
-                              {`ของแถม: ${data?.[0]?.DISCOUNT?.[0]?.GIFT.GIFTDESCRIPTION}`}
-                            </span>
-                          )}
-                          {data?.[0]?.DISCOUNT?.[0]?.TRADEIN.TRADEINBRANDNAME && (
-                            <span className={`text-gray-700 d-block ${styles.label}`}>
-                              {`เครื่องเทิร์น: ${data?.[0]?.DISCOUNT?.[0]?.TRADEIN.TRADEINBRANDNAME}`}
-                              {` รุ่น: ${data?.[0]?.DISCOUNT?.[0]?.TRADEIN.TRADEINMODEL}`}
-                              {` S/N: ${data?.[0]?.DISCOUNT?.[0]?.TRADEIN.TRADEINSERIAL}`}
-                            </span>
-                          )}
-                        </>
+                        )}
                       </div>
                     </div>
                   </button>
 
                   {/* 4. พนักงานขาย */}
-                  {/* <button
-                    {...disabledProps(4)}
-                    onClick={() => {
-                      if (!guard(4)) return
-                      if (s?.PRODUCT.length === 0 || s?.DISCOUNT.length === 0) {
-                        Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'กรุณาบันทึกแพ็คเกจให้ครบถ้วนก่อน' })
-                        return
-                      }
-                      if (s?.NEWREFNO?.length > 0) {
-                        Swal.fire({ icon: 'info', title: 'ไม่สามารถแก้ไขได้' })
-                        return
-                      }
-                      navigate('/sale/update/UpdateSalesEmployee', { state: s })
-                    }}
-                    className="w-100 text-start border-0 bg-transparent p-0"
-                  > */}
                   <button
-                    onClick={() => {
+                    {...disabledProps(4)}
+                    onClick={async () => {
+                      if (!(await guard(4))) return;
+
                       if (s?.PRODUCT.length === 0 || s?.DISCOUNT.length === 0) {
-                        Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'กรุณาบันทึกแพ็คเกจให้ครบถ้วนก่อน' })
-                        return
+                        Swal.fire({
+                          icon: "error",
+                          title: "เกิดข้อผิดพลาด",
+                          text: "กรุณาบันทึกแพ็คเกจให้ครบถ้วนก่อน",
+                        });
+                        return;
                       }
-                      // if (s?.NEWREFNO?.length > 0) {
-                      //   Swal.fire({ icon: 'info', title: 'ไม่สามารถแก้ไขได้' })
-                      //   return
-                      // }
-                      navigate('/sale/update/UpdateSalesEmployee', { state: s })
+
+                      navigate("/sale/update/UpdateSalesEmployee", { state: s });
                     }}
                     className="w-100 text-start border-0 bg-transparent p-0"
                   >
                     <div className='d-flex align-items-center pb-8'>
                       <span
-                        className={`bullet bullet-vertical h-40px ${hasSaleEmployee ? "bg-success" : "bg-danger"
+                        className={`bullet bullet-vertical h-40px ${step4Complete ? "bg-success" : "bg-danger"
                           }`}
                       />
-                      {/* <span className={`bullet bullet-vertical h-40px ${step4Complete ? 'bg-success' : 'bg-danger'}`}></span> */}
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className={`${styles.label}`}>4. เลือกพนักงานขาย</div>
@@ -938,35 +834,28 @@ const Step: React.FC = () => {
                     </div>
                   </button>
 
-
                   {/* 5. บันทึกข้อมูลลูกค้า */}
-                  {/* <button
-                    {...disabledProps(5)}
-                    onClick={() => {
-                      if (!guard(5)) return
-                      if (s?.NEWREFNO?.length > 0) {
-                        Swal.fire({ icon: 'info', title: 'ไม่สามารถแก้ไขได้' })
-                        return
-                      }
-                      handleClick('updateCustDetail').then(ok => {
-                        if (ok) navigate('/sale/update/updateCustDetail', { state: s })
-                      })
-                    }}
-                    className="w-100 text-start border-0 bg-transparent p-0"
-                  > */}
                   <button
+                    {...disabledProps(5)}
                     onClick={async () => {
-                      if (!isSaleEmployeeGreen()) {
+                      if (!(await guard(5))) return;
+
+                      if (!step4Complete) {
                         await Swal.fire({
                           icon: "warning",
                           title: "กรุณาเลือกพนักงานขายก่อน",
+                          text: "ต้องเลือกทั้งพนักงานขายและพนักงานติดตั้งให้ครบ",
                           confirmButtonText: "ตกลง",
                         });
                         return;
                       }
 
                       if (s?.NEWREFNO?.length > 0) {
-                        await Swal.fire({ icon: "info", title: "ไม่สามารถแก้ไขได้", confirmButtonText: "ตกลง" });
+                        await Swal.fire({
+                          icon: "info",
+                          title: "ไม่สามารถแก้ไขได้",
+                          confirmButtonText: "ตกลง",
+                        });
                         return;
                       }
 
@@ -977,15 +866,9 @@ const Step: React.FC = () => {
                   >
                     <div className='d-flex align-items-center pb-8'>
                       <span
-                        className={`bullet bullet-vertical h-40px ${!data[0]?.CUSTOMERDETAIL?.[0]?.CUSTOMERTYPE &&
-                          !data[0]?.CUSTOMERDETAIL?.[0]?.CUSTOMERNAME &&
-                          !data[0]?.CUSTOMERDETAIL?.[0]?.CUSTOMERMOBILE &&
-                          !(data[0]?.CUSTOMERDETAIL?.[0]?.PREFIX?.length > 0)
-                          ? 'bg-danger'
-                          : 'bg-success'
+                        className={`bullet bullet-vertical h-40px ${step5Complete ? "bg-success" : "bg-danger"
                           }`}
                       />
-                      {/* <span className={`bullet bullet-vertical h-40px ${step5Complete ? 'bg-success' : 'bg-danger'}`}></span> */}
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className={`${styles.label}`}>5. บันทึกข้อมูลลูกค้า</div>
@@ -1006,26 +889,11 @@ const Step: React.FC = () => {
                   </button>
 
                   {/* 6. บันทึกที่อยู่ลูกค้า */}
-                  {/* <button
-                    {...disabledProps(6)}
-                    onClick={() => {
-                      if (!guard(6)) return
-                      if (s?.NEWREFNO?.length > 0) {
-                        Swal.fire({ icon: 'info', title: 'ไม่สามารถแก้ไขได้' })
-                        return
-                      }
-                      if ((s?.CUSTOMERDETAIL?.length ?? 0) <= 0) {
-                        Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'กรุณาบันทึกข้อมูลลูกค้าก่อน' })
-                        return
-                      }
-                      handleClick('updateAddress').then(ok => {
-                        if (ok) navigate('/sale/update/updateAddress', { state: s })
-                      })
-                    }}
-                    className="w-100 text-start border-0 bg-transparent p-0"
-                  > */}
                   <button
-                    onClick={() => {
+                    {...disabledProps(6)}
+                    onClick={async () => {
+                      if (!(await guard(6))) return;
+
                       if (s?.NEWREFNO?.length > 0) {
                         Swal.fire({ icon: 'info', title: 'ไม่สามารถแก้ไขได้' })
                         return
@@ -1042,7 +910,6 @@ const Step: React.FC = () => {
                   >
                     <div className='d-flex align-items-center pb-8'>
                       <span className={`bullet bullet-vertical h-40px ${data[0].ADDRESS.length === 0 ? 'bg-danger' : 'bg-success'}`}></span>
-                      {/* <span className={`bullet bullet-vertical h-40px ${step6Complete ? 'bg-success' : 'bg-danger'}`}></span> */}
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className={`${styles.label}`}>6. บันทึกที่อยู่ลูกค้า</div>
@@ -1064,28 +931,11 @@ const Step: React.FC = () => {
                   </button>
 
                   {/* 7. PDPA */}
-                  {/* <button
-                    {...disabledProps(7)}
-                    onClick={() => {
-                      if (!guard(7)) return
-                      if ((s?.ADDRESS?.length ?? 0) === 0) {
-                        Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'กรุณาบันทึกข้อมูลให้ครบทุกส่วน' })
-                        return
-                      }
-                      if ((s?.PDPA?.length ?? 0) > 0) {
-                        Swal.fire({ icon: 'info', title: 'ไม่สามารถแก้ไขได้' })
-                        return
-                      }
-                      if (s?.NEWREFNO?.length > 0) {
-                        Swal.fire({ icon: 'info', title: 'ไม่สามารถแก้ไขได้' })
-                        return
-                      }
-                      navigate('/sale/pdpa', { state: { ...s, from: '/sale/step' } })
-                    }}
-                    className="w-100 text-start border-0 bg-transparent p-0"
-                  > */}
                   <button
-                    onClick={() => {
+                    {...disabledProps(7)}
+                    onClick={async () => {
+                      if (!(await guard(7))) return;
+
                       if ((s?.ADDRESS?.length ?? 0) === 0) {
                         Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'กรุณาบันทึกข้อมูลให้ครบทุกส่วน' })
                         return
@@ -1104,7 +954,6 @@ const Step: React.FC = () => {
                   >
                     <div className='d-flex align-items-center pb-8'>
                       <span className={`bullet bullet-vertical h-40px ${data[0].PDPA.length === 0 ? 'bg-danger' : 'bg-success'}`}></span>
-                      {/* <span className={`bullet bullet-vertical h-40px ${step7Complete ? 'bg-success' : 'bg-danger'}`}></span> */}
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className={`${styles.label}`}>7. PDPA</div>
@@ -1118,18 +967,11 @@ const Step: React.FC = () => {
                   </button>
 
                   {/* 8. รายละเอียดสัญญา */}
-                  {/* <button
-                    {...disabledProps(8)}
-                    onClick={() => {
-                      if (!guard(8)) return
-                      handleClick('UpdateSalesContract').then(ok => {
-                        if (ok) navigate('/sale/contract', { state: s })
-                      })
-                    }}
-                    className="w-100 text-start border-0 bg-transparent p-0"
-                  > */}
                   <button
-                    onClick={() => {
+                    {...disabledProps(8)}
+                    onClick={async () => {
+                      if (!(await guard(8))) return;
+
                       handleClick('UpdateSalesContract').then(ok => {
                         if (ok) navigate('/sale/contract', { state: s })
                       })
@@ -1138,13 +980,11 @@ const Step: React.FC = () => {
                   >
                     <div className='d-flex align-items-center pb-8'>
                       <span className={`bullet bullet-vertical h-40px ${data[0].CONTRACT.length === 0 ? 'bg-danger' : 'bg-success'}`}></span>
-                      {/* <span className={`bullet bullet-vertical h-40px ${step8Complete ? 'bg-success' : 'bg-danger'}`}></span> */}
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className={`${styles.label}`}>8. รายละเอียดสัญญา</div>
                         {data[0].CONTRACT.length !== 0 && (
                           <span className={`text-gray-700 d-block ${styles.label}`}>
-                            {/* {`วันที่ทำสัญญา: ${data[0].CONTRACT[0].createdAt && formatThaiDate(data[0].CONTRACT[0].createdAt)}`} */}
                             {`วันที่ทำสัญญา: ${formatToBE(data[0].CONTRACT[0].createdAt && (data[0].CONTRACT[0].createdAt))}`}
                           </span>
                         )}
@@ -1153,28 +993,11 @@ const Step: React.FC = () => {
                   </button>
 
                   {/* 9. การชำระเงิน / นัดชำระ */}
-                  {/* <button
-                    {...disabledProps(9)}
-                    onClick={() => {
-                      if (!guard(9)) return
-                      if ((s?.CONTRACT?.length ?? 0) === 0) {
-                        Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'กรุณาบันทึกรายละเอียดสัญญาก่อน' })
-                        return
-                      }
-                      if (hasPaymentPeriod || paidFromLocal) {
-                        Swal.fire({ icon: 'info', title: 'ไม่สามารถแก้ไขได้' })
-                        return
-                      }
-                      handleClick('UpdateSalesContract').then(ok => {
-                        if (ok) {
-                          navigate('/firstBill/CreateFirstBill', { state: { item: s, from: location.pathname } })
-                        }
-                      })
-                    }}
-                    className="w-100 text-start border-0 bg-transparent p-0"
-                  > */}
                   <button
-                    onClick={() => {
+                    {...disabledProps(9)}
+                    onClick={async () => {
+                      if (!(await guard(9))) return;
+
                       if ((s?.CONTRACT?.length ?? 0) === 0) {
                         Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'กรุณาบันทึกรายละเอียดสัญญาก่อน' })
                         return
@@ -1193,7 +1016,6 @@ const Step: React.FC = () => {
                   >
                     <div className='d-flex align-items-center pb-8'>
                       <span className={`bullet bullet-vertical h-40px ${data[0].CONTRACT.length === 0 ? 'bg-danger' : 'bg-success'}`}></span>
-                      {/* <span className={`bullet bullet-vertical h-40px ${step9Complete ? 'bg-success' : 'bg-danger'}`}></span> */}
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className={`${styles.label}`}>9. การชำระเงิน / นัดชำระ</div>
@@ -1206,31 +1028,11 @@ const Step: React.FC = () => {
                   </button>
 
                   {/* 10. ถ่ายรูป */}
-                  {/* <button
-                    {...disabledProps(10)}
-                    onClick={() => {
-                      if (!guard(10)) return
-                      if (
-                        (s?.CUSTOMERSTATUS?.length ?? 0) === 0 &&
-                        (s?.PRODUCT?.length ?? 0) === 0 &&
-                        (s?.DISCOUNT?.length ?? 0) === 0 &&
-                        (s?.SALEEMPLOYEE?.length ?? 0) === 0 &&
-                        (s?.CUSTOMERDETAIL?.length ?? 0) === 0 &&
-                        (s?.ADDRESS?.length ?? 0) === 0 &&
-                        (s?.PDPA?.length ?? 0) === 0 &&
-                        (s?.CONTRACT?.length ?? 0) === 0
-                      ) {
-                        Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'กรุณาบันทึกขั้นตอนก่อนหน้าให้ครบก่อน' })
-                        return
-                      }
-                      handleClick('photo').then(ok => {
-                        if (ok) navigate('/sale/update/UpdateSalesPhoto', { state: { fromStep: true, data: s } })
-                      })
-                    }}
-                    className="w-100 text-start border-0 bg-transparent p-0"
-                  > */}
                   <button
-                    onClick={() => {
+                    {...disabledProps(10)}
+                    onClick={async () => {
+                      if (!(await guard(10))) return;
+
                       if (
                         (s?.CUSTOMERSTATUS?.length ?? 0) === 0 &&
                         (s?.PRODUCT?.length ?? 0) === 0 &&
@@ -1255,7 +1057,6 @@ const Step: React.FC = () => {
                         ? 'bg-success'
                         : 'bg-danger'
                         }`}></span>
-                      {/* <span className={`bullet bullet-vertical h-40px ${step10Complete ? 'bg-success' : 'bg-danger'}`}></span> */}
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className={`${styles.label}`}>10. ถ่ายรูป</div>

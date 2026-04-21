@@ -388,6 +388,13 @@ const SalesCreateCustCash: React.FC = () => {
     }
   }, [selectedDay, selectedMonth, selectedYearBE]);
 
+  const idCardFromOutside = useMemo(() => {
+    return !!(
+      matchedItem?.CUSTOMERDETAIL?.[0]?.CUSTOMERID ||
+      matchedItem?.CUSTOMERSTATUS?.[0]?.Searchtext
+    );
+  }, [matchedItem]);
+
   {
     /*-------------------- Start Validate --------------------*/
   }
@@ -409,24 +416,21 @@ const SalesCreateCustCash: React.FC = () => {
       .when(
         ["selectedCustomerType", "selectedCardType"] as const,
         ([custType, cardType], schema) => {
-          // บุคคลธรรมดา + ประเภทบัตร = 3 -> ไม่ต้องบังคับ 13 หลัก
           if (custType === "0" && cardType === "3") {
             return schema
               .required("กรุณากรอก")
               .matches(/^\d+$/, "กรุณากรอกเป็นตัวเลข");
           }
 
-          // เดิม: บุคคลธรรมดา(0) หรือ นิติบุคคล(1) -> บังคับ 13 หลัก + ตรวจเลขบัตร
           if (custType === "0" || custType === "1") {
             return schema
               .required("กรุณากรอก")
               .matches(/^[0-9]{13}$/, "กรุณากรอกเลข 13 หลัก")
-              .test("valid-thai-id", "เลขบัตรประชาชนไม่ถูกต้อง", (val) =>
-                isValidThaiId(val || "")
-              );
+              .test("valid-thai-id", "เลขบัตรประชาชนไม่ถูกต้อง", (val) => {
+                if (disableIdCard) return true;
+                return isValidThaiId(val || "");
+              });
           }
-
-          // อื่น ๆ ไม่บังคับ
           return schema;
         }
       ),
@@ -445,7 +449,7 @@ const SalesCreateCustCash: React.FC = () => {
 
     // 5) ชื่อ บังคับกรอกเสมอ
     fullName: yup.string().required("กรุณากรอกชื่อ"),
-    lastName: yup.string(),
+    lastName: yup.string().trim().required("กรุณากรอกนามสกุล"),
 
     // 6–8) วัน / เดือน / ปีเกิด (พ.ศ.) แยกสามฟิลด์
     selectedDay: yup
@@ -658,16 +662,16 @@ const SalesCreateCustCash: React.FC = () => {
     /*-------------------- Start บันทึกข้อมูลลงระบบ และไปขั้นตอนต่อไป --------------------*/
   }
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (formData: any) => {
     try {
       const checkPayload = {
         EmpID: EmpId,
         Tel_Mobile: (mobile || "").replace(/-/g, ""),
         Tel_Work: (workPhone || "").replace(/-/g, ""),
         Tel_Home: (phone || "").replace(/-/g, ""),
-        Cus_FName: fullName,
-        Cus_LName: lastName,
-        Cus_IDCard: idCard,
+        Cus_FName: formData.fullName || "",
+        Cus_LName: formData.lastName || "",
+        Cus_IDCard: formData.idCard || "",
       };
 
       const checkRes = await axios.post(
@@ -690,6 +694,54 @@ const SalesCreateCustCash: React.FC = () => {
         return;
       }
 
+      const customerTypeData = customerTypes.find(
+        (type) => type.CUSTOMERTYPE === selectedCustomerType
+      );
+
+      const payloadCustomerDetail = [
+        {
+          CUSTOMERTYPE: selectedCustomerType || "",
+          CUSTOMERTYPENAME: customerTypeData?.CUSTOMERTYPENAME || "",
+          CUSTOMERID: formData.idCard || "",
+          CUSTOMERNAME: formData.fullName || "",
+          CUSTOMERLASTNAME: formData.lastName || "",
+          CUSTOMERMD: nameMD || "",
+          CUSTOMERDOB: valueCalendar ? dayjs(valueCalendar).format("YYYY-MM-DD") : "",
+          CUSTOMERRAGE: valueAge ? valueAge.toString() : "",
+          CUSTOMERMOBILE: mobile || "",
+          CUSTOMERWORKPHONE: workPhone || "",
+          CUSTOMERPHONE: phone || "",
+          CUSTOMEREMAIL: email || "",
+          CARDTYPE: customerTypeData?.CARDTYPE
+            ? customerTypeData.CARDTYPE.filter(
+              (cardType: any) => String(cardType.CARDTYPE) === String(selectedCardType)
+            ).map((cardType: any) => ({
+              CARDTYPE: selectedCardType,
+              CARDTYPECODE: cardType.CARDTYPECODE,
+              CARDTYPENAME: cardType.CARDTYPENAME,
+            }))
+            : [],
+          PREFIX: customerTypeData?.PREFIX
+            ? customerTypeData.PREFIX.filter(
+              (prefix: any) => prefix.PREFIXID === selectedPrefixId
+            ).map((prefix: any) => ({
+              PREFIXID: selectedPrefixId,
+              PREFIXCODE: prefix.PREFIXCODE,
+              PREFIXNAME: prefix.PREFIXNAME,
+            }))
+            : [],
+          SEX: customerTypeData?.SEX
+            ? customerTypeData.SEX.filter(
+              (sex: any) => sex.SEXID === selectedSexId
+            ).map((sex: any) => ({
+              SEXID: selectedSexId,
+              SEXCODE: sex.SEXCODE,
+              SEXNAME: sex.SEXNAME,
+            }))
+            : [],
+        },
+      ];
+
       const response = await axios.post(
         UPDATECONTACT,
         {
@@ -700,7 +752,7 @@ const SalesCreateCustCash: React.FC = () => {
           SUPEMPID: SupEmpId,
           SECEMPID: SecEmpId,
           FIELD: "CUSTOMERDETAIL",
-          DATA: SaveCustomertData,
+          DATA: payloadCustomerDetail,
         },
         {
           headers: {
@@ -1263,16 +1315,24 @@ const SalesCreateCustCash: React.FC = () => {
                                     name="lastName"
                                     control={control}
                                     render={({ field }) => (
-                                      <input
-                                        {...field}
-                                        type="text"
-                                        className={`form-control mb-3 mb-lg-0 ${styles.label}`}
-                                        value={field.value ?? ""}
-                                        onChange={(e) => {
-                                          field.onChange(e.target.value);
-                                          setLastName(e.target.value);
-                                        }}
-                                      />
+                                      <>
+                                        <input
+                                          {...field}
+                                          type="text"
+                                          className={`form-control mb-3 mb-lg-0 ${styles.label} ${errors.lastName ? "is-invalid" : ""
+                                            }`}
+                                          value={field.value ?? ""}
+                                          onChange={(e) => {
+                                            field.onChange(e.target.value);
+                                            setLastName(e.target.value);
+                                          }}
+                                        />
+                                        {errors.lastName && (
+                                          <p className={`text-danger ${styles.label}`}>
+                                            {errors.lastName.message}
+                                          </p>
+                                        )}
+                                      </>
                                     )}
                                   />
                                 </div>

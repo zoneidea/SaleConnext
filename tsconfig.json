@@ -13,7 +13,7 @@
     "rootDir": "./src", // โฟลเดอร์ต้นทาง
     "skipLibCheck": true,
     /* Bundler mode */
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,

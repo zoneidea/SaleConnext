@@ -138,6 +138,14 @@ const UpdateSalesPackage: React.FC = () => {
   const [selectedItemCode, setSelectedItemCode] = useState<string | null>(null);
   const [selectedPromotion, setSelectedPromotion] = useState<number | null>(null);
 
+  // ถ้า db PromotionId = "" ให้บังคับเลือกอันที่ 0 (ไม่มีโปรโมชั่น)
+  const normalizePromotionId = (value: any): number | null => {
+    if (value === "" || value === null || value === undefined) return null;
+
+    const n = Number(value);
+    return Number.isNaN(n) ? null : n;
+  };
+
   const [selectedItemDescription, setSelectedItemDescription] = useState<
     string | null
   >(null);
@@ -550,8 +558,14 @@ const UpdateSalesPackage: React.FC = () => {
     setSelectedStatus(productContract?.[0]?.Status);
     setSelectedBranch(productContract?.[0]?.Branch);
     setSelectedTransDate(productContract?.[0]?.TransDate);
-    setSelectedPromotion(productContract?.[0]?.Promotion);
-    setProductId(productContract?.[0]?.ProductId);
+
+    const initialPromotionId =
+      normalizePromotionId(
+        productContract?.[0]?.PromotionId ?? productContract?.[0]?.Promotion
+      );
+
+    setSelectedPromotion(initialPromotionId);
+    setProductId(productContract?.[0]?.ProductId ?? productContract?.[0]?.ProductID);
 
     getPackageType();
 
@@ -736,6 +750,34 @@ const UpdateSalesPackage: React.FC = () => {
     selectedItemCode,
   ]);
 
+  const applyDefaultPromotion = (promos: any[]) => {
+    const dbPromotionId = normalizePromotionId(
+      productContract?.find((p: any) => p.MainItem === "Y")?.PromotionId ??
+      productContract?.[0]?.PromotionId ??
+      productContract?.[0]?.Promotion
+    );
+
+    if (promos.length === 0) {
+      setSelectedPromotion(null);
+      return;
+    }
+
+    if (dbPromotionId === null) {
+      setSelectedPromotion(promos[0].PROMOTIONID);
+      return;
+    }
+
+    const matched = promos.find(
+      (p: any) => Number(p.PROMOTIONID) === Number(dbPromotionId)
+    );
+
+    if (matched) {
+      setSelectedPromotion(matched.PROMOTIONID);
+    } else {
+      setSelectedPromotion(promos[0].PROMOTIONID);
+    }
+  };
+
   // 1) โปรโมชั่นโหมด “ปกติ”
   useEffect(() => {
     if (selectedProductIndex === null || useBundle !== "normal") return;
@@ -750,17 +792,6 @@ const UpdateSalesPackage: React.FC = () => {
     form.append("ItemID", selectedItemCode!);
     form.append("IsBundle", "0");
 
-    //   axios
-    //     .post(PROMOTION_URL, form, {
-    //       headers: { "Content-Type": "multipart/form-data" },
-    //     })
-    //     .then((res) => {
-    //       setPromotion(Array.isArray(res.data.data) ? res.data.data : []);
-    //       // **อย่าไป setSelectedPromotion ใหม่ที่นี่**
-    //     })
-    //     .catch(console.error);
-    // }, [selectedProductIndex, useBundle]);
-
     axios
       .post(PROMOTION_URL, form, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -768,27 +799,10 @@ const UpdateSalesPackage: React.FC = () => {
       .then((res) => {
         const promos = Array.isArray(res.data.data) ? res.data.data : [];
         setPromotion(promos);
-
-        // หา PromotionId ของ main item
-        const mainPromotionId = productContract.find(
-          (p) => p.MainItem === "Y"
-        )?.PromotionId;
-
-        // ถ้ามี promos และ mainPromotionId ตรงกับตัวไหนใน promos ให้ตั้งค่านั้น
-        if (mainPromotionId != null) {
-          const match = promos.find(
-            (p: any) => p.PROMOTIONID === mainPromotionId
-          );
-          if (match) {
-            setSelectedPromotion(mainPromotionId);
-          } else {
-            // กรณีไม่มีใน list ก็ reset หรือเลือกตัวแรกก็ได้
-            setSelectedPromotion(null);
-          }
-        }
+        applyDefaultPromotion(promos);
       })
       .catch(console.error);
-  }, [selectedProductIndex, useBundle, productContract]);
+  }, [selectedProductIndex, useBundle, productContract, productId, EmpId, DivisionId, DepartId, DepartGroup, TeamSale, selectedItemCode]);
 
   // 2) โปรโมชั่นโหมด “บันเดิล”
   useEffect(() => {
@@ -804,17 +818,6 @@ const UpdateSalesPackage: React.FC = () => {
     form.append("ItemID", selectedItemCode!);
     form.append("IsBundle", "1");
 
-    //   axios
-    //     .post(PROMOTION_URL, form, {
-    //       headers: { "Content-Type": "multipart/form-data" },
-    //     })
-    //     .then((res) => {
-    //       setPromotion(Array.isArray(res.data.data) ? res.data.data : []);
-    //       // **อย่าไป setSelectedPromotion ใหม่ที่นี่**
-    //     })
-    //     .catch(console.error);
-    // }, [selectedProductIndex, useBundle]);
-
     axios
       .post(PROMOTION_URL, form, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -822,37 +825,10 @@ const UpdateSalesPackage: React.FC = () => {
       .then((res) => {
         const promos = Array.isArray(res.data.data) ? res.data.data : [];
         setPromotion(promos);
-
-        // หา PromotionId ของ main จาก productContract
-        const mainPromotionId = productContract.find(
-          (p) => p.MainItem === "Y"
-        )?.PromotionId;
-
-        if (
-          mainPromotionId != null &&
-          promos.some((p: any) => p.PROMOTIONID === mainPromotionId)
-        ) {
-          // ถ้าเจอใน promos ให้ตั้งค่านั้น
-          setSelectedPromotion(mainPromotionId);
-        } else if (promos.length > 0) {
-          // ถ้าไม่เจอหรือไม่มี mainPromotionId ให้ fallback เป็นตัวแรก
-          // setSelectedPromotion(promos[0].PROMOTIONID);
-        } else {
-          setSelectedPromotion(null);
-        }
+        applyDefaultPromotion(promos);
       })
       .catch(console.error);
-  }, [selectedProductIndex, useBundle, productContract]);
-
-  // useEffect(() => {
-  //     if (selectedItemCode && productId) {
-  //         fetchPromotion(); // เรียกฟังก์ชันดึงข้อมูลโปรโมชั่น
-  //     }
-  // }, [selectedItemCode, productId]);
-
-  // useEffect(() => {
-  //     // console.log("packageList updated:", packageList);
-  // }, [packageList]);
+  }, [selectedProductIndex, useBundle, productContract, productId, EmpId, DivisionId, DepartId, DepartGroup, TeamSale, selectedItemCode]);
 
   const getPackageType = async () => {
     try {
@@ -876,55 +852,6 @@ const UpdateSalesPackage: React.FC = () => {
       console.error("Error fetching PACKAGE_URL:", error);
     }
   };
-
-  // POST GetPackage/PackageList
-  // const getPackageList = async () => {
-  //   setLoadingPackages(true);
-  //   try {
-  //     const response = await axios.post(
-  //       POST_PACKAGE_URL,
-  //       {
-  //         EmpId,
-  //         DivisionId,
-  //         DepartId,
-  //         DepartGroup,
-  //         TeamSale,
-  //         ItemID,
-  //         PackageTypeID,
-  //         PromotionID: selectedPromotion,
-  //       },
-  //       {
-  //         headers: {
-  //           "Content-Type": "multipart/form-data",
-  //         },
-  //       }
-  //     );
-
-  //     const data = Array.isArray(response.data.data) ? response.data.data : [];
-  //     // console.log('Fetched Package List:', data); // ตรวจสอบข้อมูล
-  //     setPackageList(data);
-
-  //     let index = data.findIndex(
-  //       (pl: { MODEL: any }) =>
-  //         pl.MODEL === productContract?.[0]?.Package?.[0].MODEL
-  //     );
-  //     if (index !== -1) {
-  //       // หน่วงเวลา 2 วินาทีก่อนแสดงผลข้อมูล
-  //       setTimeout(() => {
-  //         setPackageList(data); // อัปเดตแพ็คเกจหลังจากหน่วงเวลา
-  //         setLoadingPackages(false); // หยุดแสดง loading หลังหน่วงเวลา
-  //       }, 1000);
-
-  //       setSelectedPackageModel(index);
-  //     } else {
-  //       setSelectedPackageModel(null);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching POST_PACKAGE_URL:", error);
-  //   } finally {
-  //     setLoadingPackages(false);
-  //   }
-  // };
 
   const getPackageList = async () => {
     setLoadingPackages(true);
@@ -1089,17 +1016,6 @@ const UpdateSalesPackage: React.FC = () => {
   }, [product, productContract]);
 
   useEffect(() => {
-    if (promotion.length > 0 && productContract?.[0]?.Promotion) {
-      const defaultPromotion = promotion.find(
-        (p) => p.PROMOTIONID === productContract[0]?.Promotion
-      );
-      setSelectedPromotion(
-        defaultPromotion ? defaultPromotion.PROMOTIONID : ""
-      );
-    }
-  }, [promotion, productContract]);
-
-  useEffect(() => {
     // อัปเดต Model เมื่อ packageList และ selectedPackageModel พร้อม
     if (selectedPackageModel !== null && packageList[selectedPackageModel]) {
       const selectedModel = packageList[selectedPackageModel].MODEL;
@@ -1158,135 +1074,6 @@ const UpdateSalesPackage: React.FC = () => {
       },
     });
   };
-
-  // ตรวจสอบ ConditionsCheckHistory ว่าต้องตรวจสอบประวัติไหม หากตรวจให้เช็ค CheckCustomer ต่อ
-  // const handleNextClick = async () => {
-  //   // console.log("SaveProductData ก่อนส่ง:", SaveProductData); // เพิ่มตรงนี้
-
-  //   try {
-  //     // Save product package
-  //     const response = await axios.post(
-  //       UPDATECONTACT,
-  //       {
-  //         REFNO: refno ? refno : item.REFNO,
-  //         EMPID: EmpId,
-  //         TEAMSALE: TeamSale,
-  //         FIELD: "PRODUCT",
-  //         DATA: SaveProductData,
-  //       },
-  //       {
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //       }
-  //     );
-
-  //     // console.log('response: ', response)
-  //     if (response.status === 200) {
-  //       if (!response.data.data) {
-  //         MySwal.fire(
-  //           "เกิดข้อผิดพลาด",
-  //           "ปรับปรุงข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา",
-  //           "error"
-  //         );
-  //       } else {
-  //         Swal.fire({
-  //           icon: "success",
-  //           title: "สำเร็จ!",
-  //           text: "ปรับปรุงข้อมูลแพ็คเกจแล้ว",
-  //           timer: 2000, // แสดงผล 3 วินาที
-  //           showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
-  //         });
-  //       }
-  //       // if (!fromDiscount) {
-  //       //     navigate('/sale/update/updateSaleDiscount', {
-  //       //         state: {
-  //       //             matchedItem: item,
-  //       //             SaveProductData,
-  //       //             REFNO: refno ? refno : item.REFNO
-  //       //         }
-  //       //     });
-  //       // } else {
-  //       //     navigate('/sale/discount', {
-  //       //         state: {
-  //       //             SaveProductData,
-  //       //             REFNO: refno ? refno : item.REFNO
-  //       //         }
-  //       //     });
-  //       // }
-  //       navigate("/sale/update/updateSaleDiscount", {
-  //         // state: {
-  //         //     matchedItem: item,
-  //         //     SaveProductData,
-  //         //     REFNO: refno ? refno : item.REFNO
-  //         // }
-  //         state: {
-  //           matchedItem,
-  //           SaveProductData,
-  //           REFNO: refno ? refno : item.REFNO,
-  //         },
-  //       });
-  //     } else {
-  //       MySwal.fire("เกิดข้อผิดพลาด", response.data.message, "error");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error saving product package:", error);
-  //     MySwal.fire({
-  //       title: "เกิดข้อผิดพลาด",
-  //       text: "ไม่สามารถบันทึกข้อมูลได้",
-  //       icon: "error",
-  //       confirmButtonText: "ตกลง",
-  //     });
-  //   }
-  // };
-
-  // const handleNextClick = async () => {
-  //   try {
-  //     const resp = await axios.post(UPDATECONTACT, {
-  //       REFNO: refno ?? item.REFNO,
-  //       EMPID: EmpId,
-  //       TEAMSALE: TeamSale,
-  //       FIELD: "PRODUCT",
-  //       DATA: SaveProductData,
-  //     }, { headers: { "Content-Type": "application/json" } });
-
-  //     if (resp.status !== 200 || !resp.data?.data) {
-  //       await MySwal.fire("เกิดข้อผิดพลาด", "ปรับปรุงข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา", "error");
-  //       return;
-  //     }
-
-  //     // แจ้งเตือนสำเร็จ
-  //     await Swal.fire({
-  //       icon: "success",
-  //       title: "สำเร็จ!",
-  //       text: "ปรับปรุงข้อมูลแพ็คเกจแล้ว",
-  //       timer: 2000,
-  //       showConfirmButton: false,
-  //     });
-
-  //     // 1) รีเฟชรายการ draft เพื่อเอาเวอร์ชันล่าสุด (ถ้ายังเป็น DRAFT)
-  //     const refresh = await axios.get(DRAFT_ALLCONTRACT_URL);
-  //     const list: any[] = Array.isArray(refresh.data?.data) ? refresh.data.data : [];
-
-  //     // 2) หาอันที่ REFNO ตรงกัน (อย่าใช้ชื่อ item ซ้ำกับตัวแปรข้างนอก)
-  //     const updatedItem = list.find((c) => c.REFNO === (item?.REFNO ? item?.REFNO : refno)) ?? null;
-  //     console.log(`updatedItem`, updatedItem);
-
-  //     // 3) ไปหน้าถัดไป โดย "ส่งตัวที่อัปเดตแล้ว" ไปด้วย
-  //     navigate("/sale/update/updateSaleDiscount", {
-  //       state: {
-  //         // แนะนำส่งชื่อ key = item จะใช้ฝั่งหน้า Discount ได้ตรง ๆ
-  //         item: updatedItem,         // fallback เผื่อหาไม่เจอ
-  //         SaveProductData,
-  //         REFNO: refno ?? item.REFNO,
-  //       },
-  //     });
-
-  //   } catch (err) {
-  //     console.error("Error saving product package:", err);
-  //     MySwal.fire({ title: "เกิดข้อผิดพลาด", text: "ไม่สามารถบันทึกข้อมูลได้", icon: "error", confirmButtonText: "ตกลง" });
-  //   }
-  // };
 
   const normalizeProduct = (rows: any[] = []) =>
     rows.map(p => ({
@@ -1398,24 +1185,6 @@ const UpdateSalesPackage: React.FC = () => {
     }
   };
 
-  // เช็คว่า data ใน item มีครบทุกขั้นตอน (ไม่เป็น array เปล่า) ใช่ไหม ถ้าเป็นจะ disabled ปุ่มส่งตรวจสอบ
-  // const isDataComplete = useMemo(() => {
-  //     // ตรวจสอบว่ามีรูปภาพในฟิลด์ใดฟิลด์หนึ่งใน images อย่างน้อย 1 รูป
-  //     const hasImages = images && Object.values(images).some(
-  //         (field) => Array.isArray(field) && field.length > 0
-  //     );
-
-  //     return (
-  //         Array.isArray(item.ADDRESS) && item.ADDRESS.length > 0 &&
-  //         Array.isArray(item.CUSTOMERDETAIL) && item.CUSTOMERDETAIL.length > 0 &&
-  //         Array.isArray(item.CUSTOMERSTATUS) && item.CUSTOMERSTATUS.length > 0 &&
-  //         Array.isArray(item.DISCOUNT) && item.DISCOUNT.length > 0 &&
-  //         Array.isArray(item.PDPA) && item.PDPA.length > 0 &&
-  //         Array.isArray(item.PRODUCT) && item.PRODUCT.length > 0 &&
-  //         hasImages
-  //     );
-  // }, [item, images])
-
   useEffect(() => {
     const s = (location.state ?? {}) as any;
     if (s.bundleProduct && s.barCodeBundle) {
@@ -1429,31 +1198,6 @@ const UpdateSalesPackage: React.FC = () => {
       // *** ห้ามเซ็ต selectedItemCode/productId ตรงนี้ ***
     }
   }, [location.state]);
-
-  // const [isLoadingDraft, setIsLoadingDraft] = useState<boolean>(false);
-  // const [draft, setDraft] = useState<any[]>([]);
-
-  // useEffect(() => {
-  //   const getDataDraft = async () => {
-  //     setIsLoadingDraft(true);
-  //     try {
-  //       const response = await axios.get(DRAFT_ALLCONTRACT_URL);
-  //       const data = Array.isArray(response.data.data)
-  //         ? response.data.data
-  //         : [];
-  //       setDraft(data);
-  //     } catch (error) {
-  //       console.error("Error fetching DRAFT_ALLCONTRACT_URL:", error);
-  //     } finally {
-  //       setIsLoadingDraft(false);
-  //     }
-  //   };
-  //   getDataDraft();
-  // }, []);
-
-  // // เลือก item ที่ REFNO ตรงกัน (find สำหรับ 1 item หรือ filter สำหรับหลาย item)
-  // const matchedItem = draft.find((item) => item.REFNO === item?.REFNO ? item?.REFNO : refno);
-  // console.log(`matchedItem`, matchedItem);
 
   // บังคับทำ ถึงโชว์ปุ่มถัดไป
   const canProceed = useMemo(() => {
@@ -1701,30 +1445,6 @@ const UpdateSalesPackage: React.FC = () => {
                           </div>
                         )}
 
-                        {/* <div className="row">
-                          <div className="col-lg-6 my-7 my-xl-10">
-                            <label
-                              className={`form-label required ${styles.label}`}
-                            >
-                              โปรโมชั่น
-                            </label>
-                            <select
-                              className={`${styles.fontSize} form-select`}
-                              value={selectedPromotion}
-                              onChange={(e) =>
-                                setSelectedPromotion(Number(e.target.value))
-                              }
-                            >
-                              <option value="">เลือกโปรโมชั่น...</option>
-                              {promotion.map((item, index) => (
-                                <option key={index} value={item?.PROMOTIONID}>
-                                  {item.PROMOTIONNAME}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        </div> */}
-
                         <div className="row">
                           <div className="col-lg-6 my-7 my-xl-10">
                             <label
@@ -1736,7 +1456,7 @@ const UpdateSalesPackage: React.FC = () => {
                               className={`${styles.fontSize} form-select`}
                               onChange={(e) => {
                                 const v = e.target.value;
-                                const promoId = v ? Number(v) : null;
+                                const promoId = v === "" ? null : Number(v);
                                 setSelectedPromotion(promoId);
 
                                 // เปลี่ยนโปรฯ เมื่ออยู่โหมดบันเดิล → ต้องสแกนใหม่
@@ -1836,10 +1556,6 @@ const UpdateSalesPackage: React.FC = () => {
                                       cursor: "pointer",
                                     }}
                                     onClick={() => {
-                                      // console.log(
-                                      //   "Clicked PackageTypeId:",
-                                      //   item.PACKAGETYPEID
-                                      // );
                                       handlePackageTypeClick(
                                         item.PACKAGETYPEID
                                       );
@@ -1973,24 +1689,6 @@ const UpdateSalesPackage: React.FC = () => {
                 ถัดไป
               </button>
             )}
-            {/* {selectedProductIndex !== null &&
-              useBundle !== null &&
-              selectedPromotion !== null &&
-              selectedPackageTypeId !== null &&
-              !loadingPackages &&
-              (packageList.length === 0 || selectedPackageModel !== null) && (
-                <button className={styles.btnPrimary} onClick={handleNextClick}>
-                  ถัดไป
-                </button>
-              )} */}
-            {/* {isDataComplete && (
-                                <button
-                                    className={`${styles.btnPrimary} ${!isDataComplete ? 'disabled' : ''}`}
-                                    onClick={handleCheckerClick}
-                                >
-                                    ส่งตรวจสอบ
-                                </button>
-                            )} */}
           </div>
 
           {/* ปุ่มในหน้าจอเล็ก */}
@@ -2015,24 +1713,6 @@ const UpdateSalesPackage: React.FC = () => {
                 ถัดไป
               </button>
             )}
-            {/* {selectedProductIndex !== null &&
-              useBundle !== null &&
-              selectedPromotion !== null &&
-              selectedPackageTypeId !== null &&
-              !loadingPackages &&
-              (packageList.length === 0 || selectedPackageModel !== null) && (
-                <button className={styles.btnPrimary} onClick={handleNextClick}>
-                  ถัดไป
-                </button>
-              )} */}
-            {/* {isDataComplete && (
-                                <button
-                                    className={`${styles.btnPrimary} ${!isDataComplete ? 'disabled' : ''}`}
-                                    onClick={handleCheckerClick}
-                                >
-                                    ส่งตรวจสอบ
-                                </button>
-                            )} */}
           </div>
         </>
       </Content>
