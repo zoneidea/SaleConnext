@@ -89,6 +89,7 @@ interface UpdatePackageState {
     }>;
   }>;
   REFNO: string;
+  packageChanged?: boolean;
 }
 
 interface TradeInBrand {
@@ -101,7 +102,12 @@ const UpdateSalesDiscount: React.FC = () => {
   const MySwal = withReactContent(Swal);
   const location = useLocation();
 
-  const { item, SaveProductData, REFNO } = location.state as UpdatePackageState;
+  const {
+    item,
+    SaveProductData,
+    REFNO,
+    packageChanged = false,
+  } = location.state as UpdatePackageState;
   // console.log(`item`, item);
 
   // ให้ item อ้างอิง matchedItem เพื่อไม่ต้องแก้ส่วนอื่นเยอะ
@@ -111,17 +117,38 @@ const UpdateSalesDiscount: React.FC = () => {
   // Pre-fill จาก matchedItem.DISCOUNT[0]
   useEffect(() => {
     const d = item.DISCOUNT?.[0];
-    if (!d) return;
 
-    if (d.TRADEIN?.HASTRADEIN !== 0) {
-      setSelectedTurnId(d.TRADEIN.TRADEINBRANDID);
-      setSelectedTradeInBrandName(d.TRADEIN.TRADEINBRANDNAME);
-      setTradeInModel(d.TRADEIN.TRADEINMODEL);
-      setTradeInSerial(d.TRADEIN.TRADEINSERIAL);
+    // ✅ ถ้าเปลี่ยนแพ็คเกจ ให้โชว์ 0 ทันที
+    if (packageChanged) {
+      setDiscountInput(0);
+      setSelectedGiftId("");
+      setIsDiscountValid(true);
+      setDiscountValidationMessage(null);
+      return;
     }
 
+    // ✅ ถ้า DISCOUNT ใน state ว่าง ให้โชว์ 0
+    if (!d) {
+      setDiscountInput(0);
+      setSelectedGiftId("");
+      setIsDiscountValid(true);
+      setDiscountValidationMessage(null);
+      return;
+    }
+
+    if (d.TRADEIN?.HASTRADEIN !== 0) {
+      setSelectedTurnId(d.TRADEIN?.TRADEINBRANDID ?? "");
+      setSelectedTradeInBrandName(d.TRADEIN?.TRADEINBRANDNAME ?? "");
+      setTradeInModel(d.TRADEIN?.TRADEINMODEL ?? "");
+      setTradeInSerial(d.TRADEIN?.TRADEINSERIAL ?? "");
+    }
+
+    setDiscountInput(Number(d.DISCOUNTAMOUNT ?? 0));
     setSelectedGiftId(d.GIFT?.GIFTID ?? "");
-  }, [item]);
+
+    setIsDiscountValid(true);
+    setDiscountValidationMessage(null);
+  }, [item, packageChanged]);
 
   const { auth } = useAuth();
   const EmpId = auth?.data?.[0]?.EmpId || "";
@@ -183,87 +210,53 @@ const UpdateSalesDiscount: React.FC = () => {
   const [discountInput, setDiscountInput] = useState<number | null>(null);
 
   useEffect(() => {
-    const checkDiscountByPackage = async () => {
-      try {
-        setCheckingPackageDiscount(true);
+    const currentPackage = SaveProductData?.[0]?.Package?.[0];
+    const oldPackage = item.PRODUCT?.find((p: any) => p.MainItem === "Y")
+      ?.Package?.[0];
 
-        const currentPackage = SaveProductData?.[0]?.Package?.[0];
-        const oldDiscount = Number(item.DISCOUNT?.[0]?.DISCOUNTAMOUNT ?? 0);
+    const oldDiscount = Number(item.DISCOUNT?.[0]?.DISCOUNTAMOUNT ?? 0);
 
-        if (!currentPackage) {
-          setDiscountInput(0);
-          setIsDiscountValid(true);
-          setDiscountValidationMessage(null);
-          return;
-        }
+    const currentPackageTitle = String(currentPackage?.PACKAGETITLE ?? "").trim();
+    const oldPackageTitle = String(oldPackage?.PACKAGETITLE ?? "").trim();
 
-        const form = new FormData();
-        form.append("EmpId", EmpId);
-        form.append("DivisionId", DivisionId);
-        form.append("DepartId", DepartId);
-        form.append("DepartGroup", DepartGroup);
-        form.append("TeamSale", TeamSale);
-        form.append("ItemID", String(currentPackage.ITEMID ?? SaveProductData?.[0]?.ItemCode ?? ""));
-        form.append("PackageTypeID", String(currentPackage.PACKAGETYPEID ?? ""));
-        form.append("PromotionID", String(SaveProductData?.[0]?.PromotionId ?? ""));
+    const currentModel = String(currentPackage?.MODEL ?? "").trim();
+    const oldModel = String(oldPackage?.MODEL ?? "").trim();
 
-        const res = await axios.post(PACKAGE_LIST_URL, form, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+    const currentPackageTypeId = Number(currentPackage?.PACKAGETYPEID ?? 0);
+    const oldPackageTypeId = Number(oldPackage?.PACKAGETYPEID ?? 0);
 
-        const packageList = Array.isArray(res.data?.data) ? res.data.data : [];
+    const hasSavedDiscount =
+      Array.isArray(item.DISCOUNT) && item.DISCOUNT.length > 0;
 
-        const latestPackage = packageList.find(
-          (p: any) =>
-            String(p.MODEL) === String(currentPackage.MODEL) &&
-            Number(p.PACKAGETYPEID) === Number(currentPackage.PACKAGETYPEID)
-        );
+    const packageChanged =
+      currentPackageTitle !== oldPackageTitle ||
+      currentModel !== oldModel ||
+      currentPackageTypeId !== oldPackageTypeId;
 
-        const latestDiscountPrice = Number(
-          latestPackage?.DISCOUNTPRICE ?? currentPackage.DISCOUNTPRICE ?? 0
-        );
-
-        /**
-         * เงื่อนไข:
-         * - ถ้าส่วนลดเดิมตรงกับ DISCOUNTPRICE ของแพ็คเกจล่าสุด ให้โชว์ค่าเดิม
-         * - ถ้าไม่ตรง แปลว่าเปลี่ยนแพ็คเกจมาแล้ว ส่วนลดเก่าใช้ไม่ได้ ให้โชว์ 0
-         */
-        if (oldDiscount === latestDiscountPrice) {
-          setDiscountInput(oldDiscount);
-        } else {
-          setDiscountInput(0);
-        }
-
-        setIsDiscountValid(true);
-        setDiscountValidationMessage(null);
-      } catch (error) {
-        console.error("Error checking package discount:", error);
-
-        // กันเคส API error ไม่ให้ส่วนลดเก่าค้าง
-        setDiscountInput(0);
-        setIsDiscountValid(true);
-        setDiscountValidationMessage(null);
-      } finally {
-        setCheckingPackageDiscount(false);
-      }
-    };
-
-    if (EmpId && TeamSale && SaveProductData?.[0]?.Package?.[0]) {
-      checkDiscountByPackage();
+    // ✅ ถ้าไม่มี DISCOUNT ใน DB เลย ให้โชว์ 0
+    if (!hasSavedDiscount) {
+      setDiscountInput(0);
+      setIsDiscountValid(true);
+      setDiscountValidationMessage(null);
+      return;
     }
-  }, [
-    EmpId,
-    TeamSale,
-    DivisionId,
-    DepartId,
-    DepartGroup,
-    SaveProductData,
-    item.DISCOUNT,
-    PACKAGE_LIST_URL,
-  ]);
+
+    // ✅ ถ้าเปลี่ยนแพ็คเกจ ให้โชว์ 0
+    if (packageChanged) {
+      setDiscountInput(0);
+      setIsDiscountValid(true);
+      setDiscountValidationMessage(null);
+      return;
+    }
+
+    // ✅ ถ้าแพ็คเกจเดิม และมี DISCOUNT ใน DB ให้โชว์ค่าที่บันทึกไว้
+    setDiscountInput(oldDiscount);
+    setIsDiscountValid(true);
+    setDiscountValidationMessage(null);
+  }, [SaveProductData, item.PRODUCT, item.DISCOUNT]);
 
   const [checkingPackageDiscount, setCheckingPackageDiscount] =
-    useState<boolean>(true);
+    useState<boolean>(false);
 
   const [discountValidationMessage, setDiscountValidationMessage] = useState<{
     message: string;
@@ -426,18 +419,6 @@ const UpdateSalesDiscount: React.FC = () => {
     };
 
     fetchBrands();
-
-    // พรีฟิลด์ค่าจาก discount ถ้ามี
-    if (discount?.[0]) {
-      const d = discount[0];
-      if (d.TRADEIN?.HASTRADEIN !== 0) {
-        setSelectedTurnId(d.TRADEIN.TRADEINBRANDID);
-        setTradeInModel(d.TRADEIN.TRADEINMODEL);
-        setTradeInSerial(d.TRADEIN.TRADEINSERIAL);
-      }
-      setDiscountInput(d.DISCOUNTAMOUNT);
-      setSelectedGiftId(d.GIFT.GIFTID);
-    }
   }, [discount]);
 
   // POST Contract/updateContract
@@ -781,8 +762,7 @@ const UpdateSalesDiscount: React.FC = () => {
                                 pattern="[0-9]*"
                                 className={`form-control ${styles.fontSize}`}
                                 onChange={(e) => handleDiscountChange(e.target.value)}
-                                value={discountInput !== null ? discountInput.toString() : ""}
-                                disabled={checkingPackageDiscount}
+                                value={discountInput !== null ? discountInput.toString() : "0"}
                               />
                               {checkingPackageDiscount && (
                                 <div className={`${styles.fontSize} mt-2 text-muted`}>

@@ -1101,11 +1101,17 @@ const UpdateSalesPackage: React.FC = () => {
     const b = normalizeProduct(SaveProductData);
 
     const unchanged = JSON.stringify(a) === JSON.stringify(b);
+    const packageChanged = !unchanged;
 
     if (unchanged) {
       // ข้ามการอัปเดต เพื่อไม่ให้ DISCOUNT ถูกเคลียร์
       navigate("/sale/update/updateSaleDiscount", {
-        state: { item, SaveProductData, REFNO: refno ?? item.REFNO },
+        state: {
+          item,
+          SaveProductData,
+          REFNO: refno ?? item.REFNO,
+          packageChanged: false,
+        },
       });
       return;
     }
@@ -1134,9 +1140,21 @@ const UpdateSalesPackage: React.FC = () => {
 
       navigate("/sale/update/updateSaleDiscount", {
         state: {
-          item: { ...updatedItem, DISCOUNT: updatedItem.DISCOUNT?.length ? updatedItem.DISCOUNT : item.DISCOUNT },
+          item: {
+            ...updatedItem,
+
+            // ✅ ถ้าเปลี่ยนแพ็คเกจ ให้ล้าง DISCOUNT ใน state ทันที
+            DISCOUNT: packageChanged
+              ? []
+              : updatedItem.DISCOUNT?.length
+                ? updatedItem.DISCOUNT
+                : item.DISCOUNT,
+          },
           SaveProductData,
           REFNO: refno ?? item.REFNO,
+
+          // ✅ ส่ง flag ไปให้หน้า Discount
+          packageChanged,
         },
       });
     } catch (err) {
