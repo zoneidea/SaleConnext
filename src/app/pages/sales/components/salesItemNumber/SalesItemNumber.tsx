@@ -35,6 +35,7 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({
     PENDING: "รอตรวจสอบ",
     EDIT: "แจ้งแก้ไข",
     APPROVE: "อนุมัติ",
+    CANCEL: "ไม่อนุมัติ",
   };
   const checkerStatusText = checkerStatusMap[rawCheckerStatus] ?? "";
 
@@ -42,6 +43,7 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({
     PENDING: "badge badge-light-primary",
     EDIT: "badge badge-light-danger",
     APPROVE: "badge badge-light-success",
+    CANCEL: "badge badge-light-secondary",
   };
 
   if (item.CUSTOMERDETAIL?.length > 0) {
@@ -331,6 +333,100 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({
             {/* ไอคอนฝั่งซ้าย (ซ่อนบนมือถือ) */}
             <span className="d-none d-md-inline me-2">
               <KTIcon iconName="abstract-26" className="text-success fs-1" />
+            </span>
+
+            {/* เนื้อหา */}
+            <div className="flex-grow-1">
+              <div className="row gx-2 gy-1 align-items-center">
+                <div
+                  className={`col-5 col-md-3 fw-semibold text-gray-700 ${styles.fontSize}`}
+                >
+                  เลขที่สัญญา:
+                </div>
+                <div
+                  className={`col-7 col-md-9 fw-bold text-gray-800 ${styles.fontSize}`}
+                >
+                  {item.NEWREFNO}
+                </div>
+
+                {/* label: ใช้ col-4 บนมือถือ, col-md-3 บน desktop */}
+                <div
+                  className={`col-5 col-md-3 fw-semibold text-gray-700 ${styles.fontSize}`}
+                >
+                  ชื่อลูกค้า:
+                </div>
+                {/* value: กินที่เหลือ */}
+                <div
+                  className={`col-7 col-md-9 fw-bold text-gray-800 ${styles.fontSize}`}
+                >
+                  {item.CUSTOMERDETAIL[0]?.CUSTOMERNAME}{" "}
+                  {item.CUSTOMERDETAIL[0]?.CUSTOMERLASTNAME}
+                </div>
+
+                <div
+                  className={`col-5 col-md-3 fw-semibold text-gray-700 ${styles.fontSize}`}
+                >
+                  S/N:
+                </div>
+                <div
+                  className={`col-7 col-md-9 fw-bold text-gray-800 ${styles.fontSize}`}
+                >
+                  {item.PRODUCT[0]?.SerialNo}
+                </div>
+
+                <div
+                  className={`col-5 col-md-3 fw-semibold text-gray-700 ${styles.fontSize}`}
+                >
+                  วันที่ทำสัญญา:
+                </div>
+                <div
+                  className={`col-7 col-md-9 fw-bold text-gray-800 ${styles.fontSize}`}
+                >
+                  {formatToBE(item.CONTRACT[0]?.createdAt)}
+                </div>
+                <div
+                  className={`col-5 col-md-3 fw-semibold text-gray-700 ${styles.fontSize}`}
+                >
+                  สถานะตรวจสอบ:
+                </div>
+                <div
+                  className={`col-7 col-md-9 fw-bold text-gray-800 ${styles.fontSize} `}
+                >
+                  <span
+                    className={`${checkerStatusClass[rawCheckerStatus] ?? "badge badge-light"} ${styles.statusBadgeBig}`}
+                  >
+                    {checkerStatusText}
+                  </span>
+                </div>
+                {checkerCommentText && (
+                  <>
+                    <div className={`col-5 col-md-3 fw-semibold text-gray-700 ${styles.fontSize}`}>
+                      หมายเหตุ:
+                    </div>
+                    <div className={`col-7 col-md-9 fw-bold text-gray-800 ${styles.fontSize}`}>
+                      <span className="text-danger">{checkerCommentText}</span>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </Link>
+      )}
+
+      {status === "CANCEL" && (
+        <Link to="/sale/cancel" state={item}>
+          <div
+            className="
+        d-flex flex-column flex-md-row align-items-center
+        bg-light-danger rounded
+        px-2 px-md-3 
+        py-2 mb-2
+      "
+          >
+            {/* ไอคอนฝั่งซ้าย (ซ่อนบนมือถือ) */}
+            <span className="d-none d-md-inline me-2">
+              <KTIcon iconName="abstract-26" className="text-danger fs-1" />
             </span>
 
             {/* เนื้อหา */}

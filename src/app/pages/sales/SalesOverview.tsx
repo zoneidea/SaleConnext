@@ -14,11 +14,13 @@ const SalesOverview: React.FC = () => {
   const [isLoadingDraft, setIsLoadingDraft] = useState<boolean>(false)
   const [isLoadingPending, setIsLoadingPending] = useState<boolean>(false)
   const [isLoadingFinish, setIsLoadingFinish] = useState<boolean>(false)
+  const [isLoadingCancel, setIsLoadingCancel] = useState<boolean>(false)
 
   // Data states
   const [draft, setDraft] = useState<any[]>([])
   const [pending, setPending] = useState<any[]>([])
   const [finish, setFinish] = useState<any[]>([])
+  const [cancel, setCancel] = useState<any[]>([])
   // Search state
   const [search, setSearch] = useState<string>('')
 
@@ -27,6 +29,7 @@ const SalesOverview: React.FC = () => {
   const [currentPageDraft, setCurrentPageDraft] = useState<number>(1)
   const [currentPagePending, setCurrentPagePending] = useState<number>(1)
   const [currentPageFinish, setCurrentPageFinish] = useState<number>(1)
+  const [currentPageCancel, setCurrentPageCancel] = useState<number>(1)
 
   const navigate = useNavigate()
   const { SETREFNO } = useUUIDStore()
@@ -40,12 +43,14 @@ const SalesOverview: React.FC = () => {
   const DRAFT_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=DRAFT&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}&ProcessType=${auth.processtype}`
   const PENDING_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=PENDING&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}&ProcessType=${auth.processtype}`
   const FINISH_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=FINISH&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}&ProcessType=${auth.processtype}`
+  const CANCEL_ALLCONTRACT_URL = `${API_URL_GET_ALLCONTRACT}/Contract/GetAllContract?status=CANCEL&empid=${EmpId}&teamsale=${TeamSale}&salecode=${SaleCode}&ProcessType=${auth.processtype}`
   // ถ้าคุณมี URL ของ EDIT โดยเฉพาะ ก็สามารถประกาศเพิ่มได้
 
   useEffect(() => {
     getDataDraft()
     getDataPending()
     getDataFinish()
+    getDataCancel()
   }, [])
 
   // ฟังก์ชันดึงข้อมูลสำหรับแท็บ "คงค้าง" (Draft & Edit)
@@ -102,6 +107,24 @@ const SalesOverview: React.FC = () => {
     }
   }
 
+  // ฟังก์ชันดึงข้อมูลสำหรับแท็บ "ยกเลิกไม่อนุมัติ" (Cancel Not Approved)
+  const getDataCancel = async () => {
+    setIsLoadingCancel(true)
+    try {
+      const response = await axios.get(CANCEL_ALLCONTRACT_URL)
+      let data = Array.isArray(response.data.data) ? response.data.data : []
+
+      // กรองเอาเฉพาะ STATUS === 'CANCEL' และ APPROVED === false (ไม่อนุมัติ)
+      data = data.filter((item: any) => item.STATUS === 'CANCEL' && item.APPROVED === false)
+
+      setCancel(data)
+    } catch (error) {
+      console.error('Error fetching CANCEL_ALLCONTRACT_URL:', error)
+    } finally {
+      setIsLoadingCancel(false)
+    }
+  }
+
   // เพิ่มรายการใหม่
   const handleAddItemClick = () => {
     SETREFNO()
@@ -135,6 +158,14 @@ const SalesOverview: React.FC = () => {
     (item.PRODUCT?.[0]?.SerialNo || '').toLowerCase().includes(searchLower)
   )
 
+  const filteredCancel = cancel.filter((item) =>
+    (item.NEWREFNO || '').includes(searchLower) ||
+    (item.CUSTOMERDETAIL?.[0]?.CUSTOMERNAME || '').toLowerCase().includes(searchLower) ||
+    (item.PRODUCT?.[0]?.Package?.[0]?.PACKAGETITLE || '').toLowerCase().includes(searchLower) ||
+    (item.PRODUCT?.[0]?.ItemDescription || '').toLowerCase().includes(searchLower) ||
+    (item.PRODUCT?.[0]?.SerialNo || '').toLowerCase().includes(searchLower)
+  )
+
   // Pagination logic
   const draftStartIndex = (currentPageDraft - 1) * entries
   const draftDisplayedData = filteredDraft.slice(draftStartIndex, draftStartIndex + entries)
@@ -144,6 +175,9 @@ const SalesOverview: React.FC = () => {
 
   const finishStartIndex = (currentPageFinish - 1) * entries
   const finishDisplayedData = filteredFinish.slice(finishStartIndex, finishStartIndex + entries)
+
+  const cancelStartIndex = (currentPageCancel - 1) * entries
+  const cancelDisplayedData = filteredCancel.slice(cancelStartIndex, cancelStartIndex + entries)
 
   return (
     <Content>
@@ -169,16 +203,6 @@ const SalesOverview: React.FC = () => {
                 คงค้าง
               </a>
             </li>
-            {/* <li className='nav-item'>
-              <a
-                className={`nav-link ${styles.fontSize}`}
-                data-bs-toggle='tab'
-                href='#kt_tab_pane_3'
-                onClick={getDataPending}
-              >
-                รอตรวจสอบ
-              </a>
-            </li> */}
             <li className='nav-item'>
               <a
                 className={`nav-link ${styles.fontSize}`}
