@@ -422,7 +422,13 @@ const SalesCreateCustCash: React.FC = () => {
               .matches(/^\d+$/, "กรุณากรอกเป็นตัวเลข");
           }
 
-          if (custType === "0" || custType === "1") {
+          if (custType === "1") {
+            return schema
+              .required("กรุณากรอกเลขประจำตัวผู้เสียภาษี")
+              .matches(/^[0-9]{13}$/, "กรุณากรอกเลข 13 หลัก");
+          }
+
+          if (custType === "0") {
             return schema
               .required("กรุณากรอก")
               .matches(/^[0-9]{13}$/, "กรุณากรอกเลข 13 หลัก")
@@ -449,7 +455,11 @@ const SalesCreateCustCash: React.FC = () => {
 
     // 5) ชื่อ บังคับกรอกเสมอ
     fullName: yup.string().required("กรุณากรอกชื่อ"),
-    lastName: yup.string().trim().required("กรุณากรอกนามสกุล"),
+    lastName: yup.string().when("selectedCustomerType", {
+      is: (v: any) => v !== "1",
+      then: (schema) => schema.trim().required("กรุณากรอกนามสกุล"),
+      otherwise: (schema) => schema.notRequired().default(""),
+    }),
 
     // 6–8) วัน / เดือน / ปีเกิด (พ.ศ.) แยกสามฟิลด์
     selectedDay: yup
