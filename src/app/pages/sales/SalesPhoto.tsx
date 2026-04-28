@@ -410,11 +410,7 @@ const SalesPhoto: React.FC = () => {
         });
 
         const okPdpa = hasAny(source.PDPA, (p: any) => typeof p?.CONSENTGIVEN === "boolean");
-
-        const okContract = hasAny(source.CONTRACT, (c: any) =>
-            isNonEmptyStr(c?.createdAt) || isNonEmptyStr(c?.CONTNO)
-        );
-
+            
         return {
             okCustomerStatus,
             okProduct,
@@ -423,7 +419,6 @@ const SalesPhoto: React.FC = () => {
             okCustDetail,
             okAddress,
             okPdpa,
-            okContract,
         };
     }, [fromStep, item, matchedItem]);
 
@@ -436,7 +431,6 @@ const SalesPhoto: React.FC = () => {
             okCustDetail: "5. บันทึกข้อมูลลูกค้า",
             okAddress: "6. บันทึกที่อยู่ลูกค้า",
             okPdpa: "7. PDPA",
-            okContract: "8. รายละเอียดสัญญา",
         };
 
         for (const key of Object.keys(stepsCheck)) {

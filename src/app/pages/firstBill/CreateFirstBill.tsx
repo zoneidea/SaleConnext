@@ -68,6 +68,8 @@ interface ItemProps {
 
 interface LocationState {
     item?: ItemProps;
+    stepData?: any;
+    paymentData?: any;
     from?: string;
 }
 
@@ -89,6 +91,9 @@ const CreateFirstBill: React.FC = () => {
     // ⭐ เก็บใน state ภายในหน้า
     const [item, setItem] = useState<ItemProps | undefined>(state.item);
     const from = state.from ?? "";
+
+    const stepData = state.stepData;
+    const paymentData = state.paymentData;
 
     const refno = String(item?.REFNO);
     const contNo = item?.CONTNO;
@@ -124,16 +129,28 @@ const CreateFirstBill: React.FC = () => {
     const paymentPeriodNumber = item?.PAYMENTPERIODNUMBER;
     const packageTypeID = item?.PACKAGETYPEID;
 
-    // กดเข้ามาแล้วถ้ามีวันนัดชำระ ให้ติ๊กอยู่ที่ นัดชำระ แล้ววันที่ให้โชวันที่นัดก่อนหน้า
     useEffect(() => {
-        if (item?.PAYMENTAPPOINTMENTDATE && item.PAYMENTAPPOINTMENTDATE.length > 0) {
-            // โหมดนัดชำระ
+        const localScheduleDate =
+            localStorage.getItem(`paymentSchedule:${String(refno).toUpperCase().trim()}`) || "";
+
+        const appointmentDate =
+            item?.PAYMENTAPPOINTMENTDATE ||
+            paymentData?.PAYMENTAPPOINTMENTDATE ||
+            paymentData?.firstDueDate ||
+            paymentData?.SCHEDULE?.[0]?.DUEDATE ||
+            paymentData?.DUEDATE ||
+            paymentData?.Appointdate ||
+            "";
+
+        if (appointmentDate) {
             handlePayQuickChange(false);
-            // แปลงวันจาก SCHEDULE[0].DUEDATE (สมมติเป็น ISO string) ให้เป็น Date
-            const due = new Date(item.PAYMENTAPPOINTMENTDATE);
-            setValueCalendarInstall(due);
+
+            const due = new Date(appointmentDate);
+            if (!isNaN(due.getTime())) {
+                setValueCalendarInstall(due);
+            }
         }
-    }, [item]);
+    }, [item, paymentData, refno]);
 
     // ชำระเงินทันที หรือ นัดชำระ
     const [payQuick, setPayQuick] = useState<boolean>(true);
@@ -331,6 +348,13 @@ const CreateFirstBill: React.FC = () => {
             });
 
             if (response.status === 200) {
+                if (!payQuick && dueDate) {
+                    localStorage.setItem(
+                        `paymentSchedule:${String(refno).toUpperCase().trim()}`,
+                        dueDate
+                    );
+                }
+
                 Swal.fire({
                     icon: "success",
                     title: "สำเร็จ!",
@@ -342,9 +366,21 @@ const CreateFirstBill: React.FC = () => {
                 // ถ้าเป็น “นัดชำระล้วนๆ” → ไป overview
                 // ถ้าเป็น “ชำระทันที” (เต็ม/บางส่วน) → ไปหน้าใบเสร็จ
                 if (!payQuick) {
-                    navigate("/firstBill/overview", { state: item });
+                    if (from === "/sale/step") {
+                        navigate("/sale/update/UpdateSalesPhoto", {
+                            state: {
+                                fromStep: true,
+                                from: "/sale/step",
+                                data: stepData || item,
+                            },
+                        });
+                    } else {
+                        navigate("/firstBill/overview", { state: item });
+                    }
                 } else {
-                    navigate("/firstBill/receiptFromCreateFirstBill", { state: { REFNO: refno } });
+                    navigate("/firstBill/receiptFromCreateFirstBill", {
+                        state: { REFNO: refno },
+                    });
                 }
             } else {
                 Swal.fire("เกิดข้อผิดพลาด", response.data?.message || "ไม่สามารถบันทึกข้อมูลได้", "error");

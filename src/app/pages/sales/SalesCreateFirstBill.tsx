@@ -129,6 +129,7 @@ interface AddressItem {
 
 interface LocationState {
     item?: ItemProps;
+    paymentData?: any;
     from?: string;
 }
 
@@ -152,6 +153,7 @@ const SalesCreateFirstBill: React.FC = () => {
     const item = state.item;
     // console.log(`item`, item);
     const from = state.from ?? "";
+    const paymentData = state.paymentData;
 
     const refno = item?.REFNO ?? "";
     const product = item?.PRODUCT ?? [];
@@ -180,16 +182,25 @@ const SalesCreateFirstBill: React.FC = () => {
 
     const UPDATE_APPOINTMENT = `${API_URL_SALECONNEXT}/GetListFirstPayments/UpdateAppointment`;
 
-    // กดเข้ามาแล้วถ้ามีวันนัดชำระ ให้ติ๊กอยู่ที่ นัดชำระ แล้ววันที่ให้โชวันที่นัดก่อนหน้า
     useEffect(() => {
-        if (item?.SCHEDULE && item.SCHEDULE.length > 0) {
-            // โหมดนัดชำระ
+        const appointmentDate =
+            item?.SCHEDULE?.[0]?.DUEDATE ||
+            paymentData?.SCHEDULE?.[0]?.DUEDATE ||
+            paymentData?.firstDueDate ||
+            paymentData?.PAYMENTAPPOINTMENTDATE ||
+            paymentData?.DUEDATE ||
+            paymentData?.Appointdate ||
+            "";
+
+        if (appointmentDate) {
             handlePayQuickChange(false);
-            // แปลงวันจาก SCHEDULE[0].DUEDATE (สมมติเป็น ISO string) ให้เป็น Date
-            const due = new Date(item.SCHEDULE[0].DUEDATE);
-            setValueCalendarInstall(due);
+
+            const due = new Date(appointmentDate);
+            if (!isNaN(due.getTime())) {
+                setValueCalendarInstall(due);
+            }
         }
-    }, [item]);
+    }, [item, paymentData]);
 
     // อ่านแพ็กเกจ/งวด
     const paymentPeriodDetailId =
@@ -405,15 +416,33 @@ const SalesCreateFirstBill: React.FC = () => {
             if (response.status === 200) {
                 localStorage.setItem(`paymentDone:${refno.toUpperCase().trim()}`, "1");
 
-                Swal.fire({
+                if (status === "SCHEDULE" && dueDate) {
+                    localStorage.setItem(
+                        `paymentSchedule:${refno.toUpperCase().trim()}`,
+                        dueDate
+                    );
+                }
+
+                await Swal.fire({
                     icon: "success",
                     title: "สำเร็จ!",
                     text: "บันทึกธุรกรรมการชำระเงินสำเร็จ",
-                    timer: 2000,
+                    timer: 1500,
                     showConfirmButton: false,
                 });
 
-                navigate("/firstBill/receiptFromCreateFirstBill", { state: item });
+                if (status === "SCHEDULE" || !payQuick) {
+                    navigate("/sale/photo", {
+                        state: {
+                            fromStep: true,
+                            data: item,
+                            from: "/sale/salesCreateFirstBill",
+                        },
+                    });
+                    return;
+                }
+
+                navigate("/sale/salesReceiptFirstBill", { state: item });
             } else {
                 Swal.fire("เกิดข้อผิดพลาด", response.data?.message || "ไม่สามารถบันทึกข้อมูลได้", "error");
             }
@@ -474,8 +503,8 @@ const SalesCreateFirstBill: React.FC = () => {
     const onSubmit = async () => {
         saveNextClick();
 
-        // ต้องมีวันที่ในโหมดที่ต้องการวัน
-        const mustHaveDueDate = (!payQuick) || (payQuick && !payFullAmount);
+        const mustHaveDueDate = !payQuick || (payQuick && !payFullAmount);
+
         if (mustHaveDueDate && !valueCalendarInstall) {
             setDateError("กรุณาเลือกวันที่");
             dueDateRef.current?.focus();
@@ -484,14 +513,7 @@ const SalesCreateFirstBill: React.FC = () => {
             setDateError("");
         }
 
-        // ✅ ถ้าเลือก "นัดชำระ" ให้ไปหน้าอัปโหลดรูปทันที
-        if (!payQuick) {
-            navigate("/sale/photo", { state: { fromStep: true, data: item, from: "/sale/createFirstBill" } });
-            return;
-        }
-
-        // ด้านล่างเป็นโหมด "ชำระทันที"
-        if (paymentChannel === "CASH") {
+        if (payQuick && paymentChannel === "CASH") {
             const { isConfirmed } = await Swal.fire({
                 title: "ต้องการออกใบรับเงินหรือไม่?",
                 icon: "question",
@@ -500,6 +522,7 @@ const SalesCreateFirstBill: React.FC = () => {
                 cancelButtonText: "ยกเลิก",
                 reverseButtons: true,
             });
+
             if (!isConfirmed) return;
         }
 
@@ -957,7 +980,7 @@ const SalesCreateFirstBill: React.FC = () => {
                                                                                         paySomeAmount === 0
                                                                                             ? "0"
                                                                                             : paySomeAmount
-                                                                                    } 
+                                                                                    }
                                                                                     min="0" // ป้องกันค่าติดลบ
                                                                                     inputMode="numeric"
                                                                                     pattern="[0-9]*"

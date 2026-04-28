@@ -23,15 +23,21 @@ interface ItemProps {
   SUPEMPID: string
   SECEMPID: string
   STATUS: string
-  PRODUCT: [any]
-  CUSTOMERSTATUS: [any]
-  DISCOUNT: [any]
-  CUSTOMERDETAIL: [any]
-  ADDRESS: [any]
-  PDPA: [any]
-  CONTRACT: [any]
-  IMAGE: [any]
-  CHECKERCOMMENT: [any]      // แก้จาก CHECKKERCOMMENT
+  PRODUCT: any[]
+  CUSTOMERSTATUS: any[]
+  DISCOUNT: any[]
+  CUSTOMERDETAIL: any[]
+  ADDRESS: any[]
+  PDPA: any[]
+  CONTRACT: any[]
+  IMAGE: any[]
+  CHECKERCOMMENT: any[]
+
+  // เพิ่ม 3 ตัวนี้
+  SCHEDULE?: any[]
+  TRANSACTION?: any[]
+  PERIODDETAILS?: any[]
+
   item?: {
     REFNO: string
   }
@@ -348,14 +354,7 @@ const Step: React.FC = () => {
 
   // state ตัวเก็บ matchedItem
   const [matchedItem, setMatchedItem] = useState<ItemProps | null>(null);
-  // console.log(`matchedItem`, matchedItem);
 
-  useEffect(() => {
-    if (!isLoading) {
-      const found = finish.find((d) => d.REFNO === item?.REFNO || refnoFromUpdate);
-      setMatchedItem(found);
-    }
-  }, [finish, isLoading]);
 
   const hasPaymentPeriod = !!matchedItem  // true = มีงวดชำระ/นัดชำระแล้ว
 
@@ -472,6 +471,40 @@ const Step: React.FC = () => {
     return `${dd}/${mm}/${yyyy}`;
   };
 
+  const normalizeRefno = (v: any) =>
+    String(v || "").toUpperCase().trim();
+
+  const currentRefno = normalizeRefno(refno || item?.REFNO || refnoFromUpdate);
+
+  useEffect(() => {
+    if (!isLoading) {
+      const found = finish.find(
+        (d) => normalizeRefno(d?.REFNO) === currentRefno
+      );
+
+      setMatchedItem(found || null);
+    }
+  }, [finish, isLoading, currentRefno]);
+
+  const getPaymentAppointmentDate = (payment: any) => {
+    return (
+      payment?.PAYMENTAPPOINTMENTDATE ||
+      payment?.firstDueDate ||
+      payment?.SCHEDULE?.[0]?.DUEDATE ||
+      payment?.DUEDATE ||
+      payment?.Appointdate ||
+      ""
+    );
+  };
+
+  const paymentData = matchedItem || null;
+
+  const localScheduleDate =
+    localStorage.getItem(`paymentSchedule:${currentRefno}`) || "";
+
+  const paymentAppointmentDate =
+    getPaymentAppointmentDate(paymentData) || localScheduleDate;
+
   const paidFromLocal = useMemo(() => {
     return localStorage.getItem(`paymentDone:${refnoFromUpdate}`) === '1';
   }, [refnoFromUpdate]);
@@ -558,7 +591,14 @@ const Step: React.FC = () => {
   );
 
   // 9) การชำระเงิน / นัดชำระ
-  const step9Complete = !!(hasPaymentPeriod || paidFromLocal);
+  // const step9Complete = !!(hasPaymentPeriod || paidFromLocal);
+
+  const step9Complete = !!(
+    paymentAppointmentDate ||
+    paymentData?.STATUS === "SCHEDULE" ||
+    paymentData?.STATUS === "PAID" ||
+    paidFromLocal
+  );
 
   // 10) ถ่ายรูป
   const step10Complete =
@@ -607,6 +647,104 @@ const Step: React.FC = () => {
       return false;
     }
     return true;
+  };
+
+  const buildFirstBillItem = (s: any, paymentData?: any) => {
+    const cd = s?.CUSTOMERDETAIL?.[0] || {};
+    const product = s?.PRODUCT?.[0] || {};
+    const pkg = product?.Package?.[0] || {};
+    const discount = s?.DISCOUNT?.[0] || {};
+
+    const periodDetails =
+      paymentData?.PERIODDETAILS ||
+      s?.PERIODDETAILS ||
+      pkg?.PERIODDETAILS ||
+      [];
+
+    const firstPeriodRow = periodDetails?.[0] || {};
+    const secondPeriodRow = periodDetails?.[1] || {};
+
+    const addressPayment =
+      s?.ADDRESS?.[0]?.ADDRESSPAYMENT ||
+      s?.ADDRESS?.[0]?.ADDRESSCARD ||
+      s?.ADDRESS?.[0]?.ADDRESSINSTALLATION ||
+      {};
+
+    const discountAmount = Number(discount?.DISCOUNTAMOUNT || 0);
+    const totalPrice = Number(pkg?.TOTALPRICE || 0);
+    const firstPeriodAmount = Number(firstPeriodRow?.PAYMENTAMOUNT || 0);
+    const nextPeriodAmount = Number(secondPeriodRow?.PAYMENTAMOUNT || 0);
+
+    const addressString = [
+      addressPayment?.ADDRESSNUMBER,
+      addressPayment?.ADDRESSMOO ? `หมู่ ${addressPayment.ADDRESSMOO}` : "",
+      addressPayment?.ADDRESSSOI ? `ซอย${addressPayment.ADDRESSSOI}` : "",
+      addressPayment?.ADDRESSROAD ? `ถนน${addressPayment.ADDRESSROAD}` : "",
+      addressPayment?.ADDRESSSUBDISTRICTNAME,
+      addressPayment?.ADDRESSDISTRICTNAME,
+      addressPayment?.ADDRESSPROVINCENAME,
+      addressPayment?.ADDRESSZIPCODE,
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    return {
+      REFNO: s?.REFNO || "",
+      CONTNO: s?.CONTNO || s?.NEWREFNO || "",
+
+      CUSTOMERNAME: `${cd?.PREFIX?.[0]?.PREFIXNAME || ""} ${cd?.CUSTOMERNAME || ""} ${cd?.CUSTOMERLASTNAME || ""}`.trim(),
+      ADDRESSSTRING: addressString,
+      TEL1: cd?.CUSTOMERMOBILE || addressPayment?.ADDRESSPHONE || "",
+      TEL2: cd?.CUSTOMERPHONE || "",
+      TELOFFICE: cd?.CUSTOMERWORKPHONE || "",
+
+      PRODUCTNAME: product?.ItemDescription || "",
+      PACKAGETITLE: pkg?.PACKAGETITLE || "",
+      PACKAGETYPEID: Number(pkg?.PACKAGETYPEID || 0),
+      PACKAGETYPENAME: pkg?.PACKAGETYPENAME || "",
+
+      TRADEINDISCOUNT: discountAmount,
+      TOTALPRICE: totalPrice,
+      SALES: totalPrice,
+
+      FIRSTTPERIOD: Math.max(0, firstPeriodAmount - discountAmount),
+      NEXTPERIOD: nextPeriodAmount,
+      BALANCESOFPERIOD:
+        Number(pkg?.PACKAGETYPEID || 0) === 1
+          ? Math.max(0, totalPrice - discountAmount)
+          : Math.max(0, firstPeriodAmount - discountAmount),
+
+      SALEPAYMENTPERIODID:
+        paymentData?.SCHEDULE?.[0]?.PAYMENTPERIODDETAILID ||
+        firstPeriodRow?.PAYMENTPERIODDETAILID ||
+        "",
+
+      PAYMENTPERIODNUMBER:
+        paymentData?.SCHEDULE?.[0]?.PAYMENTPERIODNUMBER ||
+        firstPeriodRow?.PAYMENTPERIODNUMBER ||
+        1,
+
+      PAYMENTAPPOINTMENTDATE:
+        getPaymentAppointmentDate(paymentData),
+
+      AMOUNTPAID: Number(paymentData?.CASHONHAND || 0),
+
+      LATITUDE:
+        s?.ADDRESS?.[0]?.ADDRESSINSTALLATION?.LATITUDE ||
+        addressPayment?.LATITUDE ||
+        null,
+
+      LONGITUDE:
+        s?.ADDRESS?.[0]?.ADDRESSINSTALLATION?.LONGITUDE ||
+        addressPayment?.LONGITUDE ||
+        null,
+
+      SALETEAMCODE: s?.TEAMSALE || TeamSale,
+      SERIALNUMBER: product?.SerialNo || product?.SERIALNUMBER || "",
+      ORGANIZATIONCODE: pkg?.ORGANIZATIONCODE || "",
+      ORGANIZATIONNAME: pkg?.ORGANIZATIONNAME || "",
+      MODE: 0,
+    };
   };
 
   return (
@@ -1011,28 +1149,47 @@ const Step: React.FC = () => {
                       if (!(await guard(9))) return;
 
                       if ((s?.CONTRACT?.length ?? 0) === 0) {
-                        Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'กรุณาบันทึกรายละเอียดสัญญาก่อน' })
-                        return
+                        Swal.fire({
+                          icon: "error",
+                          title: "เกิดข้อผิดพลาด",
+                          text: "กรุณาบันทึกรายละเอียดสัญญาก่อน",
+                        });
+                        return;
                       }
-                      if (hasPaymentPeriod || paidFromLocal) {
-                        Swal.fire({ icon: 'info', title: 'ไม่สามารถแก้ไขได้' })
-                        return
+
+                      const ok = await handleClick("UpdateSalesContract");
+
+                      if (ok) {
+                        const firstBillItem = buildFirstBillItem(s, paymentData);
+
+                        navigate("/firstBill/CreateFirstBill", {
+                          state: {
+                            item: firstBillItem,
+                            stepData: s,
+                            paymentData: paymentData,
+                            from: location.pathname,
+                          },
+                        });
                       }
-                      handleClick('UpdateSalesContract').then(ok => {
-                        if (ok) {
-                          navigate('/firstBill/CreateFirstBill', { state: { item: s, from: location.pathname } })
-                        }
-                      })
                     }}
                     className="w-100 text-start border-0 bg-transparent p-0"
                   >
-                    <div className='d-flex align-items-center pb-8'>
-                      <span className={`bullet bullet-vertical h-40px ${data[0].CONTRACT.length === 0 ? 'bg-danger' : 'bg-success'}`}></span>
-                      <div className='form-check form-check-custom form-check-solid mx-5'></div>
-                      <div className='flex-grow-1'>
+                    <div className="d-flex align-items-center pb-8">
+                      <span
+                        className={`bullet bullet-vertical h-40px ${step9Complete ? "bg-success" : "bg-danger"
+                          }`}
+                      ></span>
+
+                      <div className="form-check form-check-custom form-check-solid mx-5"></div>
+
+                      <div className="flex-grow-1">
                         <div className={`${styles.label}`}>9. การชำระเงิน / นัดชำระ</div>
-                        {data[0].CONTRACT.length !== 0 && (
+
+                        {step9Complete && (
                           <span className={`text-gray-700 d-block ${styles.label}`}>
+                            {paymentAppointmentDate
+                              ? `วันที่นัดชำระ: ${formatToBE(paymentAppointmentDate)}`
+                              : "บันทึกการชำระเงิน / นัดชำระแล้ว"}
                           </span>
                         )}
                       </div>
