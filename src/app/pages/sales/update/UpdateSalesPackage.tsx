@@ -138,6 +138,9 @@ const UpdateSalesPackage: React.FC = () => {
   const [selectedItemCode, setSelectedItemCode] = useState<string | null>(null);
   const [selectedPromotion, setSelectedPromotion] = useState<number | null>(null);
 
+  // กัน useEffect เซ็ตโปรทับหลังจาก user เลือกเองแล้ว
+  const promotionTouchedRef = useRef(false);
+
   // ถ้า db PromotionId = "" ให้บังคับเลือกอันที่ 0 (ไม่มีโปรโมชั่น)
   const normalizePromotionId = (value: any): number | null => {
     if (value === "" || value === null || value === undefined) return null;
@@ -315,7 +318,7 @@ const UpdateSalesPackage: React.FC = () => {
       Status: selectedStatus || "",
       Branch: selectedBranch || "",
       TransDate: selectedTransDate || "",
-      PromotionId: selectedPromotion || "",
+      PromotionId: selectedPromotion ?? "",
       ProductId: productId || "",
       Package:
         selectedPackageModel !== null
@@ -378,7 +381,7 @@ const UpdateSalesPackage: React.FC = () => {
         Status: scannedBundleProduct.Status || "",
         Branch: scannedBundleProduct.Branch || "",
         TransDate: scannedBundleProduct.TransDate || "",
-        PromotionId: selectedPromotion || "",
+        PromotionId: selectedPromotion ?? "",
         ProductId: scannedBundleProduct.ProductID || "",
         Package: [],
       });
@@ -712,45 +715,10 @@ const UpdateSalesPackage: React.FC = () => {
     }
   }, [selectedCategoryId, barCodeNormal]);
 
-  useEffect(() => {
-    // 1) ตรวจสอบเงื่อนไขก่อน
-    if (selectedProductIndex === null || useBundle === null) return;
-    // 2) สร้าง FormData จริงๆ
-    const form = new FormData();
-    form.append("ProductID", String(productId));
-    form.append("EmpId", EmpId);
-    form.append("DivisionId", DivisionId);
-    form.append("DepartId", DepartId);
-    form.append("DepartGroup", DepartGroup);
-    form.append("TeamSale", TeamSale);
-    form.append("ItemID", selectedItemCode!);
-    form.append("IsBundle", useBundle === "bundle" ? "1" : "0");
-
-    // 3) ส่ง FormData ให้ axios จัด header ให้เอง
-    const fetchPromotion = async () => {
-      try {
-        const res = await axios.post(PROMOTION_URL, form);
-        const promos = Array.isArray(res.data.data) ? res.data.data : [];
-        setPromotion(promos);
-      } catch (err) {
-        console.error("Error fetching promotion:", err);
-      }
-    };
-
-    fetchPromotion();
-  }, [
-    selectedProductIndex,
-    useBundle,
-    productId, // ถ้าตัวแปรพวกนี้เปลี่ยน ก็สั่ง fetch ใหม่
-    EmpId,
-    DivisionId,
-    DepartId,
-    DepartGroup,
-    TeamSale,
-    selectedItemCode,
-  ]);
-
   const applyDefaultPromotion = (promos: any[]) => {
+    // ถ้า user เลือกโปรเองแล้ว ห้าม reset กลับค่าเดิม
+    if (promotionTouchedRef.current) return;
+
     const dbPromotionId = normalizePromotionId(
       productContract?.find((p: any) => p.MainItem === "Y")?.PromotionId ??
       productContract?.[0]?.PromotionId ??
@@ -772,9 +740,9 @@ const UpdateSalesPackage: React.FC = () => {
     );
 
     if (matched) {
-      setSelectedPromotion(matched.PROMOTIONID);
+      setSelectedPromotion(Number(matched.PROMOTIONID));
     } else {
-      setSelectedPromotion(promos[0].PROMOTIONID);
+      setSelectedPromotion(Number(promos[0].PROMOTIONID));
     }
   };
 
@@ -915,24 +883,25 @@ const UpdateSalesPackage: React.FC = () => {
     const value = event.target.value;
     setSelectedCategoryId(value);
 
-    // ล้างค่าทั้งหมดใน state ที่เกี่ยวข้อง
+    promotionTouchedRef.current = false;
+
     setProduct([]);
     setSelectedProductIndex(null);
     setSelectedItemCode(null);
     setSelectedItemDescription(null);
     setSelectedDescriptionEN(null);
     setSelectedDescriptionTH(null);
-    setSelectedSerialNo(null); // ล้าง Serial Number
+    setSelectedSerialNo(null);
     setSelectedStatus(null);
     setSelectedBranch(null);
     setSelectedTransDate(null);
     setSelectedPromotion(null);
     setSelectedPackageTypeId(null);
+    setPackageTypeID(null);
     setSelectedPackageModel(null);
     setPackageList([]);
-
-    // ล้าง barCode
-    navigate("/sale/update/updateSalePackage", { state: { barCode: "" } });
+    setScannedBundleProduct(null);
+    setUseBundle("normal");
 
     if (value) {
       try {
@@ -940,9 +909,11 @@ const UpdateSalesPackage: React.FC = () => {
         const response = await axios.get(
           `${API_URL_MONGO}/Product/GetStock?empid=${EmpId}&teamSale=${TeamSale}&categoryId=${value}&ProcessType=${auth.processtype}`
         );
+
         const data = Array.isArray(response.data.data)
           ? response.data.data
           : [];
+
         setProduct(data);
       } catch (error) {
         console.error("Error fetching products:", error);
@@ -953,17 +924,34 @@ const UpdateSalesPackage: React.FC = () => {
   };
 
   const handleCardProductClick = (index: number) => {
+    const selected = product[index];
+    if (!selected) return;
+
+    promotionTouchedRef.current = false;
+
     setSelectedProductIndex(index);
-    setSelectedItemCode(product[index]?.ItemCode);
-    setItemID(product[index]?.ItemCode);
-    setProductId(product[index]?.ProductID);
-    setSelectedItemDescription(product[index]?.ItemDescription);
-    setSelectedDescriptionEN(product[index]?.DescriptionEN);
-    setSelectedDescriptionTH(product[index]?.DescriptionTH);
-    setSelectedSerialNo(product[index]?.SerialNo);
-    setSelectedStatus(product[index]?.Status);
-    setSelectedBranch(product[index]?.Branch);
-    setSelectedTransDate(product[index]?.TransDate);
+    setSelectedItemCode(selected.ItemCode);
+    setItemID(selected.ItemCode);
+    setProductId(selected.ProductID);
+
+    setSelectedItemDescription(selected.ItemDescription);
+    setSelectedDescriptionEN(selected.DescriptionEN);
+    setSelectedDescriptionTH(selected.DescriptionTH);
+    setSelectedSerialNo(selected.SerialNo);
+    setSelectedStatus(selected.Status);
+    setSelectedBranch(selected.Branch);
+    setSelectedTransDate(selected.TransDate);
+
+    // reset ค่าที่ขึ้นกับสินค้า
+    setSelectedPromotion(null);
+    setSelectedPackageTypeId(null);
+    setPackageTypeID(null);
+    setSelectedPackageModel(null);
+    setPackageList([]);
+    setScannedBundleProduct(null);
+
+    // บังคับให้มี mode เสมอ
+    setUseBundle("normal");
   };
 
   //เปลี่ยนสไตล์เป็น success เมื่อเลือกปุ่ม package และเลื่อนลงมายังส่วนแพ็คเกจ
@@ -1246,12 +1234,15 @@ const UpdateSalesPackage: React.FC = () => {
     scannedBundleProduct, // สำคัญสำหรับบันเดิล
   ]);
 
-  useEffect(() => {
-    // เมื่อมีการเปลี่ยนสินค้า / โหมด (ปกติ-บันเดิล) / โปรโมชัน / ประเภทการชำระ
-    // ให้ล้างแพ็กเกจที่เลือกไว้
-    setSelectedPackageModel(null);
+  const didInitPackageRef = useRef(false);
 
-    // ถ้าคุณต้องการล้าง Model ใน store ด้วย (กันค่าค้าง)
+  useEffect(() => {
+    if (!didInitPackageRef.current) {
+      didInitPackageRef.current = true;
+      return;
+    }
+
+    setSelectedPackageModel(null);
     setModel(null as any);
   }, [selectedProductIndex, useBundle, selectedPromotion, selectedPackageTypeId]);
 
@@ -1473,11 +1464,15 @@ const UpdateSalesPackage: React.FC = () => {
                             <select
                               className={`${styles.fontSize} form-select`}
                               onChange={(e) => {
+                                promotionTouchedRef.current = true;
+
                                 const v = e.target.value;
                                 const promoId = v === "" ? null : Number(v);
                                 setSelectedPromotion(promoId);
 
-                                // เปลี่ยนโปรฯ เมื่ออยู่โหมดบันเดิล → ต้องสแกนใหม่
+                                setSelectedPackageModel(null);
+                                setModel(null as any);
+
                                 if (useBundle === "bundle") {
                                   setScannedBundleProduct(null);
                                   localStorage.removeItem("sp.barCodeBundle");
@@ -1503,7 +1498,7 @@ const UpdateSalesPackage: React.FC = () => {
                         </div>
 
                         {/* สแกนบาร์โค้ด */}
-                        {useBundle === "bundle" && selectedPromotion && (
+                        {useBundle === "bundle" && selectedPromotion !== null && (
                           <div
                             className="d-flex justify-content-center align-items-center mb-5"
                             onClick={handleScanBarcodeBundleClick}
