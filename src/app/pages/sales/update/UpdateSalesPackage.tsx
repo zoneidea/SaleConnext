@@ -621,20 +621,133 @@ const UpdateSalesPackage: React.FC = () => {
   };
 
   // GET Product/GetStock?
+  // useEffect(() => {
+  //   const fetchProducts = async () => {
+  //     setLoadingProducts(true);
+  //     setBundleOk(false);
+
+  //     try {
+  //       // ดึง stock
+  //       const url = selectedCategoryId
+  //         ? `${API_URL_MONGO}/Product/GetStock?empid=${EmpId}&teamSale=${TeamSale}&categoryId=${selectedCategoryId}&ProcessType=${auth.processtype}`
+  //         : `${API_URL_MONGO}/Product/GetStock?empid=${EmpId}&teamSale=${TeamSale}&sn=${barCodeNormal}&ProcessType=${auth.processtype}`;
+  //       const res = await axios.get(url);
+  //       const data = Array.isArray(res.data.data) ? res.data.data : [];
+
+  //       // ถ้า S/N มา แต่ไม่เจอ
+  //       if (barCodeNormal && data.length === 0) {
+  //         await Swal.fire({
+  //           icon: "warning",
+  //           title: "ไม่พบสินค้า",
+  //           text: `ไม่พบสินค้า ${barCodeNormal} ในคลัง`,
+  //           confirmButtonText: "ตกลง",
+  //         });
+  //         setProduct([]);
+  //         return;
+  //       }
+
+  //       // ถ้าพบสินค้าอย่างน้อย 1 เครื่อง ให้เช็ค bundle
+  //       if (barCodeNormal && data.length > 0) {
+  //         const form = new FormData();
+  //         form.append("ItemID", data[0].ItemCode);
+  //         form.append("EmpId", EmpId);
+  //         form.append("DivisionId", DivisionId);
+  //         form.append("DepartId", DepartId);
+  //         form.append("DepartGroup", DepartGroup);
+  //         form.append("TeamSale", TeamSale);
+  //         form.append("ProductID", data[0].ProductID);
+
+  //         // สักพักหลัง auto-select ตัวแรก ให้เก็บลง localStorage
+  //         localStorage.setItem("sp.barCodeNormal", barCodeNormal);
+  //         localStorage.setItem("sp.selectedItemCode", data[0].ItemCode);
+  //         localStorage.setItem("sp.productId", data[0].ProductID);
+
+  //         const bundleRes = await axios.post(CHECK_PRODUCT_BUNDLE, form, {
+  //           headers: { "Content-Type": "multipart/form-data" },
+  //         });
+
+  //         const { statustext, message } = bundleRes.data;
+
+  //         if (statustext === "success" || statustext === "notfouund") {
+  //           // ทั้งกรณีเจอ bundle หรือไม่เจอ (notfound)
+  //           setBundleOk(statustext === "success"); // ถ้า success ให้เป็น bundle mode
+  //           setProduct(data);
+
+  //           // auto-select ตัวแรกเสมอ
+  //           const first = data[0];
+  //           setSelectedProductIndex(0);
+  //           setSelectedItemCode(first.ItemCode);
+  //           setItemID(first.ItemCode);
+  //           setProductId(first.ProductID);
+  //           setSelectedItemDescription(first.ItemDescription);
+  //           setSelectedDescriptionEN(first.DescriptionEN);
+  //           setSelectedDescriptionTH(first.DescriptionTH);
+  //           setSelectedSerialNo(first.SerialNo);
+  //           setSelectedStatus(first.Status);
+  //           setSelectedBranch(first.Branch);
+  //           setSelectedTransDate(first.TransDate);
+  //         } else {
+  //           // กรณี error อื่น ๆ
+  //           await Swal.fire({
+  //             icon: "warning",
+  //             title: "ไม่สามารถเลือกสินค้าได้",
+  //             text: message || "เกิดข้อผิดพลาด",
+  //             confirmButtonText: "ตกลง",
+  //           });
+  //           setProduct([]);
+  //         }
+  //       }
+
+  //       // กรณีมาจากการเลือก category ปกติ (ไม่มี barCodeNormal) ก็เซ็ตปกติ
+  //       if (!barCodeNormal) {
+  //         setBundleOk(true);
+  //         setProduct(data);
+  //       }
+  //     } catch (error) {
+  //       console.error(error);
+  //     } finally {
+  //       setLoadingProducts(false);
+  //     }
+  //   };
+
+  //   if (selectedCategoryId || barCodeNormal) {
+  //     fetchProducts();
+  //   }
+  // }, [selectedCategoryId, barCodeNormal]);
+
   useEffect(() => {
     const fetchProducts = async () => {
+      // ✅ หน้าแก้ไข: ถ้ามี productContract อยู่แล้ว
+      // และไม่ได้เลือกหมวดหมู่ใหม่ + ไม่มี barcode ใหม่
+      // ห้าม fetch stock เพราะจะทำให้ product โชว์หลายอัน
+      if (productContract.length > 0 && !selectedCategoryId && !barCodeNormal) {
+        setLoadingProducts(false);
+        return;
+      }
+
+      // ✅ กันยิง API ตอนข้อมูลหลักยังไม่พร้อม
+      if (!EmpId || !TeamSale) {
+        setLoadingProducts(false);
+        return;
+      }
+
+      // ✅ ถ้าไม่มี category และไม่มี barcode ก็ไม่ต้องยิง
+      if (!selectedCategoryId && !barCodeNormal) {
+        setLoadingProducts(false);
+        return;
+      }
+
       setLoadingProducts(true);
       setBundleOk(false);
 
       try {
-        // ดึง stock
         const url = selectedCategoryId
           ? `${API_URL_MONGO}/Product/GetStock?empid=${EmpId}&teamSale=${TeamSale}&categoryId=${selectedCategoryId}&ProcessType=${auth.processtype}`
           : `${API_URL_MONGO}/Product/GetStock?empid=${EmpId}&teamSale=${TeamSale}&sn=${barCodeNormal}&ProcessType=${auth.processtype}`;
+
         const res = await axios.get(url);
         const data = Array.isArray(res.data.data) ? res.data.data : [];
 
-        // ถ้า S/N มา แต่ไม่เจอ
         if (barCodeNormal && data.length === 0) {
           await Swal.fire({
             icon: "warning",
@@ -646,74 +759,71 @@ const UpdateSalesPackage: React.FC = () => {
           return;
         }
 
-        // ถ้าพบสินค้าอย่างน้อย 1 เครื่อง ให้เช็ค bundle
         if (barCodeNormal && data.length > 0) {
+          const first = data[0];
+
           const form = new FormData();
-          form.append("ItemID", data[0].ItemCode);
+          form.append("ItemID", first.ItemCode);
           form.append("EmpId", EmpId);
           form.append("DivisionId", DivisionId);
           form.append("DepartId", DepartId);
           form.append("DepartGroup", DepartGroup);
           form.append("TeamSale", TeamSale);
-          form.append("ProductID", data[0].ProductID);
+          form.append("ProductID", first.ProductID);
 
-          // สักพักหลัง auto-select ตัวแรก ให้เก็บลง localStorage
           localStorage.setItem("sp.barCodeNormal", barCodeNormal);
-          localStorage.setItem("sp.selectedItemCode", data[0].ItemCode);
-          localStorage.setItem("sp.productId", data[0].ProductID);
+          localStorage.setItem("sp.selectedItemCode", first.ItemCode);
+          localStorage.setItem("sp.productId", first.ProductID);
 
           const bundleRes = await axios.post(CHECK_PRODUCT_BUNDLE, form, {
             headers: { "Content-Type": "multipart/form-data" },
           });
 
-          const { statustext, message } = bundleRes.data;
+          const { statustext } = bundleRes.data;
 
-          if (statustext === "success" || statustext === "notfouund") {
-            // ทั้งกรณีเจอ bundle หรือไม่เจอ (notfound)
-            setBundleOk(statustext === "success"); // ถ้า success ให้เป็น bundle mode
-            setProduct(data);
+          setBundleOk(statustext === "success");
 
-            // auto-select ตัวแรกเสมอ
-            const first = data[0];
-            setSelectedProductIndex(0);
-            setSelectedItemCode(first.ItemCode);
-            setItemID(first.ItemCode);
-            setProductId(first.ProductID);
-            setSelectedItemDescription(first.ItemDescription);
-            setSelectedDescriptionEN(first.DescriptionEN);
-            setSelectedDescriptionTH(first.DescriptionTH);
-            setSelectedSerialNo(first.SerialNo);
-            setSelectedStatus(first.Status);
-            setSelectedBranch(first.Branch);
-            setSelectedTransDate(first.TransDate);
-          } else {
-            // กรณี error อื่น ๆ
-            await Swal.fire({
-              icon: "warning",
-              title: "ไม่สามารถเลือกสินค้าได้",
-              text: message || "เกิดข้อผิดพลาด",
-              confirmButtonText: "ตกลง",
-            });
-            setProduct([]);
-          }
+          // ✅ barcode ต้องเลือกแค่ตัวแรก ไม่เอาทั้ง data
+          setProduct([first]);
+
+          setSelectedProductIndex(0);
+          setSelectedItemCode(first.ItemCode);
+          setItemID(first.ItemCode);
+          setSelectedItemDescription(first.ItemDescription);
+          setSelectedDescriptionEN(first.DescriptionEN);
+          setSelectedDescriptionTH(first.DescriptionTH);
+          setSelectedSerialNo(first.SerialNo);
+          setSelectedStatus(first.Status);
+          setSelectedBranch(first.Branch);
+          setSelectedTransDate(first.TransDate);
+          setProductId(first.ProductID);
+
+          return;
         }
 
-        // กรณีมาจากการเลือก category ปกติ (ไม่มี barCodeNormal) ก็เซ็ตปกติ
-        if (!barCodeNormal) {
-          setBundleOk(true);
+        // ✅ กรณี user เลือกหมวดหมู่เอง ค่อยโชว์หลายสินค้าได้
+        if (selectedCategoryId) {
           setProduct(data);
         }
       } catch (error) {
-        console.error(error);
+        console.error("Error fetching products:", error);
       } finally {
         setLoadingProducts(false);
       }
     };
 
-    if (selectedCategoryId || barCodeNormal) {
-      fetchProducts();
-    }
-  }, [selectedCategoryId, barCodeNormal]);
+    fetchProducts();
+  }, [
+    selectedCategoryId,
+    barCodeNormal,
+    EmpId,
+    TeamSale,
+    DivisionId,
+    DepartId,
+    DepartGroup,
+    API_URL_MONGO,
+    auth.processtype,
+  ]);
 
   const applyDefaultPromotion = (promos: any[]) => {
     // ถ้า user เลือกโปรเองแล้ว ห้าม reset กลับค่าเดิม
