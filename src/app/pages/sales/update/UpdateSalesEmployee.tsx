@@ -161,46 +161,87 @@ const UpdateSalesEmployee: React.FC = () => {
 
     const handleNextClick = async () => {
         if (!values.employee) {
-            return MySwal.fire('Warning', 'กรุณาเลือกพนักงานขายก่อน', 'warning')
+            return MySwal.fire("Warning", "กรุณาเลือกพนักงานขายก่อน", "warning");
         }
 
         if (!values.installer) {
-            return MySwal.fire('Warning', 'กรุณาเลือกพนักงานติดตั้งก่อน', 'warning')
+            return MySwal.fire("Warning", "กรุณาเลือกพนักงานติดตั้งก่อน", "warning");
         }
 
         const payload: any = {
-            SALEEMPLOYEE: empInTeam.find(e => e.SaleEmp === values.employee),
-            INSTALLER: installerList.find(e => e.SaleEmp === values.installer),
-        }
+            SALEEMPLOYEE: empInTeam.find((e) => e.SaleEmp === values.employee),
+            INSTALLER: installerList.find((e) => e.SaleEmp === values.installer),
+        };
 
-        if (values.adviser) payload.ADVISER = adviserList.find(e => e.SaleEmp === values.adviser)
-        if (values.installer) payload.INSTALLER = installerList.find(e => e.SaleEmp === values.installer)
+        if (values.adviser) {
+            payload.ADVISER = adviserList.find((e) => e.SaleEmp === values.adviser);
+        }
 
         try {
-            await axios.post(UPDATECONTACT, {
-                REFNO: item.REFNO,
-                EMPID: EmpId,
-                TEAMSALE: TeamSale,
-                SALECODE: SaleCode,
-                SUPEMPID: SupEmpId,
-                SECEMPID: SecEmpId,
-                FIELD: 'SALEEMPLOYEE',
-                DATA: [payload],
-            })
+            const response = await axios.post(
+                UPDATECONTACT,
+                {
+                    REFNO: item.REFNO,
+                    EMPID: EmpId,
+                    TEAMSALE: TeamSale,
+                    SALECODE: SaleCode,
+                    SUPEMPID: SupEmpId,
+                    SECEMPID: SecEmpId,
+                    FIELD: "SALEEMPLOYEE",
+                    DATA: [payload],
+                },
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
 
-            Swal.fire({
-                icon: 'success',
-                title: 'สำเร็จ!',
-                text: 'ปรับปรุงข้อมูลพนักงานขายแล้ว',
+            const responseData = response.data;
+            const innerData = responseData?.data;
+            const innerStatus = String(innerData?.status || "").toLowerCase();
+
+            const isSaveSuccess =
+                response.status === 200 &&
+                innerData &&
+                innerStatus !== "error" &&
+                innerStatus !== "fail" &&
+                innerStatus !== "failed" &&
+                innerStatus !== "false";
+
+            if (!isSaveSuccess) {
+                await MySwal.fire(
+                    "บันทึกไม่สำเร็จ",
+                    innerData?.message ||
+                    responseData?.message ||
+                    "ปรับปรุงข้อมูลไม่สำเร็จ กรุณาติดต่อผู้พัฒนา",
+                    "error"
+                );
+                return;
+            }
+
+            await Swal.fire({
+                icon: "success",
+                title: "สำเร็จ!",
+                text: "ปรับปรุงข้อมูลพนักงานขายแล้ว",
                 timer: 2000,
                 showConfirmButton: false,
-            })
+            });
 
-            navigate('/sale/update/updateCustDetail', { state: matchedItem })
-        } catch {
-            MySwal.fire('Error', 'ไม่สามารถบันทึกข้อมูลได้', 'error')
+            navigate("/sale/update/updateCustDetail", { state: matchedItem });
+        } catch (error: any) {
+            console.error("Error UPDATECONTACT:", error);
+
+            await MySwal.fire(
+                "เกิดข้อผิดพลาด",
+                error?.response?.data?.data?.message ||
+                error?.response?.data?.message ||
+                error?.message ||
+                "ไม่สามารถบันทึกข้อมูลได้",
+                "error"
+            );
         }
-    }
+    };
 
     return (
         <Content>

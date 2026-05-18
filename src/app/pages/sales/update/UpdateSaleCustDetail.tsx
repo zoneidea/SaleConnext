@@ -466,7 +466,7 @@ const UpdateSaleCustDetail: React.FC = () => {
       // 2) เรียก CHECKDATACUSTOMER
       //-------------------------------
       const checkRes = await axios.post(CHECKDATACUSTOMER, checkPayload, {
-        validateStatus: () => true, // สำคัญมาก ทำให้ status 400 ไม่เข้า catch
+        validateStatus: () => true,
         headers: {
           "Content-Type": "application/json",
         },
@@ -480,7 +480,7 @@ const UpdateSaleCustDetail: React.FC = () => {
       if (statustext !== "success") {
         await MySwal.fire({
           icon: "warning",
-          text: message,
+          text: message || "ตรวจสอบข้อมูลลูกค้าไม่สำเร็จ",
         });
         return;
       }
@@ -510,30 +510,57 @@ const UpdateSaleCustDetail: React.FC = () => {
 
       console.log("UPDATECONTACT:", updateContract.data);
 
-      if (updateContract.status === 200 && updateContract.data.data) {
-        Swal.fire({
-          icon: "success",
-          title: "สำเร็จ!",
-          text: "ปรับปรุงข้อมูลลูกค้าแล้ว",
-          timer: 2000,
-          showConfirmButton: false,
-        });
+      const responseData = updateContract.data;
+      const innerData = responseData?.data;
+      const innerStatus = String(innerData?.status || "").toLowerCase();
 
-        navigate("/sale/update/updateAddress", {
-          state: {
-            ...matchedItem,
-          },
-        });
-      } else {
-        Swal.fire({
+      const isSaveSuccess =
+        updateContract.status === 200 &&
+        innerData &&
+        innerStatus !== "error" &&
+        innerStatus !== "fail" &&
+        innerStatus !== "failed" &&
+        innerStatus !== "false";
+
+      // ❌ API ตอบกลับว่า error แม้ HTTP 200 ก็ถือว่าบันทึกไม่สำเร็จ
+      if (!isSaveSuccess) {
+        await MySwal.fire({
           icon: "error",
-          title: "เกิดข้อผิดพลาด!",
-          text: updateContract.data.message || "ไม่สามารถอัปเดตข้อมูลได้",
+          title: "บันทึกไม่สำเร็จ",
+          text:
+            innerData?.message ||
+            responseData?.message ||
+            "ไม่สามารถอัปเดตข้อมูลได้",
         });
+        return;
       }
-    } catch (error) {
+
+      // ✅ สำเร็จจริง
+      await Swal.fire({
+        icon: "success",
+        title: "สำเร็จ!",
+        text: "ปรับปรุงข้อมูลลูกค้าแล้ว",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+
+      navigate("/sale/update/updateAddress", {
+        state: {
+          ...matchedItem,
+        },
+      });
+    } catch (error: any) {
       console.error("Error saving data:", error);
-      MySwal.fire("เกิดข้อผิดพลาด", "ไม่สามารถบันทึกข้อมูลได้", "error");
+
+      await MySwal.fire({
+        icon: "error",
+        title: "เกิดข้อผิดพลาด",
+        text:
+          error?.response?.data?.data?.message ||
+          error?.response?.data?.message ||
+          error?.message ||
+          "ไม่สามารถบันทึกข้อมูลได้",
+      });
     }
   };
 

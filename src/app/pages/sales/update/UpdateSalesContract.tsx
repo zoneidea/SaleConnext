@@ -124,8 +124,32 @@ const UpdateSalesContract: React.FC = () => {
     }
   };
 
+  const isApiSaveSuccess = (response: any) => {
+    const responseData = response?.data;
+    const innerData = responseData?.data;
+    const innerStatus = String(innerData?.status || "").toLowerCase();
+
+    return (
+      response?.status === 200 &&
+      innerData &&
+      innerStatus !== "error" &&
+      innerStatus !== "fail" &&
+      innerStatus !== "failed" &&
+      innerStatus !== "false"
+    );
+  };
+
+  const getApiErrorMessage = (response: any, fallback: string) => {
+    return (
+      response?.data?.data?.message ||
+      response?.data?.message ||
+      fallback
+    );
+  };
+
   const handleNextClick = async () => {
     if (isSubmitting) return;
+
     setIsSubmitting(true);
     let succeeded = false;
 
@@ -141,21 +165,61 @@ const UpdateSalesContract: React.FC = () => {
 
       const updateContract = await axios.post(
         UPDATECONTACT,
-        { ...base, FIELD: "CONTRACT", DATA: { createdAt: formattedDate, signature: signatureDataURL } },
-        { headers: { "Content-Type": "application/json" } }
+        {
+          ...base,
+          FIELD: "CONTRACT",
+          DATA: {
+            createdAt: formattedDate,
+            signature: signatureDataURL,
+          },
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
 
-      if (updateContract.status !== 200) throw new Error("อัพเดตสัญญาไม่สำเร็จ");
+      if (!isApiSaveSuccess(updateContract)) {
+        await MySwal.fire(
+          "บันทึกไม่สำเร็จ",
+          getApiErrorMessage(
+            updateContract,
+            "อัพเดตสัญญาไม่สำเร็จ กรุณาติดต่อผู้พัฒนา"
+          ),
+          "error"
+        );
+        return;
+      }
 
       const finishResponse = await axios.post(
         UPDATECONTACT,
-        { ...base, FIELD: "PAYMENT", DATA: "DRAFT" },
-        { headers: { "Content-Type": "application/json" } }
+        {
+          ...base,
+          FIELD: "PAYMENT",
+          DATA: "DRAFT",
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
 
-      if (finishResponse.status !== 200) throw new Error("อัพเดตสถานะไม่สำเร็จ");
+      if (!isApiSaveSuccess(finishResponse)) {
+        await MySwal.fire(
+          "บันทึกไม่สำเร็จ",
+          getApiErrorMessage(
+            finishResponse,
+            "อัพเดตสถานะไม่สำเร็จ กรุณาติดต่อผู้พัฒนา"
+          ),
+          "error"
+        );
+        return;
+      }
 
       succeeded = true;
+
       await Swal.fire({
         icon: "success",
         title: "สำเร็จ!",
@@ -165,18 +229,26 @@ const UpdateSalesContract: React.FC = () => {
       });
 
       navigate("/sale/salesCreateFirstBill", {
-        state: { item, from: location.pathname },
+        state: {
+          item,
+          from: location.pathname,
+        },
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating contract or status:", error);
-      Swal.fire({
-        icon: "error",
-        title: "เกิดข้อผิดพลาด!",
-        text: "ไม่สามารถบันทึกสัญญาได้ กรุณาลองใหม่อีกครั้ง",
-        confirmButtonText: "ตกลง",
-      });
+
+      await MySwal.fire(
+        "เกิดข้อผิดพลาด",
+        error?.response?.data?.data?.message ||
+        error?.response?.data?.message ||
+        error?.message ||
+        "ไม่สามารถบันทึกสัญญาได้ กรุณาลองใหม่อีกครั้ง",
+        "error"
+      );
     } finally {
-      if (!succeeded) setIsSubmitting(false); // สำเร็จแล้วจะเปลี่ยนหน้า ไม่ต้องปลดล็อก
+      if (!succeeded) {
+        setIsSubmitting(false);
+      }
     }
   };
 

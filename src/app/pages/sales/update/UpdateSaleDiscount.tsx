@@ -424,7 +424,6 @@ const UpdateSalesDiscount: React.FC = () => {
   // POST Contract/updateContract
   const handleNextClick = async () => {
     try {
-      // POST Contract/updateContract
       const updateContract = await axios.post(
         UPDATECONTACT,
         {
@@ -443,53 +442,56 @@ const UpdateSalesDiscount: React.FC = () => {
           },
         }
       );
-      // console.log(`updateContract DISCOUNT: `, updateContract.data);
-      if (updateContract.status === 200) {
-        if (!updateContract.data.data) {
-          MySwal.fire(
-            "เกิดข้อผิดพลาด",
-            "ปรับปรุงข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา",
-            "error"
-          );
-        } else {
-          Swal.fire({
-            icon: "success",
-            title: "สำเร็จ!",
-            text: "ปรับปรุงข้อมูลส่วนลดแล้ว",
-            timer: 2000, // แสดงผล 3 วินาที
-            showConfirmButton: false, // ซ่อนปุ่ม "ตกลง"
-          });
-          navigate("/sale/update/UpdateSalesEmployee", {
-            // state: {
-            //     ...matchedItem,
-            // }
-            state: {
-              ...matchedFromDraft,
-            },
-          });
-        }
-      } else {
-        MySwal.fire("เกิดข้อผิดพลาด", updateContract.data.message, "error");
+
+      const responseData = updateContract.data;
+      const innerData = responseData?.data;
+
+      const innerStatus = String(innerData?.status || "").toLowerCase();
+
+      const isSaveSuccess =
+        updateContract.status === 200 &&
+        innerData &&
+        innerStatus !== "error" &&
+        innerStatus !== "fail" &&
+        innerStatus !== "failed" &&
+        innerStatus !== "false";
+
+      if (!isSaveSuccess) {
+        await MySwal.fire(
+          "บันทึกไม่สำเร็จ",
+          innerData?.message ||
+          responseData?.message ||
+          "ปรับปรุงข้อมูลไม่สำเร็จ กรุณาติดต่อผู้พัฒนา",
+          "error"
+        );
+        return;
       }
-    } catch (error) {
+
+      await Swal.fire({
+        icon: "success",
+        title: "สำเร็จ!",
+        text: "ปรับปรุงข้อมูลส่วนลดแล้ว",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+
+      navigate("/sale/update/UpdateSalesEmployee", {
+        state: {
+          ...matchedFromDraft,
+        },
+      });
+    } catch (error: any) {
       console.error("Error fetching UPDATECONTACT:", error);
+
+      await MySwal.fire(
+        "เกิดข้อผิดพลาด",
+        error?.response?.data?.message ||
+        error?.message ||
+        "ไม่สามารถบันทึกข้อมูลได้",
+        "error"
+      );
     }
   };
-
-  // Handle increment and decrement functions
-  // const handleDecrement = () => {
-  //     setCurrentSequence((prev) => Math.max(0, prev - step)); // ลดค่า step แต่ไม่ให้ต่ำกว่า 0
-  // };
-
-  // const handleIncrement = () => {
-  //     setCurrentSequence((prev) => {
-  //         if (prev + step <= discountPrice) {
-  //             return prev + step;
-  //         } else {
-  //             return prev;
-  //         }
-  //     });
-  // };
 
   // คำนวณราคาหลังหักส่วนลด
   const finalPrice = Math.max(0, totalPriceSafe - (discountInput ?? 0));

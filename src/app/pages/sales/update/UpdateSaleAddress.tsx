@@ -1411,7 +1411,6 @@ const UpdateSaleAddress: React.FC = () => {
 
     const onSubmit = async () => {
         try {
-            // POST Contract/updateContract
             const updateContract = await axios.post(
                 UPDATECONTACT,
                 {
@@ -1430,45 +1429,66 @@ const UpdateSaleAddress: React.FC = () => {
                     },
                 }
             );
-            // console.log(`updateContract CUSTOMERDETAIL: `, updateContract.data);
-            if (updateContract.status === 200) {
-                if (!updateContract.data.data) {
-                    MySwal.fire(
-                        "เกิดข้อผิดพลาด",
-                        "ปรับปรุงข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา",
-                        "error"
-                    );
-                } else {
-                    Swal.fire({
-                        icon: "success",
-                        title: "สำเร็จ!",
-                        text: "ปรับปรุงข้อมูลที่อยู่แล้ว",
-                        timer: 2000,
-                        showConfirmButton: false,
-                    });
-                    const nextState = {
-                        ...(matchedItem ?? item),
-                        ADDRESS: [SaveAddressData],
-                    };
 
-                    if (item.PDPA?.length > 0) {
-                        navigate("/sale/update/UpdateSalesContract", {
-                            state: nextState,
-                        });
-                    } else {
-                        navigate("/sale/update/UpdateSalesPDPA", {
-                            state: {
-                                ...nextState,
-                                from: "/sale/update/updateAddress",
-                            },
-                        });
-                    }
-                }
-            } else {
-                MySwal.fire("เกิดข้อผิดพลาด", updateContract.data.message, "error");
+            const responseData = updateContract.data;
+            const innerData = responseData?.data;
+            const innerStatus = String(innerData?.status || "").toLowerCase();
+
+            const isSaveSuccess =
+                updateContract.status === 200 &&
+                innerData &&
+                innerStatus !== "error" &&
+                innerStatus !== "fail" &&
+                innerStatus !== "failed" &&
+                innerStatus !== "false";
+
+            if (!isSaveSuccess) {
+                await MySwal.fire(
+                    "บันทึกไม่สำเร็จ",
+                    innerData?.message ||
+                    responseData?.message ||
+                    "ปรับปรุงข้อมูลไม่สำเร็จ กรุณาติดต่อผู้พัฒนา",
+                    "error"
+                );
+                return;
             }
-        } catch (error) {
+
+            await Swal.fire({
+                icon: "success",
+                title: "สำเร็จ!",
+                text: "ปรับปรุงข้อมูลที่อยู่แล้ว",
+                timer: 2000,
+                showConfirmButton: false,
+            });
+
+            const nextState = {
+                ...(matchedItem ?? item),
+                ADDRESS: [SaveAddressData],
+            };
+
+            if (item.PDPA?.length > 0) {
+                navigate("/sale/update/UpdateSalesContract", {
+                    state: nextState,
+                });
+            } else {
+                navigate("/sale/update/UpdateSalesPDPA", {
+                    state: {
+                        ...nextState,
+                        from: "/sale/update/updateAddress",
+                    },
+                });
+            }
+        } catch (error: any) {
             console.error("Error fetching UPDATECONTACT:", error);
+
+            await MySwal.fire(
+                "เกิดข้อผิดพลาด",
+                error?.response?.data?.data?.message ||
+                error?.response?.data?.message ||
+                error?.message ||
+                "ไม่สามารถบันทึกข้อมูลได้",
+                "error"
+            );
         }
     };
 

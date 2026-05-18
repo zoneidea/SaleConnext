@@ -168,7 +168,7 @@ const UpdateSalesPDPA: React.FC = () => {
     try {
       const resp = await axios.post(
         CHECK_OTP_API,
-        { EmpID: EmpId, RefNo: refNoToShow, OTP: inputOTP }, // จะเปลี่ยนเป็น refNoToShow ก็ได้เช่นกัน
+        { EmpID: EmpId, RefNo: refNoToShow, OTP: inputOTP },
         { headers: { "Content-Type": "multipart/form-data" } }
       );
 
@@ -177,29 +177,93 @@ const UpdateSalesPDPA: React.FC = () => {
         return;
       }
 
-      // อัปเดต PDPA เข้าเอกสารที่เราจะแสดง
-      await axios.post(UPDATECONTACT, {
-        REFNO: refNoToShow,
-        EMPID: EmpId,
-        TEAMSALE: TeamSale,
-        SALECODE: SaleCode,
-        SUPEMPID: SupEmpId,
-        SECEMPID: SecEmpId,
-        FIELD: "PDPA",
-        DATA: [{ CONSENTGIVEN: consentGiven, TELCUSTOMER: telCustomer, OTP: inputOTP }],
+      const updateContract = await axios.post(
+        UPDATECONTACT,
+        {
+          REFNO: refNoToShow,
+          EMPID: EmpId,
+          TEAMSALE: TeamSale,
+          SALECODE: SaleCode,
+          SUPEMPID: SupEmpId,
+          SECEMPID: SecEmpId,
+          FIELD: "PDPA",
+          DATA: [
+            {
+              CONSENTGIVEN: consentGiven,
+              TELCUSTOMER: telCustomer,
+              OTP: inputOTP,
+            },
+          ],
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const responseData = updateContract.data;
+      const innerData = responseData?.data;
+      const innerStatus = String(innerData?.status || "").toLowerCase();
+
+      const isSaveSuccess =
+        updateContract.status === 200 &&
+        innerData &&
+        innerStatus !== "error" &&
+        innerStatus !== "fail" &&
+        innerStatus !== "failed" &&
+        innerStatus !== "false";
+
+      if (!isSaveSuccess) {
+        await MySwal.fire(
+          "บันทึกไม่สำเร็จ",
+          innerData?.message ||
+          responseData?.message ||
+          "จัดเก็บข้อมูล PDPA ไม่สำเร็จ กรุณาติดต่อผู้พัฒนา",
+          "error"
+        );
+        return;
+      }
+
+      await Swal.fire({
+        icon: "success",
+        title: "จัดเก็บข้อมูลสำเร็จ",
+        timer: 2000,
+        showConfirmButton: false,
       });
 
-      Swal.fire({ icon: "success", title: "จัดเก็บข้อมูลสำเร็จ", timer: 2000, showConfirmButton: false });
+      const payload: ItemProps = {
+        ...(matchedItem ?? item),
+        REFNO: refNoToShow,
+        PDPA: [
+          {
+            CONSENTGIVEN: consentGiven,
+            TELCUSTOMER: telCustomer,
+            OTP: inputOTP,
+          },
+        ],
+      } as ItemProps;
 
-      // ⬇️ ส่ง state แบบ “แบน” + REFNO = refNoToShow
-      const payload: ItemProps = { ...(matchedItem ?? item), REFNO: refNoToShow } as ItemProps;
-      navigate("/sale/update/UpdateSalesContract", { state: { ...payload, from: "/sale/update/UpdateSalesPDPA" } });
-    } catch (error) {
-      console.error("ตรวจสอบ OTP ล้มเหลว:", error);
-      Swal.fire({ icon: "error", title: "ไม่สามารถตรวจสอบ OTP ได้" });
+      navigate("/sale/update/UpdateSalesContract", {
+        state: {
+          ...payload,
+          from: "/sale/update/UpdateSalesPDPA",
+        },
+      });
+    } catch (error: any) {
+      console.error("ตรวจสอบ OTP หรือบันทึก PDPA ล้มเหลว:", error);
+
+      await MySwal.fire(
+        "เกิดข้อผิดพลาด",
+        error?.response?.data?.data?.message ||
+        error?.response?.data?.message ||
+        error?.message ||
+        "ไม่สามารถตรวจสอบ OTP หรือบันทึกข้อมูล PDPA ได้",
+        "error"
+      );
     }
   };
-
+  
   return (
     <>
       <Content>

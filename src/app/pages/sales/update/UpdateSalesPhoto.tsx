@@ -247,6 +247,7 @@ const UpdateSalesPhoto: React.FC = () => {
             });
             return;
         }
+
         MySwal.fire({
             title: "โปรดรอสักครู่...",
             text: "กำลังส่งข้อมูล",
@@ -256,7 +257,7 @@ const UpdateSalesPhoto: React.FC = () => {
             },
         });
 
-        const finishRefno = refno ? refno : matchedItem.REFNO;
+        const finishRefno = refno ? refno : matchedItem?.REFNO;
 
         try {
             const response = await axios.post(
@@ -272,59 +273,55 @@ const UpdateSalesPhoto: React.FC = () => {
                     DATA: "FINISH",
                 },
                 {
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
                 }
             );
 
-            // ตรวจสอบ status
-            if (response.status === 200) {
-                if (!response.data.data) {
-                    MySwal.fire(
-                        "เกิดข้อผิดพลาด",
-                        "ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา",
-                        "error"
-                    );
-                } else {
-                    MySwal.fire("สำเร็จ", "ทำสัญญาเรียบร้อยแล้ว", "success");
-                    navigate("/sale/overview");
-                }
-            } else {
-                MySwal.fire("เกิดข้อผิดพลาด", response.data.message, "error");
+            const responseData = response.data;
+            const innerData = responseData?.data;
+            const innerStatus = String(innerData?.status || "").toLowerCase();
+
+            const isSaveSuccess =
+                response.status === 200 &&
+                innerData &&
+                innerStatus !== "error" &&
+                innerStatus !== "fail" &&
+                innerStatus !== "failed" &&
+                innerStatus !== "false";
+
+            if (!isSaveSuccess) {
+                await MySwal.fire(
+                    "บันทึกไม่สำเร็จ",
+                    innerData?.message ||
+                    responseData?.message ||
+                    "ส่งข้อมูลไม่สำเร็จ กรุณาติดต่อผู้พัฒนา",
+                    "error"
+                );
+                return;
             }
 
-            if (response.status === 200) {
-                if (!response.data.data) {
-                    MySwal.fire({
-                        icon: "error",
-                        title: "เกิดข้อผิดพลาด",
-                        text: "ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา",
-                    });
-                } else {
-                    MySwal.fire({
-                        icon: "success",
-                        title: "สำเร็จ!",
-                        text: "บันทึกสัญญาเรียบร้อยแล้ว",
-                        timer: 2000,
-                        showConfirmButton: false,
-                    }).then(() => {
-                        navigate("/sale/overview");
-                    });
-                }
-            } else {
-                MySwal.fire({
-                    icon: "error",
-                    title: "เกิดข้อผิดพลาด",
-                    text: "ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา",
-                });
-            }
-        } catch (error) {
-            // กรณีเกิด Error ให้ปิด Loading ก่อน แล้วแจ้ง
-            Swal.close();
-            MySwal.fire({
-                icon: "error",
-                title: "เกิดข้อผิดพลาด",
-                text: "ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา",
+            await MySwal.fire({
+                icon: "success",
+                title: "สำเร็จ!",
+                text: "บันทึกสัญญาเรียบร้อยแล้ว",
+                timer: 2000,
+                showConfirmButton: false,
             });
+
+            navigate("/sale/overview");
+        } catch (error: any) {
+            console.error("Error UPDATECONTACT:", error);
+
+            await MySwal.fire(
+                "เกิดข้อผิดพลาด",
+                error?.response?.data?.data?.message ||
+                error?.response?.data?.message ||
+                error?.message ||
+                "ส่งข้อมูลไม่สำเร็จ กรุณาติดต่อผู้พัฒนา",
+                "error"
+            );
         }
     };
 
@@ -340,7 +337,7 @@ const UpdateSalesPhoto: React.FC = () => {
             });
             return;
         }
-        // เรียก SweetAlert2 loading
+
         MySwal.fire({
             title: "โปรดรอสักครู่...",
             text: "กำลังส่งข้อมูล",
@@ -361,28 +358,55 @@ const UpdateSalesPhoto: React.FC = () => {
                     DATA: "FINISH",
                 },
                 {
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
                 }
             );
 
-            if (response.status === 200) {
-                if (!response.data.data) {
-                    MySwal.fire(
-                        "เกิดข้อผิดพลาด",
-                        "ส่งข้อมูลไม่สำเร็จ\nกรุณาติดต่อผู้พัฒนา",
-                        "error"
-                    );
-                } else {
-                    MySwal.fire("สำเร็จ", "ส่งข้อมูลตรวจสอบแล้ว", "success");
-                    navigate("/sale/overview");
-                }
-            } else {
-                MySwal.fire("เกิดข้อผิดพลาด", response.data.message, "error");
+            const responseData = response.data;
+            const innerData = responseData?.data;
+            const innerStatus = String(innerData?.status || "").toLowerCase();
+
+            const isSaveSuccess =
+                response.status === 200 &&
+                innerData &&
+                innerStatus !== "error" &&
+                innerStatus !== "fail" &&
+                innerStatus !== "failed" &&
+                innerStatus !== "false";
+
+            if (!isSaveSuccess) {
+                await MySwal.fire(
+                    "บันทึกไม่สำเร็จ",
+                    innerData?.message ||
+                    responseData?.message ||
+                    "ส่งข้อมูลไม่สำเร็จ กรุณาติดต่อผู้พัฒนา",
+                    "error"
+                );
+                return;
             }
-        } catch (error) {
-            // กรณีเกิด Error ให้ปิด Loading ก่อน แล้วแจ้ง
-            Swal.close();
-            MySwal.fire("เกิดข้อผิดพลาด", "ไม่สามารถส่งข้อมูลได้", "error");
+
+            await MySwal.fire({
+                icon: "success",
+                title: "สำเร็จ!",
+                text: "ส่งข้อมูลตรวจสอบแล้ว",
+                timer: 2000,
+                showConfirmButton: false,
+            });
+
+            navigate("/sale/overview");
+        } catch (error: any) {
+            console.error("Error UPDATECONTACT:", error);
+
+            await MySwal.fire(
+                "เกิดข้อผิดพลาด",
+                error?.response?.data?.data?.message ||
+                error?.response?.data?.message ||
+                error?.message ||
+                "ไม่สามารถส่งข้อมูลได้",
+                "error"
+            );
         }
     };
 
