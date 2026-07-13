@@ -153,8 +153,8 @@ const CreateFirstBill: React.FC = () => {
     }, [item, paymentData, refno]);
 
     // ชำระเงินทันที หรือ นัดชำระ
-    const [payQuick, setPayQuick] = useState<boolean>(true);
-    const [status, setStatus] = useState("PAID");
+    const [payQuick, setPayQuick] = useState<boolean>(false);
+    const [status, setStatus] = useState("SCHEDULE");
 
     // ชำระเต็ม หรือ ชำระบางส่วน / เกินจำนวน
     const [payFullAmount, setPayFullAmount] = useState<boolean>(true);
