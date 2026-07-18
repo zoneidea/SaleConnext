@@ -120,11 +120,8 @@ const SalesItemNumber: React.FC<StatusLabelProps> = ({
     });
   };
 
-  // เช็คว่า data ใน item มีไม่ครบทุกขั้นตอน จึงจะสามารถลบได้
   const isDataIncomplete = useMemo(() => {
-    return (
-      !item.CONTNO
-    );
+    return !item?.CONTNO;
   }, [item]);
 
   // ด้านบนของ component

@@ -532,15 +532,19 @@ const Step: React.FC = () => {
   );
 
   // 3) ส่วนลด / เครื่องเทิร์น / ของแถม
-  const step3Complete = hasAny(s.DISCOUNT, (d: any) =>
-    d?.DISCOUNTAMOUNT !== null &&
-    d?.DISCOUNTAMOUNT !== undefined &&
-    String(d?.DISCOUNTAMOUNT).trim() !== "" ||
-    isNonEmptyStr(d?.GIFT?.GIFTDESCRIPTION) ||
-    d?.TRADEIN?.HASTRADEIN === 1 ||
-    isNonEmptyStr(d?.TRADEIN?.TRADEINMODEL) ||
-    isNonEmptyStr(d?.TRADEIN?.TRADEINBRANDNAME)
-  );
+  const step3Complete =
+    (Array.isArray(s.DISCOUNT) && s.DISCOUNT.length > 0) ||
+    hasAny(s.DISCOUNT, (d: any) =>
+      (
+        d?.DISCOUNTAMOUNT !== null &&
+        d?.DISCOUNTAMOUNT !== undefined &&
+        String(d?.DISCOUNTAMOUNT).trim() !== ""
+      ) ||
+      isNonEmptyStr(d?.GIFT?.GIFTDESCRIPTION) ||
+      d?.TRADEIN?.HASTRADEIN === 1 ||
+      isNonEmptyStr(d?.TRADEIN?.TRADEINMODEL) ||
+      isNonEmptyStr(d?.TRADEIN?.TRADEINBRANDNAME)
+    );
 
   // 4) พนักงานขาย: ต้องมีทั้ง SALEEMPLOYEE และ INSTALLER
   const saleEmployeeRecord = s?.SALEEMPLOYEE?.[0] ?? null;
@@ -910,9 +914,13 @@ const Step: React.FC = () => {
                           </span>
                         )}
 
-                        <span className={`text-gray-700 d-block ${styles.label}`}>
-                          {`ส่วนลด: ${data?.[0]?.DISCOUNT?.[0]?.DISCOUNTAMOUNT}`}
-                        </span>
+                        {data?.[0]?.DISCOUNT?.[0]?.DISCOUNTAMOUNT !== null &&
+                          data?.[0]?.DISCOUNT?.[0]?.DISCOUNTAMOUNT !== undefined &&
+                          String(data?.[0]?.DISCOUNT?.[0]?.DISCOUNTAMOUNT).trim() !== "" && (
+                          <span className={`text-gray-700 d-block ${styles.label}`}>
+                            {`ส่วนลด: ${data?.[0]?.DISCOUNT?.[0]?.DISCOUNTAMOUNT}`}
+                          </span>
+                        )}
 
                         {data?.[0]?.DISCOUNT?.[0]?.GIFT.GIFTDESCRIPTION && (
                           <span className={`text-gray-700 d-block ${styles.label}`}>
