@@ -123,7 +123,9 @@ const CreateFirstBill: React.FC = () => {
     const netPrice = totalPrice - tradeInDiscount;
 
     // หน้าจอนี้คือ "รับงวดแรก" → ยอดที่จะเก็บแบบเต็มงวด
-    const paymentAmount = isCash ? netPrice : firstPeriod;
+    const paymentAmount = isCash
+        ? netPrice
+        : Math.max(0, firstPeriod - tradeInDiscount);
 
     const salePaymentPeriodID = item?.SALEPAYMENTPERIODID;
     const paymentPeriodNumber = item?.PAYMENTPERIODNUMBER;
@@ -411,13 +413,20 @@ const CreateFirstBill: React.FC = () => {
         PAYMENTPERIODNUMBER: paymentPeriodNumber,
         PAYMENTCHANNEL: paymentChannel,
         PAYMENTCHOICE: paymentChoice,
+        // AMOUNT:
+        //     status === "SCHEDULE" && paymentChoice === "NONE"
+        //         ? paymentAmount - tradeInDiscount
+        //         : paymentChoice === "FULL"
+        //             ? balanceOfPeriod
+        //             : paySomeAmount,
         AMOUNT:
             status === "SCHEDULE" && paymentChoice === "NONE"
-                ? paymentAmount - tradeInDiscount
+                ? paymentAmount
                 : paymentChoice === "FULL"
                     ? balanceOfPeriod
                     : paySomeAmount,
-        PERIODAMOUNT: firstPeriod - tradeInDiscount,
+        // PERIODAMOUNT: firstPeriod - tradeInDiscount,
+        PERIODAMOUNT: paymentAmount,
         DISCOUNT: tradeInDiscount,
         PAYMENTID: paymentId,
     };
@@ -1248,7 +1257,8 @@ const CreateFirstBill: React.FC = () => {
                                                 </label>
                                                 <div className="col-7 col-md-8 d-flex align-items-center justify-content-between">
                                                     <span className={`${styles.label}`}>
-                                                        {firstPeriod}
+                                                        {/* {firstPeriod} */}
+                                                        {paymentAmount}
                                                     </span>
                                                     <span className="badge badge-light-success">บาท</span>
                                                 </div>

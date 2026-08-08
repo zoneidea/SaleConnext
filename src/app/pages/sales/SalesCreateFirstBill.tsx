@@ -513,7 +513,7 @@ const SalesCreateFirstBill: React.FC = () => {
             setDateError("");
         }
 
-        if (payQuick && paymentChannel === "CASH") {
+        if (status === "PAID" && paymentChannel === "CASH") {
             const { isConfirmed } = await Swal.fire({
                 title: "ต้องการออกใบรับเงินหรือไม่?",
                 icon: "question",

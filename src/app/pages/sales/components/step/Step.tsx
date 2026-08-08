@@ -711,7 +711,7 @@ const Step: React.FC = () => {
       TOTALPRICE: totalPrice,
       SALES: totalPrice,
 
-      FIRSTTPERIOD: Math.max(0, firstPeriodAmount - discountAmount),
+      FIRSTTPERIOD: firstPeriodAmount,
       NEXTPERIOD: nextPeriodAmount,
       BALANCESOFPERIOD:
         Number(pkg?.PACKAGETYPEID || 0) === 1
