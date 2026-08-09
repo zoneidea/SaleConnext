@@ -181,12 +181,12 @@ const CreateFirstBill: React.FC = () => {
     // ชำระเต็ม หรือ ชำระบางส่วน / เกินจำนวน
     const [payFullAmount, setPayFullAmount] = useState<boolean>(true);
     const [paySomeAmount, setPaySomeAmount] = useState<number>(0);
-    const [paymentChoice, setPaymentChoice] = useState<string>("FULL");
+    const [paymentChoice, setPaymentChoice] = useState<string>("NONE");
 
     const [priceOption, setPriceOption] = useState<string>("CASH");
 
     // ประเภทการชำระเงิน
-    const [paymentChannel, setPaymentChannel] = useState<string>("CASH");
+    const [paymentChannel, setPaymentChannel] = useState<string>("NONE");
 
     const remainingAmount = Math.max(0, paymentAmount - paySomeAmount);
 
@@ -413,6 +413,11 @@ const CreateFirstBill: React.FC = () => {
         }
     };
 
+    const normalizedPaymentChoice =
+        status === "SCHEDULE" ? "NONE" : paymentChoice;
+    const normalizedPaymentChannel =
+        status === "SCHEDULE" ? "NONE" : paymentChannel;
+
     const allData = {
         REFNO: refno,
         EMPID: EmpId,
@@ -430,12 +435,12 @@ const CreateFirstBill: React.FC = () => {
                     : dueDate,
         PAYMENTPERIODDETAILID: salePaymentPeriodID,
         PAYMENTPERIODNUMBER: paymentPeriodNumber,
-        PAYMENTCHANNEL: paymentChannel,
-        PAYMENTCHOICE: paymentChoice,
+        PAYMENTCHANNEL: normalizedPaymentChannel,
+        PAYMENTCHOICE: normalizedPaymentChoice,
         AMOUNT:
-            status === "SCHEDULE" && paymentChoice === "NONE"
+            status === "SCHEDULE" && normalizedPaymentChoice === "NONE"
                 ? paymentAmount
-                : paymentChoice === "FULL"
+                : normalizedPaymentChoice === "FULL"
                     ? paymentAmount
                     : paySomeAmount,
         PERIODAMOUNT: paymentAmount,
