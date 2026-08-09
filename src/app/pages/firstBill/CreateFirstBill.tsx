@@ -108,7 +108,7 @@ const CreateFirstBill: React.FC = () => {
     const tel2 = item?.TEL2;
     const telOffice = item?.TELOFFICE;
 
-    const sales = item?.SALES;
+    const sales = Number(item?.SALES ?? 0);
     const tradeInDiscount = Number(item?.TRADEINDISCOUNT ?? 0);
     const totalPrice = Number(item?.TOTALPRICE ?? 0);
 
@@ -117,15 +117,35 @@ const CreateFirstBill: React.FC = () => {
     const nextPeriod = Number(item?.NEXTPERIOD ?? 0);
     const balanceOfPeriod = Number(item?.BALANCESOFPERIOD ?? 0);
 
-    // สำหรับแพ็กเกจเงินสด ให้ราคาสุทธิ/เพดานอ้างจาก balanceOfPeriod
-    const capBase = balanceOfPeriod;
+    const grossPrice = sales || totalPrice;
+    const totalPriceAlreadyNet =
+        tradeInDiscount > 0 &&
+        grossPrice > 0 &&
+        totalPrice > 0 &&
+        totalPrice === Math.max(0, grossPrice - tradeInDiscount);
 
-    const netPrice = totalPrice - tradeInDiscount;
+    const netPrice = totalPriceAlreadyNet
+        ? totalPrice
+        : Math.max(0, grossPrice - tradeInDiscount);
 
-    // หน้าจอนี้คือ "รับงวดแรก" → ยอดที่จะเก็บแบบเต็มงวด
+    const firstPeriodAlreadyNet =
+        totalPriceAlreadyNet ||
+        (tradeInDiscount > 0 &&
+            firstPeriod > 0 &&
+            firstPeriod === balanceOfPeriod);
+
+    const normalizedFirstPeriod = firstPeriodAlreadyNet
+        ? firstPeriod
+        : Math.max(0, firstPeriod - tradeInDiscount);
+
+    // ยอดที่ต้องรับจริงของงวดแรก ใช้ยอดคงเหลือถ้ามี เพื่อกันการหักส่วนลดซ้ำ
     const paymentAmount = isCash
         ? netPrice
-        : Math.max(0, firstPeriod - tradeInDiscount);
+        : balanceOfPeriod > 0
+            ? balanceOfPeriod
+            : normalizedFirstPeriod;
+
+    const capBase = paymentAmount;
 
     const salePaymentPeriodID = item?.SALEPAYMENTPERIODID;
     const paymentPeriodNumber = item?.PAYMENTPERIODNUMBER;
@@ -168,7 +188,7 @@ const CreateFirstBill: React.FC = () => {
     // ประเภทการชำระเงิน
     const [paymentChannel, setPaymentChannel] = useState<string>("CASH");
 
-    const remainingAmount = Math.max(0, balanceOfPeriod - paySomeAmount);
+    const remainingAmount = Math.max(0, paymentAmount - paySomeAmount);
 
     const [valueCalendarInstall, setValueCalendarInstall] = useState<Date | null>(
         null
@@ -193,7 +213,7 @@ const CreateFirstBill: React.FC = () => {
     // ไม่ให้เลือกย้อนหลัง (เสริมความปลอดภัย)
     const todayStr = dayjs().format("YYYY-MM-DD");
 
-    const getAmountForQR = () => (payFullAmount ? balanceOfPeriod : paySomeAmount);
+    const getAmountForQR = () => (payFullAmount ? paymentAmount : paySomeAmount);
 
     const getQRPayment = async () => {
         try {
@@ -405,27 +425,19 @@ const CreateFirstBill: React.FC = () => {
         DUEDATE:
             status === "SCHEDULE"
                 ? dueDate
-                : paymentChoice === "FULL" ||
-                    paySomeAmount >= paymentAmount - tradeInDiscount
+                : paymentChoice === "FULL" || paySomeAmount >= paymentAmount
                     ? ""
                     : dueDate,
         PAYMENTPERIODDETAILID: salePaymentPeriodID,
         PAYMENTPERIODNUMBER: paymentPeriodNumber,
         PAYMENTCHANNEL: paymentChannel,
         PAYMENTCHOICE: paymentChoice,
-        // AMOUNT:
-        //     status === "SCHEDULE" && paymentChoice === "NONE"
-        //         ? paymentAmount - tradeInDiscount
-        //         : paymentChoice === "FULL"
-        //             ? balanceOfPeriod
-        //             : paySomeAmount,
         AMOUNT:
             status === "SCHEDULE" && paymentChoice === "NONE"
                 ? paymentAmount
                 : paymentChoice === "FULL"
-                    ? balanceOfPeriod
+                    ? paymentAmount
                     : paySomeAmount,
-        // PERIODAMOUNT: firstPeriod - tradeInDiscount,
         PERIODAMOUNT: paymentAmount,
         DISCOUNT: tradeInDiscount,
         PAYMENTID: paymentId,
@@ -817,7 +829,7 @@ const CreateFirstBill: React.FC = () => {
                                                                                 style={{
                                                                                     backgroundColor: "#d7dbde",
                                                                                 }}
-                                                                                value={balanceOfPeriod}
+                                                                                value={paymentAmount}
                                                                             />
                                                                         </div>
                                                                     ) : (
@@ -832,7 +844,7 @@ const CreateFirstBill: React.FC = () => {
                                                                                 style={{
                                                                                     backgroundColor: "#d7dbde",
                                                                                 }}
-                                                                                value={balanceOfPeriod}
+                                                                                value={paymentAmount}
                                                                             />
                                                                         </div>
                                                                     )}
@@ -905,7 +917,7 @@ const CreateFirstBill: React.FC = () => {
                                                                                     style={{
                                                                                         backgroundColor: "#d7dbde",
                                                                                     }}
-                                                                                    value={balanceOfPeriod}
+                                                                                    value={paymentAmount}
                                                                                 />
                                                                             </>
                                                                         )}
@@ -1216,7 +1228,7 @@ const CreateFirstBill: React.FC = () => {
                                         </label>
                                         <div className="col-7 col-md-8 d-flex align-items-center justify-content-between">
                                             <span className={`${styles.label}`}>
-                                                {sales}
+                                                {grossPrice}
                                             </span>
                                             <span className="badge badge-light-success">บาท</span>
                                         </div>
@@ -1240,7 +1252,7 @@ const CreateFirstBill: React.FC = () => {
                                         </label>
                                         <div className="col-7 col-md-8 d-flex align-items-center justify-content-between">
                                             <span className={`${styles.label}`}>
-                                                {totalPrice}
+                                                {netPrice}
                                             </span>
                                             <span className="badge badge-light-success">บาท</span>
                                         </div>
