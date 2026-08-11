@@ -1,31 +1,40 @@
 import { create } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
 
+const REFNO_STORAGE_KEY = 'REFNO';
+
+const createRefno = () => uuidv4().replace(/-/g, '').toUpperCase();
+
+const getStoredRefno = () => {
+    const sessionRefno = sessionStorage.getItem(REFNO_STORAGE_KEY);
+    if (sessionRefno) {
+        return sessionRefno;
+    }
+
+    // Drop legacy REFNO kept in localStorage to avoid reusing stale values across sessions.
+    localStorage.removeItem(REFNO_STORAGE_KEY);
+
+    const newREFNO = createRefno();
+    sessionStorage.setItem(REFNO_STORAGE_KEY, newREFNO);
+    return newREFNO;
+};
+
 interface UUIDStore {
     REFNO: string;
     SETREFNO: () => void;
 }
 
 export const useUUIDStore = create<UUIDStore>((set) => ({
-    REFNO: (() => {
-        // ตรวจสอบใน localStorage ว่ามี REFNO หรือไม่
-        const storedREFNO = localStorage.getItem('REFNO');
-        if (storedREFNO) {
-            return storedREFNO; // ถ้ามีค่า ให้ใช้ค่าเดิมที่บันทึกไว้
-        } else {
-            const newREFNO = uuidv4().replace(/-/g, '').toUpperCase();
-            localStorage.setItem('REFNO', newREFNO); // บันทึกค่าใหม่ลงใน localStorage
-            return newREFNO; // คืนค่าใหม่ที่สร้าง
-        }
-    })(),
+    REFNO: getStoredRefno(),
     SETREFNO: () => {
-        const newREFNO = uuidv4().replace(/-/g, '').toUpperCase();
-        localStorage.setItem('REFNO', newREFNO); // บันทึกค่าใหม่ลงใน localStorage
+        const newREFNO = createRefno();
+        sessionStorage.setItem(REFNO_STORAGE_KEY, newREFNO);
+        localStorage.removeItem(REFNO_STORAGE_KEY);
         set({ REFNO: newREFNO });
     },
 }));
 
-// หน้า package
+// à¸«à¸™à¹‰à¸² package
 interface SaveProduct {
     EmpId: string;
     TeamSale: string;
@@ -80,7 +89,7 @@ export const useSaveProductStore = create<SaveProductStore>((set) => ({
     SETPRODUCT: (newProduct) => set({ PRODUCT: newProduct }),
 }));
 
-// หน้า discount
+// à¸«à¸™à¹‰à¸² discount
 interface SaveTradeIn {
     HASTRADEIN: number;
     TRADEINBRANDID: number;
@@ -93,7 +102,7 @@ interface SaveGift {
     GIFTID: number;
     GIFTCODE: string;
     GIFTNAME: string;
-    GIFTDESCRIPTION: string | null;  // สามารถมีค่าเป็น null
+    GIFTDESCRIPTION: string | null;  // à¸ªà¸²à¸¡à¸²à¸£à¸–à¸¡à¸µà¸„à¹ˆà¸²à¹€à¸›à¹‡à¸™ null
     GIFTPRICE: number;
 }
 
@@ -113,7 +122,7 @@ export const useSaveDiscountStore = create<SaveDiscountStore>((set) => ({
     SETDISCOUNT: (newDiscount) => set({ DISCOUNT: newDiscount }),
 }));
 
-// หน้า createCust ข้อมูลลูกค้า
+// à¸«à¸™à¹‰à¸² createCust à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸¥à¸¹à¸à¸„à¹‰à¸²
 interface SaveCardType {
     CARDTYPE: number;
     CARDTYPECODE: string;
@@ -160,7 +169,7 @@ export const useSaveCustomerStore = create<SaveCustomerStore>((set) => ({
     setSaveCustomerTypes: (saveCustomerTypes) => set({ saveCustomerTypes }),
 }))
 
-// หน้า createCust ที่อยู่
+// à¸«à¸™à¹‰à¸² createCust à¸—à¸µà¹ˆà¸­à¸¢à¸¹à¹ˆ
 interface AddressCard {
     ADDRESSNUMBER: string;
     ADDRESSMOO: string;

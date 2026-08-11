@@ -94,6 +94,7 @@ const SalesSatusCust: React.FC = () => {
     !isSearchDone || (customerStatus?.length > 0 && !hasClickedCard);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [matchedCustomer, setMatchedCustomer] = useState<any | null>(null);
   // console.log(`matchedCustomer`, matchedCustomer);
@@ -531,6 +532,10 @@ const SalesSatusCust: React.FC = () => {
   }
 
   const handleNextClick = async () => {
+    if (isSubmitting) {
+      return;
+    }
+
     let picked: any = null;
 
     if (noHistoryData) {
@@ -544,6 +549,8 @@ const SalesSatusCust: React.FC = () => {
     if (!picked) {
       return Swal.fire("Warning", "กรุณาเลือกการ์ดก่อน", "warning");
     }
+
+    setIsSubmitting(true);
 
     try {
       // 1) บันทึกแพ็กเกจเหมือนเดิม (ส่งสิ่งที่เลือก หรือ searchtext กรณีไม่พบประวัติ)
@@ -591,9 +598,11 @@ const SalesSatusCust: React.FC = () => {
         timer: 1500,
         showConfirmButton: false,
       });
+      setIsSubmitting(false);
       navigate("/sale/package");
     } catch (err) {
       console.error(err);
+      setIsSubmitting(false);
       Swal.fire("Error", "ไม่สามารถบันทึกข้อมูลได้", "error");
     }
   };
@@ -707,10 +716,10 @@ const SalesSatusCust: React.FC = () => {
                 กลับหน้าแรก
               </button>
               <button
-                className={`${styles.btnPrimary} ${!isSearchDone || isNextDisabled ? "disabled" : ""
+                className={`${styles.btnPrimary} ${!isSearchDone || isNextDisabled || isSubmitting ? "disabled" : ""
                   }`}
                 onClick={handleNextClick}
-                disabled={!isSearchDone || isNextDisabled}
+                disabled={!isSearchDone || isNextDisabled || isSubmitting}
               >
                 ถัดไป
               </button>
@@ -734,10 +743,10 @@ const SalesSatusCust: React.FC = () => {
                 กลับหน้าแรก
               </button>
               <button
-                className={`${styles.btnPrimary} ${!isSearchDone || isNextDisabled ? "disabled" : ""
+                className={`${styles.btnPrimary} ${!isSearchDone || isNextDisabled || isSubmitting ? "disabled" : ""
                   }`}
                 onClick={handleNextClick}
-                disabled={!isSearchDone || isNextDisabled}
+                disabled={!isSearchDone || isNextDisabled || isSubmitting}
               >
                 ถัดไป
               </button>
@@ -750,3 +759,4 @@ const SalesSatusCust: React.FC = () => {
 };
 
 export default SalesSatusCust;
+

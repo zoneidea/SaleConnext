@@ -37,6 +37,7 @@ const AuthProvider: FC<WithChildren> = ({ children }) => {
 
       if (timeDifference > 86400000) {
         localStorage.removeItem('REFNO');
+        sessionStorage.removeItem('REFNO');
         localStorage.removeItem('kt_theme_mode_value');
         localStorage.removeItem('authData');
         localStorage.removeItem('loginTimestamp');
@@ -69,6 +70,7 @@ const AuthProvider: FC<WithChildren> = ({ children }) => {
     } else {
       authHelper.removeAuth();
       localStorage.removeItem('REFNO');
+      sessionStorage.removeItem('REFNO');
       localStorage.removeItem('kt_theme_mode_value');
       localStorage.removeItem('authData');
       localStorage.removeItem('loginTimestamp');
