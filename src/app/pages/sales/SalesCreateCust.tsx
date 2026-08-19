@@ -1377,8 +1377,32 @@ const SalesCreateCust: React.FC = () => {
     {/*-------------------- End Validate --------------------*/ }
 
     {/*-------------------- Start บันทึกข้อมูลลงระบบ และไปขั้นตอนต่อไป --------------------*/ }
+    const hasRequiredAddressFields = (address: any) => {
+        return Boolean(
+            address?.ADDRESSNUMBER?.toString().trim() &&
+            address?.ADDRESSPROVINCE?.toString().trim() &&
+            address?.ADDRESSDISTRICT?.toString().trim() &&
+            address?.ADDRESSSUBDISTRICT?.toString().trim()
+        );
+    };
+
     const onSubmit = async (data: any) => {
         try {
+            if (
+                !hasRequiredAddressFields(SaveAddressData.ADDRESSCARD) ||
+                !hasRequiredAddressFields(SaveAddressData.ADDRESSINSTALLATION) ||
+                !hasRequiredAddressFields(SaveAddressData.ADDRESSPAYMENT) ||
+                (useThisTax === "TRUE" &&
+                    !hasRequiredAddressFields(SaveAddressData.ADDRESSTAX))
+            ) {
+                await MySwal.fire(
+                    "ข้อมูลที่อยู่ไม่ครบ",
+                    "กรุณากรอกที่อยู่ให้ครบก่อนบันทึก โดยเฉพาะที่อยู่ติดตั้ง",
+                    "warning"
+                );
+                return;
+            }
+
             // เรียก API บันทึกข้อมูล
             const response = await axios.post(UPDATECONTACT, {
                 REFNO,
