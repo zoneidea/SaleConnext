@@ -515,57 +515,57 @@ const UpdateSaleAddress: React.FC = () => {
     ]);
 
     useEffect(() => {
-        setAddressNumber(custAddr?.[0]?.ADDRESSCARD.ADDRESSNUMBER);
-        setAddressMoo(custAddr?.[0]?.ADDRESSCARD.ADDRESSMOO);
-        setAddressSoi(custAddr?.[0]?.ADDRESSCARD.ADDRESSSOI);
-        setAddressRoad(custAddr?.[0]?.ADDRESSCARD.ADDRESSROAD);
-        setSelectedProvince(custAddr?.[0]?.ADDRESSCARD.ADDRESSPROVINCE);
-        setSelectedDistrict(custAddr?.[0]?.ADDRESSCARD.ADDRESSDISTRICT);
+        setAddressNumber(custAddr?.[0]?.ADDRESSCARD?.ADDRESSNUMBER);
+        setAddressMoo(custAddr?.[0]?.ADDRESSCARD?.ADDRESSMOO);
+        setAddressSoi(custAddr?.[0]?.ADDRESSCARD?.ADDRESSSOI);
+        setAddressRoad(custAddr?.[0]?.ADDRESSCARD?.ADDRESSROAD);
+        setSelectedProvince(custAddr?.[0]?.ADDRESSCARD?.ADDRESSPROVINCE);
+        setSelectedDistrict(custAddr?.[0]?.ADDRESSCARD?.ADDRESSDISTRICT);
         setSelectedSubDistrict(
-            custAddr?.[0]?.ADDRESSCARD.ADDRESSSUBDISTRICT
+            custAddr?.[0]?.ADDRESSCARD?.ADDRESSSUBDISTRICT
         );
-        setSelectedZipcode(custAddr?.[0]?.ADDRESSCARD.ADDRESSZIPCODE);
-        setAddressPhone(custAddr?.[0]?.ADDRESSCARD.ADDRESSPHONE);
+        setSelectedZipcode(custAddr?.[0]?.ADDRESSCARD?.ADDRESSZIPCODE);
+        setAddressPhone(custAddr?.[0]?.ADDRESSCARD?.ADDRESSPHONE);
 
-        setAddressNumberForInstall(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSNUMBER);
-        setAddressMooForInstall(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSMOO);
-        setAddressSoiForInstall(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSSOI);
-        setAddressRoadForInstall(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSROAD);
-        setSelectedProvinceForInstall(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSPROVINCE);
-        setSelectedDistrictForInstall(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSDISTRICT);
+        setAddressNumberForInstall(custAddr?.[0]?.ADDRESSINSTALLATION?.ADDRESSNUMBER);
+        setAddressMooForInstall(custAddr?.[0]?.ADDRESSINSTALLATION?.ADDRESSMOO);
+        setAddressSoiForInstall(custAddr?.[0]?.ADDRESSINSTALLATION?.ADDRESSSOI);
+        setAddressRoadForInstall(custAddr?.[0]?.ADDRESSINSTALLATION?.ADDRESSROAD);
+        setSelectedProvinceForInstall(custAddr?.[0]?.ADDRESSINSTALLATION?.ADDRESSPROVINCE);
+        setSelectedDistrictForInstall(custAddr?.[0]?.ADDRESSINSTALLATION?.ADDRESSDISTRICT);
         setSelectedSubDistrictForInstall(
-            custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSSUBDISTRICT
+            custAddr?.[0]?.ADDRESSINSTALLATION?.ADDRESSSUBDISTRICT
         );
-        setSelectedZipcodeForInstall(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSZIPCODE);
-        setAddressPhoneForInstall(custAddr?.[0]?.ADDRESSINSTALLATION.ADDRESSPHONE);
+        setSelectedZipcodeForInstall(custAddr?.[0]?.ADDRESSINSTALLATION?.ADDRESSZIPCODE);
+        setAddressPhoneForInstall(custAddr?.[0]?.ADDRESSINSTALLATION?.ADDRESSPHONE);
 
-        setAddressNumberForPayment(custAddr?.[0]?.ADDRESSPAYMENT.ADDRESSNUMBER);
-        setAddressMooForPayment(custAddr?.[0]?.ADDRESSPAYMENT.ADDRESSMOO);
-        setAddressSoiForPayment(custAddr?.[0]?.ADDRESSPAYMENT.ADDRESSSOI);
-        setAddressRoadForPayment(custAddr?.[0]?.ADDRESSPAYMENT.ADDRESSROAD);
+        setAddressNumberForPayment(custAddr?.[0]?.ADDRESSPAYMENT?.ADDRESSNUMBER);
+        setAddressMooForPayment(custAddr?.[0]?.ADDRESSPAYMENT?.ADDRESSMOO);
+        setAddressSoiForPayment(custAddr?.[0]?.ADDRESSPAYMENT?.ADDRESSSOI);
+        setAddressRoadForPayment(custAddr?.[0]?.ADDRESSPAYMENT?.ADDRESSROAD);
         setSelectedProvinceForPayment(
-            custAddr?.[0]?.ADDRESSPAYMENT.ADDRESSPROVINCE
+            custAddr?.[0]?.ADDRESSPAYMENT?.ADDRESSPROVINCE
         );
         setSelectedDistrictForPayment(
-            custAddr?.[0]?.ADDRESSPAYMENT.ADDRESSDISTRICT
+            custAddr?.[0]?.ADDRESSPAYMENT?.ADDRESSDISTRICT
         );
         setSelectedSubDistrictForPayment(
-            custAddr?.[0]?.ADDRESSPAYMENT.ADDRESSSUBDISTRICT
+            custAddr?.[0]?.ADDRESSPAYMENT?.ADDRESSSUBDISTRICT
         );
-        setSelectedZipcodeForPayment(custAddr?.[0]?.ADDRESSPAYMENT.ADDRESSZIPCODE);
-        setAddressPhoneForPayment(custAddr?.[0]?.ADDRESSPAYMENT.ADDRESSPHONE);
+        setSelectedZipcodeForPayment(custAddr?.[0]?.ADDRESSPAYMENT?.ADDRESSZIPCODE);
+        setAddressPhoneForPayment(custAddr?.[0]?.ADDRESSPAYMENT?.ADDRESSPHONE);
 
-        setAddressNumberForBilling(custAddr?.[0]?.ADDRESSTAX.ADDRESSNUMBER);
-        setAddressMooForBilling(custAddr?.[0]?.ADDRESSTAX.ADDRESSMOO);
-        setAddressSoiForBilling(custAddr?.[0]?.ADDRESSTAX.ADDRESSSOI);
-        setAddressRoadForBilling(custAddr?.[0]?.ADDRESSTAX.ADDRESSROAD);
-        setSelectedProvinceForBilling(custAddr?.[0]?.ADDRESSTAX.ADDRESSPROVINCE);
-        setSelectedDistrictForBilling(custAddr?.[0]?.ADDRESSTAX.ADDRESSDISTRICT);
+        setAddressNumberForBilling(custAddr?.[0]?.ADDRESSTAX?.ADDRESSNUMBER);
+        setAddressMooForBilling(custAddr?.[0]?.ADDRESSTAX?.ADDRESSMOO);
+        setAddressSoiForBilling(custAddr?.[0]?.ADDRESSTAX?.ADDRESSSOI);
+        setAddressRoadForBilling(custAddr?.[0]?.ADDRESSTAX?.ADDRESSROAD);
+        setSelectedProvinceForBilling(custAddr?.[0]?.ADDRESSTAX?.ADDRESSPROVINCE);
+        setSelectedDistrictForBilling(custAddr?.[0]?.ADDRESSTAX?.ADDRESSDISTRICT);
         setSelectedSubDistrictForBilling(
-            custAddr?.[0]?.ADDRESSTAX.ADDRESSSUBDISTRICT
+            custAddr?.[0]?.ADDRESSTAX?.ADDRESSSUBDISTRICT
         );
-        setSelectedZipcodeForBilling(custAddr?.[0]?.ADDRESSTAX.ADDRESSZIPCODE);
-        setAddressPhoneForBilling(custAddr?.[0]?.ADDRESSTAX.ADDRESSPHONE);
+        setSelectedZipcodeForBilling(custAddr?.[0]?.ADDRESSTAX?.ADDRESSZIPCODE);
+        setAddressPhoneForBilling(custAddr?.[0]?.ADDRESSTAX?.ADDRESSPHONE);
 
         setLikeAllAddr(false);
         setInstallLikeCardAddr(false);
@@ -1655,10 +1655,10 @@ const UpdateSaleAddress: React.FC = () => {
     useEffect(() => {
         if (!custAddr?.[0]) return;
 
-        const card = custAddr[0].ADDRESSCARD;
-        const inst = custAddr[0].ADDRESSINSTALLATION;
-        const pay = custAddr[0].ADDRESSPAYMENT;
-        const tax = custAddr[0].ADDRESSTAX;
+        const card = custAddr[0].ADDRESSCARD ?? {};
+        const inst = custAddr[0].ADDRESSINSTALLATION ?? {};
+        const pay = custAddr[0].ADDRESSPAYMENT ?? {};
+        const tax = custAddr[0].ADDRESSTAX ?? {};
 
         // รีเซ็ตค่าให้ทั้งฟอร์ม
         reset({
@@ -1699,15 +1699,8 @@ const UpdateSaleAddress: React.FC = () => {
         setAddressPhone(card.ADDRESSPHONE);
     }, [custAddr, reset]);
 
-    const shouldUseCsFallback = useMemo(() => {
-        // ใช้ csAddress ก็ต่อเมื่อไม่มี ADDRESS เลย หรือ ADDRESSCARD ว่าง
-        const addr: any[] = Array.isArray(item?.ADDRESS) ? item.ADDRESS : [];
-        const card = addr?.[0]?.ADDRESSCARD;
-        return (
-            !Array.isArray(addr) || addr.length === 0 ||
-            !card || Object.keys(card).length === 0
-        );
-    }, [item]);
+    // A persisted address always takes precedence over customer history.
+    const shouldUseCsFallback = !item?.ADDRESS?.length;
 
     const statusAddr = item?.CUSTOMERSTATUS?.[0]?.Contract?.Address ?? [];
 

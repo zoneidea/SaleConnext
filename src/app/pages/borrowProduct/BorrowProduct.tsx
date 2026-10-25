@@ -28,11 +28,12 @@ interface MyLocationState {
     tab?: string
 }
 
+const MySwal = withReactContent(Swal);
+
 const BorrowProduct: React.FC = () => {
     const navigate = useNavigate();
     const { auth } = useAuth();
 
-    const MySwal = withReactContent(Swal);
 
     const [loadingCategories, setLoadingCategories] = useState(true);
     const [loadingProducts, setLoadingProducts] = useState(false);
@@ -175,45 +176,52 @@ const BorrowProduct: React.FC = () => {
     }, [location.state])
 
     useEffect(() => {
-        if (!location.state?.barCode) return;
-        const code = location.state.barCode.trim().toLowerCase();
+        const sn = location.state?.barCode?.trim();
+        if (!sn) return;
+
+        const controller = new AbortController();
         setIsSearchingBarcode(true);
+        setScannedBarCode(sn);
+        setSelectedProductForBorrow(null);
 
-        // debounce 3 วิ ตามเดิม
-        const timer = setTimeout(() => {
-            // search จาก masterStockAllProductCompany แทน
-            const found = masterStockAllProductCompany.find(item =>
-                item.SerialNo?.trim().toLowerCase() === code
-            );
+        const checkBorrow = async () => {
+            try {
+                const { data } = await axios.get(API_URL_MONGO + '/Product/CheckBorrow', {
+                    params: { empid: EmpId, salecode: SaleCode, teamSale: TeamSale, sn },
+                    signal: controller.signal,
+                });
+                if (controller.signal.aborted) return;
 
-            if (found) {
-                // ถ้า TeamSale ตรงกับของผู้ใช้งาน ให้แจ้งเตือนและยกเลิกการค้นหา
-                if (found.TeamSale === TeamSale) {
+                if (data.status === true && data.data && !Array.isArray(data.data) && data.data.SerialNo) {
+                    // Preserve the returned SN and nullable TeamSale in the borrow payload.
+                    setSelectedProductForBorrow(data.data);
+                } else {
                     MySwal.fire({
                         icon: 'warning',
-                        title: 'ไม่สามารถยืมสินค้าของทีมเดียวกันได้',
+                        title: 'ไม่สามารถยืมสินค้าได้',
+                        text: data.message || 'ไม่พบข้อมูลสินค้าที่สามารถยืมได้',
                     });
-                    setIsSearchingBarcode(false);
-                    // เคลียร์ state.barCode และกลับไปหน้า borrowproduct
-                    navigate('/borrowproduct', { replace: true, state: {} });
-                    return;
                 }
-
-                setSelectedProductForBorrow(found);
-                setStockAllProductCompany([found]);
-            } else {
+            } catch (error) {
+                if (controller.signal.aborted) return;
                 MySwal.fire({
                     icon: 'error',
-                    title: `ไม่พบรหัสสินค้า ${code.toUpperCase()} ในระบบ`,
+                    title: 'ตรวจสอบสินค้าไม่สำเร็จ',
+                    text: axios.isAxiosError(error)
+                        ? error.response?.data?.message || 'กรุณาลองสแกนสินค้าอีกครั้ง'
+                        : 'กรุณาลองสแกนสินค้าอีกครั้ง',
                 });
+            } finally {
+                if (!controller.signal.aborted) {
+                    setIsSearchingBarcode(false);
+                    navigate('/borrowproduct', { replace: true, state: {} });
+                }
             }
+        };
 
-            setIsSearchingBarcode(false);
-            navigate('/borrowproduct', { replace: true, state: {} });
-        }, 3000);
-
-        return () => clearTimeout(timer);
-    }, [location.state?.barCode, masterStockAllProductCompany, MySwal, navigate, TeamSale]);
+        void checkBorrow();
+        return () => controller.abort();
+    }, [location.state?.barCode, API_URL_MONGO, EmpId, SaleCode, TeamSale, navigate]);
 
     // const getWaitingApprovals = async () => {
     //     setLoadingWatingProductAprrove(true);
@@ -277,7 +285,7 @@ const BorrowProduct: React.FC = () => {
     }, [EmpId, TeamSale, SaleCode]);
 
     // ฟังก์ชันยืมสินค้า — หลังสำเร็จให้สลับแท็บ + ดึง borrow list ใหม่
-    const handleBorrowProduct = async (item: any) => {
+    const handleBorrowProduct = async () => {
         if (!selectedProductForBorrow) {
             MySwal.fire({
                 icon: 'warning',
@@ -287,49 +295,39 @@ const BorrowProduct: React.FC = () => {
             return;
         }
         try {
-            const url = `${API_URL_MONGO}/Product/GetBorrow?empid=${selectedProductForBorrow.EmpId}&teamSale=${selectedProductForBorrow.TeamSale}&sn=${selectedProductForBorrow.SerialNo}`;
-            const borrowRes = await axios.get(url);
-            if (borrowRes.status === 200) {
-                const payload = {
-                    TEAMSALE: TeamSale,
-                    SALECODE: SaleCode,
-                    EMPID: EmpId,
-                    EMPNAME: EmpName,
-                    PRODUCT: selectedProductForBorrow,
-                    STATUS: 'REQUEST',
-                };
-                const moveRes = await axios.post(REQUEST_BORROW, payload, {
-                    headers: { 'Content-Type': 'application/json' },
+            const payload = {
+                TEAMSALE: TeamSale,
+                SALECODE: SaleCode,
+                EMPID: EmpId,
+                EMPNAME: EmpName,
+                PRODUCT: selectedProductForBorrow,
+                STATUS: 'REQUEST',
+            };
+            const moveRes = await axios.post(REQUEST_BORROW, payload, {
+                headers: { 'Content-Type': 'application/json' },
+            });
+            if (moveRes) {
+                await MySwal.fire({
+                    icon: 'success',
+                    title: 'ยืมสินค้าเรียบร้อย',
+                    text: `รหัสสินค้า ${selectedProductForBorrow.SerialNo} กำลังรออนุมัติ`,
                 });
-                if (moveRes) {
-                    await MySwal.fire({
-                        icon: 'success',
-                        title: 'ยืมสินค้าเรียบร้อย',
-                        text: `รหัสสินค้า ${selectedProductForBorrow.SerialNo} กำลังรออนุมัติ`,
-                    });
-                    // อัปเดต stock
-                    axios.get(UPDATE_STOCK_URL).catch(console.error);
+                // อัปเดต stock
+                axios.get(UPDATE_STOCK_URL).catch(console.error);
 
-                    // เคลียร์การ์ดจาก Tab "borrowing"
-                    setSelectedProductForBorrow(null);
-                    setStockAllProductCompany(masterStockAllProductCompany);
+                // เคลียร์การ์ดจาก Tab "borrowing"
+                setSelectedProductForBorrow(null);
+                setStockAllProductCompany(masterStockAllProductCompany);
 
-                    setActiveTab('waiting');
-                    getWaitingApprovals();
-                    getBorrowerList();
+                setActiveTab('waiting');
+                getWaitingApprovals();
+                getBorrowerList();
 
-                } else {
-                    MySwal.fire({
-                        icon: 'error',
-                        title: 'ไม่สามารถยืมสินค้าได้',
-                        text: 'เกิดข้อผิดพลาดบางอย่าง',
-                    });
-                }
             } else {
                 MySwal.fire({
                     icon: 'error',
                     title: 'ไม่สามารถยืมสินค้าได้',
-                    text: 'สถานะไม่อนุญาตให้ยืม หรือไม่พบข้อมูล',
+                    text: 'เกิดข้อผิดพลาดบางอย่าง',
                 });
             }
         } catch (err) {
@@ -670,7 +668,7 @@ const BorrowProduct: React.FC = () => {
                                                                             SerialNo={selectedProductForBorrow.SerialNo}
                                                                             TeamSale={selectedProductForBorrow.TeamSale}
                                                                             isSelected={true}
-                                                                            onBorrow={() => handleBorrowProduct(selectedProductForBorrow)}
+                                                                            onBorrow={handleBorrowProduct}
                                                                         />
                                                                     </>
                                                                 )}

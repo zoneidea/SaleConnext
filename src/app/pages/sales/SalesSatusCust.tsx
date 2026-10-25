@@ -483,54 +483,6 @@ const SalesSatusCust: React.FC = () => {
     }
   }, [selectedDistrict, customerStatus]);
 
-  function buildCustomerDetailFromCard(card: any) {
-    const c = card?.Contract ?? {};
-    const addr = c?.Address?.[0] ?? {};
-
-    return {
-      CUSTOMERTYPE: "",
-      CUSTOMERTYPENAME: "",
-
-      CUSTOMERID: String(c.IDCard ?? "").replace(/\D/g, ""),
-      CUSTOMERNAME: c.CustomerFirstName ?? "",
-      CUSTOMERLASTNAME: c.CustomerLastName ?? "",
-      CUSTOMERMD: "",
-
-      CUSTOMERDOB: "",
-      CUSTOMERRAGE: "",
-
-      CUSTOMERMOBILE: String(addr.TelMobile ?? "").replace(/\D/g, ""),
-      CUSTOMERWORKPHONE: String(addr.TelOffice ?? "").replace(/\D/g, ""),
-      CUSTOMERPHONE: String(addr.TelHome ?? "").replace(/\D/g, ""),
-      CUSTOMEREMAIL: String(addr.EMail ?? ""),
-
-      CARDTYPE: [],
-      PREFIX: [],
-      SEX: [],
-    };
-  }
-
-  function buildCustomerDetailFromNoHistory(search: string) {
-    const s = (search || "").trim();
-    return {
-      CUSTOMERTYPE: "",
-      CUSTOMERTYPENAME: "",
-      CUSTOMERID: /^\d{13}$/.test(s) ? s : "",
-      CUSTOMERNAME: /^\d+$/.test(s) ? "" : s, // ถ้าไม่ใช่เลขล้วน ให้ถือว่าเป็นชื่อ
-      CUSTOMERLASTNAME: "",
-      CUSTOMERMD: "",
-      CUSTOMERDOB: "",
-      CUSTOMERRAGE: "",
-      CUSTOMERMOBILE: /^\d{9,10}$/.test(s) ? s : "",
-      CUSTOMERWORKPHONE: "",
-      CUSTOMERPHONE: "",
-      CUSTOMEREMAIL: "",
-      CARDTYPE: [],
-      PREFIX: [],
-      SEX: [],
-    };
-  }
-
   const handleNextClick = async () => {
     if (isSubmitting) {
       return;
@@ -567,27 +519,6 @@ const SalesSatusCust: React.FC = () => {
           LATITUDE: localStorage.getItem("latitude") || "",
           LONGITUDE: localStorage.getItem("longitude") || "",
           DATA: [picked],
-        },
-        { headers: { "Content-Type": "application/json" } }
-      );
-
-      // 2) สร้าง CUSTOMERDETAIL ตามแหล่งที่มา
-      const detail = noHistoryData
-        ? buildCustomerDetailFromNoHistory(noHistoryData.Searchtext)
-        : buildCustomerDetailFromCard(picked);
-
-      // 3) บันทึก CUSTOMERDETAIL (สำคัญ: DATA ต้องเป็น array)
-      await axios.post(
-        UPDATECONTACT,
-        {
-          REFNO,
-          EMPID: EmpId,
-          TEAMSALE: TeamSale,
-          SALECODE: SaleCode,
-          SUPEMPID: SupEmpId,
-          SECEMPID: SecEmpId,
-          FIELD: "CUSTOMERDETAIL",
-          DATA: [detail],
         },
         { headers: { "Content-Type": "application/json" } }
       );

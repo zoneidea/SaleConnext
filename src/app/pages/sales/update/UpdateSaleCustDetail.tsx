@@ -1,3 +1,4 @@
+import { getCustomerFormData, isCustomerDetailComplete, isAddressComplete } from '../customerDraft';
 import styles from "@/styles/style.module.css";
 import IDCardOCR from "../components/ocr/IDCardOCR";
 
@@ -230,7 +231,7 @@ const UpdateSaleCustDetail: React.FC = () => {
   }, []);
 
   // เลือก item ที่ REFNO ตรงกัน (find สำหรับ 1 item หรือ filter สำหรับหลาย item)
-  const matchedItem = draft.find((item) => item.REFNO === refno);
+  const matchedItem = draft.find((entry) => entry.REFNO === refno) ?? item;
   // console.log(`matchedItem`, matchedItem);
 
   {
@@ -613,10 +614,8 @@ const UpdateSaleCustDetail: React.FC = () => {
       );
 
     return (
-      Array.isArray(item.ADDRESS) &&
-      item.ADDRESS.length > 0 &&
-      Array.isArray(item.CUSTOMERDETAIL) &&
-      item.CUSTOMERDETAIL.length > 0 &&
+      isAddressComplete(item) &&
+      isCustomerDetailComplete(item) &&
       Array.isArray(item.CUSTOMERSTATUS) &&
       item.CUSTOMERSTATUS.length > 0 &&
       Array.isArray(item.DISCOUNT) &&
@@ -777,90 +776,6 @@ const UpdateSaleCustDetail: React.FC = () => {
     },
   });
 
-  // 1) prefill จาก DRAFT
-  useEffect(() => {
-    if (!isLoadingDraft && matchedItem) {
-      const cd = matchedItem.CUSTOMERDETAIL?.[0] ?? {};
-
-      setValue("fullName", cd.CUSTOMERNAME || "");
-      setValue("lastName", cd.CUSTOMERLASTNAME || "");
-      setValue("idCard", cd.CUSTOMERID || "");
-      setValue("telNo", cd.CUSTOMERMOBILE || "");
-      setValue("email", cd.CUSTOMEREMAIL || "");
-
-      setSelectedCustomerType(cd.CUSTOMERTYPE || "");
-      setSelectedCardType(cd.CARDTYPE?.[0]?.CARDTYPE || "");
-      setIdCard(cd.CUSTOMERID || "");
-      setFullName(cd.CUSTOMERNAME || "");
-      setLastName(cd.CUSTOMERLASTNAME || "");
-      setNameMD(cd.CUSTOMERMD || "");
-      setSelectedPrefixId(cd.PREFIX?.[0]?.PREFIXID);
-
-      const dobDate = cd.CUSTOMERDOB ? new Date(cd.CUSTOMERDOB) : null;
-      setValueCalendar(dobDate);
-      setValueAge(dobDate ? dayjs().diff(dayjs(dobDate), "year") : null);
-      setSelectedSexId(cd.SEX?.[0]?.SEXID);
-      setMobile(cd.CUSTOMERMOBILE || "");
-      setPhone(cd.CUSTOMERPHONE || "");
-      setWorkPhone(cd.CUSTOMERWORKPHONE || "");
-      setEmail(cd.CUSTOMEREMAIL || "");
-    }
-  }, [isLoadingDraft, matchedItem, setValue]);
-
-  // ค่าที่มากับ CUSTOMERDETAIL
-  const prefixIdFromCD = matchedItem?.CUSTOMERDETAIL?.[0]?.PREFIX?.[0]?.PREFIXID;
-
-  useEffect(() => {
-    if (prefixIdFromCD == null) return;
-    const id = Number(prefixIdFromCD);
-    setSelectedPrefixId(id);
-    setValue('selectedPrefixId', id, { shouldValidate: true });
-    setDidInitPrefix(true);               // <-- ล็อกไม่ให้โดน override ทีหลัง
-  }, [prefixIdFromCD, setValue]);
-
-  useEffect(() => {
-    if (prefixIdFromCD == null) return;
-    const id = Number(prefixIdFromCD);
-    setSelectedPrefixId(id);
-    setValue('selectedPrefixId', id, { shouldValidate: true });
-    setDidInitPrefix(true);               // <-- ล็อกไม่ให้โดน override ทีหลัง
-  }, [prefixIdFromCD, setValue]);
-
-  const custTypeFromCD =
-    matchedItem?.CUSTOMERDETAIL?.[0]?.CUSTOMERTYPE ?? "";
-  const cardTypeFromCD =
-    matchedItem?.CUSTOMERDETAIL?.[0]?.CARDTYPE?.[0]?.CARDTYPE ?? "";
-
-  // กัน override
-  const [didInitCustType, setDidInitCustType] = useState(false);
-  const [didInitCardType, setDidInitCardType] = useState(false);
-
-  // ตั้งประเภทลูกค้าจาก CUSTOMERDETAIL
-  useEffect(() => {
-    if (didInitCustType) return;
-    if (!customerTypes.length) return;
-    if (!custTypeFromCD) return;
-
-    setSelectedCustomerType(String(custTypeFromCD));
-    setValue("selectedCustomerType", String(custTypeFromCD), {
-      shouldValidate: true,
-    });
-    setDidInitCustType(true);
-  }, [customerTypes, custTypeFromCD, didInitCustType, setValue]);
-
-  // ตั้งประเภทบัตรจาก CUSTOMERDETAIL (รอให้ type ตั้งก่อน)
-  useEffect(() => {
-    if (didInitCardType) return;
-    if (!didInitCustType) return;
-    if (!cardTypeFromCD) return;
-
-    setSelectedCardType(String(cardTypeFromCD));
-    setValue("selectedCardType", String(cardTypeFromCD), {
-      shouldValidate: true,
-    });
-    setDidInitCardType(true);
-  }, [didInitCustType, cardTypeFromCD, didInitCardType, setValue]);
-
   /////////////////////////////////////////////////////////////
   // ชื่อประเภทลูกค้าที่มาจาก CUSTOMERSTATUS (string ภาษาไทย)
   const contractCustTypeName =
@@ -868,7 +783,7 @@ const UpdateSaleCustDetail: React.FC = () => {
 
   // เมื่อโหลด customerTypes เสร็จ และมีชื่อประเภทลูกค้า ให้หา item ที่ชื่อไทยตรงกัน
   useEffect(() => {
-    if (!contractCustTypeName || customerTypes.length === 0) return;
+    if (matchedItem?.CUSTOMERDETAIL?.length || !contractCustTypeName || customerTypes.length === 0) return;
 
     const found = customerTypes.find(
       (ct: any) => (ct.CUSTOMERTYPENAME || "").trim() === contractCustTypeName
@@ -897,7 +812,7 @@ const UpdateSaleCustDetail: React.FC = () => {
 
   // --- เพิ่ม useEffect อีกอัน: เลือกคำนำหน้าชื่อตาม PrefixName ---
   useEffect(() => {
-    if (!contractPrefixName || !selectedCustomerType || didInitPrefix) return
+    if (matchedItem?.CUSTOMERDETAIL?.length || !contractPrefixName || !selectedCustomerType || didInitPrefix) return
     // หา customer type ที่ถูกเลือก
     const ct = customerTypes.find(
       (x: any) => String(x.CUSTOMERTYPE) === String(selectedCustomerType)
@@ -919,58 +834,44 @@ const UpdateSaleCustDetail: React.FC = () => {
     setDidInitPrefix(true)
   }, [contractPrefixName, selectedCustomerType, customerTypes]);
 
+  const formCustomer = useMemo(() => getCustomerFormData(matchedItem), [matchedItem]);
   useEffect(() => {
-    const newIdCard =
-      matchedItem?.CUSTOMERDETAIL?.[0].CUSTOMERID && matchedItem?.CUSTOMERDETAIL?.[0].CUSTOMERID !== "0" ? String(matchedItem?.CUSTOMERDETAIL?.[0].CUSTOMERID) : "";
-    setIdCard(newIdCard);
-    setValue("idCard", newIdCard, { shouldValidate: true });
-
-    // const rawName = String(contract.CustomerName ?? "").trim();
-    // const [first, ...rest] = rawName.split(/\s+/);
-    // const last = rest.join(" ");
-    setFullName(matchedItem?.CUSTOMERDETAIL?.[0].CUSTOMERNAME || "");
-    setLastName(matchedItem?.CUSTOMERDETAIL?.[0].CUSTOMERLASTNAME || "");
-    setValue("fullName", matchedItem?.CUSTOMERDETAIL?.[0].CUSTOMERNAME || "");
-
-    // const addr = Array.isArray(contract.Address) ? contract.Address[0] : {};
-    // const cleanedMobile = String(
-    //   addr.TelMobile || addr.TelHome || addr.TelOffice || ""
-    // ).replace(/-/g, "");
-    setMobile(matchedItem?.CUSTOMERDETAIL?.[0].CUSTOMERMOBILE);
-    setValue("telNo", matchedItem?.CUSTOMERDETAIL?.[0].CUSTOMERMOBILE, { shouldValidate: true });
-
-    // Brithday เก็บรูปแบบ "YYYY-MM-DD" (อาจเป็น พ.ศ. หรือ ค.ศ.)
-    const rawDob = matchedItem?.CUSTOMERSTATUS?.[0]?.Contract?.Brithday;
-
-    if (rawDob) {
-      // รองรับทั้ง 2020-01-31 และ 2020/01/31
-      const parts = rawDob.trim().split(/[-/]/).map(Number);
-      // รูปแบบตามโจทย์: ปี-เดือน-วัน
-      const [y, m, d] = parts;
-
-      // แปลงปี พ.ศ. -> ค.ศ. (ถ้าเกิน 2400 ถือว่าเป็น พ.ศ.)
-      const yearAD = y > 2400 ? y - 543 : y;
-      // ปี พ.ศ. ไว้แสดงใน UI
-      const yearBE = y > 2400 ? y : y + 543;
-
-      const dob = new Date(yearAD, (m || 1) - 1, d || 1);
-
-      // อัปเดต select วัน/เดือน/ปี (พ.ศ.)
-      setSelectedDay(d);
-      setSelectedMonth(m);
-      setSelectedYearBE(yearBE);
-
-      setValue("selectedDay", d);
-      setValue("selectedMonth", m);
-      setValue("selectedYearBE", yearBE);
-
-      // เก็บค่า Date (ค.ศ.) สำหรับคำนวณอายุ/validate อื่นๆ
-      setValueCalendar(dob);
-      setValueAge(dayjs().diff(dayjs(dob), "year"));
+    if (!matchedItem) return;
+    const cd = formCustomer;
+    setIdCard(String(cd.CUSTOMERID ?? ''));
+    setFullName(cd.CUSTOMERNAME ?? '');
+    setLastName(cd.CUSTOMERLASTNAME ?? '');
+    setNameMD(cd.CUSTOMERMD ?? '');
+    setMobile(cd.CUSTOMERMOBILE ?? '');
+    setPhone(cd.CUSTOMERPHONE ?? '');
+    setWorkPhone(cd.CUSTOMERWORKPHONE ?? '');
+    setEmail(cd.CUSTOMEREMAIL ?? '');
+    setValue('idCard', String(cd.CUSTOMERID ?? ''));
+    setValue('fullName', cd.CUSTOMERNAME ?? '');
+    setValue('lastName', cd.CUSTOMERLASTNAME ?? '');
+    setValue('telNo', cd.CUSTOMERMOBILE ?? '');
+    setValue('email', cd.CUSTOMEREMAIL ?? '');
+    if (matchedItem.CUSTOMERDETAIL?.length) {
+      setSelectedCustomerType(String(cd.CUSTOMERTYPE ?? ''));
+      setSelectedCardType(String(cd.CARDTYPE?.[0]?.CARDTYPE ?? ''));
+      setSelectedPrefixId(cd.PREFIX?.[0]?.PREFIXID);
+      setSelectedSexId(cd.SEX?.[0]?.SEXID);
+      setValue('selectedCustomerType', String(cd.CUSTOMERTYPE ?? ''));
+      setValue('selectedCardType', String(cd.CARDTYPE?.[0]?.CARDTYPE ?? ''));
+      setValue('selectedPrefixId', cd.PREFIX?.[0]?.PREFIXID);
+      setValue('selectedSexId', cd.SEX?.[0]?.SEXID);
     }
-
-    setHasInitialized(true);
-  }, [matchedItem?.CUSTOMERDETAIL?.[0]]);
+    if (cd.CUSTOMERDOB) {
+      const [y, m, d] = String(cd.CUSTOMERDOB).slice(0, 10).split(/[-/]/).map(Number);
+      const yearAD = y > 2400 ? y - 543 : y;
+      const dob = new Date(yearAD, m - 1, d);
+      if (y && m && d && !Number.isNaN(dob.getTime())) {
+        setSelectedDay(d); setSelectedMonth(m); setSelectedYearBE(yearAD + 543);
+        setValue('selectedDay', d); setValue('selectedMonth', m); setValue('selectedYearBE', yearAD + 543);
+        setValueCalendar(dob); setValueAge(dayjs().diff(dayjs(dob), 'year'));
+      }
+    }
+  }, [formCustomer, matchedItem, setValue]);
 
   const hasSearchtext =
     !!matchedItem?.CUSTOMERSTATUS?.[0]?.Searchtext;
@@ -1134,61 +1035,6 @@ const UpdateSaleCustDetail: React.FC = () => {
       }
     };
     getData();
-
-    // ดึงข้อมูล CUSTOMERDETAIL ที่มีมาจาก props/location
-    const cd = customerDetail || {};
-    // console.log(`มาจาก SalesCreateAddressCash`, cd);
-
-    // 1) อัปเดตค่าใน RHF form
-    setValue("selectedCustomerType", cd.CUSTOMERTYPE || "");
-    setValue("selectedCardType", cd.CARDTYPE?.[0]?.CARDTYPE || "");
-    setValue("selectedPrefixId", cd.PREFIX?.[0]?.PREFIXID || "");
-    setValue("selectedSexId", cd.SEX?.[0]?.SEXID || "");
-
-    setValue("fullName", cd.CUSTOMERNAME || "");
-    setValue("telNo", cd.CUSTOMERMOBILE || "");
-    setValue("idCard", cd.CUSTOMERID || "");
-    setValue("email", cd.CUSTOMEREMAIL || "");
-
-    if (cd.CUSTOMERDOB) {
-      // 1. แยก YYYY-MM-DD
-      const [yearAD, month, day] = cd.CUSTOMERDOB.split("-").map((v: any) =>
-        parseInt(v, 10)
-      );
-      // 2. คำนวณเป็นปี พ.ศ.
-      const yearBE = yearAD + 543;
-
-      // 3. เซ็ต RHF
-      setValue("selectedDay", day);
-      setValue("selectedMonth", month);
-      setValue("selectedYearBE", yearBE);
-
-      // 4. เซ็ต state UI
-      setSelectedDay(day);
-      setSelectedMonth(month);
-      setSelectedYearBE(yearBE);
-
-      // 5. เซ็ตปฏิทินและอายุ
-      const dt = new Date(yearAD, month - 1, day);
-      setValueCalendar(dt);
-      const calcAge = dayjs().diff(dayjs(dt), "year");
-      setValueAge(calcAge);
-    }
-
-    // 2) อัปเดต state ปกติ เพื่อให้ UI อื่นๆ ใช้ได้
-    setSelectedCustomerType(cd.CUSTOMERTYPE);
-    setSelectedCardType(cd.CARDTYPE?.CARDTYPE);
-    setIdCard(cd.CUSTOMERID);
-    setFullName(cd.CUSTOMERNAME);
-    setLastName(cd.CUSTOMERLASTNAME);
-    setNameMD(cd.CUSTOMERMD);
-    setSelectedPrefixId(cd.PREFIX?.[0]?.PREFIXID);
-    setAge(cd.CUSTOMERRAGE);
-    setSelectedSexId(cd.SEX?.[0]?.SEXID);
-    setMobile(cd.CUSTOMERMOBILE);
-    setPhone(cd.CUSTOMERPHONE);
-    setWorkPhone(cd.CUSTOMERWORKPHONE);
-    setEmail(cd.CUSTOMEREMAIL);
 
     if (product?.[0]?.Package?.[0]) {
       setModel(product?.[0]?.Package?.[0]?.MODEL);

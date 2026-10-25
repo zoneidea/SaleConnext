@@ -1,3 +1,4 @@
+import { isCustomerDetailComplete, isAddressComplete } from '../../customerDraft';
 import styles from '@/styles/style.module.css'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import axios from 'axios'
@@ -408,7 +409,7 @@ const Step: React.FC = () => {
     }
 
     if (routeName === 'updateAddress') {
-      if (data?.[0]?.CUSTOMERDETAIL?.length === 0) {
+      if (!isCustomerDetailComplete(data?.[0])) {
         await Swal.fire({
           icon: 'error',
           title: 'เกิดข้อผิดพลาด!',
@@ -424,8 +425,8 @@ const Step: React.FC = () => {
       if (
         data?.[0]?.PRODUCT?.length === 0 ||
         data?.[0]?.CUSTOMERSTATUS?.length === 0 ||
-        data?.[0]?.CUSTOMERDETAIL?.length === 0 ||
-        data?.[0]?.ADDRESS?.length === 0 ||
+        !isCustomerDetailComplete(data?.[0]) ||
+        !isAddressComplete(data?.[0]) ||
         data?.[0]?.PDPA?.length === 0
       ) {
         Swal.fire({
@@ -443,8 +444,8 @@ const Step: React.FC = () => {
       if (
         data?.[0]?.PRODUCT?.length === 0 ||
         data?.[0]?.CUSTOMERSTATUS?.length === 0 ||
-        data?.[0]?.CUSTOMERDETAIL?.length === 0 ||
-        data?.[0]?.ADDRESS?.length === 0 ||
+        !isCustomerDetailComplete(data?.[0]) ||
+        !isAddressComplete(data?.[0]) ||
         data?.[0]?.PDPA?.length === 0
       ) {
         Swal.fire({
@@ -567,21 +568,8 @@ const Step: React.FC = () => {
   })();
 
   // 5) ข้อมูลลูกค้า
-  const cd = s.CUSTOMERDETAIL?.[0] ?? {};
-  const step5Complete =
-    !!cd?.CUSTOMERTYPE ||
-    isNonEmptyStr(cd?.CUSTOMERNAME) ||
-    isNonEmptyStr(cd?.CUSTOMERMOBILE) ||
-    (Array.isArray(cd?.PREFIX) && cd.PREFIX.length > 0);
-
-  // 6) ที่อยู่
-  const step6Complete = hasAny(s.ADDRESS, (a: any) => {
-    const c = a?.ADDRESSCARD ?? a?.ADDRESSINSTALLATION ?? a?.ADDRESSPAYMENT;
-    return (
-      isNonEmptyStr(c?.ADDRESSPROVINCENAME) ||
-      isNonEmptyStr(c?.ADDRESSZIPCODE)
-    );
-  });
+  const step5Complete = isCustomerDetailComplete(s);
+  const step6Complete = isAddressComplete(s);
 
   // 7) PDPA
   const step7Complete = hasAny(
@@ -1056,7 +1044,7 @@ const Step: React.FC = () => {
                         Swal.fire({ icon: 'info', title: 'ไม่สามารถแก้ไขได้' })
                         return
                       }
-                      if ((s?.CUSTOMERDETAIL?.length ?? 0) <= 0) {
+                      if (!isCustomerDetailComplete(s)) {
                         Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'กรุณาบันทึกข้อมูลลูกค้าก่อน' })
                         return
                       }
@@ -1067,7 +1055,7 @@ const Step: React.FC = () => {
                     className="w-100 text-start border-0 bg-transparent p-0"
                   >
                     <div className='d-flex align-items-center pb-8'>
-                      <span className={`bullet bullet-vertical h-40px ${data[0].ADDRESS.length === 0 ? 'bg-danger' : 'bg-success'}`}></span>
+                      <span className={`bullet bullet-vertical h-40px ${step6Complete ? 'bg-success' : 'bg-danger'}`}></span>
                       <div className='form-check form-check-custom form-check-solid mx-5'></div>
                       <div className='flex-grow-1'>
                         <div className={`${styles.label}`}>6. บันทึกที่อยู่ลูกค้า</div>
@@ -1094,7 +1082,7 @@ const Step: React.FC = () => {
                     onClick={async () => {
                       if (!(await guard(7))) return;
 
-                      if ((s?.ADDRESS?.length ?? 0) === 0) {
+                      if (!isAddressComplete(s)) {
                         Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'กรุณาบันทึกข้อมูลให้ครบทุกส่วน' })
                         return
                       }
@@ -1215,8 +1203,8 @@ const Step: React.FC = () => {
                         (s?.PRODUCT?.length ?? 0) === 0 &&
                         (s?.DISCOUNT?.length ?? 0) === 0 &&
                         (s?.SALEEMPLOYEE?.length ?? 0) === 0 &&
-                        (s?.CUSTOMERDETAIL?.length ?? 0) === 0 &&
-                        (s?.ADDRESS?.length ?? 0) === 0 &&
+                        !isCustomerDetailComplete(s) &&
+                        !isAddressComplete(s) &&
                         (s?.PDPA?.length ?? 0) === 0 &&
                         (s?.CONTRACT?.length ?? 0) === 0
                       ) {

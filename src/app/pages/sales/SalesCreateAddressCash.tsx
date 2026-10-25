@@ -1,3 +1,4 @@
+import { cleanAddressName } from './customerDraft';
 import styles from "@/styles/style.module.css";
 import IDCardOCR from "./components/ocr/IDCardOCR";
 
@@ -206,132 +207,6 @@ const SalesCreateAddress: React.FC = () => {
   const [loadingProvince, setLoadingProvince] = useState(false);
   const [loadingDistrict, setLoadingDistrict] = useState(false);
   const [loadingSubDistrict, setLoadingSubDistrict] = useState(false);
-
-  // 1) useEffect สำหรับ preload ที่อยู่ติดตั้ง
-  useEffect(() => {
-    if (!matchedItem?.CUSTOMERSTATUS?.[0]?.Contract) return;
-    const contract = matchedItem.CUSTOMERSTATUS[0].Contract;
-    const installAddr = Array.isArray(contract.Address)
-      ? contract.Address.find(
-        (a: any) => a.AddressTypeCode === "AddressIDCard"
-      )
-      : undefined;
-    if (!installAddr) return;
-
-    // สมมติ AddressDetail1 เก็บ "บ้านเลขที่ ซ.หมู่ฯ ถ.ฯ …"
-    // จะเอาทั้งหมดไปช่อง บ้านเลขที่ ก่อน ถ้าอยากแยกให้ละเอียดอีกรอบก็ parse ต่อ
-    setAddressNumber(installAddr.AddressDetail);
-    setAddressMoo(installAddr.AddressDetail2);
-    setAddressSoi(installAddr.AddressDetail3);
-    setAddressRoad(installAddr.AddressDetail4);
-
-    // เบอร์โทร (ถ้ามี TelMobile ใช้ ถ้าไม่มีก็กด TelHome)
-    const rawPhone = installAddr.TelMobile || installAddr.TelHome || "";
-    // setAddressPhone(rawPhone.replace(/-/g, ""));
-
-    // province / district / subdistrict / zipcode
-    // ต้องแม็ปกับ list ที่คุณโหลดมา (getProvince, getDistrict, getSubDistrict)
-    const prov = getProvince.find(
-      (p) => p.PROVINCENAME === installAddr.Province
-    );
-    if (prov) setSelectedProvince(Number(prov.PROVINCECODE));
-
-    // หลังจาก setSelectedProvince แล้ว useEffect อื่นจะไป fetch district มาให้
-    // เมื่อ getDistrict มาแล้ว ก็แม็ปชื่อกลับไป
-
-    setValue("homeNoIdCard", installAddr.AddressDetail || "");
-    setValue("provinceIdCard", selectedProvince?.toString() || "");
-    setValue("districtIdCard", selectedDistrict?.toString() || "");
-    setValue("subDistrictIdCard", selectedSubDistrict?.toString() || "");
-    setValue("telNoIdCard", rawPhone);
-  }, [matchedItem, getProvince]);
-
-  // 2) useEffect รอ district list (getDistrict) แล้วแม็ปชื่อ
-  useEffect(() => {
-    if (!matchedItem?.CUSTOMERSTATUS?.[0]?.Contract || !selectedProvince)
-      return;
-    const contract = matchedItem.CUSTOMERSTATUS[0].Contract;
-    const installAddr = contract.Address.find(
-      (a: any) => a.AddressTypeCode === "AddressIDCard"
-    );
-    if (!installAddr) return;
-    const dist = getDistrict.find(
-      (d) => d.DISTRICTNAME === installAddr.District
-    );
-    if (dist) setSelectedDistrict(Number(dist.DISTRICTCODE));
-  }, [getDistrict, matchedItem, selectedProvince]);
-
-  // 3) useEffect รอ subdistrict list (getSubDistrict) แล้วแม็ปชื่อ
-  useEffect(() => {
-    if (!matchedItem?.CUSTOMERSTATUS?.[0]?.Contract || !selectedDistrict)
-      return;
-    const contract = matchedItem.CUSTOMERSTATUS[0].Contract;
-    const installAddr = contract.Address.find(
-      (a: any) => a.AddressTypeCode === "AddressIDCard"
-    );
-    if (!installAddr) return;
-    const sub = getSubDistrict.find(
-      (s) => s.SUBDISTRICTNAME === installAddr.SubDistrict
-    );
-    if (sub) {
-      setSelectedSubDistrict(Number(sub.SUBDISTRICTCODE));
-      setSelectedZipcode(installAddr.Zipcode); // zip มักมาแล้ว
-    }
-  }, [getSubDistrict, matchedItem, selectedDistrict]);
-
-  ////////////////////// ที่อยู่ตามบัตร
-
-  // 1) useEffect สำหรับ preload ที่อยู่ตามบัตร
-  useEffect(() => {
-    if (!matchedItem?.CUSTOMERSTATUS?.[0]?.Contract) return;
-    const contract = matchedItem.CUSTOMERSTATUS[0].Contract;
-    // หา AddressIDCard (index 0)
-    const cardAddr = Array.isArray(contract.Address)
-      ? contract.Address.find((a: any) => a.AddressTypeCode === "AddressIDCard")
-      : undefined;
-    if (!cardAddr) return;
-
-    // เบอร์โทร
-    const rawPhone = cardAddr.TelMobile || cardAddr.TelHome || "";
-    // setAddressPhoneForInstall(rawPhone.replace(/-/g, ""));
-
-    // จากตรงนี้จะรอ useEffect ข้างล่างแม็ปจังหวัด → อำเภอ → ตำบล ให้อัตโนมัติ
-  }, [matchedItem]);
-
-  // 2) useEffect รอ district list (getDistrict) แล้วแม็ปชื่อ
-  useEffect(() => {
-    if (!matchedItem?.CUSTOMERSTATUS?.[0]?.Contract || !selectedProvince)
-      return;
-    const contract = matchedItem.CUSTOMERSTATUS[0].Contract;
-    const cardAddr = contract.Address.find(
-      (a: any) => a.AddressTypeCode === "AddressIDCard"
-    );
-    if (!cardAddr) return;
-    const dist = getDistrictForInstall.find(
-      (d) => d.DISTRICTNAME === cardAddr.District
-    );
-    if (dist) setSelectedDistrictForInstall(Number(dist.DISTRICTCODE));
-  }, [getDistrictForInstall, matchedItem, selectedProvinceForInstall]);
-
-  // 3) useEffect รอ subdistrict list (getSubDistrict) แล้วแม็ปชื่อ
-  useEffect(() => {
-    if (!matchedItem?.CUSTOMERSTATUS?.[0]?.Contract || !selectedDistrict)
-      return;
-    const contract = matchedItem.CUSTOMERSTATUS[0].Contract;
-    const cardAddr = contract.Address.find(
-      (a: any) => a.AddressTypeCode === "AddressIDCard"
-    );
-    if (!cardAddr) return;
-    const sub = getSubDistrictForInstall.find(
-      (s) => s.SUBDISTRICTNAME === cardAddr.SubDistrict
-    );
-    if (sub) {
-      setSelectedSubDistrictForInstall(Number(sub.SUBDISTRICTCODE));
-      setSelectedZipcodeForInstall(cardAddr.Zipcode); // zip มักมาแล้ว
-    }
-  }, [getSubDistrictForInstall, matchedItem, selectedDistrictForInstall]);
-
-  /////////////////////////////////
 
   // GET Province
   useEffect(() => {
@@ -1180,137 +1055,201 @@ const SalesCreateAddress: React.FC = () => {
   });
 
   // ใน useEffect ที่ preload installation
-  useEffect(() => {
-    if (!matchedItem?.CUSTOMERSTATUS?.[0]?.Contract) return;
-    const contract = matchedItem.CUSTOMERSTATUS[0].Contract;
-    const installAddr = Array.isArray(contract.Address)
-      ? contract.Address.find(
-        (a: any) => a.AddressTypeCode === "AddressIDCard"
-      )
-      : undefined;
-    if (!installAddr) return;
-
-    // สกัดเบอร์โทร
-    const rawPhone = installAddr.TelMobile || installAddr.TelHome || "";
-    const cleaned = rawPhone.replace(/-/g, "");
-    // setAddressPhone(cleaned);
-
-    // **เติมบรรทัดนี้ เพื่อเซ็ตค่าให้ Controller**
-    setValue("telNoIdCard", cleaned);
-
-    // … (เซ็ต state อื่น ๆ ต่อ)
-  }, [matchedItem, setValue]);
-
-  // 1) โหลดจังหวัดครั้งเดียว
-  useEffect(() => {
-    axios
-      .get(PROVINCE_URL)
-      .then((res) => {
-        const list = Array.isArray(res.data)
-          ? res.data
-          : Array.isArray(res.data.data)
-            ? res.data.data
-            : [];
-        setGetProvince(list);
-      })
-      .catch(console.error);
-  }, []);
-
-  // 2) พอ getProvince มีข้อมูลแล้ว ให้แม็ปชื่อจาก matchedItem
+  const initializedAddress = useRef(new Set<string>());
   useEffect(() => {
     if (!matchedItem) return;
-    const installAddr =
-      matchedItem.CUSTOMERSTATUS?.[0]?.Contract?.Address?.find(
-        (a: any) => a.AddressTypeCode === "AddressIDCard"
-      );
-    if (!installAddr || getProvince.length === 0) return;
-
-    const rawProv = installAddr.Province?.trim();
-    const prov = getProvince.find((p) => p.PROVINCENAME.trim() === rawProv);
-    if (prov) {
-      const code = Number(prov.PROVINCECODE);
-      setSelectedProvince(code);
-      setValue("provinceIdCard", prov.PROVINCECODE.toString());
+    const saved = matchedItem.ADDRESS?.[0];
+    const address = saved?.ADDRESSCARD;
+    const history = !saved && matchedItem.CUSTOMERSTATUS?.[0]?.Contract?.Address?.find((a: any) => a.AddressTypeCode === 'AddressIDCard');
+    if (!address && !history) return;
+    const key = matchedItem.REFNO + ':ADDRESSCARD';
+    const init = initializedAddress.current;
+    const text = (v: any) => String(v ?? '');
+    const clean = cleanAddressName;
+    if (!init.has(key)) {
+      const number = text(address ? address.ADDRESSNUMBER : history.AddressDetail);
+      const phone = text(address ? address.ADDRESSPHONE : history.TelMobile || history.TelHome).replace(/-/g, '');
+      setAddressNumber(number);
+      setAddressMoo(text(address ? address.ADDRESSMOO : history.AddressDetail2));
+      setAddressSoi(text(address ? address.ADDRESSSOI : history.AddressDetail3));
+      setAddressRoad(text(address ? address.ADDRESSROAD : history.AddressDetail4));
+      setAddressPhone(phone);
+      setSelectedZipcode(text(address ? address.ADDRESSZIPCODE : history.Zipcode));
+      setValue('homeNoIdCard', number);
+      setValue('telNoIdCard', phone);
+      if (address) {
+        setSelectedProvince(Number(address.ADDRESSPROVINCE) || undefined);
+        setSelectedDistrict(Number(address.ADDRESSDISTRICT) || undefined);
+        setSelectedSubDistrict(Number(address.ADDRESSSUBDISTRICT) || undefined);
+        setValue('provinceIdCard', text(address.ADDRESSPROVINCE));
+        setValue('districtIdCard', text(address.ADDRESSDISTRICT));
+        setValue('subDistrictIdCard', text(address.ADDRESSSUBDISTRICT));
+        setUseThisTax(saved.ADDRESSTAX?.USETHISTAX ?? 'FALSE');
+      }
+      init.add(key);
     }
-  }, [matchedItem, getProvince, setValue]);
+    if (!history) return;
+    const province = getProvince.find((p: any) => clean(p.PROVINCENAME) === clean(history.Province));
+    if (province && !init.has(key + ':province')) {
+      setSelectedProvince(Number(province.PROVINCECODE));
+      setValue('provinceIdCard', String(province.PROVINCECODE));
+      init.add(key + ':province');
+    }
+    const district = getDistrict.find((d: any) => clean(d.DISTRICTNAME) === clean(history.Amphur));
+    if (district && !init.has(key + ':district')) {
+      setSelectedDistrict(Number(district.DISTRICTCODE));
+      setValue('districtIdCard', String(district.DISTRICTCODE));
+      init.add(key + ':district');
+    }
+    const sub = getSubDistrict.find((d: any) => clean(d.SUBDISTRICTNAME) === clean(history.District));
+    if (sub && !init.has(key + ':sub')) {
+      setSelectedSubDistrict(Number(sub.SUBDISTRICTCODE));
+      setValue('subDistrictIdCard', String(sub.SUBDISTRICTCODE));
+      init.add(key + ':sub');
+    }
+  }, [matchedItem, getProvince, getDistrict, getSubDistrict, setValue]);
 
-  // 3) พอ selectedProvince เปลี่ยน → โหลดอำเภอ และแม็ปชื่อกลับจาก matchedItem
   useEffect(() => {
-    if (!selectedProvince) return;
-    const form = new FormData();
-    form.append("ProvinceCode", String(selectedProvince));
-    axios
-      .post(DISTRICT_URL, form, {
-        headers: { "Content-Type": "multipart/form-data" },
-      })
-      .then((res) => {
-        const list = Array.isArray(res.data)
-          ? res.data
-          : Array.isArray(res.data.data)
-            ? res.data.data
-            : [];
-        setGetDistrict(list);
+    if (!matchedItem) return;
+    const saved = matchedItem.ADDRESS?.[0];
+    const address = saved?.ADDRESSINSTALLATION;
+    const history = !saved && matchedItem.CUSTOMERSTATUS?.[0]?.Contract?.Address?.find((a: any) => a.AddressTypeCode === 'AddressInstall');
+    if (!address && !history) return;
+    const key = matchedItem.REFNO + ':ADDRESSINSTALLATION';
+    const init = initializedAddress.current;
+    const text = (v: any) => String(v ?? '');
+    const clean = cleanAddressName;
+    if (!init.has(key)) {
+      const number = text(address ? address.ADDRESSNUMBER : history.AddressDetail);
+      const phone = text(address ? address.ADDRESSPHONE : history.TelMobile || history.TelHome).replace(/-/g, '');
+      setAddressNumberForInstall(number);
+      setAddressMooForInstall(text(address ? address.ADDRESSMOO : history.AddressDetail2));
+      setAddressSoiForInstall(text(address ? address.ADDRESSSOI : history.AddressDetail3));
+      setAddressRoadForInstall(text(address ? address.ADDRESSROAD : history.AddressDetail4));
+      setAddressPhoneForInstall(phone);
+      setSelectedZipcodeForInstall(text(address ? address.ADDRESSZIPCODE : history.Zipcode));
+      setValue('homeNoInstall', number);      if (address) {
+        setSelectedProvinceForInstall(Number(address.ADDRESSPROVINCE) || undefined);
+        setSelectedDistrictForInstall(Number(address.ADDRESSDISTRICT) || undefined);
+        setSelectedSubDistrictForInstall(Number(address.ADDRESSSUBDISTRICT) || undefined);
+        setValue('provinceInstall', text(address.ADDRESSPROVINCE));
+        setValue('districtInstall', text(address.ADDRESSDISTRICT));
+        setValue('subDistrictInstall', text(address.ADDRESSSUBDISTRICT));
+        setUseThisTax(saved.ADDRESSTAX?.USETHISTAX ?? 'FALSE');
+      }
+      init.add(key);
+    }
+    if (!history) return;
+    const province = getProvinceForInstall.find((p: any) => clean(p.PROVINCENAME) === clean(history.Province));
+    if (province && !init.has(key + ':province')) {
+      setSelectedProvinceForInstall(Number(province.PROVINCECODE));
+      setValue('provinceInstall', String(province.PROVINCECODE));
+      init.add(key + ':province');
+    }
+    const district = getDistrictForInstall.find((d: any) => clean(d.DISTRICTNAME) === clean(history.Amphur));
+    if (district && !init.has(key + ':district')) {
+      setSelectedDistrictForInstall(Number(district.DISTRICTCODE));
+      setValue('districtInstall', String(district.DISTRICTCODE));
+      init.add(key + ':district');
+    }
+    const sub = getSubDistrictForInstall.find((d: any) => clean(d.SUBDISTRICTNAME) === clean(history.District));
+    if (sub && !init.has(key + ':sub')) {
+      setSelectedSubDistrictForInstall(Number(sub.SUBDISTRICTCODE));
+      setValue('subDistrictInstall', String(sub.SUBDISTRICTCODE));
+      init.add(key + ':sub');
+    }
+  }, [matchedItem, getProvinceForInstall, getDistrictForInstall, getSubDistrictForInstall, setValue]);
 
-        // แม็ปอำเภอจาก matchedItem
-        const installAddr =
-          matchedItem.CUSTOMERSTATUS?.[0]?.Contract?.Address?.find(
-            (a: any) => a.AddressTypeCode === "AddressIDCard"
-          );
-        if (!installAddr) return;
-
-        const rawAmp = installAddr.Amphur?.replace(/^อ\.\s*/, "").trim();
-        const dist = list.find((d: any) => d.DISTRICTNAME.trim() === rawAmp);
-        if (dist) {
-          setSelectedDistrict(Number(dist.DISTRICTCODE));
-          setValue("districtIdCard", dist.DISTRICTCODE.toString());
-        }
-      })
-      .catch(console.error);
-  }, [selectedProvince, matchedItem, setValue]);
-
-  // 4) พอ selectedDistrict เปลี่ยน → โหลดตำบล และแม็ปชื่อกลับจาก matchedItem
   useEffect(() => {
-    if (!selectedDistrict) return;
-    const form = new FormData();
-    form.append("DistrictCode", String(selectedDistrict));
-    axios
-      .post(SUBDISTRICT_URL, form, {
-        headers: { "Content-Type": "multipart/form-data" },
-      })
-      .then((res) => {
-        const list = Array.isArray(res.data)
-          ? res.data
-          : Array.isArray(res.data.data)
-            ? res.data.data
-            : [];
-        setGetSubDistrict(list);
+    if (!matchedItem) return;
+    const saved = matchedItem.ADDRESS?.[0];
+    const address = saved?.ADDRESSPAYMENT;
+    const history = !saved && matchedItem.CUSTOMERSTATUS?.[0]?.Contract?.Address?.find((a: any) => a.AddressTypeCode === 'AddressPayment');
+    if (!address && !history) return;
+    const key = matchedItem.REFNO + ':ADDRESSPAYMENT';
+    const init = initializedAddress.current;
+    const text = (v: any) => String(v ?? '');
+    const clean = cleanAddressName;
+    if (!init.has(key)) {
+      const number = text(address ? address.ADDRESSNUMBER : history.AddressDetail);
+      const phone = text(address ? address.ADDRESSPHONE : history.TelMobile || history.TelHome).replace(/-/g, '');
+      setAddressNumberForPayment(number);
+      setAddressMooForPayment(text(address ? address.ADDRESSMOO : history.AddressDetail2));
+      setAddressSoiForPayment(text(address ? address.ADDRESSSOI : history.AddressDetail3));
+      setAddressRoadForPayment(text(address ? address.ADDRESSROAD : history.AddressDetail4));
+      setAddressPhoneForPayment(phone);
+      setSelectedZipcodeForPayment(text(address ? address.ADDRESSZIPCODE : history.Zipcode));
+      setValue('homeNoPayment', number);      if (address) {
+        setSelectedProvinceForPayment(Number(address.ADDRESSPROVINCE) || undefined);
+        setSelectedDistrictForPayment(Number(address.ADDRESSDISTRICT) || undefined);
+        setSelectedSubDistrictForPayment(Number(address.ADDRESSSUBDISTRICT) || undefined);
+        setValue('provincePayment', text(address.ADDRESSPROVINCE));
+        setValue('districtPayment', text(address.ADDRESSDISTRICT));
+        setValue('subDistrictPayment', text(address.ADDRESSSUBDISTRICT));
+        setUseThisTax(saved.ADDRESSTAX?.USETHISTAX ?? 'FALSE');
+      }
+      init.add(key);
+    }
+    if (!history) return;
+    const province = getProvinceForPayment.find((p: any) => clean(p.PROVINCENAME) === clean(history.Province));
+    if (province && !init.has(key + ':province')) {
+      setSelectedProvinceForPayment(Number(province.PROVINCECODE));
+      setValue('provincePayment', String(province.PROVINCECODE));
+      init.add(key + ':province');
+    }
+    const district = getDistrictForPayment.find((d: any) => clean(d.DISTRICTNAME) === clean(history.Amphur));
+    if (district && !init.has(key + ':district')) {
+      setSelectedDistrictForPayment(Number(district.DISTRICTCODE));
+      setValue('districtPayment', String(district.DISTRICTCODE));
+      init.add(key + ':district');
+    }
+    const sub = getSubDistrictForPayment.find((d: any) => clean(d.SUBDISTRICTNAME) === clean(history.District));
+    if (sub && !init.has(key + ':sub')) {
+      setSelectedSubDistrictForPayment(Number(sub.SUBDISTRICTCODE));
+      setValue('subDistrictPayment', String(sub.SUBDISTRICTCODE));
+      init.add(key + ':sub');
+    }
+  }, [matchedItem, getProvinceForPayment, getDistrictForPayment, getSubDistrictForPayment, setValue]);
 
-        // หา AddressInstall
-        const idCardAddr =
-          matchedItem?.CUSTOMERSTATUS?.[0]?.Contract?.Address?.find(
-            (a: any) => a.AddressTypeCode === "AddressIDCard"
-          );
-        if (!idCardAddr) return;
-
-        // ตัด prefix "ต." ออก
-        const rawSub = (idCardAddr.District ?? "")
-          .replace(/^ต\.\s*/, "")
-          .trim();
-
-        // แม็ปชื่อตำบลกลับเข้า list
-        const sub = list.find((s: any) => s.SUBDISTRICTNAME.trim() === rawSub);
-        if (sub) {
-          setSelectedSubDistrict(Number(sub.SUBDISTRICTCODE));
-          // ถ้าใช้ RHF
-          setValue("subDistrictIdCard", sub.SUBDISTRICTCODE.toString());
-        }
-      })
-      .catch(console.error);
-  }, [selectedDistrict, matchedItem, setValue]);
-
-  {
-    /*-------------------- End Validate --------------------*/
-  }
+  useEffect(() => {
+    if (!matchedItem) return;
+    const saved = matchedItem.ADDRESS?.[0];
+    const address = saved?.ADDRESSTAX;
+    const history = !saved && matchedItem.CUSTOMERSTATUS?.[0]?.Contract?.Address?.find((a: any) => a.AddressTypeCode === 'AddressTax');
+    if (!address && !history) return;
+    const key = matchedItem.REFNO + ':ADDRESSTAX';
+    const init = initializedAddress.current;
+    const text = (v: any) => String(v ?? '');
+    const clean = cleanAddressName;
+    if (!init.has(key)) {
+      const number = text(address ? address.ADDRESSNUMBER : history.AddressDetail);
+      const phone = text(address ? address.ADDRESSPHONE : history.TelMobile || history.TelHome).replace(/-/g, '');
+      setAddressNumberForBilling(number);
+      setAddressMooForBilling(text(address ? address.ADDRESSMOO : history.AddressDetail2));
+      setAddressSoiForBilling(text(address ? address.ADDRESSSOI : history.AddressDetail3));
+      setAddressRoadForBilling(text(address ? address.ADDRESSROAD : history.AddressDetail4));
+      setAddressPhoneForBilling(phone);
+      setSelectedZipcodeForBilling(text(address ? address.ADDRESSZIPCODE : history.Zipcode));      if (address) {
+        setSelectedProvinceForBilling(Number(address.ADDRESSPROVINCE) || undefined);
+        setSelectedDistrictForBilling(Number(address.ADDRESSDISTRICT) || undefined);
+        setSelectedSubDistrictForBilling(Number(address.ADDRESSSUBDISTRICT) || undefined);        setUseThisTax(saved.ADDRESSTAX?.USETHISTAX ?? 'FALSE');
+      }
+      init.add(key);
+    }
+    if (!history) return;
+    const province = getProvinceForBilling.find((p: any) => clean(p.PROVINCENAME) === clean(history.Province));
+    if (province && !init.has(key + ':province')) {
+      setSelectedProvinceForBilling(Number(province.PROVINCECODE));      init.add(key + ':province');
+    }
+    const district = getDistrictForBilling.find((d: any) => clean(d.DISTRICTNAME) === clean(history.Amphur));
+    if (district && !init.has(key + ':district')) {
+      setSelectedDistrictForBilling(Number(district.DISTRICTCODE));      init.add(key + ':district');
+    }
+    const sub = getSubDistrictForBilling.find((d: any) => clean(d.SUBDISTRICTNAME) === clean(history.District));
+    if (sub && !init.has(key + ':sub')) {
+      setSelectedSubDistrictForBilling(Number(sub.SUBDISTRICTCODE));      init.add(key + ':sub');
+    }
+  }, [matchedItem, getProvinceForBilling, getDistrictForBilling, getSubDistrictForBilling, setValue]);
 
   const SaveAddressData = useMemo(() => {
     const province = getProvince.find(
