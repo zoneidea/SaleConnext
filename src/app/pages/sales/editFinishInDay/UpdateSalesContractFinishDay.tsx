@@ -1,3 +1,4 @@
+import { validateLatestContractDiscount } from "../discountValidation";
 import styles from '@/styles/style.module.css'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import axios from 'axios';
@@ -119,6 +120,8 @@ const UpdateSalesContractFinishDay: React.FC = () => {
     
     const handleNextClick = async () => {
         try {
+            if (!(await validateLatestContractDiscount(API_URL_MONGO, String(refno)))) return;
+
             // 1) อัพเดตสัญญา (CONTRACT)
             const updateContract = await axios.post(UPDATECONTACT, {
                 REFNO: refno,

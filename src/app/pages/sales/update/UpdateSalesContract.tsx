@@ -1,3 +1,4 @@
+import { validateLatestContractDiscount } from "../discountValidation";
 import styles from "@/styles/style.module.css";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
@@ -154,6 +155,8 @@ const UpdateSalesContract: React.FC = () => {
     let succeeded = false;
 
     try {
+      if (!(await validateLatestContractDiscount(API_URL_MONGO, refno))) return;
+
       const base = {
         REFNO: refno,
         EMPID: EmpId,

@@ -1,3 +1,4 @@
+import { getDiscountError } from "../discountValidation";
 import styles from "@/styles/style.module.css";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
@@ -202,6 +203,13 @@ const UpdateSaleDiscountFinishDay: React.FC = () => {
 
     // ฟังก์ชันตรวจสอบค่าที่กรอก
     const validateDiscount = (inputNumber: number) => {
+    const error = getDiscountError(inputNumber, discountPrice);
+    if (error) {
+      setDiscountValidationMessage({ message: error, type: "danger" });
+      setIsDiscountValid(false);
+      return;
+    }
+
         if (discountPrice === 0) {
             setDiscountValidationMessage(null);
             setIsDiscountValid(true);
@@ -386,6 +394,12 @@ const UpdateSaleDiscountFinishDay: React.FC = () => {
 
     //POST Contract/updateContract
     const handleNextClick = async () => {
+    const discountError = getDiscountError(discountInput, discountPrice);
+    if (discountError) {
+      await Swal.fire({ icon: "error", title: "ไม่สามารถบันทึกส่วนลดได้", text: discountError });
+      return;
+    }
+
         try {
             const updateContract = await axios.post(
                 UPDATECONTACT,
