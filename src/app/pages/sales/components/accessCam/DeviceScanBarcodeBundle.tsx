@@ -1,8 +1,8 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useBarcodeCamera } from './useBarcodeCamera';
+import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Html5Qrcode, Html5QrcodeCameraScanConfig } from 'html5-qrcode';
 import useRefnoBarcodeStore from '../accessCam/refnoBarcodeStore';
 import { useCategoryStore } from '../../../../modules/stores/sales/packageStore/packageStore';
 import styles from '@/styles/style.module.css';
@@ -61,51 +61,7 @@ const DeviceScanBarcodeBundle: React.FC<Props> = ({ onSetBundleData }) => {
         navigate(origin || "/sale/update/updateSalePackage", { state: newState });
     };
 
-    const html5QrcodeRef = useRef<Html5Qrcode | null>(null);
-
-    useEffect(() => {
-        if (!isMobile) return;
-
-        const config: Html5QrcodeCameraScanConfig = {
-            fps: 10,
-            qrbox: { width: 300, height: 180 },
-        };
-
-        const html5Qrcode = new Html5Qrcode("reader");
-        html5QrcodeRef.current = html5Qrcode;
-
-        html5Qrcode
-            .start(
-                { facingMode: "environment" },
-                config,
-                decodedText => setBarCodeState(decodedText),
-                err => {
-                    const msg = String(err);
-                    // ignore the “ไม่มีบาร์โค้ด” errors:
-                    if (
-                        msg.includes('No barcode or QR code detected') ||
-                        msg.includes('QR code parse error') ||
-                        msg.includes('NotFoundException') ||
-                        msg.includes('getImageData') ||
-                        msg.includes('IndexSizeError')
-                    ) {
-                        // do nothing
-                        return;
-                    }
-                    // ถ้าไม่ใช่กรณี above จึงแสดง log
-                    console.error('Unexpected scanning error:', err);
-                }
-            )
-
-        return () => {
-            if (html5QrcodeRef.current) {
-                html5QrcodeRef.current
-                    .stop()
-                    .then(() => html5QrcodeRef.current?.clear())
-                    .catch(() => { });
-            }
-        };
-    }, [isMobile]);
+    useBarcodeCamera(isMobile, setBarCodeState);
 
     useEffect(() => {
         if (!barCode || !promotionId || !selectedItemCode || !productId) return;

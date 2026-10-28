@@ -1,0 +1,44 @@
+.page {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.saleReference {
+    margin-bottom: 1rem;
+    font-size: 1.15rem;
+    color: #071437;
+    overflow-wrap: anywhere;
+}
+
+.saleReference strong {
+    font-weight: 700;
+}
+
+.mobileActions {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1050;
+    gap: 0.75rem;
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+.mobileActions button {
+    flex: 1 1 0;
+    min-width: 0;
+    font-size: 1.15rem;
+    padding: 0.75rem 0.5rem;
+}
+
+@media (max-width: 1199.98px) {
+    .page {
+        padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
+    }
+}
+
+@media (max-width: 575.98px) {
+    .saleReference {
+        font-size: 1rem;
+    }
+}

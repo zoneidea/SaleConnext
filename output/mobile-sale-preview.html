@@ -1,0 +1,39 @@
+<div id="mobile-sale-preview" class="viz-dotted-background">
+  <style>
+    #mobile-sale-preview { padding: 20px 8px; }
+    #mobile-sale-preview .phone { width: 390px; max-width: 100%; margin: auto; background: #fcfcfc; color: #071437; border: 1px solid #ddd; border-radius: 18px; overflow: hidden; font-family: Tahoma, sans-serif; font-size: 13px; }
+    #mobile-sale-preview .top { padding: 20px; background: white; border-bottom: 1px solid #eee; color: #3777bc; }
+    #mobile-sale-preview main { padding: 22px 20px 50px; min-width: 0; }
+    #mobile-sale-preview h2 { font-size: 19.5px; font-weight: 800; margin: 0 0 24px; color: #071437; }
+    #mobile-sale-preview .reference { font-size: 13px; margin-bottom: 13px; overflow-wrap: anywhere; line-height: 1.6; }
+    #mobile-sale-preview .reference strong { font-weight: 700; }
+    #mobile-sale-preview .panel { border: 1px solid #eee; background: white; }
+    #mobile-sale-preview .heading { background: #3777bc; color: white; padding: 18px 20px; font-size: 19.5px; border-radius: 5px 5px 0 0; }
+    #mobile-sale-preview .fields { padding: 28px 22px 34px; }
+    #mobile-sale-preview label { display: block; font-size: 19.5px; margin-bottom: 8px; color: #333; }
+    #mobile-sale-preview label span { color: #d00; }
+    #mobile-sale-preview select { width: 100%; min-width: 0; box-sizing: border-box; background: white; color: #555; border: 1px solid #ddd; border-radius: 6px; padding: 12px 8px; font-family: inherit; font-size: 17px; margin-bottom: 22px; }
+    #mobile-sale-preview .actions { display: flex; gap: 10px; padding: 10px; border-top: 1px solid #ddd; background: #f9f9f9; }
+    #mobile-sale-preview button { flex: 1 1 0; min-width: 0; border: 0; border-radius: 6px; padding: 12px 6px; font-family: inherit; font-size: 15px; color: #111; background: #f1f1f4; }
+    #mobile-sale-preview button.save { background: #1e90ff; color: white; }
+  </style>
+  <section class="phone" aria-label="ตัวอย่างหน้าจอมือถือ 390 พิกเซล ใช้ข้อมูลสมมติ">
+    <div class="top"><i data-lucide="menu" aria-hidden="true"></i></div>
+    <main>
+      <h2>แก้ไขพนักงานขาย</h2>
+      <div class="reference">เลขที่ขาย: <strong>700A2098E5F549CCAF96F9FF7224ABCD</strong></div>
+      <div class="panel">
+        <div class="heading">ข้อมูลพนักงาน</div>
+        <div class="fields">
+          <label for="preview-employee">พนักงานขาย <span>*</span></label>
+          <select id="preview-employee"><option>พนักงานตัวอย่าง – D11A10</option></select>
+          <label for="preview-adviser">ผู้แนะนำ</label>
+          <select id="preview-adviser"><option>เลือกผู้แนะนำ</option></select>
+          <label for="preview-installer">พนักงานติดตั้ง <span>*</span></label>
+          <select id="preview-installer"><option>ช่างติดตั้งตัวอย่าง</option></select>
+        </div>
+      </div>
+    </main>
+    <div class="actions"><button type="button" disabled>ย้อนกลับ</button><button type="button" class="save" disabled>บันทึก</button></div>
+  </section>
+</div>

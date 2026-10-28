@@ -1,3 +1,4 @@
+import { useBarcodeCamera } from './useBarcodeCamera';
 // import React, { useEffect, useState } from "react";
 // import { useNavigate, useLocation } from "react-router-dom";
 // import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
@@ -163,7 +164,6 @@
 
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
 
 import useRefnoBarcodeStore from "../accessCam/refnoBarcodeStore";
 
@@ -211,54 +211,8 @@ const updateDeviceScanBarcode: React.FC = () => {
     }));
     const [barCode, setBarCodeState] = useState<string>("");
 
-    const html5QrcodeScannerRef = React.useRef<Html5Qrcode | null>(null);
-    const [isScannerRunning, setIsScannerRunning] = useState(false);
-
     const isIOSorAndroid = /iPad|iPhone|iPod|Android/.test(navigator.userAgent);
-
-    useEffect(() => {
-        if (isIOSorAndroid) {
-            const html5QrcodeScanner = new Html5Qrcode("reader");
-            html5QrcodeScannerRef.current = html5QrcodeScanner;
-
-            const config = {
-                fps: 10,
-                qrbox: 250,
-                formatsToSupport: [
-                    Html5QrcodeSupportedFormats.EAN_13,
-                    Html5QrcodeSupportedFormats.CODE_128,
-                ],
-                verbose: true,
-            };
-
-            html5QrcodeScanner
-                .start(
-                    { facingMode: "environment" },
-                    config,
-                    (decodedText) => {
-                        setBarCodeState(decodedText); // บันทึกค่า Barcode ที่สแกนได้
-                    },
-                    (errorMessage) => {
-                        console.warn(`Error scanning: ${errorMessage}`);
-                    }
-                )
-                .then(() => {
-                    setIsScannerRunning(true);
-                })
-                .catch((err) => {
-                    console.error(`Unable to start scanning: ${err}`);
-                });
-
-            return () => {
-                if (isScannerRunning && html5QrcodeScannerRef.current) {
-                    html5QrcodeScannerRef.current
-                        .stop()
-                        // .then(() => console.log("Scanner stopped successfully"))
-                        // .catch((err) => console.error("Error stopping scanner:", err));
-                }
-            };
-        }
-    }, [isIOSorAndroid, isScannerRunning]);
+    useBarcodeCamera(isIOSorAndroid, setBarCodeState);
 
     const handleNavigateBack = () => {
         setBarCode(barCode); // บันทึก barCode ลง Zustand
