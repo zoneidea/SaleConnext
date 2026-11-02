@@ -46,6 +46,26 @@ html, body, #root {
   color: #071437;
 }
 
+.saleReferenceLabel,
+.saleReferenceValue {
+  font-size: 1.15rem;
+  line-height: 1.5;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  color: #071437;
+}
+
+.saleReferenceValue {
+  font-weight: 700;
+}
+
+@media (max-width: 767.98px) {
+  .saleReferenceLabel,
+  .saleReferenceValue {
+    font-size: 1rem;
+  }
+}
+
 .fontSize {
   font-size: 1.5rem;
 }

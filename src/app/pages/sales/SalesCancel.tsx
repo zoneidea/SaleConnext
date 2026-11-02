@@ -257,8 +257,8 @@ const SalesCancel: React.FC = () => {
             </div>
           </div>
         </div>
-        <span className={`${styles.fontSize}`}>เลขที่ขาย: </span>
-        <span className={`${styles.titlePage}`}>{item?.REFNO}</span>
+        <span className={`${styles.saleReferenceLabel}`}>เลขที่ขาย: </span>
+        <span className={`${styles.saleReferenceValue}`}>{item?.REFNO}</span>
 
         {/* Card Body */}
         <div className="card mb-10">

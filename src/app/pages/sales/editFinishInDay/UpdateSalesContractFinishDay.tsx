@@ -300,7 +300,7 @@ const UpdateSalesContractFinishDay: React.FC = () => {
                         </ul>
                     </div>
                 </div>
-                <span className={`${styles.label}`}>เลขที่ขาย: </span><span className={`${styles.titlePage}`}>{refno}</span>
+                <span className={`${styles.saleReferenceLabel}`}>เลขที่ขาย: </span><span className={`${styles.saleReferenceValue}`}>{refno}</span>
 
                 {/* Card Body */}
                 <div className='card mb-10'>

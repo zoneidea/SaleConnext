@@ -275,8 +275,8 @@ const UpdateSalesPDPA: React.FC = () => {
           </div>
         </div>
 
-        <span className={`${styles.fontSize}`}>เลขที่ขาย: </span>
-        <span className={`${styles.titlePage}`}>{refNoToShow}</span>
+        <span className={`${styles.saleReferenceLabel}`}>เลขที่ขาย: </span>
+        <span className={`${styles.saleReferenceValue}`}>{refNoToShow}</span>
 
         <div className="card mb-10 px-4">
           <div className="card-body flex justify-between items-center p-5">

@@ -723,8 +723,8 @@ const SalesCreateFirstBill: React.FC = () => {
                         </ul>
                     </div>
                 </div>
-                <span className={`${styles.fontSize}`}>เลขที่ขาย: </span>
-                <span className={`${styles.titlePage}`}>{refno}</span>
+                <span className={`${styles.saleReferenceLabel}`}>เลขที่ขาย: </span>
+                <span className={`${styles.saleReferenceValue}`}>{refno}</span>
 
                 <div className="row">
                     {/* Card Body */}

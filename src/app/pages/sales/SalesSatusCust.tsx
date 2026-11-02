@@ -558,8 +558,8 @@ const SalesSatusCust: React.FC = () => {
             </ul>
           </div>
         </div>
-        <span className={`${styles.fontSize}`}>เลขที่ขาย: </span>
-        <span className={`${styles.titlePage}`}>{REFNO}</span>
+        <span className={`${styles.saleReferenceLabel}`}>เลขที่ขาย: </span>
+        <span className={`${styles.saleReferenceValue}`}>{REFNO}</span>
 
         {/* ทำให้ card-body เป็น flex column */}
         <div className="card mb-10">

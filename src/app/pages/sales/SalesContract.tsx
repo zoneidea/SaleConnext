@@ -216,8 +216,8 @@ const SalesContract: React.FC = () => {
             </div>
           </div>
 
-          <p className={`${styles.label}`}>เลขที่ขาย:</p>
-          <p className={`${styles.titlePage}`}>{refNoToUse}</p>
+          <p className={`${styles.saleReferenceLabel}`}>เลขที่ขาย:</p>
+          <p className={`${styles.saleReferenceValue}`}>{refNoToUse}</p>
 
           {/* Card Body */}
           <div className="card mb-10">

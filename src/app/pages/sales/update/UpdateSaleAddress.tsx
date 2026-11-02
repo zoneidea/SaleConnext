@@ -2010,8 +2010,8 @@ const UpdateSaleAddress: React.FC = () => {
                             </ul>
                         </div>
                     </div>
-                    <span className={`${styles.fontSize}`}>เลขที่ขาย: </span>
-                    <span className={`${styles.titlePage}`}>{refno}</span>
+                    <span className={`${styles.saleReferenceLabel}`}>เลขที่ขาย: </span>
+                    <span className={`${styles.saleReferenceValue}`}>{refno}</span>
 
                     {/* Card Body */}
                     {/* Start accordion ที่อยู่ลูกค้า (ตามบัตร)*/}

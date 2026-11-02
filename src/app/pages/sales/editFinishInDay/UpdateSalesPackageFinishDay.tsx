@@ -1613,9 +1613,9 @@ const UpdateSalesPackageFinishDay: React.FC = () => {
                         </ul>
                     </div>
                 </div>
-                {/* <span className={`${styles.fontSize}`}>เลขที่ขาย: </span><span className={`${styles.titlePage}`}>{item?.REFNO || item?.item?.REFNO}</span> */}
-                <span className={`${styles.fontSize}`}>เลขที่ขาย: </span>
-                <span className={`${styles.titlePage}`}>
+                {/* <span className={`${styles.saleReferenceLabel}`}>เลขที่ขาย: </span><span className={`${styles.saleReferenceValue}`}>{item?.REFNO || item?.item?.REFNO}</span> */}
+                <span className={`${styles.saleReferenceLabel}`}>เลขที่ขาย: </span>
+                <span className={`${styles.saleReferenceValue}`}>
                     {item?.REFNO ? item?.REFNO : refno}
                 </span>
 

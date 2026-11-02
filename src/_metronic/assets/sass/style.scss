@@ -12,3 +12,40 @@
 // Layout
 @import "./core/layout/base/layout";
 @import "layout/layout";
+
+// Keep the mobile viewport fixed while allowing responsive tables to scroll locally.
+@media (max-width: 767.98px) {
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  @supports (overflow: clip) {
+    html,
+    body {
+      overflow-x: clip;
+    }
+  }
+
+  .app-root,
+  .app-page,
+  .app-wrapper,
+  .app-main,
+  .app-content,
+  .app-container,
+  .app-main .flex-column-fluid,
+  .app-main .flex-grow-1,
+  .app-main .card,
+  .app-main .card-body,
+  .app-main .accordion,
+  .app-main .accordion-body {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .app-main .row > * {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}

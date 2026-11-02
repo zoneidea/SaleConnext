@@ -533,8 +533,8 @@ const UpdateSalesPhoto: React.FC = () => {
                             </div>
                         </div>
                     </div>
-                    <span className={`${styles.fontSize}`}>เลขที่ขาย: {""}</span>
-                    <span className={`${styles.titlePage}`}>
+                    <span className={`${styles.saleReferenceLabel}`}>เลขที่ขาย: {""}</span>
+                    <span className={`${styles.saleReferenceValue}`}>
                         {whereRefno ? whereRefno : item?.REFNO}
                     </span>
 

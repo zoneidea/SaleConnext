@@ -643,8 +643,8 @@ const UpdateSalesDiscount: React.FC = () => {
             </ul>
           </div>
         </div>
-        <span className={`${styles.fontSize}`}>เลขที่ขาย: </span>
-        <span className={`${styles.titlePage}`}>{refno}</span>
+        <span className={`${styles.saleReferenceLabel}`}>เลขที่ขาย: </span>
+        <span className={`${styles.saleReferenceValue}`}>{refno}</span>
 
         <div className="accordion mb-10" id="kt_accordion_1">
           {hasTradeIn === 1 && (
